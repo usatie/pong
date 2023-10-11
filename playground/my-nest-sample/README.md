@@ -32,6 +32,12 @@
 $ npm install
 ```
 
+## Starting DB
+```
+$ docker run --name todo-postgres -p 5432:5432 -e POSTGRES_PASSWORD=foobar -d postgres
+$ 
+```
+
 ## Running the app
 
 ```bash
