@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTaskDto } from './create-task.dto';
+import { UpdateTaskDto } from './update-task.dto';
 
 @Controller('todo')
 export class TodoController {
@@ -8,7 +9,9 @@ export class TodoController {
 
   @Get('list')
   async getList() {
-    const result = await this.prisma.task.findMany();
+    const result = await this.prisma.task.findMany({
+      where: { is_done: false },
+    });
     return [...result];
   }
 
@@ -20,5 +23,14 @@ export class TodoController {
     return {
       status: 'ok',
     };
+  }
+
+  @Post(':id/done')
+  async done(@Param() param: UpdateTaskDto) {
+    await this.prisma.task.update({
+      where: { id: param.id },
+      data: { is_done: true },
+    });
+    return { status: 'ok' };
   }
 }
