@@ -1,0 +1,26 @@
+name: Build Test
+on:
+  pull_request:
+defaults:
+  run:
+    working-directory: client
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup-node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: yarn
+          cache-dependency-path: ./client/yarn.lock
+
+      - name: npm-install
+        run: yarn
+
+      - name: app-build
+        run: yarn build
