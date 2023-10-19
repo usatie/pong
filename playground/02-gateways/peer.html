@@ -1,0 +1,19 @@
+<html>
+  <head>
+	<script
+		src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"
+		integrity="sha256-nzknQ7h6GZC+ElR8hVgCHkXve40jXh8om8YAkw/sgQY="
+		crossorigin="anonymous"
+	>
+	</script>
+    <script>
+		console.log('hello');
+		const peer = new Peer();
+		peer.on('open', function(id) {
+			console.log('My peer ID is: ' + id);
+		});
+		console.log(peer);
+	</script>
+  </head>
+  <body></body>
+</html>
