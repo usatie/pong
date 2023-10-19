@@ -1,0 +1,8 @@
+version: '3.9'
+services:
+  web:
+    build: web
+    ports:
+      - "4242:80"
+    volumes:
+      - ./web/html:/var/www/html
