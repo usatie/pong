@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>WebRTC</title>
+	<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+	<script>
+		var peer = new Peer();
+		peer.on('open', function(id) {
+		  console.log('My peer ID is: ' + id);
+		  document.getElementById('my_id').innerHTML = id;
+		});
+		var conn;
+		peer.on('connection', function(connection) {
+		  conn = connection;
+		  document.getElementById('peer_id').value = conn.peer;
+		  document.getElementById('peer_id').disabled = true;
+		  conn.on('data', function(data){
+			console.log(data);
+		  });
+		});
+	</script>
+  </head>
+  <body>
+	  Let's try WebRTC!
+	  <div>My peer ID is: <span id="my_id"></span></div>
+	  <form action="javascript:">
+		  <input type="text" id="peer_id"/>
+		  <button onclick="
+			  conn = peer.connect(document.getElementById('peer_id').value);
+			  document.getElementById('peer_id').disabled = true;
+			  conn.on('data', function(data){
+				console.log(data);
+			  });
+			">Connect</button>
+	  </form>
+	  <form action="javascript:">
+		  <input type="text" id="message"/>
+		  <button onclick="
+			  conn.send(document.getElementById('message').value);
+			  document.getElementById('message').value = '';
+			  ">Send</button>
+	  </form>
+  </body>
+</html>
