@@ -19,3 +19,7 @@ build:
 .PHONY: clean
 clean:
 	docker compose down --rmi all --volumes --remove-orphans
+
+.PHONY: test
+test: re
+	./test.sh
