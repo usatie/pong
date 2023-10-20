@@ -6,11 +6,15 @@ let last_time_display_fps = Date.now();
 let start;
 let elapsed_ms = 0;
 
-const targetFPS = 60;
-const targetFrameMS = 1000 / targetFPS;
+const PADDLE_WIDTH = 10;
+const PADDLE_HEIGHT = 100;
+const BALL_RADIUS = 5;
+const INITIAL_BALL_SPEED = 10;
+const TARGET_FPS = 60;
+const TARGET_FRAME_MS = 1000 / TARGET_FPS;
 
 function startAnimation() {
-	let speed = 10;
+	let speed = INITIAL_BALL_SPEED;
 	let random_radian = (Math.random() - 0.5) * Math.PI / 2;
 	if (Math.random() < 0.5) {
 		random_radian = -random_radian;
@@ -34,12 +38,11 @@ function draw() {
 	  draw_full_canvas();
 	  let centerX = canvas.width / 2;
 	  let centerY = canvas.height / 2;
-	  ball1 = new ball(centerX - 5, centerY - 5, 0, 0, 10, "rgb(200, 0, 0)");
+	  ball1 = new ball(centerX - BALL_RADIUS, centerY - BALL_RADIUS, 0, 0, BALL_RADIUS, "rgb(200, 0, 0)");
 	  ball1.draw(ctx);
-	  paddle1 = new paddle(0, 10, 10, canvas.height / 2, "rgb(0, 0, 0)");
+	  paddle1 = new paddle(0, 10, PADDLE_WIDTH, PADDLE_HEIGHT, "rgb(0, 0, 0)");
 	  paddle1.draw(ctx);
-	  //anim();
-	  setInterval(anim, 1000 / targetFPS);
+	  setInterval(anim, TARGET_FRAME_MS);
 	}
 }
 
@@ -83,18 +86,16 @@ function anim() {
 	elapsed = now - start;
 	start = now;
 	update_fps();
+	paddle1.clear(ctx);
+	ball1.clear(ctx);
 	if (keyName === 'ArrowUp') {
-		paddle1.clear(ctx);
 		paddle1.move_up();
 	} else if (keyName === 'ArrowDown') {
-		paddle1.clear(ctx);
 		paddle1.move_down();
 	}
-	ball1.clear(ctx);
+	paddle1.draw(ctx);
 	ball1.move();
 	ball1.draw(ctx);
-	paddle1.draw(ctx);
-	//requestAnimationFrame(anim);
 }
 
 function draw_full_canvas() {
@@ -147,13 +148,13 @@ class paddle {
 	}
 
 	hasCollision = (ball) => {
-		if (ball.y + ball.radius >= this.y && ball.y <= this.y + this.height) {
+		if (ball.y + ball.radius * 2 >= this.y && ball.y <= this.y + this.height) {
 			// Ball is actually colliding with paddle
-			if (ball.x + ball.radius >= this.x && ball.x <= this.x + this.width) {
+			if (ball.x + ball.radius * 2 >= this.x && ball.x <= this.x + this.width) {
 				return true;
 			}
 			// Ball is out of canvas, but it must be regarded as colliding with paddle
-			if (ball.x <= 0 || ball.x + ball.radius >= canvas.width) {
+			if (ball.x <= 0 || ball.x + ball.radius * 2 >= canvas.width) {
 				return true;
 			}
 		}
@@ -172,13 +173,13 @@ class ball {
 	}
 
 	clear = (ctx) => {
-		ctx.clearRect(this.x, this.y, this.radius, this.radius);
+		ctx.clearRect(this.x, this.y, this.radius * 2, this.radius * 2);
 	}
 
 	draw = (ctx) => {
 		ctx.fillStyle = this.color;
 		ctx.beginPath();
-		ctx.fillRect(this.x, this.y, this.radius, this.radius);
+		ctx.fillRect(this.x, this.y, this.radius * 2, this.radius * 2);
 	}
 
 	speed = () => {
@@ -225,14 +226,14 @@ class ball {
 	}
 
 	bounce_x = () => {
-		if (this.x + this.radius > canvas.width) {
-			this.x = clamp(this.x, 0, canvas.width - this.radius);
+		if (this.x + this.radius * 2 > canvas.width) {
+			this.x = clamp(this.x, 0, canvas.width - this.radius * 2);
 			// this.x to be integer
 			this.vx = -this.vx;
 			this.fluctuate_velocity_vector();
-		} else if (this.x < 10) { // paddle is 10px wide from x = 0
+		} else if (this.x < PADDLE_WIDTH) { // paddle is 10px wide from x = 0
 			if (paddle1.hasCollision(this)) {
-				this.x = clamp(this.x, 0, canvas.width - this.radius);
+				this.x = clamp(this.x, PADDLE_WIDTH, canvas.width - this.radius * 2);
 				this.vx = -this.vx;
 				this.fluctuate_velocity_vector();
 			} else {
@@ -242,15 +243,15 @@ class ball {
 	}
 
 	bounce_y = () => {
-		if (this.y + this.radius > canvas.height || this.y < 0) {
-			this.y = clamp(this.y, 0, canvas.height - this.radius);
+		if (this.y + this.radius * 2 > canvas.height || this.y < 0) {
+			this.y = clamp(this.y, 0, canvas.height - this.radius * 2);
 			this.vy = -this.vy;
 		}
 	}
 
 	move = () => {
-		this.x += this.vx * elapsed / targetFrameMS;
-		this.y += this.vy * elapsed / targetFrameMS;
+		this.x += this.vx * elapsed / TARGET_FRAME_MS;
+		this.y += this.vy * elapsed / TARGET_FRAME_MS;
 		this.x = Math.round(this.x);
 		this.y = Math.round(this.y);
 		this.bounce_x();
