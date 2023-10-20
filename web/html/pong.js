@@ -1,58 +1,22 @@
-let canvas;
-let ctx;
-let ball1;
-let paddle1;
-let last_time_display_fps = Date.now();
-let start;
-let elapsed_ms = 0;
+let game;
+let keyName = '';
 
+const CANVAS_WIDTH = 512;
+const CANVAS_HEIGHT = 256;
 const PADDLE_WIDTH = 10;
 const PADDLE_HEIGHT = 100;
 const BALL_RADIUS = 5;
+const PADDLE_COLOR = "#000000";
+const BALL_COLOR = "#000000";
 const INITIAL_BALL_SPEED = 10;
 const TARGET_FPS = 60;
 const TARGET_FRAME_MS = 1000 / TARGET_FPS;
 
-function startAnimation() {
-	let speed = INITIAL_BALL_SPEED;
-	let random_radian = (Math.random() - 0.5) * Math.PI / 2;
-	if (Math.random() < 0.5) {
-		random_radian = -random_radian;
-	}
-	let vx = speed * Math.cos(random_radian);
-	let vy = speed * Math.sin(random_radian);
-	ball1.vx = vx;
-	ball1.vy = vy;
-}
-
-function stopAnimation() {
-	start = undefined;
-	ball1.vx = 0;
-	ball1.vy = 0;
-}
-
-function draw() {
-	canvas = document.getElementById("tutorial");
-	if (canvas.getContext) {
-	  ctx = canvas.getContext("2d");
-	  draw_full_canvas();
-	  let centerX = canvas.width / 2;
-	  let centerY = canvas.height / 2;
-	  ball1 = new ball(centerX - BALL_RADIUS, centerY - BALL_RADIUS, 0, 0, BALL_RADIUS, "rgb(200, 0, 0)");
-	  ball1.draw(ctx);
-	  paddle1 = new paddle(0, 10, PADDLE_WIDTH, PADDLE_HEIGHT, "rgb(0, 0, 0)");
-	  paddle1.draw(ctx);
-	  setInterval(anim, TARGET_FRAME_MS);
-	}
-}
-
-let count = 0;
-let keyName = '';
-
+// Key Events
 document.addEventListener(
   "keydown",
   (event) => {
-    keyName = event.key;
+	game.keypress[event.key] = true;
   },
   false,
 );
@@ -60,51 +24,18 @@ document.addEventListener(
 document.addEventListener(
   "keyup",
   (event) => {
-    keyName = '';
+	game.keypress[event.key] = false;
   },
   false,
 );
 
-function update_fps() {
-	count++;
-	if (start - last_time_display_fps > 1000) {
-		document.getElementById("fps").innerHTML = "FPS: " + count;
-		count = 0;
-		last_time_display_fps = start;
-	}
-}
-
-function update_speed(speed) {
-	document.getElementById("speed").innerHTML = "Speed: " + Math.round(speed);
-}
-
-function anim() {
-	if (start === undefined) {
-		start = Date.now();
-	}
-	const now = Date.now();
-	elapsed = now - start;
-	start = now;
-	update_fps();
-	paddle1.clear(ctx);
-	ball1.clear(ctx);
-	if (keyName === 'ArrowUp') {
-		paddle1.move_up();
-	} else if (keyName === 'ArrowDown') {
-		paddle1.move_down();
-	}
-	paddle1.draw(ctx);
-	ball1.move();
-	ball1.draw(ctx);
-}
-
-function draw_full_canvas() {
-	function setSize() {
-	  canvas.height = innerHeight - 100;
-	  canvas.width = innerWidth - 100;
-	}
+function init() {
+	const canvas = document.getElementById("tutorial");
 	if (canvas.getContext) {
-	  setSize();
+		const ctx = canvas.getContext("2d");
+		game = new PongGame(ctx);
+		game.draw_canvas();
+		setInterval(game.update, TARGET_FRAME_MS);
 	}
 }
 
@@ -112,7 +43,7 @@ function clamp(num, min, max) {
 	return num <= min ? min : num >= max ? max : num;
 }
 
-class paddle {
+class Paddle {
 	constructor(x, y, width, height, color) {
 		this.x = x;
 		this.y = y;
@@ -133,28 +64,29 @@ class paddle {
 
 	move_up = () => {
 		if (this.y > 0) {
-			this.y -= canvas.height / 100 * 3;
+			this.y -= CANVAS_HEIGHT / 100 * 3;
 			this.y = Math.round(this.y);
-			this.y = clamp(this.y, 0, canvas.height);
+			this.y = clamp(this.y, 0, CANVAS_HEIGHT);
 		}
 	}
 
 	move_down = () => {
-		if (this.y + this.height < canvas.height) {
-			this.y += canvas.height / 100 * 3;
+		if (this.y + this.height < CANVAS_HEIGHT) {
+			this.y += CANVAS_HEIGHT / 100 * 3;
 			this.y = Math.round(this.y);
-			this.y = clamp(this.y, 0, canvas.height);
+			this.y = clamp(this.y, 0, CANVAS_HEIGHT);
 		}
 	}
 
-	hasCollision = (ball) => {
+	collide_with = (ball) => {
 		if (ball.y + ball.radius * 2 >= this.y && ball.y <= this.y + this.height) {
 			// Ball is actually colliding with paddle
 			if (ball.x + ball.radius * 2 >= this.x && ball.x <= this.x + this.width) {
 				return true;
 			}
 			// Ball is out of canvas, but it must be regarded as colliding with paddle
-			if (ball.x <= 0 || ball.x + ball.radius * 2 >= canvas.width) {
+			if ((ball.x <= 0 && this.x == 0) // left paddle
+				|| ((ball.x + ball.radius * 2 >= CANVAS_WIDTH) && this.x != 0)) { // right paddle
 				return true;
 			}
 		}
@@ -162,7 +94,7 @@ class paddle {
 	}
 }
 
-class ball {
+class Ball {
 	constructor(x, y, vx, vy, radius, color) {
 		this.x = x;
 		this.y = y;
@@ -212,28 +144,29 @@ class ball {
 		}
 
 		let speed = this.speed();
-		speed = clamp(speed * this.generate_random_scale(), canvas.width / 100, canvas.width / 10);
+		speed = clamp(speed * this.generate_random_scale(), CANVAS_WIDTH / 100, CANVAS_WIDTH / 10);
 		this.vx = speed * Math.cos(radian);
 		this.vy = speed * Math.sin(radian);
-		update_speed(speed);
 	}
 
 	reset = () => {
-		this.x = canvas.width / 2 - this.radius / 2;
-		this.y = canvas.height / 2 - this.radius / 2;
+		this.x = CANVAS_WIDTH / 2 - this.radius / 2;
+		this.y = CANVAS_HEIGHT / 2 - this.radius / 2;
 		this.vx = 0;
 		this.vy = 0;
 	}
 
-	bounce_x = () => {
-		if (this.x + this.radius * 2 > canvas.width) {
-			this.x = clamp(this.x, 0, canvas.width - this.radius * 2);
-			// this.x to be integer
-			this.vx = -this.vx;
-			this.fluctuate_velocity_vector();
-		} else if (this.x < PADDLE_WIDTH) { // paddle is 10px wide from x = 0
-			if (paddle1.hasCollision(this)) {
-				this.x = clamp(this.x, PADDLE_WIDTH, canvas.width - this.radius * 2);
+	bounce_off_paddle = (paddle) => {
+		this.x = clamp(this.x, paddle.width, CANVAS_WIDTH - paddle.width - this.radius * 2);
+		this.vx = -this.vx;
+		this.fluctuate_velocity_vector();
+	}
+
+	bounce_off_right_paddle = (paddle) => {
+		// Right paddle
+		if (this.x + this.radius * 2 >= CANVAS_WIDTH - paddle.width) {
+			if (paddle.hasCollision(this)) {
+				this.x = clamp(this.x, 10, CANVAS_WIDTH - this.radius * 2);
 				this.vx = -this.vx;
 				this.fluctuate_velocity_vector();
 			} else {
@@ -242,19 +175,174 @@ class ball {
 		}
 	}
 
-	bounce_y = () => {
-		if (this.y + this.radius * 2 > canvas.height || this.y < 0) {
-			this.y = clamp(this.y, 0, canvas.height - this.radius * 2);
-			this.vy = -this.vy;
-		}
+	collide_with_top_bottom = () => {
+		return (this.y < 0 || this.y + this.radius * 2 > CANVAS_HEIGHT || this.y < 0)
 	}
 
-	move = () => {
+	bounce_off_top_bottom = () => {
+		this.y = clamp(this.y, 0, CANVAS_HEIGHT - this.radius * 2);
+		this.vy = -this.vy;
+	}
+
+	move = (elapsed) => {
 		this.x += this.vx * elapsed / TARGET_FRAME_MS;
 		this.y += this.vy * elapsed / TARGET_FRAME_MS;
 		this.x = Math.round(this.x);
 		this.y = Math.round(this.y);
-		this.bounce_x();
-		this.bounce_y();
+	}
+}
+
+class PongGame {
+	constructor(ctx) {
+		this.ctx = ctx;
+		this.ctx.textAlign = "center";
+		this.ctx.font = "48px serif";
+		this.player1 = new Paddle(
+			0, 
+			CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2, 
+			PADDLE_WIDTH, 
+			PADDLE_HEIGHT, 
+			PADDLE_COLOR);
+		this.player2 = new Paddle(
+			CANVAS_WIDTH - PADDLE_WIDTH,
+			CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2, 
+			PADDLE_WIDTH, 
+			PADDLE_HEIGHT, 
+			PADDLE_COLOR);
+		this.ball = new Ball(
+			CANVAS_WIDTH / 2 - BALL_RADIUS / 2, 
+			CANVAS_HEIGHT / 2 - BALL_RADIUS / 2, 
+			0, 
+			0, 
+			BALL_RADIUS, 
+			BALL_COLOR);
+		this.score = {
+			player1: 0,
+			player2: 0
+		};
+		this.updated_at = undefined;
+		this.fps_updated_at = undefined;
+		this.elapsed = 0;
+		this.frame_count = 0;
+		this.is_playing = false;
+		this.keyName = '';
+		this.keypress = {};
+	}
+
+	update_fps = () => {
+		this.frame_count++;
+		if (this.fps_updated_at === undefined) {
+			this.fps_updated_at = this.updated_at;
+		}
+		const elapsed_since_last_update = this.updated_at - this.fps_updated_at;
+		if (elapsed_since_last_update > 500) {
+			const fps = Math.round(this.frame_count / (elapsed_since_last_update / 1000), 1);
+			document.getElementById("fps").innerHTML = "FPS: " + fps;
+			this.frame_count = 0;
+			this.fps_updated_at = this.updated_at;
+		}
+	}
+
+	update_speed(speed) {
+		document.getElementById("speed").innerHTML = "Speed: " + Math.round(speed);
+	}
+
+	draw_canvas = () => {
+		// Clear objects
+		this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+		// Draw objects
+		this.ball.move(this.elapsed);
+		if (this.player1.collide_with(this.ball)) {
+			this.ball.bounce_off_paddle(this.player1);
+		} else if (this.player2.collide_with(this.ball)) {
+			this.ball.bounce_off_paddle(this.player2);
+		} else if (this.ball.x <= 0) {
+			console.log("collide with left");
+			this.ball.reset();
+			this.score.player2++;
+		} else if (this.ball.x + this.ball.radius * 2 >= CANVAS_WIDTH) {
+			console.log("collide with right");
+			this.ball.reset();
+			this.score.player1++;
+		} else if (this.ball.collide_with_top_bottom()) {
+			this.ball.bounce_off_top_bottom();
+		}
+		this.ball.draw(this.ctx);
+		this.player1.draw(this.ctx);
+		this.player2.draw(this.ctx);
+		this.ctx.fillText(this.score.player1, CANVAS_WIDTH * 1 / 4, 100);
+		this.ctx.fillText(this.score.player2, CANVAS_WIDTH * 3 / 4, 100);
+	}
+
+	update = () => {
+		const now = Date.now();
+		this.elapsed = (this.updated_at === undefined) ? 0 : now - this.updated_at;
+		this.updated_at = now;
+		this.update_fps();
+		this.update_speed(this.ball.speed());
+		if (this.keypress['ArrowUp'] || this.keypress['d']) {
+			this.player1.clear(this.ctx);
+			this.player1.move_up(this.elapsed);
+			this.player1.draw(this.ctx);
+		} else if (this.keypress['ArrowDown'] || this.keypress['f']) {
+			this.player1.clear(this.ctx);
+			this.player1.move_down(this.elapsed);
+			this.player1.draw(this.ctx);
+		}
+		if (this.keypress['j']) {
+			this.player2.clear(this.ctx);
+			this.player2.move_down(this.elapsed);
+			this.player2.draw(this.ctx);
+		} else if (this.keypress['k']) {
+			this.player2.clear(this.ctx);
+			this.player2.move_up(this.elapsed);
+			this.player2.draw(this.ctx);
+		}
+		if (this.is_playing) {
+			this.draw_canvas();
+		}
+	}
+
+	start = () => {
+		// Initialize initial velocity of the ball
+		let random_radian = (Math.random() - 0.5) * Math.PI / 2;
+		if (Math.random() < 0.5) {
+			random_radian = -random_radian;
+		}
+		this.ball.vx = INITIAL_BALL_SPEED * Math.cos(random_radian);
+		this.ball.vy = INITIAL_BALL_SPEED * Math.sin(random_radian);
+		this.is_playing = true;
+	}
+
+	stop = () => {
+		this.updated_at = undefined;
+		this.ball.vx = 0;
+		this.ball.vy = 0;
+		this.is_playing = false;
+	}
+
+	switch_battle_mode = () => {
+		// Make the left player a paddle
+		this.player1.clear(this.ctx);
+		this.player1 = new Paddle(
+			0, 
+			CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2, 
+			PADDLE_WIDTH, 
+			PADDLE_HEIGHT, 
+			PADDLE_COLOR);
+		this.player1.draw(this.ctx);
+	}
+
+	switch_practice_mode = () => {
+		// Make the left player a wall
+		this.player1.clear(this.ctx);
+		this.player1 = new Paddle(
+			0, 
+			0,
+			PADDLE_WIDTH, 
+			CANVAS_HEIGHT, 
+			PADDLE_COLOR);
+		this.player1.draw(this.ctx);
 	}
 }
