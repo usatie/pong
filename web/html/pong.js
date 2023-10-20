@@ -135,10 +135,17 @@ class paddle {
 	}
 
 	hasCollision = (ball) => {
-		return ball.x + ball.radius >= this.x
-			&& ball.x <= this.x + this.width
-			&& ball.y + ball.radius >= this.y
-			&& ball.y <= this.y + this.height;
+		if (ball.y + ball.radius >= this.y && ball.y <= this.y + this.height) {
+			// Ball is actually colliding with paddle
+			if (ball.x + ball.radius >= this.x && ball.x <= this.x + this.width) {
+				return true;
+			}
+			// Ball is out of canvas, but it must be regarded as colliding with paddle
+			if (ball.x <= 0 || ball.x + ball.radius >= canvas.width) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
 
