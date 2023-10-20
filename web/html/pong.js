@@ -2,7 +2,12 @@ let canvas;
 let ctx;
 let ball1;
 let paddle1;
-let last_time_display_fps = new Date().getTime();
+let last_time_display_fps = Date.now();
+let start;
+let elapsed_ms = 0;
+
+const targetFPS = 60;
+const targetFrameMS = 1000 / targetFPS;
 
 function startAnimation() {
 	let speed = 10;
@@ -17,6 +22,7 @@ function startAnimation() {
 }
 
 function stopAnimation() {
+	start = undefined;
 	ball1.vx = 0;
 	ball1.vy = 0;
 }
@@ -32,7 +38,8 @@ function draw() {
 	  ball1.draw(ctx);
 	  paddle1 = new paddle(0, 10, 10, canvas.height / 2, "rgb(0, 0, 0)");
 	  paddle1.draw(ctx);
-	  anim();
+	  //anim();
+	  setInterval(anim, 1000 / targetFPS);
 	}
 }
 
@@ -57,11 +64,10 @@ document.addEventListener(
 
 function update_fps() {
 	count++;
-	let current_time = new Date().getTime();
-	if (current_time - last_time_display_fps > 1000) {
+	if (start - last_time_display_fps > 1000) {
 		document.getElementById("fps").innerHTML = "FPS: " + count;
 		count = 0;
-		last_time_display_fps = current_time;
+		last_time_display_fps = start;
 	}
 }
 
@@ -70,6 +76,12 @@ function update_speed(speed) {
 }
 
 function anim() {
+	if (start === undefined) {
+		start = Date.now();
+	}
+	const now = Date.now();
+	elapsed = now - start;
+	start = now;
 	update_fps();
 	if (keyName === 'ArrowUp') {
 		paddle1.clear(ctx);
@@ -82,7 +94,7 @@ function anim() {
 	ball1.move();
 	ball1.draw(ctx);
 	paddle1.draw(ctx);
-	requestAnimationFrame(anim);
+	//requestAnimationFrame(anim);
 }
 
 function draw_full_canvas() {
@@ -237,8 +249,8 @@ class ball {
 	}
 
 	move = () => {
-		this.x += this.vx;
-		this.y += this.vy;
+		this.x += this.vx * elapsed / targetFrameMS;
+		this.y += this.vy * elapsed / targetFrameMS;
 		this.x = Math.round(this.x);
 		this.y = Math.round(this.y);
 		this.bounce_x();
