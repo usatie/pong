@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Canvas tutorial</title>
+    <script>
+	  let canvas;
+	  let ctx;
+	  let ball1;
+	  let stop = true;
+	  function startAnimation() {
+		stop = false;
+		anim();
+	  }
+	  function stopAnimation() {
+		stop = true;
+	  }
+      function draw() {
+        canvas = document.getElementById("tutorial");
+        if (canvas.getContext) {
+          ctx = canvas.getContext("2d");
+		  // draw_full_canvas();
+		  // random velocity
+		  let vx = Math.random() * 1;
+	      let vy = Math.random() * 1;
+		  ball1 = new ball(10, 10, vx, vy, 10, "rgb(200, 0, 0)");
+        }
+      }
+	  function anim() {
+		    if (stop) {
+				return;
+			}
+			requestAnimationFrame(anim);
+			ctx.clearRect(0,0,canvas.width, canvas.height);
+			ball1.move();
+		}
+	  function draw_full_canvas() {
+		function setSize() {
+		  canvas.height = innerHeight - 100;
+		  canvas.width = innerWidth - 100;
+		}
+        if (canvas.getContext) {
+		  setSize();
+        }
+	  }
+	  function ball(x, y, vx, vy, radius, color) {
+        if (canvas.getContext) {
+			this.x = x;
+			this.y = y;
+			this.vx = vx;
+			this.vy = vy;
+			this.radius = radius;
+			this.color = color;
+			ctx.fillStyle = this.color;
+			ctx.beginPath();
+			ctx.fillRect(this.x, this.y, this.radius, this.radius);
+			function clamp(num, min, max) {
+				return num <= min ? min : num >= max ? max : num;
+			}
+			this.move = function() {
+				this.x += this.vx;
+				if (this.x + this.radius > canvas.width || this.x < 0) {
+					this.x = clamp(this.x, 0, canvas.width - this.radius);
+					this.vx = -this.vx;
+					this.vx += Math.random() * 1 - 0.5;
+					this.vy += Math.random() * 1 - 0.5;
+				}
+				this.y += this.vy;
+				if (this.y + this.radius > canvas.height || this.y < 0) {
+					this.y = clamp(this.y, 0, canvas.height - this.radius);
+					this.vy = -this.vy;
+					this.vx += Math.random() * 1 - 0.5;
+					this.vy += Math.random() * 1 - 0.5;
+				}
+				ctx.fillStyle = this.color;
+				ctx.beginPath();
+				ctx.fillRect(this.x, this.y, this.radius, this.radius);
+			}
+        }
+		return this;
+	  }
+    </script>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body onload="draw();">
+	<div>
+		<button onclick="startAnimation();">Start</button>
+		<button onclick="stopAnimation();">Stop</button>
+	</div>
+    <canvas id="tutorial" width="150" height="150"></canvas>
+  </body>
+</html>
