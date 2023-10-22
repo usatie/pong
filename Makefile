@@ -14,12 +14,15 @@ down:
 
 .PHONY: build
 build:
-	docker compose build --no-cache
+	docker compose build
 
 .PHONY: clean
 clean:
 	docker compose down --rmi all --volumes --remove-orphans
 
 .PHONY: test
-test: re
+test:
+	# E2E tests
 	./test.sh
+	# Unit tests for backend
+	docker compose run --rm --no-deps backend "yarn" "test"
