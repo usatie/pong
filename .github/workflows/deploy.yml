@@ -1,0 +1,17 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ssh_key
+          chmod 600 ssh_key
+          ssh -oStrictHostKeyChecking=no -i ssh_key ubuntu@ec2-54-168-233-240.ap-northeast-1.compute.amazonaws.com "cd /home/ubuntu/pong && git checkout main && git pull origin main && make prod"
