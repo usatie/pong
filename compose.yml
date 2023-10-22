@@ -12,8 +12,9 @@ services:
   backend:
     build: backend
     volumes:
-      - ./backend:/home/backend/api
-      - backend_node_modules:/home/backend/api/node_modules
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+    command: yarn start
 
 volumes:
   backend_node_modules:

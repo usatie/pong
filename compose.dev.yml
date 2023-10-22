@@ -1,3 +1,3 @@
 services:
   backend:
-    command: ["yarn", "start:dev"]
+    command: yarn start:dev
