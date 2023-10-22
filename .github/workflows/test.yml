@@ -1,0 +1,12 @@
+name: Test the application
+on: [pull_request]
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        run: make test
