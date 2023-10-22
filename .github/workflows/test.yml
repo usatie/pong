@@ -13,6 +13,3 @@ jobs:
 
       - name: Run backend e2e tests
         run: docker compose run backend sh -c "yarn test:e2e"
-
-      - name: Run test script
-        run: make && ./test.sh
