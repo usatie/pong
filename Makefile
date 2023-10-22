@@ -22,7 +22,11 @@ clean:
 
 .PHONY: test
 test:
-	# E2E tests
-	./test.sh
 	# Unit tests for backend
-	docker compose run --rm --no-deps backend "yarn" "test"
+	docker compose run backend sh -c "yarn test"
+	# E2E tests for backend
+	docker compose run backend sh -c "yarn test:e2e"
+
+.PHONY: e2e
+e2e:
+	./test.sh

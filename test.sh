@@ -11,6 +11,16 @@ print_ng() {
 	echo -e "${RED}NG${NC}"
 }
 
-curl -s -o /dev/null -w "%{http_code}" localhost:4242 | grep 200 > /dev/null \
-	&& print_ok \
-	|| print_ng
+err=0
+
+# If not 200, then error
+curl -s -o /dev/null -w "%{http_code}" localhost:4242 \
+	| grep 200 > /dev/null \
+	|| let err++
+
+if [ $err -ne 0 ]; then
+	print_ng
+	exit 1
+else
+	print_ok
+fi
