@@ -9,8 +9,6 @@ services:
       - ./web/nginx.conf:/etc/nginx/nginx.conf
   backend:
     build: backend
-    ports:
-      - "3000:3000"
     volumes:
       - ./backend:/home/backend/api
       - backend_node_modules:/home/backend/api/node_modules
