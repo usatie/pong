@@ -1,0 +1,3 @@
+services:
+  backend:
+    command: ["yarn", "start:dev"]

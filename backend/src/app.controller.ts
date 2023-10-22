@@ -12,6 +12,6 @@ export class AppController {
 
   @Get('/api')
   getApi(): string {
-	  return "Hello from API";
+	  return "42Tokyo Hello from API\n";
   }
 }

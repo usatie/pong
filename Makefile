@@ -30,3 +30,7 @@ test:
 .PHONY: e2e
 e2e:
 	./test.sh
+
+.PHONY: dev
+dev:
+	docker compose -f compose.yml -f compose.dev.yml up -d
