@@ -36,5 +36,5 @@ dev:
 	docker compose -f compose.yml -f compose.dev.yml up -d
 
 .PHONY: prod
-prod:
+prod: clean build
 	docker compose -f compose.yml -f compose.prod.yml up -d
