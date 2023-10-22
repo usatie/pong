@@ -34,3 +34,7 @@ e2e:
 .PHONY: dev
 dev:
 	docker compose -f compose.yml -f compose.dev.yml up -d
+
+.PHONY: prod
+prod:
+	docker compose -f compose.yml -f compose.prod.yml up -d
