@@ -1,0 +1,15 @@
+name: Test the application
+on: [pull_request]
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run backend unit tests
+        run: docker compose run backend sh -c "yarn test"
+
+      - name: Run backend e2e tests
+        run: docker compose run backend sh -c "yarn test:e2e"
