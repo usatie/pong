@@ -2,3 +2,5 @@ services:
   web:
     ports:
       - "80:80"
+  frontend:
+    command: npm run start

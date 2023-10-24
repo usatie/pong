@@ -1,3 +1,5 @@
 services:
   backend:
     command: yarn start:dev
+  frontend:
+    command: npm run dev
