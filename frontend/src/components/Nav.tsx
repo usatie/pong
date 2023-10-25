@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ModeToggle } from "./toggle-mode";
 
 export default function Nav() {
   return (
@@ -15,7 +16,9 @@ export default function Nav() {
               priority
             />
           </li>
-          <li>Toggle Button</li>
+          <li>
+            <ModeToggle></ModeToggle>
+          </li>
         </ul>
       </nav>
     </header>
