@@ -14,15 +14,4 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
-
-  @Get('/api')
-  getApi(): string {
-	  return "42Tokyo Hello from API\n";
-  }
-
-  @Get('/api/db')
-  async getDb(): Promise<string> {
-	  const {value} = await db.one('SELECT $1 AS value', 123);
-	  return value;
-  }
 }
