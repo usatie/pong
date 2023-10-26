@@ -4,9 +4,14 @@ services:
       - ./web/html:/var/www/playground
       - ./web/nginx.conf:/etc/nginx/nginx.conf
   backend:
-    command: sh -c "yarn install && yarn build && yarn prisma migrate deploy && yarn start:dev"
     volumes:
       - ./backend:/app
+      - backend-node-modules:/app/node_modules
   frontend:
     volumes:
       - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+
+volumes:
+  frontend-node-modules:
+  backend-node-modules:
