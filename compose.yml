@@ -9,7 +9,7 @@ services:
       - frontend
   frontend:
     build: frontend
-    command: sh -c "npm run build && npm run start"
+    command: npm run dev
     depends_on:
       backend:
         condition: service_started
@@ -17,7 +17,7 @@ services:
         condition: service_healthy
   backend:
     build: backend
-    command: sh -c "yarn prisma migrate dev && yarn start"
+    command: sh -c "yarn prisma migrate deploy && yarn start:dev"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
