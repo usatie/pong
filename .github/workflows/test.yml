@@ -8,6 +8,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Build images
+        run: docker compose build
+
       - name: Run backend unit tests
         run: docker compose run backend sh -c "yarn test"
 
