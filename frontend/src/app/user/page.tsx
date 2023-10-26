@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-async function getUsers() {
+export type User = { id: number; name?: string; email?: string };
+
+async function getUsers(): Promise<User[]> {
   const res = await fetch("http://backend:3000/api/user", {
     cache: "no-cache",
   });
@@ -19,7 +21,7 @@ async function getUsers() {
   return users;
 }
 
-export default async function User() {
+export default async function UserListPage() {
   const users = await getUsers();
   return (
     <main className="flex flex-col gap-8 p-24">
