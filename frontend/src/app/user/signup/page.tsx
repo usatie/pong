@@ -1,8 +1,8 @@
-"use client"; // Error components must be Client Components
+"use client";
 
 async function submit(event: React.FormEvent<HTMLFormElement>) {
   event.preventDefault();
-  const res = await fetch("http://localhost:4242/api/user", {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

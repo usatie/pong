@@ -1,5 +1,5 @@
 async function getUser(id: number) {
-  const res = await fetch(`http://backend:3000/api/user/${id}`);
+  const res = await fetch(`${process.env.API_URL}/user/${id}`);
   const user = await res.json();
   return user;
 }
