@@ -15,10 +15,10 @@ services:
     environment:
       PORT: ${FRONTEND_PORT}
       API_URL: http://backend:${BACKEND_PORT}/api
-      NEXT_PUBLIC_API_URL: http://${HOSTNAME}:${NGINX_PORT}/api
+      NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${FRONTEND_PORT}/"]
-      interval: 10s
+      interval: 90s
       timeout: 5s
       retries: 30
     depends_on:
@@ -37,7 +37,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${BACKEND_PORT}/api"]
-      interval: 1s
+      interval: 90s
       timeout: 5s
       retries: 30
     depends_on:
@@ -52,6 +52,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
-      interval: 1s
+      interval: 90s
       timeout: 5s
       retries: 30
