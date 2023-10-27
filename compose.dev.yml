@@ -4,16 +4,14 @@ services:
       - ./web/html:/var/www/playground
       - ./web/nginx.conf:/etc/nginx/nginx.conf
   backend:
-    command: yarn start:dev
     volumes:
       - ./backend:/app
-      - backend_node_modules:/app/node_modules
+      - backend-node-modules:/app/node_modules
   frontend:
-    command: npm run dev
     volumes:
       - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+      - frontend-node-modules:/app/node_modules
 
 volumes:
-  backend_node_modules:
-  frontend_node_modules:
+  frontend-node-modules:
+  backend-node-modules:

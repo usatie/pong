@@ -16,25 +16,29 @@ down:
 build:
 	docker compose build
 
+.PHONY: rebuild
+rebuild:
+	docker compose build --no-cache
+
 .PHONY: clean
 clean:
 	docker compose down --rmi all --volumes --remove-orphans
 
 .PHONY: test
-test:
+test: build
 	# Unit tests for backend
-	docker compose run backend sh -c "yarn test"
+	docker compose -f compose.yml -f compose.dev.yml run backend sh -c "yarn test"
 	# E2E tests for backend
-	docker compose run backend sh -c "yarn test:e2e"
+	docker compose -f compose.yml -f compose.dev.yml run backend sh -c "yarn test:e2e"
 
 .PHONY: e2e
 e2e:
 	./test.sh
 
 .PHONY: dev
-dev:
+dev: build
 	docker compose -f compose.yml -f compose.dev.yml up -d
 
 .PHONY: prod
-prod: clean build
+prod: clean rebuild
 	docker compose -f compose.yml -f compose.prod.yml up -d

@@ -2,3 +2,7 @@ services:
   web:
     ports:
       - "80:80"
+  backend:
+    command: sh -c "yarn prisma migrate deploy && yarn start"
+  frontend:
+    command: sh -c "npm run build && npm run start"

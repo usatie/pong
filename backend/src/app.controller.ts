@@ -1,10 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import * as pgPromise from 'pg-promise';
-
-const pgp = pgPromise({});
-// postgres://user:password@host:port/database
-const db = pgp(`postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@db:5432/${process.env.POSTGRES_DB}`);
 
 @Controller()
 export class AppController {
@@ -13,16 +8,5 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
-  }
-
-  @Get('/api')
-  getApi(): string {
-	  return "42Tokyo Hello from API\n";
-  }
-
-  @Get('/api/db')
-  async getDb(): Promise<string> {
-	  const {value} = await db.one('SELECT $1 AS value', 123);
-	  return value;
   }
 }
