@@ -4,7 +4,7 @@
 - You must have [Docker](https://docs.docker.com/get-docker/) installed on your machine.
 - Edit `.env` file with your own configuration like this:
 ```
-HOSTNAME=localhost
+HOST_URL=http://localhost
 NGINX_PORT=4242
 FRONTEND_PORT=3000
 BACKEND_PORT=3000
