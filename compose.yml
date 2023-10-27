@@ -15,7 +15,7 @@ services:
     environment:
       PORT: ${FRONTEND_PORT}
       API_URL: http://backend:${BACKEND_PORT}/api
-      NEXT_PUBLIC_API_URL: ${HOST_URL}:${NGINX_PORT}/api
+      NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${FRONTEND_PORT}/"]
       interval: 10s
