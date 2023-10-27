@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 export type User = { id: number; name?: string; email?: string };
 
 async function getUsers(): Promise<User[]> {
-  const res = await fetch("http://backend:3000/api/user", {
+  const res = await fetch(`${process.env.API_URL}/user`, {
     cache: "no-cache",
   });
   const users = await res.json();
