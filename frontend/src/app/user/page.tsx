@@ -27,7 +27,7 @@ export default async function UserListPage() {
   <div className="flex flex-wrap gap-8">
 	{users.map((user, index) => (
 	  <Card className="w-[300px]" key={index}>
-		<CardHeader></CardHeader>
+		<CardHeader>ID: {user.id}</CardHeader>
 		<CardContent>
 		  <form>
 			<div className="grid w-full items-center gap-4">
