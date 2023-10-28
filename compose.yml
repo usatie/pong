@@ -4,11 +4,6 @@ services:
     build: web
     ports:
       - "${NGINX_PORT}:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-      frontend:
-        condition: service_healthy
   frontend:
     build: frontend
     command: npm run dev
@@ -16,11 +11,6 @@ services:
       PORT: ${FRONTEND_PORT}
       API_URL: http://backend:${BACKEND_PORT}/api
       NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${FRONTEND_PORT}/"]
-      interval: 90s
-      timeout: 5s
-      retries: 30
     depends_on:
       backend:
         condition: service_healthy
@@ -37,9 +27,9 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${BACKEND_PORT}/api"]
-      interval: 90s
+      interval: 5s
       timeout: 5s
-      retries: 30
+      retries: 10
     depends_on:
       db:
         condition: service_healthy
@@ -52,6 +42,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
-      interval: 90s
+      interval: 5s
       timeout: 5s
-      retries: 30
+      retries: 10

@@ -40,7 +40,9 @@ dev: build
 	docker compose -f compose.yml -f compose.dev.yml up -d
 
 .PHONY: prod
-prod: rebuild
+prod:
+	docker system prune -f
+	docker compose -f compose.yml -f compose.prod.yml build
 	docker compose -f compose.yml -f compose.prod.yml up -d
 
 .PHONY: fmt
