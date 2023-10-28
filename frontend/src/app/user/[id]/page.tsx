@@ -12,7 +12,5 @@ export default async function FindUser({
   params: { id: number };
 }) {
   const user = await getUser(id);
-  return (
-  	<UserCard user={user} />
-  );
+  return <UserCard user={user} />;
 }

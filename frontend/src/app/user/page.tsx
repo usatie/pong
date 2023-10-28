@@ -13,10 +13,10 @@ async function getUsers(): Promise<User[]> {
 export default async function UserListPage() {
   const users = await getUsers();
   return (
-  <div className="flex flex-wrap gap-8">
-	{users.map((user, index) => (
-	  <UserCard user={user} key={index} />
-	))}
-  </div>
+    <div className="flex flex-wrap gap-8">
+      {users.map((user, index) => (
+        <UserCard user={user} key={index} />
+      ))}
+    </div>
   );
 }

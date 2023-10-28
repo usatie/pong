@@ -5,7 +5,7 @@ import "./globals.css";
 // components
 import { ThemeProvider } from "@/components/theme-provider";
 import Nav from "@/components/Nav";
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,11 +28,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-		<main className="flex flex-col gap-8 p-16">
-		  <Nav />
-          {children}
-    	</main>
-		<Toaster />
+          <main className="flex flex-col gap-8 p-16">
+            <Nav />
+            {children}
+          </main>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
