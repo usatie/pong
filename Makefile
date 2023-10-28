@@ -42,3 +42,7 @@ dev: build
 .PHONY: prod
 prod: rebuild
 	docker compose -f compose.yml -f compose.prod.yml up -d
+
+.PHONY: fmt
+fmt:
+	npx prettier --write frontend/src backend/src
