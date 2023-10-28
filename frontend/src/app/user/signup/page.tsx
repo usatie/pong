@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 // components
 import {
   Card,
@@ -15,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast"
 
 export default function SignUp() {
+  const router = useRouter();
   const { toast } = useToast()
 	async function createUser(event: React.FormEvent<HTMLFormElement>) {
 	  event.preventDefault();
@@ -36,6 +39,8 @@ export default function SignUp() {
 	  	  title: "Success",
 	  	  description: "User created successfully.",
 	  	})
+		router.push("/user");
+		router.refresh();
 	  }
 	}
 
