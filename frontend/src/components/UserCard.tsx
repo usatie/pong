@@ -51,7 +51,7 @@ export default function UserCard({ user }: { user: User }) {
       router.refresh();
     }
   }
-  async function deleteUser(event: React.FormEvent<HTMLFormElement>) {
+  async function deleteUser(event: React.SyntheticEvent) {
     event.preventDefault();
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/user/${user.id}`,
