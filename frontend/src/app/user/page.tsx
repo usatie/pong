@@ -24,33 +24,30 @@ async function getUsers(): Promise<User[]> {
 export default async function UserListPage() {
   const users = await getUsers();
   return (
-    <main className="flex flex-col gap-8 p-24">
-      <Nav />
-      <div className="flex flex-col gap-3">
-        {users.map((user, index) => (
-          <Card className="w-[350px]" key={index}>
-            <CardHeader></CardHeader>
-            <CardContent>
-              <form>
-                <div className="grid w-full items-center gap-4">
-                  <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" value={user.name} />
-                  </div>
-                  <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" value={user.email} />
-                  </div>
-                </div>
-              </form>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline">Delete</Button>
-              <Button>Update</Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-    </main>
+  <div className="flex flex-wrap gap-8">
+	{users.map((user, index) => (
+	  <Card className="w-[300px]" key={index}>
+		<CardHeader></CardHeader>
+		<CardContent>
+		  <form>
+			<div className="grid w-full items-center gap-4">
+			  <div className="flex flex-col space-y-1.5">
+				<Label htmlFor="name">Name</Label>
+				<Input id="name" value={user.name} />
+			  </div>
+			  <div className="flex flex-col space-y-1.5">
+				<Label htmlFor="email">Email</Label>
+				<Input id="email" value={user.email} />
+			  </div>
+			</div>
+		  </form>
+		</CardContent>
+		<CardFooter className="flex justify-between">
+		  <Button variant="outline">Delete</Button>
+		  <Button>Update</Button>
+		</CardFooter>
+	  </Card>
+	))}
+  </div>
   );
 }
