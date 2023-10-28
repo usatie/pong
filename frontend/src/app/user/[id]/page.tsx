@@ -1,3 +1,5 @@
+import UserCard from "@/components/UserCard";
+
 async function getUser(id: number) {
   const res = await fetch(`${process.env.API_URL}/user/${id}`);
   const user = await res.json();
@@ -11,8 +13,6 @@ export default async function FindUser({
 }) {
   const user = await getUser(id);
   return (
-    <div>
-      {user.name}({user.id}) : {user.email}
-    </div>
+  	<UserCard user={user} />
   );
 }
