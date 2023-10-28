@@ -70,6 +70,7 @@ export default function UserCard({ user }: { user: User }) {
         title: "Success",
         description: "User deleted successfully.",
       });
+      router.push("/user");
       router.refresh();
     }
   }

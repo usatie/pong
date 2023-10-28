@@ -1,7 +1,9 @@
 import UserCard from "@/components/UserCard";
 
 async function getUser(id: number) {
-  const res = await fetch(`${process.env.API_URL}/user/${id}`);
+  const res = await fetch(`${process.env.API_URL}/user/${id}`, {
+    cache: "no-cache",
+  });
   const user = await res.json();
   return user;
 }
