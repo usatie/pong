@@ -5,6 +5,7 @@ import "./globals.css";
 // components
 import { ThemeProvider } from "@/components/theme-provider";
 import Nav from "@/components/Nav";
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
 		  <Nav />
           {children}
     	</main>
+		<Toaster />
         </ThemeProvider>
       </body>
     </html>

@@ -1,4 +1,6 @@
 "use client";
+
+// components
 import {
   Card,
   CardContent,
@@ -10,21 +12,33 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-
-async function createUser(event: React.FormEvent<HTMLFormElement>) {
-  event.preventDefault();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget))),
-  });
-  const user = await res.json();
-  console.log(user);
-}
+import { useToast } from "@/components/ui/use-toast"
 
 export default function SignUp() {
+  const { toast } = useToast()
+	async function createUser(event: React.FormEvent<HTMLFormElement>) {
+	  event.preventDefault();
+	  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+	    method: "POST",
+	    headers: {
+	  	"Content-Type": "application/json",
+	    },
+	    body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget))),
+	  });
+	  const data = await res.json();
+	  if (!res.ok) {
+	  	toast({
+	  	  title: res.status + " " + res.statusText,
+	  	  description: data.message,
+	  	})
+	  } else {
+	  	toast({
+	  	  title: "Success",
+	  	  description: "User created successfully.",
+	  	})
+	  }
+	}
+
   return (
 	  <Card className="w-[300px]">
 		<CardHeader>Create Account</CardHeader>
