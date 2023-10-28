@@ -26,10 +26,12 @@ clean:
 
 .PHONY: test
 test: build
+	# Test building frontend
+	docker compose -f compose.yml -f compose.dev.yml run frontend npm run build
 	# Unit tests for backend
-	docker compose -f compose.yml -f compose.dev.yml run backend sh -c "yarn test"
+	docker compose -f compose.yml -f compose.dev.yml run backend yarn test
 	# E2E tests for backend
-	docker compose -f compose.yml -f compose.dev.yml run backend sh -c "yarn test:e2e"
+	docker compose -f compose.yml -f compose.dev.yml run backend yarn test:e2e
 
 .PHONY: e2e
 e2e:
