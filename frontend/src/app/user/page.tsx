@@ -33,11 +33,11 @@ export default async function UserListPage() {
 			<div className="grid w-full items-center gap-4">
 			  <div className="flex flex-col space-y-1.5">
 				<Label htmlFor="name">Name</Label>
-				<Input id="name" value={user.name} />
+				<Input id="name" defaultValue={user.name} />
 			  </div>
 			  <div className="flex flex-col space-y-1.5">
 				<Label htmlFor="email">Email</Label>
-				<Input id="email" value={user.email} />
+				<Input id="email" defaultValue={user.email} />
 			  </div>
 			</div>
 		  </form>
