@@ -5,7 +5,7 @@
 - Edit `.env` file with your own configuration like this:
 ```
 NGINX_PORT=4242
-HOST_URL=http://localhost:4242/api
+PUBLIC_API_URL=http://localhost:4242/api
 FRONTEND_PORT=3000
 BACKEND_PORT=3000
 POSTGRES_USER=postgres
