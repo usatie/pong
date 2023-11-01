@@ -19,13 +19,13 @@ async function getUser(id: number) {
     const res = await fetch(`http://backend:3000/api/user/${id}`, {
       cache: "no-cache",
     });
-  if (res.ok) {
-    const user = await res.json();
-    return user;
-  } else {
-    console.log("ko");
-  }
-  } catch(e) {
+    if (res.ok) {
+      const user = await res.json();
+      return user;
+    } else {
+      console.log("ko");
+    }
+  } catch (e) {
     console.log(e);
   }
 }
