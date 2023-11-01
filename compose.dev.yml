@@ -2,7 +2,6 @@ services:
   web:
     volumes:
       - ./web/html:/var/www/playground
-      - ./web/nginx.conf:/etc/nginx/nginx.conf
   frontend:
     volumes:
       - ./frontend:/app
