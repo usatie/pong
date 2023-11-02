@@ -12,8 +12,8 @@ export default function Nav() {
               src="/vercel.svg"
               alt="Vercel Logo"
               className="dark:invert"
-              width={100}
-              height={24}
+              width={300 / 3}
+              height={68 / 3}
               priority
             />
           </li>

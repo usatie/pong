@@ -50,3 +50,8 @@ prod:
 .PHONY: fmt
 fmt:
 	npx prettier --write frontend/src backend/src
+
+.PHONY: update
+update:
+	docker compose run frontend npx npm-check-updates -i
+	docker compose run backend yarn upgrade-interactive
