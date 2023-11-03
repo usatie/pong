@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ModeToggle } from "./toggle-mode";
+import { ModeToggle } from "@/components/toggle-mode";
 import Link from "next/link";
 
 export default function Nav() {
@@ -18,9 +18,7 @@ export default function Nav() {
             />
           </li>
           <li className="flex gap-8 items-center">
-            <Link href="/" className="">
-              Home
-            </Link>
+            <Link href="/">Home</Link>
             <Link href="/user">User List</Link>
             <Link href="/user/signup">Sign Up</Link>
             <Link href="/playground/pong.html" target="_blank">

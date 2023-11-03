@@ -1,4 +1,4 @@
-import UserCard from "@/components/UserCard";
+import UserCard from "@/app/ui/user/card";
 
 async function getUser(id: number) {
   const res = await fetch(`${process.env.API_URL}/user/${id}`, {

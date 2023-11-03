@@ -49,7 +49,7 @@ prod:
 
 .PHONY: fmt
 fmt:
-	npx prettier --write frontend/src backend/src
+	npx prettier --write frontend backend
 
 .PHONY: update
 update:

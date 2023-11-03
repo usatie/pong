@@ -17,7 +17,7 @@ export class UserController {
 
   @Post()
   create(
-    @Body() userData: { name?: string; email: string },
+    @Body() userData: { name?: string; email: string; password: string },
   ): Promise<UserModel> {
     return this.userService.create(userData);
   }
@@ -35,7 +35,7 @@ export class UserController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() userData: { name?: string; email?: string },
+    @Body() userData: { name?: string; email?: string; password?: string },
   ) {
     return this.userService.update(+id, userData);
   }
