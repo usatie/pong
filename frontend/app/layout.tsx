@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 
 // ui
-import Nav from "@/app/ui/Nav";
+import Nav from "@/app/ui/nav";
 
 const inter = Inter({ subsets: ["latin"] });
 

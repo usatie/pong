@@ -1,6 +1,6 @@
 "use client";
 
-import { redirect } from "next/navigation";
+import { RedirectType, redirect } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 
 export async function createUser(formData: FormData) {
@@ -26,6 +26,6 @@ export async function createUser(formData: FormData) {
       title: "Success",
       description: "User created successfully.",
     });
-    redirect("/user", "push");
+    redirect("/user", RedirectType.push);
   }
 }

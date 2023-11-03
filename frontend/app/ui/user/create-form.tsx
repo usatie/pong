@@ -1,6 +1,6 @@
 "use client";
 
-import { createUser } from "@/lib/client-actions";
+import { createUser } from "@/app/lib/client-actions";
 
 // components
 import { Input } from "@/components/ui/input";
