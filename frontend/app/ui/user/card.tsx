@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 
 // components
 import {
@@ -14,13 +14,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export type User = { id: number; name?: string; email?: string };
 
 export default function UserCard({ user }: { user: User }) {
-  const router = useRouter();
-  const { toast } = useToast();
   async function updateUser(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const { id, ...updateData } = Object.fromEntries(
@@ -47,8 +45,7 @@ export default function UserCard({ user }: { user: User }) {
         title: "Success",
         description: "User updated successfully.",
       });
-      router.push("/user");
-      router.refresh();
+	  redirect("/user", RedirectType.push);
     }
   }
   async function deleteUser(event: React.SyntheticEvent) {
@@ -70,8 +67,7 @@ export default function UserCard({ user }: { user: User }) {
         title: "Success",
         description: "User deleted successfully.",
       });
-      router.push("/user");
-      router.refresh();
+	  redirect("/user", RedirectType.push);
     }
   }
   return (
