@@ -45,7 +45,7 @@ export default function UserCard({ user }: { user: User }) {
         title: "Success",
         description: "User updated successfully.",
       });
-	  redirect("/user", RedirectType.push);
+      redirect("/user", RedirectType.push);
     }
   }
   async function deleteUser(event: React.SyntheticEvent) {
@@ -67,7 +67,7 @@ export default function UserCard({ user }: { user: User }) {
         title: "Success",
         description: "User deleted successfully.",
       });
-	  redirect("/user", RedirectType.push);
+      redirect("/user", RedirectType.push);
     }
   }
   return (
