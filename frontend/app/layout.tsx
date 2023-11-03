@@ -4,8 +4,10 @@ import "./globals.css";
 
 // components
 import { ThemeProvider } from "@/components/theme-provider";
-import Nav from "@/components/Nav";
 import { Toaster } from "@/components/ui/toaster";
+
+// ui
+import Nav from "@/app/ui/Nav";
 
 const inter = Inter({ subsets: ["latin"] });
 

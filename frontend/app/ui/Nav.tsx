@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ModeToggle } from "./toggle-mode";
+import { ModeToggle } from "@/components/toggle-mode";
 import Link from "next/link";
 
 export default function Nav() {
