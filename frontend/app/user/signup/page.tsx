@@ -12,7 +12,9 @@ import Form from "@/app/ui/user/create-form";
 export default function SignUp() {
   return (
     <Card className="w-[300px]">
-      <CardHeader><CardTitle>Create Account</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>Create Account</CardTitle>
+      </CardHeader>
       <CardContent>
         <Form />
       </CardContent>

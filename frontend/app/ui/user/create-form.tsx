@@ -1,6 +1,6 @@
 "use client";
 
-import { createUser } from '@/lib/client-actions';
+import { createUser } from "@/lib/client-actions";
 
 // components
 import { Input } from "@/components/ui/input";
@@ -17,11 +17,21 @@ export default function UserCreateForm() {
         </div>
         <div className="flex flex-col space-y-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" name="email" placeholder="e.g. nop@42.fr" />
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            placeholder="e.g. nop@42.fr"
+          />
         </div>
         <div className="flex flex-col space-y-1.5">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" name="password" placeholder="Must have at least 6 characters"/>
+          <Input
+            id="password"
+            type="password"
+            name="password"
+            placeholder="Must have at least 6 characters"
+          />
         </div>
         <Button type="submit">Sign Up</Button>
       </div>
