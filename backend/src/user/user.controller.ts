@@ -11,7 +11,12 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User as UserModel } from '@prisma/client';
-import { ApiCreatedResponse, ApiOkResponse, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiNoContentResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
 
 @Controller('user')
@@ -21,9 +26,7 @@ export class UserController {
 
   @Post()
   @ApiCreatedResponse({ type: UserEntity })
-  create(
-    @Body() createUserDto: CreateUserDto,
-  ): Promise<UserModel> {
+  create(@Body() createUserDto: CreateUserDto): Promise<UserModel> {
     return this.userService.create(createUserDto);
   }
 
@@ -41,10 +44,7 @@ export class UserController {
 
   @Patch(':id')
   @ApiOkResponse({ type: UserEntity })
-  update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
