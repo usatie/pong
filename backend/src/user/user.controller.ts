@@ -8,6 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User as UserModel } from '@prisma/client';
 
@@ -17,9 +18,9 @@ export class UserController {
 
   @Post()
   create(
-    @Body() userData: { name?: string; email: string; password: string },
+    @Body() createUserDto: CreateUserDto,
   ): Promise<UserModel> {
-    return this.userService.create(userData);
+    return this.userService.create(createUserDto);
   }
 
   @Get()
@@ -35,9 +36,9 @@ export class UserController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() userData: { name?: string; email?: string; password?: string },
+    @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.userService.update(+id, userData);
+    return this.userService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
