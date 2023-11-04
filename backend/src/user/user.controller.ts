@@ -26,7 +26,7 @@ export class UserController {
 
   @Post()
   @ApiCreatedResponse({ type: UserEntity })
-  create(@Body() createUserDto: CreateUserDto): Promise<UserModel> {
+  create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
