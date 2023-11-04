@@ -25,6 +25,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "5.5.0",
+    "bcrypt": "^5.1.1",
     "pg-promise": "^11.5.4",
     "prisma": "^5.5.0",
     "reflect-metadata": "^0.1.13",
