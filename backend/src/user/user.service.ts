@@ -12,8 +12,8 @@ export class UserService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     const saltRounds = 10;
     const hashedPassword = await hash(createUserDto.password, saltRounds);
-    createUserDto.password = hashedPassword;
-    return this.prisma.user.create({ data: createUserDto });
+	const userData = { ...createUserDto, password: hashedPassword };
+    return this.prisma.user.create({ data: userData });
   }
 
   findAll() {
