@@ -31,7 +31,7 @@ export class UserService {
 
   findOne(id: number): Promise<UserWithoutPassword> {
     return this.prisma.user
-      .findUnique({ where: { id: id } })
+      .findUniqueOrThrow({ where: { id: id } })
       .then(excludePassword);
   }
 
