@@ -17,30 +17,23 @@ export class UserService {
   }
 
   findAll(): Promise<User[]> {
-    return this.prisma.user
-      .findMany();
+    return this.prisma.user.findMany();
   }
 
   findOne(id: number): Promise<User> {
-    return this.prisma.user
-      .findUniqueOrThrow({ where: { id: id } });
+    return this.prisma.user.findUniqueOrThrow({ where: { id: id } });
   }
 
-  update(
-    id: number,
-    updateUserDto: UpdateUserDto,
-  ): Promise<User> {
-    return this.prisma.user
-      .update({
-        where: { id: id },
-        data: updateUserDto,
-      });
+  update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: id },
+      data: updateUserDto,
+    });
   }
 
   remove(id: number): Promise<User> {
-    return this.prisma.user
-      .delete({
-        where: { id: id },
-      });
+    return this.prisma.user.delete({
+      where: { id: id },
+    });
   }
 }
