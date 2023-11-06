@@ -9,9 +9,13 @@ import { hash } from 'bcrypt';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
-    const hashedPassword = await hash(createUserDto.password, saltRounds);
+    return hash(password, saltRounds);
+  }
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const hashedPassword = await this.hashPassword(createUserDto.password);
     const userData = { ...createUserDto, password: hashedPassword };
     return this.prisma.user.create({ data: userData });
   }
