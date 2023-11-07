@@ -21,6 +21,11 @@ $ make
 
 You can check the application running at http://localhost:4242
 
+## Seed the database
+```
+docker compose exec backend yarn prisma db seed
+```
+
 ## How to test
 ```
 $ make test
