@@ -37,8 +37,6 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOkResponse({ type: [UserEntity] })
   async findAll(): Promise<UserEntity[]> {
     const users = await this.userService.findAll();
