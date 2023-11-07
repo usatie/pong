@@ -29,10 +29,10 @@ export class UserService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-	const userData = { ...updateUserDto };
-	if (userData.password) {
-		userData.password = await this.hashPassword(userData.password);
-	}
+    const userData = { ...updateUserDto };
+    if (userData.password) {
+      userData.password = await this.hashPassword(userData.password);
+    }
     return this.prisma.user.update({
       where: { id: id },
       data: userData,

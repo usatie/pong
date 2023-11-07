@@ -16,7 +16,7 @@ async function bootstrap() {
     .setTitle('Pong API')
     .setDescription('The Pong API description')
     .setVersion('0.1')
-	.addBearerAuth()
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -8,18 +8,18 @@ import { UserModule } from 'src/user/user.module';
 import { JwtStrategy } from './jwt.strategy';
 
 export const jwtConstants = {
-	secret: process.env.JWT_SECRET,
+  secret: process.env.JWT_SECRET,
 };
 
 @Module({
   imports: [
-	  PrismaModule,
-	  PassportModule,
-	  JwtModule.register({
-		  secret: jwtConstants.secret,
-		  signOptions: { expiresIn: '30m' }, // 30 minutes
-	  }),
-	  UserModule,
+    PrismaModule,
+    PassportModule,
+    JwtModule.register({
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '30m' }, // 30 minutes
+    }),
+    UserModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
