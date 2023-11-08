@@ -7,5 +7,5 @@ COPY prisma ./prisma/
 RUN yarn install && yarn prisma generate
 
 COPY . .
-
-RUN yarn build
+RUN chmod +x ./entrypoint.sh && yarn build
+ENTRYPOINT ["./entrypoint.sh"]
