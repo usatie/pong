@@ -23,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { UserGuard } from './user.guard';
 
 @Controller('user')
 @ApiTags('user')
@@ -44,6 +45,7 @@ export class UserController {
   }
 
   @Get(':id')
+  @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
@@ -52,6 +54,7 @@ export class UserController {
   }
 
   @Patch(':id')
+  @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
@@ -64,6 +67,7 @@ export class UserController {
 
   @Delete(':id')
   @HttpCode(204)
+  @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
