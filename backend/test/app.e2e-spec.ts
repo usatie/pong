@@ -58,6 +58,32 @@ describe('AppController (e2e)', () => {
       });
     });
 
+    describe('Invalid Sign up', () => {
+      it('POST /user with invalid email should return 400 Bad Request', () => {
+        const invalidUser = { ...testUser, email: 'invalid' };
+        return request(app.getHttpServer())
+          .post('/user')
+          .send(invalidUser)
+          .expect(400);
+      });
+
+      it('POST /user with too short name should return 400 Bad Request', () => {
+        const invalidUser = { ...testUser, name: 'a' };
+        return request(app.getHttpServer())
+          .post('/user')
+          .send(invalidUser)
+          .expect(400);
+      });
+
+      it('POST /user with too short password should return 400 Bad Request', () => {
+        const invalidUser = { ...testUser, password: 'short' };
+        return request(app.getHttpServer())
+          .post('/user')
+          .send(invalidUser)
+          .expect(400);
+      });
+    });
+
     describe('Invalid authentication', () => {
       it('POST /auth/login with invalid email should return 400 Bad Request', () => {
         const invalidLogin = { ...testUserLogin, email: 'invalid' };
