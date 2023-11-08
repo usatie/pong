@@ -58,6 +58,38 @@ describe('AppController (e2e)', () => {
       });
     });
 
+    describe('Invalid authentication', () => {
+      it('POST /auth/login with invalid email should return 400 Bad Request', () => {
+        const invalidLogin = { ...testUserLogin, email: 'invalid' };
+        return request(app.getHttpServer())
+          .post('/auth/login')
+          .send(invalidLogin)
+          .expect(400);
+      });
+
+      it('POST /auth/login with email not registered should return 404 Not Found', () => {
+        const invalidLogin = {
+          ...testUserLogin,
+          email: 'nosuchuser@example.com',
+        };
+        return request(app.getHttpServer())
+          .post('/auth/login')
+          .send(invalidLogin)
+          .expect(404);
+      });
+
+      it('POST /auth/login with invalid password should return 401 Unauthorized', () => {
+        const invalidLogin = {
+          email: 'susami@example.com',
+          password: 'invalid',
+        };
+        return request(app.getHttpServer())
+          .post('/auth/login')
+          .send(invalidLogin)
+          .expect(401);
+      });
+    });
+
     describe('With authentication', () => {
       let id: number;
       let accessToken: string;
