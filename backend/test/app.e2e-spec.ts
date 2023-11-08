@@ -2,6 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { PrismaClientExceptionFilter } from 'nestjs-prisma';
+import { HttpAdapterHost, Reflector } from '@nestjs/core';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -18,6 +21,12 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true })); // enable validation
+    app.useGlobalInterceptors(
+      new ClassSerializerInterceptor(app.get(Reflector)),
+    ); // enable serialization
+    const { httpAdapter } = app.get(HttpAdapterHost);
+    app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
     await app.init();
   });
 
