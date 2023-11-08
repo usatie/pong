@@ -58,8 +58,6 @@ describe('AppController (e2e)', () => {
 	.expect(201)
 	.then(res => res.body.accessToken);
 
-	console.log(id);
-	console.log(accessToken);
     return request(app.getHttpServer())
       .delete(`/user/${id}`)
       .set("Authorization", `Bearer ${accessToken}`)
