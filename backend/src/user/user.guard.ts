@@ -1,10 +1,7 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { UserService } from './user.service';
 
-@Injectable()
 export class UserGuard implements CanActivate {
-	constructor(private readonly userService: UserService) {}
 
   canActivate(
     context: ExecutionContext,
