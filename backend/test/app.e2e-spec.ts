@@ -5,6 +5,12 @@ import { AppModule } from './../src/app.module';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
+  const testUser = {
+    name: 'test_user',
+    email: 'test@example.com',
+    password: 'password-test',
+  };
+  const testUserLogin = { email: testUser.email, password: testUser.password };
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -31,26 +37,15 @@ describe('AppController (e2e)', () => {
   });
 
   it('/user (POST); /auth/login (POST) /user/:id (DELETE)', async () => {
-    const userEmail = 'test@email.com';
-    const userPassword = 'password-test';
-    const userName = 'test_user';
-
     const id = await request(app.getHttpServer())
       .post('/user')
-      .send({
-        email: userEmail,
-        name: userName,
-        password: userPassword,
-      })
+      .send(testUser)
       .expect(201)
       .then((res) => res.body.id);
 
     const accessToken = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({
-        email: userEmail,
-        password: userPassword,
-      })
+      .send(testUserLogin)
       .expect(201)
       .then((res) => res.body.accessToken);
 
