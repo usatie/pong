@@ -141,7 +141,8 @@ describe('AppController (e2e)', () => {
       });
 
       it('GET /user/:id should return the user', () => {
-        const { password, ...expectedUser } = { ...testUser, id };
+        const expectedUser = { ...testUser, id };
+        delete expectedUser.password;
         return request(app.getHttpServer())
           .get(`/user/${id}`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -150,11 +151,12 @@ describe('AppController (e2e)', () => {
       });
 
       it('PATCH /user/:id should update the user', () => {
-        const { password, ...updatedUser } = {
+        const updatedUser = {
           ...testUser,
           id,
           name: 'new_name',
         };
+        delete updatedUser.password;
         return request(app.getHttpServer())
           .patch(`/user/${id}`)
           .set('Authorization', `Bearer ${accessToken}`)
