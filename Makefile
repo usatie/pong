@@ -25,17 +25,20 @@ clean:
 	docker compose down --rmi all --volumes --remove-orphans
 
 .PHONY: test
-test: build
-	# Test building frontend
+test: build unit e2e front
+
+.PHONY: front
+front:
 	docker compose -f compose.yml -f compose.dev.yml run frontend npm run build
-	# Unit tests for backend
-	docker compose -f compose.yml -f compose.dev.yml run backend yarn test
-	# E2E tests for backend
-	docker compose -f compose.yml -f compose.dev.yml run backend yarn test:e2e
 
 .PHONY: e2e
 e2e:
-	./test.sh
+	# E2E tests for backend
+	docker compose -f compose.yml -f compose.dev.yml run backend yarn test:e2e
+
+.PHONY: unit
+unit:
+	docker compose -f compose.yml -f compose.dev.yml run backend yarn test
 
 .PHONY: dev
 dev: build
