@@ -34,43 +34,37 @@ describe('AppController (e2e)', () => {
       .expect(401);
   });
 
-  let userId;
-  it('/user (POST)', () => {
-    return request(app.getHttpServer())
-      .post('/user')
-      .send({
-        email: "test@email.com",
-        name: "test_user",
-        password: "password-test"
-      })
-      .expect(201)
-      .then(response => {
-        userId = response.body.userId;
-      });
-  });
+  it('/user (POST); /auth/login (POST) /user/:id (DELETE)', async () => {
+	const userEmail = "test@email.com";
+	const userPassword = "password-test";
+	const userName = "test_user";
 
-  it('/auth/login (POST)', () => {
-    return request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: "test@email.com",
-        password: "password-test"
-      })
-      .expect(201);
-  });
+	const id = await request(app.getHttpServer())
+			.post('/user')
+			.send({
+				email: userEmail,
+				name: userName,
+				password: userPassword
+			})
+			.expect(201)
+			.then(res => res.body.id);
 
-  it('/user/:id (DELETE)', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: "test@email.com",
-        password: "password-test"
-      })
-      .expect(201);
-    const { accessToken } = res.body;
+	const accessToken = await request(app.getHttpServer())
+	.post('/auth/login')
+	.send({
+	  email: userEmail,
+	  password: userPassword
+	})
+	.expect(201)
+	.then(res => res.body.accessToken);
+
+	console.log(id);
+	console.log(accessToken);
     return request(app.getHttpServer())
-      .delete(`/user/${userId}`)
+      .delete(`/user/${id}`)
       .set("Authorization", `Bearer ${accessToken}`)
       .expect(204);
   });
+
+
 });
