@@ -30,37 +30,87 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  describe('/ (GET)', () => {
+    it('should return "Hello World!"', () => {
+      return request(app.getHttpServer())
+        .get('/')
+        .expect(200)
+        .expect('Hello World!');
+    });
   });
 
-  it('/user (GET)', () => {
-    return request(app.getHttpServer()).get('/user').expect(200);
-  });
+  describe('/user', () => {
+    describe('Without authentiation', () => {
+      it('GET /user should return users list', () => {
+        return request(app.getHttpServer()).get('/user').expect(200);
+      });
 
-  it('/user/1 (GET)', () => {
-    return request(app.getHttpServer()).get('/user/1').expect(401);
-  });
+      it('GET /user/:id should return 401 Unauthorized', () => {
+        return request(app.getHttpServer()).get('/user/1').expect(401);
+      });
 
-  it('/user (POST); /auth/login (POST) /user/:id (DELETE)', async () => {
-    const id = await request(app.getHttpServer())
-      .post('/user')
-      .send(testUser)
-      .expect(201)
-      .then((res) => res.body.id);
+      it('PATCH /user/:id should return 401 Unauthorized', () => {
+        return request(app.getHttpServer()).patch('/user/1').expect(401);
+      });
 
-    const accessToken = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send(testUserLogin)
-      .expect(201)
-      .then((res) => res.body.accessToken);
+      it('DELETE /user/:id should return 401 Unauthorized', () => {
+        return request(app.getHttpServer()).delete('/user/1').expect(401);
+      });
+    });
 
-    return request(app.getHttpServer())
-      .delete(`/user/${id}`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .expect(204);
+    describe('With authentication', () => {
+      let id: number;
+      let accessToken: string;
+
+      beforeAll(async () => {
+        id = await request(app.getHttpServer())
+          .post('/user')
+          .send(testUser)
+          .expect(201)
+          .then((res) => res.body.id);
+
+        accessToken = await request(app.getHttpServer())
+          .post('/auth/login')
+          .send(testUserLogin)
+          .expect(201)
+          .then((res) => res.body.accessToken);
+      });
+
+      afterAll(async () => {
+        await request(app.getHttpServer())
+          .delete(`/user/${id}`)
+          .set('Authorization', `Bearer ${accessToken}`);
+      });
+
+      it('GET /user/:id should return the user', () => {
+        const { password, ...expectedUser } = { ...testUser, id };
+        return request(app.getHttpServer())
+          .get(`/user/${id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200)
+          .expect(expectedUser);
+      });
+
+      it('PATCH /user/:id should update the user', () => {
+        const { password, ...updatedUser } = {
+          ...testUser,
+          id,
+          name: 'new_name',
+        };
+        return request(app.getHttpServer())
+          .patch(`/user/${id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send(updatedUser)
+          .expect(200)
+          .expect(updatedUser);
+      });
+
+      it('DELETE /user/:id should delete the user', () => {
+        return request(app.getHttpServer())
+          .delete(`/user/${id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(204);
+      });
+    });
   });
 });
