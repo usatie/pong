@@ -21,7 +21,7 @@ services:
         condition: service_healthy
   backend:
     build: backend
-    command: sh -c "yarn prisma migrate deploy && yarn prisma db seed && yarn start:dev"
+    command: sh -c "yarn start:dev"
     environment:
       PORT: ${BACKEND_PORT}
       JWT_SECRET: ${BACKEND_JWT_SECRET}
