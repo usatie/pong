@@ -16,3 +16,8 @@ model User {
   name  String?
   password String
 }
+
+model Room {
+  id    Int     @id @default(autoincrement())
+  name  String
+}
