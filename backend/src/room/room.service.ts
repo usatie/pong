@@ -16,17 +16,17 @@ export class RoomService {
   }
 
   findOne(id: number) {
-	return this.prisma.room.findUniqueOrThrow({ where: { id: id } });
+    return this.prisma.room.findUniqueOrThrow({ where: { id: id } });
   }
 
   update(id: number, updateRoomDto: UpdateRoomDto) {
-	return this.prisma.room.update({
-		where: { id },
-		data: updateRoomDto,
-	});
+    return this.prisma.room.update({
+      where: { id },
+      data: updateRoomDto,
+    });
   }
 
   remove(id: number) {
-	return this.prisma.room.delete({ where: { id }});
+    return this.prisma.room.delete({ where: { id } });
   }
 }

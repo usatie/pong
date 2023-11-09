@@ -1,10 +1,10 @@
 import { Room } from '@prisma/client';
-import {ApiProperty} from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RoomEntity implements Room {
-	@ApiProperty()
-	id: number;
+  @ApiProperty()
+  id: number;
 
-	@ApiProperty()
-	name: string;
+  @ApiProperty()
+  name: string;
 }

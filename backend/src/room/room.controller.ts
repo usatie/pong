@@ -25,7 +25,7 @@ export class RoomController {
   }
 
   @Get()
-  @ApiOkResponse({ type: RoomEntity, isArray: true})
+  @ApiOkResponse({ type: RoomEntity, isArray: true })
   findAll() {
     return this.roomService.findAll();
   }

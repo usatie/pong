@@ -71,7 +71,6 @@ async function main() {
       name: 'Room 2',
     },
   });
-
 }
 
 main()
