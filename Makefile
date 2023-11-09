@@ -54,6 +54,14 @@ prod:
 fmt:
 	npx prettier --write frontend backend
 
+.PHONY: lint
+lint:
+	npm --prefix frontend run lint
+	yarn --cwd backend lint
+
+.PHONY: check
+check: fmt lint
+
 .PHONY: update
 update:
 	docker compose run frontend npx npm-check-updates -i
