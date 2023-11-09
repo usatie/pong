@@ -20,8 +20,8 @@ export class RoomController {
 
   @Post()
   @ApiCreatedResponse({ type: CreateRoomDto })
-  create(@Body() body: any) {
-    return this.roomService.create(body);
+  create(@Body() createRoomDto: CreateRoomDto) {
+    return this.roomService.create(createRoomDto);
   }
 
   @Get()
