@@ -40,9 +40,19 @@ describe('AppController (e2e)', () => {
   });
 
   describe('/user', () => {
+    const testUserResponse = (user) => {
+      expect(user).toHaveProperty('id');
+      expect(user).toHaveProperty('name');
+      expect(user).toHaveProperty('email');
+      expect(user).not.toHaveProperty('password');
+    };
     describe('Without authentiation', () => {
-      it('GET /user should return users list', () => {
-        return request(app.getHttpServer()).get('/user').expect(200);
+      it('GET /user should return users list', async () => {
+        const res = await request(app.getHttpServer()).get('/user').expect(200);
+        const users = res.body;
+        expect(users).toBeInstanceOf(Array);
+        expect(users.length).toBeGreaterThan(0);
+        users.forEach(testUserResponse);
       });
 
       it('GET /user/:id should return 401 Unauthorized', () => {
@@ -116,6 +126,32 @@ describe('AppController (e2e)', () => {
       });
     });
 
+    describe('Sign up, Log in and Delete', () => {
+      it('[POST /user] => [POST /auth/login] => [DELETE /user/:id]', async () => {
+        const id = await request(app.getHttpServer())
+          .post('/user')
+          .send(testUser)
+          .expect(201)
+          .then((res) => {
+            const user = res.body;
+            testUserResponse(res.body);
+            return user.id;
+          });
+
+        const accessToken = await request(app.getHttpServer())
+          .post('/auth/login')
+          .send(testUserLogin)
+          .expect(201)
+          .then((res) => res.body.accessToken);
+
+        return request(app.getHttpServer())
+          .delete(`/user/${id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(204)
+          .expect({});
+      });
+    });
+
     describe('With authentication', () => {
       let id: number;
       let accessToken: string;
@@ -124,13 +160,11 @@ describe('AppController (e2e)', () => {
         id = await request(app.getHttpServer())
           .post('/user')
           .send(testUser)
-          .expect(201)
           .then((res) => res.body.id);
 
         accessToken = await request(app.getHttpServer())
           .post('/auth/login')
           .send(testUserLogin)
-          .expect(201)
           .then((res) => res.body.accessToken);
       });
 
@@ -169,7 +203,8 @@ describe('AppController (e2e)', () => {
         return request(app.getHttpServer())
           .delete(`/user/${id}`)
           .set('Authorization', `Bearer ${accessToken}`)
-          .expect(204);
+          .expect(204)
+          .expect({});
       });
     });
   });
