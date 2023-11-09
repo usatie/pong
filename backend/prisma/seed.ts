@@ -56,6 +56,22 @@ async function main() {
   });
 
   console.log({ user1, user2, user3, user4 });
+
+  const room1 = await prisma.room.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      name: 'Room 1',
+    },
+  });
+  const room2 = await prisma.room.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      name: 'Room 2',
+    },
+  });
+
 }
 
 main()
