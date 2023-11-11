@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -32,19 +33,19 @@ export class RoomController {
 
   @Get(':id')
   @ApiOkResponse({ type: RoomEntity })
-  findOne(@Param('id') id: string) {
-    return this.roomService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.roomService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOkResponse({ type: RoomEntity })
-  update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
-    return this.roomService.update(+id, updateRoomDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateRoomDto: UpdateRoomDto) {
+    return this.roomService.update(id, updateRoomDto);
   }
 
   @Delete(':id')
   @ApiOkResponse({ type: RoomEntity })
-  remove(@Param('id') id: string) {
-    return this.roomService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.roomService.remove(id);
   }
 }
