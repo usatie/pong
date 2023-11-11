@@ -39,7 +39,10 @@ export class RoomController {
 
   @Patch(':id')
   @ApiOkResponse({ type: RoomEntity })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateRoomDto: UpdateRoomDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateRoomDto: UpdateRoomDto,
+  ) {
     return this.roomService.update(id, updateRoomDto);
   }
 
