@@ -13,16 +13,14 @@ export default async function getRoomInfo({
 }) {
   const room = await getRoom(id);
   return (
-          <div>
-            <h1>
-              <b>
-                Room info
-              </b>
-            </h1>
-            <p>
-              room ID: {room.id} <br/>
-              room name: {room.name}
-            </p>
-          </div>
-        );
+    <div>
+      <h1>
+        <b>Room info</b>
+      </h1>
+      <p>
+        room ID: {room.id} <br />
+        room name: {room.name}
+      </p>
+    </div>
+  );
 }

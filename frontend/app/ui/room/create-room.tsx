@@ -13,7 +13,12 @@ export default function RoomCreateForm() {
       <div className="grid w-full items-center gap-8">
         <div className="flex flex-col space-y-1.5">
           <Label htmlFor="name">Room Name</Label>
-          <Input id="name" type="text" name="name" placeholder="e.g. temporary room" />
+          <Input
+            id="name"
+            type="text"
+            name="name"
+            placeholder="e.g. temporary room"
+          />
         </div>
         <Button type="submit">Create</Button>
       </div>

@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 
-export type Room = { id: number; name?: string; };
+export type Room = { id: number; name?: string };
 
 export default function RoomCard({ room }: { room: room }) {
   const router = useRouter();
