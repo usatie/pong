@@ -19,7 +19,7 @@ import Link from "next/link";
 
 export type Room = { id: number; name?: string };
 
-export default function RoomCard({ room }: { room: room }) {
+export default function RoomCard({ room }: { room: Room }) {
   const router = useRouter();
   const { toast } = useToast();
   async function updateRoom(event: React.FormEvent<HTMLFormElement>) {
