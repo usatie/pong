@@ -13,6 +13,7 @@ import {
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { CreateRoomRequestDto } from './dto/create-room-request.dto';
 import { ApiTags, ApiCreatedResponse, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { RoomEntity } from './entities/room.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -26,8 +27,8 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: CreateRoomDto })
-  create(@Body() createRoomDto: CreateRoomDto, @Req() request: Request) {
-    return this.roomService.create(createRoomDto);
+  create(@Body() createRoomRequestDto: CreateRoomRequestDto, @Req() request: Request) {
+    return this.roomService.create({...createRoomRequestDto, ownerId: request['user']['id']});
   }
 
   @Get()
