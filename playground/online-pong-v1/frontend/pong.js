@@ -1,10 +1,10 @@
 let game;
 let keyName = "";
 
-const CANVAS_WIDTH = 512;
-const CANVAS_HEIGHT = 256;
-const PADDLE_WIDTH = 10;
-const PADDLE_HEIGHT = 100;
+const CANVAS_WIDTH = 256;
+const CANVAS_HEIGHT = 512;
+const PADDLE_WIDTH = 100;
+const PADDLE_HEIGHT = 10;
 const BALL_RADIUS = 5;
 const PADDLE_COLOR = "#000000";
 const BALL_COLOR = "#000000";
@@ -62,34 +62,30 @@ class Paddle {
     ctx.fillRect(this.x, this.y, this.width, this.height);
   };
 
-  move_up = () => {
-    if (this.y > 0) {
-      this.y -= (CANVAS_HEIGHT / 100) * 3;
-      this.y = Math.round(this.y);
-      this.y = clamp(this.y, 0, CANVAS_HEIGHT);
+  move_left = () => {
+    if (this.x > 0) {
+      this.x -= (CANVAS_WIDTH / 100) * 3;
+      this.x = Math.round(this.x);
+      this.x = clamp(this.x, 0, CANVAS_WIDTH);
     }
   };
 
-  move_down = () => {
-    if (this.y + this.height < CANVAS_HEIGHT) {
-      this.y += (CANVAS_HEIGHT / 100) * 3;
-      this.y = Math.round(this.y);
-      this.y = clamp(this.y, 0, CANVAS_HEIGHT);
+  move_right = () => {
+    if (this.x + this.width < CANVAS_WIDTH) {
+      this.x += (CANVAS_WIDTH / 100) * 3;
+      this.x = Math.round(this.x);
+      this.x = clamp(this.x, 0, CANVAS_WIDTH);
     }
   };
 
   collide_with = (ball) => {
-    if (ball.y + ball.radius * 2 >= this.y && ball.y <= this.y + this.height) {
+    // Ball is in the same x-axis
+    if (ball.x >= this.x && ball.x + ball.radius * 2 <= this.x + this.width) {
       // Ball is actually colliding with paddle
-      if (ball.x + ball.radius * 2 >= this.x && ball.x <= this.x + this.width) {
-        return true;
-      }
-      // Ball is out of canvas, but it must be regarded as colliding with paddle
       if (
-        (ball.x <= 0 && this.x == 0) || // left paddle
-        (ball.x + ball.radius * 2 >= CANVAS_WIDTH && this.x != 0)
+        (ball.y <= this.height && this.y == 0) ||
+        (ball.y + ball.radius * 2 >= this.y && this.y != 0)
       ) {
-        // right paddle
         return true;
       }
     }
@@ -149,8 +145,8 @@ class Ball {
     let speed = this.speed();
     speed = clamp(
       speed * this.generate_random_scale(),
-      CANVAS_WIDTH / 100,
-      CANVAS_WIDTH / 10
+      CANVAS_HEIGHT / 100,
+      CANVAS_HEIGHT / 10
     );
     this.vx = speed * Math.cos(radian);
     this.vy = speed * Math.sin(radian);
@@ -164,35 +160,22 @@ class Ball {
   };
 
   bounce_off_paddle = (paddle) => {
-    this.x = clamp(
-      this.x,
-      paddle.width,
-      CANVAS_WIDTH - paddle.width - this.radius * 2
+    this.y = clamp(
+      this.y,
+      paddle.height,
+      CANVAS_HEIGHT - paddle.height - this.radius * 2
     );
-    this.vx = -this.vx;
-    this.fluctuate_velocity_vector();
-  };
-
-  bounce_off_right_paddle = (paddle) => {
-    // Right paddle
-    if (this.x + this.radius * 2 >= CANVAS_WIDTH - paddle.width) {
-      if (paddle.hasCollision(this)) {
-        this.x = clamp(this.x, 10, CANVAS_WIDTH - this.radius * 2);
-        this.vx = -this.vx;
-        this.fluctuate_velocity_vector();
-      } else {
-        this.reset();
-      }
-    }
-  };
-
-  collide_with_top_bottom = () => {
-    return this.y < 0 || this.y + this.radius * 2 > CANVAS_HEIGHT || this.y < 0;
-  };
-
-  bounce_off_top_bottom = () => {
-    this.y = clamp(this.y, 0, CANVAS_HEIGHT - this.radius * 2);
     this.vy = -this.vy;
+    // this.fluctuate_velocity_vector();
+  };
+
+  collide_with_side = () => {
+    return this.x < 0 || this.x + this.radius * 2 > CANVAS_WIDTH;
+  };
+
+  bounce_off_side = () => {
+    this.x = clamp(this.x, 0, CANVAS_WIDTH - this.radius * 2);
+    this.vx = -this.vx;
   };
 
   move = (elapsed) => {
@@ -209,15 +192,15 @@ class PongGame {
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
     this.player1 = new Paddle(
-      0,
-      CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2,
+      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
+      CANVAS_HEIGHT - PADDLE_HEIGHT,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
       PADDLE_COLOR
     );
     this.player2 = new Paddle(
-      CANVAS_WIDTH - PADDLE_WIDTH,
-      CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2,
+      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
+      0,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
       PADDLE_COLOR
@@ -274,16 +257,16 @@ class PongGame {
       this.ball.bounce_off_paddle(this.player1);
     } else if (this.player2.collide_with(this.ball)) {
       this.ball.bounce_off_paddle(this.player2);
-    } else if (this.ball.x <= 0) {
-      console.log("collide with left");
+    } else if (this.ball.y <= 0) {
+      console.log("collide with top");
       this.ball.reset();
       this.score.player2++;
-    } else if (this.ball.x + this.ball.radius * 2 >= CANVAS_WIDTH) {
-      console.log("collide with right");
+    } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
+      console.log("collide with bottom");
       this.ball.reset();
       this.score.player1++;
-    } else if (this.ball.collide_with_top_bottom()) {
-      this.ball.bounce_off_top_bottom();
+    } else if (this.ball.collide_with_side()) {
+      this.ball.bounce_off_side();
     }
     this.ball.draw(this.ctx);
     this.player1.draw(this.ctx);
@@ -298,22 +281,22 @@ class PongGame {
     this.updated_at = now;
     this.update_fps();
     this.update_speed(this.ball.speed());
-    if (this.keypress["ArrowUp"] || this.keypress["d"]) {
+    if (this.keypress["ArrowLeft"] || this.keypress["d"]) {
       this.player1.clear(this.ctx);
-      this.player1.move_up(this.elapsed);
+      this.player1.move_left(this.elapsed);
       this.player1.draw(this.ctx);
-    } else if (this.keypress["ArrowDown"] || this.keypress["f"]) {
+    } else if (this.keypress["ArrowRight"] || this.keypress["f"]) {
       this.player1.clear(this.ctx);
-      this.player1.move_down(this.elapsed);
+      this.player1.move_right(this.elapsed);
       this.player1.draw(this.ctx);
     }
     if (this.keypress["j"]) {
       this.player2.clear(this.ctx);
-      this.player2.move_down(this.elapsed);
+      this.player2.move_right(this.elapsed);
       this.player2.draw(this.ctx);
     } else if (this.keypress["k"]) {
       this.player2.clear(this.ctx);
-      this.player2.move_up(this.elapsed);
+      this.player2.move_left(this.elapsed);
       this.player2.draw(this.ctx);
     }
     if (this.is_playing) {
@@ -323,13 +306,18 @@ class PongGame {
 
   start = () => {
     // Initialize initial velocity of the ball
-    let random_radian = ((Math.random() - 0.5) * Math.PI) / 2;
-    if (Math.random() < 0.5) {
-      random_radian = -random_radian;
+    while (true) {
+      let random_radian = Math.random() * 2 * Math.PI;
+      this.ball.vx = INITIAL_BALL_SPEED * Math.cos(random_radian);
+      this.ball.vy = INITIAL_BALL_SPEED * Math.sin(random_radian);
+      this.is_playing = true;
+      if (
+        Math.abs(Math.cos(random_radian)) >= 0.5 &&
+        Math.abs(Math.sin(random_radian)) >= 0.5
+      ) {
+        break;
+      }
     }
-    this.ball.vx = INITIAL_BALL_SPEED * Math.cos(random_radian);
-    this.ball.vy = INITIAL_BALL_SPEED * Math.sin(random_radian);
-    this.is_playing = true;
   };
 
   stop = () => {
@@ -341,21 +329,21 @@ class PongGame {
 
   switch_battle_mode = () => {
     // Make the left player a paddle
-    this.player1.clear(this.ctx);
-    this.player1 = new Paddle(
+    this.player2.clear(this.ctx);
+    this.player2 = new Paddle(
+      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
       0,
-      CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
       PADDLE_COLOR
     );
-    this.player1.draw(this.ctx);
+    this.player2.draw(this.ctx);
   };
 
   switch_practice_mode = () => {
     // Make the left player a wall
-    this.player1.clear(this.ctx);
-    this.player1 = new Paddle(0, 0, PADDLE_WIDTH, CANVAS_HEIGHT, PADDLE_COLOR);
-    this.player1.draw(this.ctx);
+    this.player2.clear(this.ctx);
+    this.player2 = new Paddle(0, 0, CANVAS_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
+    this.player2.draw(this.ctx);
   };
 }
