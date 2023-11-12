@@ -62,13 +62,15 @@ async function main() {
     update: {},
     create: {
       name: 'Room 1',
+	  ownerId: user1.id,
     },
   });
   const room2 = await prisma.room.upsert({
     where: { id: 2 },
     update: {},
     create: {
-      name: 'Room 2',
+		name: 'Room 2',
+		ownerId: user2.id,
     },
   });
 }

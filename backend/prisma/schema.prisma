@@ -15,9 +15,12 @@ model User {
   email String  @unique
   name  String?
   password String
+  room	Room?
 }
 
 model Room {
   id    Int     @id @default(autoincrement())
   name  String
+  owner User    @relation(fields: [ownerId], references: [id])
+  ownerId Int @unique
 }
