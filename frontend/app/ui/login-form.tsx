@@ -11,6 +11,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import { authenticate } from "@/app/lib/actions";
 
 export default function LoginForm() {
   return (
@@ -27,36 +28,43 @@ export default function LoginForm() {
   );
 }
 
-function login() {
-  // TODO: implement login
-  console.log("login");
-}
-
 function Form() {
+  const [code, action] = useFormState(authenticate, undefined);
   return (
-    <form action={login}>
-      <div className="grid w-full items-center gap-8">
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            name="email"
-            placeholder="Enter your email address"
-          />
+    <>
+      <form action={action}>
+        <div className="grid w-full items-center gap-8">
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              name="email"
+              placeholder="Enter your email address"
+            />
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+            />
+          </div>
+          <LoginButton />
         </div>
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            name="password"
-            placeholder="Enter your password"
-          />
+        <div className="flex h-8 items-end space-x-1">
+          {code === "CredentialSignin" && (
+            <>
+              <p aria-live="polite" className="text-sm text-red-500">
+                Invalid credentials
+              </p>
+            </>
+          )}
         </div>
-        <LoginButton />
-      </div>
-    </form>
+      </form>
+    </>
   );
 }
 

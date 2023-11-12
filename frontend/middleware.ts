@@ -1,0 +1,41 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { jwtVerify, importSPKI } from "jose";
+
+async function isTokenValid(token: string) {
+  console.log("token = ", token);
+  // Verify JWT token with public key
+  const alg = "RS256";
+  const spki = process.env.JWT_PUBLIC_KEY;
+  if (!spki) {
+    console.log("no public key");
+    return false;
+  }
+  try {
+    const publicKey = await importSPKI(spki, alg);
+    const { payload } = await jwtVerify(token, publicKey, {
+      algorithms: ["RS256"],
+    });
+    console.log("jwt token is valid: ", payload);
+    return true; // Allow request to continue with valid token
+  } catch (e) {
+    console.log("jwt token is invalid: ", e);
+  }
+  return false;
+}
+
+export default async function authMiddleware(request: NextRequest) {
+  const token = request.cookies.get("token");
+  if (token && (await isTokenValid(token.value))) {
+    console.log("token is valid");
+    return NextResponse.next();
+  }
+  if (request.nextUrl.pathname == "/user") {
+    console.log("redirect to login");
+    return NextResponse.redirect(new URL("/login", request.nextUrl));
+  }
+}
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|vercel.svg).*)"],
+};

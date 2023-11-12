@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { ModeToggle } from "@/components/toggle-mode";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { signOut } from "@/app/lib/actions";
 
 export default function Nav() {
   return (
@@ -25,6 +27,9 @@ export default function Nav() {
             <Link href="/playground/pong.html" target="_blank">
               Pong
             </Link>
+            <form action={signOut}>
+              <Button type="submit">Sign Out</Button>
+            </form>
             <ModeToggle></ModeToggle>
           </li>
         </ul>

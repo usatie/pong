@@ -14,6 +14,7 @@ services:
       PORT: ${FRONTEND_PORT}
       API_URL: http://backend:${BACKEND_PORT}/api
       NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
     depends_on:
       backend:
         condition: service_healthy
