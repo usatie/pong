@@ -29,3 +29,28 @@ export async function createUser(formData: FormData) {
     redirect("/user", RedirectType.push);
   }
 }
+
+export async function createRoom(formData: FormData) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: formData.get("name"),
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    toast({
+      title: res.status + " " + res.statusText,
+      description: data.message,
+    });
+  } else {
+    toast({
+      title: "Success",
+      description: "Room created successfully.",
+    });
+    redirect(`/room/${data.id}`, RedirectType.push);
+  }
+}
