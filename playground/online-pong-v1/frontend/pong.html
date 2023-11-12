@@ -1,23 +1,26 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Canvas tutorial</title>
-    <script src="pong.js"></script>
-    <style>
-      canvas {
-        border: 1px solid black;
-      }
-    </style>
-  </head>
-  <body onload="init();">
-	<div>
-		<button onclick="game.start();">Start</button>
-		<button onclick="game.switch_battle_mode();">Battle</button>
-		<button onclick="game.switch_practice_mode();">Practice</button>
-		<div id="fps">FPS: 0</div>
-		<div id="speed">Speed: 0</div>
-	</div>
-    <canvas id="tutorial" width="512" height="256"></canvas>
-  </body>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Canvas tutorial</title>
+  <script src="pong.js"></script>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+
+<body onload="init();">
+  <div>
+    <button onclick="game.start();">Start</button>
+    <button onclick="game.switch_battle_mode();">Battle</button>
+    <button onclick="game.switch_practice_mode();">Practice</button>
+    <div id="fps">FPS: 0</div>
+    <div id="speed">Speed: 0</div>
+  </div>
+  <canvas id="tutorial" width="512" height="256"></canvas>
+</body>
+
 </html>
