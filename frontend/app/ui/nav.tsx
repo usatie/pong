@@ -20,6 +20,7 @@ export default function Nav() {
           <li className="flex gap-8 items-center">
             <Link href="/">Home</Link>
             <Link href="/user">User List</Link>
+            <Link href="/room">ChatRoom List</Link>
             <Link href="/user/signup">Sign Up</Link>
             <Link href="/playground/pong.html" target="_blank">
               Pong
