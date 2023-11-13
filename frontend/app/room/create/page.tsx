@@ -13,7 +13,7 @@ export default function CreateChatRoom() {
   return (
     <Card className="w-[300px]">
       <CardHeader>
-        <CardTitle>Create Account</CardTitle>
+        <CardTitle>Create ChatRoom</CardTitle>
       </CardHeader>
       <CardContent>
         <Form />
