@@ -29,21 +29,21 @@ export class RoomService {
   }
 
   async findOne(id: number, userId: number) {
-	const useronroom = await this.prisma.useronroom.findUniqueOrThrow({
-		where: {
-		  userid_roomid_unique: {
-			  userid: userId,
-			  roomid: id,
-		  }
-		},
-	  });
-    return this.prisma.room.findUnique({
-        where: { id },
-        include: {
-          users: true,
+    const useronroom = await this.prisma.useronroom.findUniqueOrThrow({
+      where: {
+        userid_roomid_unique: {
+          userid: userId,
+          roomid: id,
         },
-      });
-    }
+      },
+    });
+    return this.prisma.room.findUnique({
+      where: { id },
+      include: {
+        users: true,
+      },
+    });
+  }
 
   update(id: number, updateRoomDto: UpdateRoomDto) {
     return this.prisma.room.update({
@@ -61,20 +61,19 @@ export class RoomService {
       data: {
         roomid: id,
         userid: userId,
-		role: 'member',
+        role: 'member',
       },
     });
   }
 
   leaveRoom(id: number, userId: number): Promise<UserOnRoomDto> {
-	return this.prisma.useronroom.delete({
-	  where: {
-		userid_roomid_unique: {
-			roomid: id,
-			userid: userId,
-		}
-	  },
-	});
+    return this.prisma.useronroom.delete({
+      where: {
+        userid_roomid_unique: {
+          roomid: id,
+          userid: userId,
+        },
+      },
+    });
   }
-
 }
