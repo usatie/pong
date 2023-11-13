@@ -28,7 +28,7 @@ export class RoomController {
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: CreateRoomDto })
   create(@Body() createRoomRequestDto: CreateRoomRequestDto, @Req() request: Request) {
-    return this.roomService.create({...createRoomRequestDto, ownerId: request['user']['id']});
+    return this.roomService.create({...createRoomRequestDto, userId: request['user']['id']});
   }
 
   @Get()

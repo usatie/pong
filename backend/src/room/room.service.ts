@@ -8,8 +8,20 @@ export class RoomService {
   constructor(private prisma: PrismaService) {}
 
   create(createRoomDto: CreateRoomDto) {
-    return this.prisma.room.create({data: createRoomDto});
-  }
+    return this.prisma.room.create({
+		data: {
+			name: createRoomDto.name,
+			users: {
+				create: [
+					{
+						userid: createRoomDto.userId,
+						role: 'owner',
+					},
+				],
+			},
+		},
+		})
+	};
 
   findAll() {
     return this.prisma.room.findMany();

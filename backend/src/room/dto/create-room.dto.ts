@@ -9,5 +9,5 @@ export class CreateRoomDto {
 
   @IsNumber()
   @ApiProperty()
-  ownerId: number;
+  userId: number;
 }
