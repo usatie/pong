@@ -21,8 +21,6 @@ services:
         condition: service_healthy
   backend:
     build: backend
-    ports:
-      - "${BACKEND_PORT}:3000"
     command: sh -c "yarn start:dev"
     environment:
       PORT: ${BACKEND_PORT}
