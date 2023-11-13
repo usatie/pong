@@ -9,19 +9,19 @@ export class RoomService {
 
   create(createRoomDto: CreateRoomDto) {
     return this.prisma.room.create({
-		data: {
-			name: createRoomDto.name,
-			users: {
-				create: [
-					{
-						userid: createRoomDto.userId,
-						role: 'owner',
-					},
-				],
-			},
-		},
-		})
-	};
+      data: {
+        name: createRoomDto.name,
+        users: {
+          create: [
+            {
+              userid: createRoomDto.userId,
+              role: 'owner',
+            },
+          ],
+        },
+      },
+    });
+  }
 
   findAll() {
     return this.prisma.room.findMany();

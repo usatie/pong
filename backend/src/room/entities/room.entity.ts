@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class RoomEntity implements Room {
   constructor(partial: Partial<RoomEntity>) {
-	Object.assign(this, partial);
+    Object.assign(this, partial);
   }
   id: number;
 
