@@ -62,6 +62,14 @@ async function main() {
     update: {},
     create: {
       name: 'Room 1',
+      users: {
+        connect: [
+          { id: user1.id },
+          { id: user2.id },
+          { id: user3.id },
+          { id: user4.id },
+        ],
+      },
     },
   });
   const room2 = await prisma.room.upsert({
@@ -69,6 +77,9 @@ async function main() {
     update: {},
     create: {
       name: 'Room 2',
+      users: {
+        connect: [{ id: user1.id }, { id: user2.id }, { id: user4.id }],
+      },
     },
   });
 }
