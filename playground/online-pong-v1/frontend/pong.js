@@ -12,6 +12,38 @@ const INITIAL_BALL_SPEED = 10;
 const TARGET_FPS = 60;
 const TARGET_FRAME_MS = 1000 / TARGET_FPS;
 
+const socket = io("http://localhost:3000");
+socket.on("connection");
+socket.on("connect", () => {
+  console.log(`Connected: ${socket.id}`);
+
+  socket.emit("join");
+});
+
+socket.on("start", (data) => {
+  console.log(`Start: ${JSON.stringify(data)}`);
+  game.start(data);
+});
+
+socket.on("opponentLeft", () => {
+  const canvas = document.getElementById("tutorial");
+  const ctx = canvas.getContext("2d");
+  game = new PongGame(ctx);
+  game.draw_canvas();
+});
+
+socket.on("right", () => {
+  game.player2.clear(game.ctx);
+  game.player2.move_left(game.elapsed);
+  game.player2.draw(game.ctx);
+});
+
+socket.on("left", () => {
+  game.player2.clear(game.ctx);
+  game.player2.move_right(game.elapsed);
+  game.player2.draw(game.ctx);
+});
+
 // Key Events
 document.addEventListener(
   "keydown",
@@ -28,6 +60,15 @@ document.addEventListener(
   },
   false
 );
+
+const start = () => {
+  game.start();
+  params = {
+    vx: -game.ball.vx,
+    vy: -game.ball.vy,
+  };
+  socket.emit("start", params);
+};
 
 function init() {
   const canvas = document.getElementById("tutorial");
@@ -247,6 +288,11 @@ class PongGame {
     document.getElementById("speed").innerHTML = "Speed: " + Math.round(speed);
   }
 
+  update_players() {
+    document.getElementById("player1").innerHTML = this.player1.x;
+    document.getElementById("player2").innerHTML = this.player2.x;
+  }
+
   draw_canvas = () => {
     // Clear objects
     this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -281,36 +327,35 @@ class PongGame {
     this.updated_at = now;
     this.update_fps();
     this.update_speed(this.ball.speed());
-    if (this.keypress["ArrowLeft"] || this.keypress["d"]) {
+    this.update_players();
+    if (this.keypress["ArrowLeft"]) {
       this.player1.clear(this.ctx);
       this.player1.move_left(this.elapsed);
       this.player1.draw(this.ctx);
-    } else if (this.keypress["ArrowRight"] || this.keypress["f"]) {
+      socket.emit("left");
+    } else if (this.keypress["ArrowRight"]) {
       this.player1.clear(this.ctx);
       this.player1.move_right(this.elapsed);
       this.player1.draw(this.ctx);
-    }
-    if (this.keypress["j"]) {
-      this.player2.clear(this.ctx);
-      this.player2.move_right(this.elapsed);
-      this.player2.draw(this.ctx);
-    } else if (this.keypress["k"]) {
-      this.player2.clear(this.ctx);
-      this.player2.move_left(this.elapsed);
-      this.player2.draw(this.ctx);
+      socket.emit("right");
     }
     if (this.is_playing) {
       this.draw_canvas();
     }
   };
 
-  start = () => {
+  start = ({ vx, vy } = { vx: undefined, vy: undefined }) => {
+    this.is_playing = true;
+    if (vx && vy) {
+      this.ball.vx = vx;
+      this.ball.vy = vy;
+      return;
+    }
     // Initialize initial velocity of the ball
     while (true) {
       let random_radian = Math.random() * 2 * Math.PI;
       this.ball.vx = INITIAL_BALL_SPEED * Math.cos(random_radian);
       this.ball.vy = INITIAL_BALL_SPEED * Math.sin(random_radian);
-      this.is_playing = true;
       if (
         Math.abs(Math.cos(random_radian)) >= 0.5 &&
         Math.abs(Math.sin(random_radian)) >= 0.5

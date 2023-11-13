@@ -4,6 +4,10 @@
 <head>
   <meta charset="utf-8" />
   <title>Canvas tutorial</title>
+  <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"
+    integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
+    crossorigin="anonymous"></script>
+
   <script src="pong.js"></script>
   <style>
     canvas {
@@ -14,11 +18,13 @@
 
 <body onload="init();">
   <div>
-    <button onclick="game.start();">Start</button>
+    <button onclick="start();">Start</button>
     <button onclick="game.switch_battle_mode();">Battle</button>
     <button onclick="game.switch_practice_mode();">Practice</button>
     <div id="fps">FPS: 0</div>
     <div id="speed">Speed: 0</div>
+    <div>player1: <span id="player1">0</span></div>
+    <div>player2: <span id="player2">0</span></div>
   </div>
   <canvas id="tutorial" width="256" height="512"></canvas>
 </body>
