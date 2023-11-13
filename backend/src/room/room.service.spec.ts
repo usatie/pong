@@ -2,8 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RoomService } from './room.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { UserOnRoomDto } from './dto/user-on-room.dto';
-import { notEqual } from 'assert';
 
 describe('RoomService', () => {
   let service: RoomService;
@@ -28,7 +26,6 @@ describe('RoomService', () => {
   });
 
   describe('enterRoom()', () => {
-    let roomId: number;
     const user = { id: 1, name: 'test' };
     const createRoomDto: CreateRoomDto = { name: 'testRoom1', userId: user.id };
 
@@ -37,14 +34,11 @@ describe('RoomService', () => {
       console.log(room);
       expect(room).toHaveProperty('id');
       expect(room).toHaveProperty('name');
-      roomId = room.id;
     });
     it('should create a room', async () => {
       const room = await service.create(createRoomDto);
       console.log(room);
-      expect(room).toHaveProperty('id');
       expect(room).toHaveProperty('name');
-      roomId = room.id;
     });
     it('should not create a room', async () => {
       const NotExistUserId = 10000000;

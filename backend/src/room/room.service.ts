@@ -29,7 +29,7 @@ export class RoomService {
   }
 
   async findOne(id: number, userId: number) {
-    const useronroom = await this.prisma.useronroom.findUniqueOrThrow({
+    await this.prisma.useronroom.findUniqueOrThrow({
       where: {
         userid_roomid_unique: {
           userid: userId,
