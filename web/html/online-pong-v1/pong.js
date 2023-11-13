@@ -12,7 +12,7 @@ const INITIAL_BALL_SPEED = 10;
 const TARGET_FPS = 60;
 const TARGET_FRAME_MS = 1000 / TARGET_FPS;
 
-const socket = io("http://localhost:4242");
+const socket = io("https://pong.shunusami.com/");
 socket.on("connection");
 socket.on("connect", () => {
   console.log(`Connected: ${socket.id}`);
