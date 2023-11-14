@@ -49,9 +49,11 @@ export class RoomController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.roomService.findOne(id);
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
+    return this.roomService.findOne(id, request['user']['id']);
   }
 
   @Patch(':id')
@@ -67,5 +69,13 @@ export class RoomController {
   @ApiOkResponse({ type: RoomEntity })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.roomService.remove(id);
+  }
+
+  @Post(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: RoomEntity })
+  enterRoom(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
+    return this.roomService.enterRoom(id, request['user']['id']);
   }
 }
