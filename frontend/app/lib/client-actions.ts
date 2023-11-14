@@ -81,8 +81,7 @@ async function updateRoom(event: React.FormEvent<HTMLFormElement>) {
       title: "Success",
       description: "room updated successfully.",
     });
-    router.push("/room");
-    router.refresh();
+    redirect('/room');
   }
 }
 
@@ -105,7 +104,6 @@ async function deleteRoom(event: React.SyntheticEvent) {
       title: "Success",
       description: "room deleted successfully.",
     });
-    router.push("/room");
-    router.refresh();
+    redirect('/room');
   }
 }
