@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { redirect } from 'next/navigation';
 
 // components
 import {
@@ -20,61 +21,7 @@ import Link from "next/link";
 export type Room = { id: number; name?: string };
 
 export default function RoomCard({ room }: { room: Room }) {
-  const router = useRouter();
   const { toast } = useToast();
-  async function updateRoom(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const { id, ...updateData } = Object.fromEntries(
-      new FormData(event.currentTarget),
-    );
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/room/${room.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updateData),
-      },
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      toast({
-        title: res.status + " " + res.statusText,
-        description: data.message,
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "room updated successfully.",
-      });
-      router.push("/room");
-      router.refresh();
-    }
-  }
-  async function deleteRoom(event: React.SyntheticEvent) {
-    event.preventDefault();
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/room/${room.id}`,
-      {
-        method: "DELETE",
-      },
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      toast({
-        title: res.status + " " + res.statusText,
-        description: data.message,
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "room deleted successfully.",
-      });
-      router.push("/room");
-      router.refresh();
-    }
-  }
   return (
     <>
       <Card className="w-[300px]">
