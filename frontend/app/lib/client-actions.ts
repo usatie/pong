@@ -55,22 +55,22 @@ export async function createRoom(formData: FormData) {
   }
 }
 
-export async function updateRoom(event: React.FormEvent<HTMLFormElement>, roomId: number) {
+export async function updateRoom(
+  event: React.FormEvent<HTMLFormElement>,
+  roomId: number,
+) {
   event.preventDefault();
   const { id, ...updateData } = Object.fromEntries(
     new FormData(event.currentTarget),
   );
-  console.log('update id: ', roomId);
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/room/${roomId}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updateData),
+  console.log("update id: ", roomId);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room/${roomId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify(updateData),
+  });
   const data = await res.json();
   if (!res.ok) {
     toast({
@@ -87,14 +87,11 @@ export async function updateRoom(event: React.FormEvent<HTMLFormElement>, roomId
 }
 
 export async function deleteRoom(event: React.SyntheticEvent, id: number) {
-  console.log('delete id: ', id);
+  console.log("delete id: ", id);
   event.preventDefault();
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/room/${id}`,
-    {
-      method: "DELETE",
-    },
-  );
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room/${id}`, {
+    method: "DELETE",
+  });
   const data = await res.json();
   if (!res.ok) {
     toast({
