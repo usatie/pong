@@ -55,13 +55,14 @@ export async function createRoom(formData: FormData) {
   }
 }
 
-async function updateRoom(event: React.FormEvent<HTMLFormElement>) {
+export async function updateRoom(event: React.FormEvent<HTMLFormElement>, roomId: number) {
   event.preventDefault();
   const { id, ...updateData } = Object.fromEntries(
     new FormData(event.currentTarget),
   );
+  console.log('update id: ', roomId);
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/room/${room.id}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/room/${roomId}`,
     {
       method: "PATCH",
       headers: {
@@ -81,14 +82,15 @@ async function updateRoom(event: React.FormEvent<HTMLFormElement>) {
       title: "Success",
       description: "room updated successfully.",
     });
-    redirect('/room');
+    redirect("/room", RedirectType.push);
   }
 }
 
-async function deleteRoom(event: React.SyntheticEvent) {
+export async function deleteRoom(event: React.SyntheticEvent, id: number) {
+  console.log('delete id: ', id);
   event.preventDefault();
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/room/${room.id}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/room/${id}`,
     {
       method: "DELETE",
     },
@@ -104,6 +106,6 @@ async function deleteRoom(event: React.SyntheticEvent) {
       title: "Success",
       description: "room deleted successfully.",
     });
-    redirect('/room');
+    redirect("/room", RedirectType.push);
   }
 }
