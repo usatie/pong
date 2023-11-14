@@ -63,7 +63,6 @@ export async function updateRoom(
   const { id, ...updateData } = Object.fromEntries(
     new FormData(event.currentTarget),
   );
-  console.log("update id: ", roomId);
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room/${roomId}`, {
     method: "PATCH",
     headers: {
@@ -87,7 +86,6 @@ export async function updateRoom(
 }
 
 export async function deleteRoom(event: React.SyntheticEvent, id: number) {
-  console.log("delete id: ", id);
   event.preventDefault();
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room/${id}`, {
     method: "DELETE",
