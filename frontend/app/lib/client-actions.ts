@@ -85,9 +85,9 @@ export async function updateRoom(
   }
 }
 
-export async function deleteRoom(event: React.SyntheticEvent, id: number) {
+export async function deleteRoom(event: React.SyntheticEvent, roomId: number) {
   event.preventDefault();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room/${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room/${roomId}`, {
     method: "DELETE",
   });
   const data = await res.json();
