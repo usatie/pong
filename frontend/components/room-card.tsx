@@ -14,14 +14,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { updateRoom, deleteRoom } from "@/app/lib/client-actions";
 
-export type Room = { id: number; name?: string };
+type Room = { id: number; name?: string };
+
+export type { Room };
 
 export default function RoomCard({ room }: { room: Room }) {
-  const { toast } = useToast();
   return (
     <>
       <Card className="w-[300px]">
