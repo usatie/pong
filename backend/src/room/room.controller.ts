@@ -13,7 +13,6 @@ import {
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
-import { CreateRoomRequestDto } from './dto/create-room-request.dto';
 import {
   ApiTags,
   ApiCreatedResponse,
@@ -27,13 +26,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @ApiTags('room')
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
-
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: CreateRoomDto })
   create(
-    @Body() createRoomRequestDto: CreateRoomRequestDto,
+    @Body() createRoomDto: CreateRoomDto,
     @Req() request: Request,
   ) {
 	const userId = request['user']['id'];
@@ -41,10 +39,7 @@ export class RoomController {
 		throw new Error('User Id is not available');
 	else
 	{
-		return this.roomService.create({
-		  ...createRoomRequestDto,
-		  userId: userId,
-		});
+		return this.roomService.create(createRoomDto, userId);
 	}
   }
 

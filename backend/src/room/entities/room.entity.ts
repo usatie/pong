@@ -9,7 +9,4 @@ export class RoomEntity implements Room {
 
   @ApiProperty()
   name: string;
-
-  @ApiProperty()
-  ownerId: number;
 }

@@ -3,19 +3,20 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserOnRoomDto } from './dto/user-on-room.dto';
+import { UserOnRoomEntity } from './entities/roomOnRoom.entity';
 
 @Injectable()
 export class RoomService {
   constructor(private prisma: PrismaService) {}
 
-  create(createRoomDto: CreateRoomDto) {
+  create(createRoomDto: CreateRoomDto, userId: number) {
     return this.prisma.room.create({
       data: {
         name: createRoomDto.name,
         users: {
           create: [
             {
-              userId: createRoomDto.userId,
+              userId: userId,
               role: 'owner',
             },
           ],
@@ -56,7 +57,7 @@ export class RoomService {
     return this.prisma.room.delete({ where: { id } });
   }
 
-  async enterRoom(id: number, userId: number): Promise<UserOnRoomEntity> {
+	async enterRoom(id: number, userId: number): Promise<UserOnRoomEntity> {
     return this.prisma.userOnRoom.create({
       data: {
         roomId: id,
@@ -66,7 +67,7 @@ export class RoomService {
     });
   }
 
-  leaveRoom(id: number, userId: number): Promise<UserOnRoomDto> {
+	leaveRoom(id: number, userId: number): Promise<UserOnRoomEntity> {
     return this.prisma.userOnRoom.delete({
       where: {
         userId_roomId_unique: {
