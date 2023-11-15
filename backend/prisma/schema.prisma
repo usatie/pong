@@ -33,5 +33,5 @@ model UserOnRoom {
 	// CHECK ENUM('owner', 'administrator', 'member')
 	room			Room @relation(fields: [roomId], references: [id])
 	roomId			Int
-	@@unique(fields: [userId, roomId], name: "userId_roomid_unique")
+	@@unique(fields: [userId, roomId], name: "userId_roomId_unique")
 }

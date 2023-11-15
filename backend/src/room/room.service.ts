@@ -15,7 +15,7 @@ export class RoomService {
         users: {
           create: [
             {
-              userid: createRoomDto.userId,
+              userId: createRoomDto.userId,
               role: 'owner',
             },
           ],
@@ -29,11 +29,11 @@ export class RoomService {
   }
 
   async findOne(id: number, userId: number) {
-    await this.prisma.useronroom.findUniqueOrThrow({
+    await this.prisma.userOnRoom.findUniqueOrThrow({
       where: {
-        userid_roomid_unique: {
-          userid: userId,
-          roomid: id,
+        userId_roomId_unique: {
+          userId: userId,
+          roomId: id,
         },
       },
     });
@@ -56,22 +56,22 @@ export class RoomService {
     return this.prisma.room.delete({ where: { id } });
   }
 
-  async enterRoom(id: number, userId: number): Promise<UserOnRoomDto> {
-    return this.prisma.useronroom.create({
+  async enterRoom(id: number, userId: number): Promise<UserOnRoomEntity> {
+    return this.prisma.userOnRoom.create({
       data: {
-        roomid: id,
-        userid: userId,
+        roomId: id,
+        userId: userId,
         role: 'member',
       },
     });
   }
 
   leaveRoom(id: number, userId: number): Promise<UserOnRoomDto> {
-    return this.prisma.useronroom.delete({
+    return this.prisma.userOnRoom.delete({
       where: {
-        userid_roomid_unique: {
-          roomid: id,
-          userid: userId,
+        userId_roomId_unique: {
+          roomId: id,
+          userId: userId,
         },
       },
     });
