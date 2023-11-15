@@ -1,6 +1,5 @@
-"use client";
-
 import { redirect, RedirectType } from "next/navigation";
+import { cookies } from "next/headers";
 
 // components
 import {
@@ -19,63 +18,61 @@ import { toast } from "@/components/ui/use-toast";
 export type User = { id: number; name?: string; email?: string };
 
 export default function UserCard({ user }: { user: User }) {
-  async function updateUser(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const { id, ...updateData } = Object.fromEntries(
-      new FormData(event.currentTarget),
-    );
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/user/${user.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updateData),
+  async function updateUser(formData: FormData) {
+    "use server";
+    const cookieStore = cookies();
+    const accessToken = cookieStore.get("token").value || "";
+    const { id, ...updateData } = Object.fromEntries(formData.entries());
+    console.log("updateData: ", updateData);
+    const res = await fetch(`${process.env.API_URL}/user/${user.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + accessToken,
       },
-    );
+      body: JSON.stringify(updateData),
+    });
     const data = await res.json();
     if (!res.ok) {
-      toast({
-        title: res.status + " " + res.statusText,
-        description: data.message,
-      });
+      console.log("update failed: ", data);
+      return "Error";
+      // TODO: show some kind of notification on client side (toast?)
     } else {
-      toast({
-        title: "Success",
-        description: "User updated successfully.",
-      });
-      redirect("/user", RedirectType.push);
+      console.log("update succeeded: ", data);
+      // TODO: show some kind of notification on client side (toast?)
+      redirect(`/user/${user.id}`, RedirectType.rewrite);
+      return "Success";
     }
   }
   async function deleteUser(event: React.SyntheticEvent) {
-    event.preventDefault();
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/user/${user.id}`,
-      {
-        method: "DELETE",
+    "use server";
+    const cookieStore = cookies();
+    const accessToken = cookieStore.get("token").value || "";
+    const res = await fetch(`${process.env.API_URL}/user/${user.id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + accessToken,
       },
-    );
+    });
     const data = await res.json();
     if (!res.ok) {
-      toast({
-        title: res.status + " " + res.statusText,
-        description: data.message,
-      });
+      console.log("delete failed: ", data);
+      // TODO: show some kind of notification on client side (toast?)
+      return "Error";
     } else {
-      toast({
-        title: "Success",
-        description: "User deleted successfully.",
-      });
+      console.log("delete succeeded: ", data);
+      // TODO: show some kind of notification on client side (toast?)
       redirect("/user", RedirectType.push);
+      return "Success";
     }
   }
+
   return (
     <>
       <Card className="w-[300px]">
         <CardHeader>ID: {user.id}</CardHeader>
         <CardContent>
-          <form onSubmit={updateUser} id={"UpdateUserForm." + user.id}>
+          <form action={updateUser} id={"UpdateUserForm." + user.id}>
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="name">Name</Label>
@@ -99,9 +96,9 @@ export default function UserCard({ user }: { user: User }) {
           </form>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button type="button" onClick={deleteUser}>
-            Delete
-          </Button>
+          <form action={deleteUser}>
+            <Button type="submit">Delete</Button>
+          </form>
           <Button
             variant="outline"
             type="submit"
