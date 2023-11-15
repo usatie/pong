@@ -22,7 +22,7 @@ rebuild:
 
 .PHONY: clean
 clean:
-	docker compose down -f compose.yml -f compose.dev.yml --rmi all --volumes --remove-orphans
+	docker compose -f compose.yml -f compose.dev.yml down --rmi all --volumes --remove-orphans
 
 .PHONY: test
 test: build unit e2e front
@@ -64,5 +64,5 @@ check: fmt lint
 
 .PHONY: update
 update:
-	docker compose run frontend npx npm-check-updates -i
-	docker compose run backend yarn upgrade-interactive
+	docker compose -f compose.yml -f compose.dev.yml run frontend npx npm-check-updates -i
+	docker compose -f compose.yml -f compose.dev.yml run backend yarn upgrade-interactive

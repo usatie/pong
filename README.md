@@ -6,12 +6,31 @@
 ```
 NGINX_PORT=4242
 PUBLIC_API_URL=http://localhost:4242/api
+PUBLIC_WEB_URL=http://localhost:4242
 FRONTEND_PORT=3000
 BACKEND_PORT=3000
 BACKEND_JWT_SECRET=some_random_secret
+BACKEND_JWT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+some
+long
+private
+key
+-----END PRIVATE KEY-----"
+BACKEND_JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+some
+long
+public
+key
+-----END PUBLIC KEY-----"
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=postgres
+```
+
+## How to generate RSA keys
+```
+$ openssl genrsa -out private.pem 2048
+$ openssl rsa -in private.pem -outform PEM -pubout -out public.pem
 ```
 
 ## How to run the application

@@ -1,3 +1,6 @@
+# secret
+*.pem
+
 # vim
 *.swp
 
