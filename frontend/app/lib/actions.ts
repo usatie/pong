@@ -38,7 +38,10 @@ export async function authenticate(
   formData: FormData,
 ) {
   try {
-    await signIn(Object.fromEntries(formData));
+    await signIn({
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+    });
     redirect("/");
   } catch (error) {
     if ((error as Error).message.includes("Authentication failed")) {
