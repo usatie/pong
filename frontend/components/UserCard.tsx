@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 // components
 import {
@@ -14,20 +14,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export type User = { id: number; name?: string; email?: string };
 
-export default function UserCard({ user }: { user: User }) {
-  const router = useRouter();
-  const { toast } = useToast();
-  async function updateUser(event: React.FormEvent<HTMLFormElement>) {
+function userUpdater(userId: number) {
+  return async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const { id, ...updateData } = Object.fromEntries(
       new FormData(event.currentTarget),
     );
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/user/${user.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/user/${userId}`,
       {
         method: "PATCH",
         headers: {
@@ -47,14 +45,16 @@ export default function UserCard({ user }: { user: User }) {
         title: "Success",
         description: "User updated successfully.",
       });
-      router.push("/user");
-      router.refresh();
+      redirect("/user")
     }
   }
-  async function deleteUser(event: React.SyntheticEvent) {
+}
+
+function userDeleter(userId: number) {
+  return async (event: React.SyntheticEvent) => {
     event.preventDefault();
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/user/${user.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/user/${userId}`,
       {
         method: "DELETE",
       },
@@ -70,10 +70,14 @@ export default function UserCard({ user }: { user: User }) {
         title: "Success",
         description: "User deleted successfully.",
       });
-      router.push("/user");
-      router.refresh();
+      redirect("/user");
     }
   }
+}
+
+export default function UserCard({ user }: { user: User }) {
+  const updateUser = userUpdater(user.id);
+  const deleteUser = userDeleter(user.id);
   return (
     <>
       <Card className="w-[300px]">
