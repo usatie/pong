@@ -9,14 +9,14 @@ PUBLIC_API_URL=http://localhost:4242/api
 PUBLIC_WEB_URL=http://localhost:4242
 FRONTEND_PORT=3000
 BACKEND_PORT=3000
-BACKEND_JWT_SECRET=some_random_secret
-BACKEND_JWT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+JWT_SECRET=some_random_secret
+JWT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
 some
 long
 private
 key
 -----END PRIVATE KEY-----"
-BACKEND_JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
 some
 long
 public
