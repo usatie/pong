@@ -83,7 +83,7 @@ jobs:
         run: docker compose build
 
       - name: Build frontend
-        run: docker compose run --rm frontend npm run build && docker compose down || docker compose logs
+        run: docker compose run --rm frontend npm run build && docker compose down
 
       - name: Run backend unit tests
         run: docker compose run backend yarn test
