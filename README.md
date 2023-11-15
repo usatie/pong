@@ -6,6 +6,7 @@
 ```
 NGINX_PORT=4242
 PUBLIC_API_URL=http://localhost:4242/api
+PUBLIC_WEB_URL=http://localhost:4242
 FRONTEND_PORT=3000
 BACKEND_PORT=3000
 BACKEND_JWT_SECRET=some_random_secret

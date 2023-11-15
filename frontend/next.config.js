@@ -2,7 +2,7 @@
 const nextConfig = {
   experimental: {
     serverActions: {
-      allowedOrigins: ["localhost:4242"],
+      allowedOrigins: [process.env.NEXT_PUBLIC_WEB_URL],
     },
   },
 };

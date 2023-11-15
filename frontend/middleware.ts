@@ -24,14 +24,22 @@ async function isTokenValid(token: string) {
   return false;
 }
 
+function isPathProtected(path: string) {
+  return path == "/user" || path.startsWith("/room");
+}
+
 export default async function authMiddleware(request: NextRequest) {
   const token = request.cookies.get("token");
   if (token && (await isTokenValid(token.value))) {
-    console.log("token is valid");
+    // If already logged in, redirect to top page
+    if (request.nextUrl.pathname == "/login") {
+      return NextResponse.redirect(new URL("/", request.nextUrl));
+    }
+    // Otherwise, allow request to continue
     return NextResponse.next();
   }
-  if (request.nextUrl.pathname == "/user") {
-    console.log("redirect to login");
+  // If not logged in, and accessing a protected page, redirect to login
+  if (isPathProtected(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/login", request.nextUrl));
   }
 }

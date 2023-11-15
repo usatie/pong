@@ -77,6 +77,7 @@ jobs:
           echo "POSTGRES_DB=${{ vars.POSTGRES_DB }}" >> .env
           echo "JWT_PUBLIC_KEY=\"${{ secrets.JWT_PUBLIC_KEY }}\"" >> .env
           echo "JWT_PRIVATE_KEY=\"${{ secrets.JWT_PRIVATE_KEY }}\"" >> .env
+          echo "PUBLIC_WEB_URL=${{ vars.PUBLIC_WEB_URL }}" >> .env
 
       - name: Build images
         run: docker compose build
