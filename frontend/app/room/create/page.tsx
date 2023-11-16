@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Form from "@/app/ui/room/create-room";
+import Form from "@/app/ui/room/create-form";
 
 export default function CreateChatRoom() {
   return (
