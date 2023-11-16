@@ -1,5 +1,6 @@
 "use client";
 
+import { useFormState } from "react-dom";
 import { redirect, RedirectType } from "next/navigation";
 
 // components
@@ -16,66 +17,49 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 
+import { updateUser, deleteUser } from "@/app/lib/actions";
+
 export type User = { id: number; name?: string; email?: string };
 
 export default function UserCard({ user }: { user: User }) {
-  async function updateUser(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const { id, ...updateData } = Object.fromEntries(
-      new FormData(event.currentTarget),
-    );
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/user/${user.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updateData),
-      },
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      toast({
-        title: res.status + " " + res.statusText,
-        description: data.message,
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "User updated successfully.",
-      });
-      redirect("/user", RedirectType.push);
-    }
+  const [updateCode, updateAction] = useFormState(updateUser);
+  const [deleteCode, deleteAction] = useFormState(deleteUser);
+
+  if (updateCode == "Success") {
+    toast({
+      title: "Updated",
+      description: "User has been updated successfully",
+      type: "success",
+    });
+  } else if (updateCode == "Error") {
+    toast({
+      title: "Error",
+      description: "User could not be updated",
+      type: "error",
+    });
   }
-  async function deleteUser(event: React.SyntheticEvent) {
-    event.preventDefault();
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/user/${user.id}`,
-      {
-        method: "DELETE",
-      },
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      toast({
-        title: res.status + " " + res.statusText,
-        description: data.message,
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "User deleted successfully.",
-      });
-      redirect("/user", RedirectType.push);
-    }
+
+  if (deleteCode == "Success") {
+    toast({
+      title: "Deleted",
+      description: "User has been deleted successfully",
+      type: "success",
+    });
+    redirect("/user", RedirectType.replace);
+  } else if (deleteCode == "Error") {
+    toast({
+      title: "Error",
+      description: "User could not be deleted",
+      type: "error",
+    });
   }
   return (
     <>
       <Card className="w-[300px]">
         <CardHeader>ID: {user.id}</CardHeader>
         <CardContent>
-          <form onSubmit={updateUser} id={"UpdateUserForm." + user.id}>
+          <form action={updateAction} id={"UpdateUserForm." + user.id}>
+            <input type="hidden" name="user_id" value={user.id} />
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="name">Name</Label>
@@ -99,9 +83,10 @@ export default function UserCard({ user }: { user: User }) {
           </form>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button type="button" onClick={deleteUser}>
-            Delete
-          </Button>
+          <form action={deleteAction}>
+            <input type="hidden" name="user_id" value={user.id} />
+            <Button type="submit">Delete</Button>
+          </form>
           <Button
             variant="outline"
             type="submit"
