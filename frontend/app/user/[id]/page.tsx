@@ -3,11 +3,11 @@ import { cookies } from "next/headers";
 
 async function getUser(id: number) {
   const cookieStore = cookies();
-  const accessToken = cookieStore.get("token");
+  const accessToken = cookieStore?.get("token")?.value || "";
   const res = await fetch(`${process.env.API_URL}/user/${id}`, {
     cache: "no-cache",
     headers: {
-      Authorization: "Bearer " + accessToken.value,
+      Authorization: "Bearer " + accessToken,
     },
   });
   const user = await res.json();

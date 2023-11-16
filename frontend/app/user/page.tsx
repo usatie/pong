@@ -1,6 +1,5 @@
-import UserCard from "@/components/UserCard";
-
-export type User = { id: number; name?: string; email?: string };
+import UserCard from "@/app/ui/user/card";
+import type { User } from "@/app/ui/user/card";
 
 async function getUsers(): Promise<User[]> {
   const res = await fetch(`${process.env.API_URL}/user`, {
