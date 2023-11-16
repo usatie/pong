@@ -22,20 +22,18 @@ import { updateUser, deleteUser } from "@/app/lib/actions";
 export type User = { id: number; name?: string; email?: string };
 
 export default function UserCard({ user }: { user: User }) {
-  const [updateCode, updateAction] = useFormState(updateUser);
-  const [deleteCode, deleteAction] = useFormState(deleteUser);
+  const [updateCode, updateAction] = useFormState(updateUser, undefined);
+  const [deleteCode, deleteAction] = useFormState(deleteUser, undefined);
 
   if (updateCode == "Success") {
     toast({
       title: "Updated",
       description: "User has been updated successfully",
-      type: "success",
     });
   } else if (updateCode == "Error") {
     toast({
       title: "Error",
       description: "User could not be updated",
-      type: "error",
     });
   }
 
@@ -43,14 +41,12 @@ export default function UserCard({ user }: { user: User }) {
     toast({
       title: "Deleted",
       description: "User has been deleted successfully",
-      type: "success",
     });
     redirect("/user", RedirectType.replace);
   } else if (deleteCode == "Error") {
     toast({
       title: "Error",
       description: "User could not be deleted",
-      type: "error",
     });
   }
   return (
