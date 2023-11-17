@@ -1,6 +1,9 @@
 import { cookies } from "next/headers";
 import * as jose from "jose";
 
+// TODO: add types
+export type Session = {};
+
 const secret = jose.base64url.decode(
   process.env.JWT_SECRET || "zH4NRP1HMALxxCFnRZABFA7GOJtzU_gIj02alfL1lvI",
 );
@@ -19,10 +22,10 @@ export async function isLoggedIn() {
   return true;
 }
 
-export async function getUserId(): number | null {
+export async function getUserId(): Promise<string | null> {
   const payload = await getAccessTokenPayload({ ignoreExpiration: true });
   if (!payload) return null;
-  return payload.userId;
+  return payload.userId as string;
 }
 
 async function getAccessTokenPayload(options: any) {
@@ -44,7 +47,7 @@ async function getAccessTokenPayload(options: any) {
   }
 }
 
-export async function setSession(session) {
+export async function setSession(session: Session) {
   console.log("setSession: ", session);
   const jwt = await new jose.EncryptJWT(session)
     .setProtectedHeader({ alg: "dir", enc: "A128CBC-HS256" })
@@ -60,7 +63,7 @@ export async function setSession(session) {
   });
 }
 
-export async function getSession() {
+export async function getSession(): Promise<Session | null> {
   const jwt = cookies()?.get("session")?.value;
   if (!jwt) return null;
   try {
