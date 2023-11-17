@@ -24,11 +24,12 @@ export class ChatGateway {
   @SubscribeMessage('newMessage')
   chatMessage(
     @MessageBody() data: string, //MessageRecieved,
-    @ConnectedSocket() client: Socket): void {
-//      const { time, text } = data;
-      this.logger.log('message recieved');
-      this.logger.log(data);
-      this.server.emit('sendToClient', data);
+    @ConnectedSocket() client: Socket,
+  ): void {
+    //      const { time, text } = data;
+    this.logger.log('message recieved');
+    this.logger.log(data);
+    this.server.emit('sendToClient', data, client.id);
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
