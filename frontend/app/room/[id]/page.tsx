@@ -39,7 +39,6 @@ export default function ChatRoomPage() {
     const newMessageReceived = (e: any) => {
       console.log(`received message: `, e);
       setMessageLog((oldMessageLog) => [...oldMessageLog, { text: e }]);
-      const newMessageLog = messageLog;
       console.log(messageLog);
     };
     socket.on("sendToClient", newMessageReceived);
