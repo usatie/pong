@@ -38,7 +38,7 @@ export class PongGame {
     setSpeed: (speed: number) => void,
     setFps: (fps: number) => void,
     setPlayer1Position: (player1: number) => void,
-    setPlayer2Position: (player2: number) => void
+    setPlayer2Position: (player2: number) => void,
   ) {
     this.ctx = ctx;
     this.ctx.textAlign = "center";
@@ -48,14 +48,14 @@ export class PongGame {
       CANVAS_HEIGHT - PADDLE_HEIGHT,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
-      PADDLE_COLOR
+      PADDLE_COLOR,
     );
     this.player2 = new Paddle(
       CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
       0,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
-      PADDLE_COLOR
+      PADDLE_COLOR,
     );
     this.ball = new Ball(
       CANVAS_HEIGHT,
@@ -66,7 +66,7 @@ export class PongGame {
       0,
       0,
       BALL_RADIUS,
-      BALL_COLOR
+      BALL_COLOR,
     );
     this.score = {
       player1: 0,
@@ -94,7 +94,7 @@ export class PongGame {
     const elapsed_since_last_update = this.updated_at - this.fps_updated_at;
     if (elapsed_since_last_update > 500) {
       const fps = Math.round(
-        this.frame_count / (elapsed_since_last_update / 1000)
+        this.frame_count / (elapsed_since_last_update / 1000),
       );
       this.setFps(fps);
       this.frame_count = 0;
@@ -138,12 +138,12 @@ export class PongGame {
     this.ctx.fillText(
       this.score.player1.toString(),
       (CANVAS_WIDTH * 1) / 4,
-      100
+      100,
     );
     this.ctx.fillText(
       this.score.player2.toString(),
       (CANVAS_WIDTH * 3) / 4,
-      100
+      100,
     );
   };
 
@@ -206,7 +206,7 @@ export class PongGame {
       0,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
-      PADDLE_COLOR
+      PADDLE_COLOR,
     );
     this.player2.draw(this.ctx);
   };

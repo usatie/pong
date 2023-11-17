@@ -14,7 +14,7 @@ export class Paddle {
     y: number,
     width: number,
     height: number,
-    color: string
+    color: string,
   ) {
     this.x = x;
     this.y = y;

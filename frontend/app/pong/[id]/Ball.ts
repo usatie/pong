@@ -21,7 +21,7 @@ export class Ball {
     vx: number,
     vy: number,
     radius: number,
-    color: string
+    color: string,
   ) {
     this.canvasHeight = canvasHeight;
     this.canvasWidth = canvasWidth;
@@ -77,7 +77,7 @@ export class Ball {
     speed = clamp(
       speed * this.generate_random_scale(),
       this.canvasHeight / 100,
-      this.canvasHeight / 10
+      this.canvasHeight / 10,
     );
     this.vx = speed * Math.cos(radian);
     this.vy = speed * Math.sin(radian);
@@ -94,7 +94,7 @@ export class Ball {
     this.y = clamp(
       this.y,
       paddle.height,
-      this.canvasHeight - paddle.height - this.radius * 2
+      this.canvasHeight - paddle.height - this.radius * 2,
     );
     this.vy = -this.vy;
     // this.fluctuate_velocity_vector();

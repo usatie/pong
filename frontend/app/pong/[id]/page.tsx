@@ -66,7 +66,7 @@ export default function Page() {
 
   useEffect(() => {
     const canvas: HTMLCanvasElement = document.getElementById(
-      "tutorial"
+      "tutorial",
     ) as HTMLCanvasElement;
     if (canvas.getContext) {
       const ctx = canvas.getContext("2d");
@@ -76,7 +76,7 @@ export default function Page() {
         setFps,
         setSpeed,
         setPlayer1Position,
-        setPlayer2Position
+        setPlayer2Position,
       );
       game.draw_canvas();
       setInterval(game.update, TARGET_FRAME_MS);
