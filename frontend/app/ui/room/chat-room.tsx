@@ -1,6 +1,13 @@
-import { Card, CardHeader, CardContent, CardFooter, CardDescription, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function ChatHome() {
   return (
@@ -12,14 +19,10 @@ export default function ChatHome() {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-3 text-slate-600 text-sm">
-            <p className="mt-2">
-              example chat: Hello!
-            </p>
+            <p className="mt-2">example chat: Hello!</p>
           </div>
           <div className="flex gap-3 text-slate-600 text-sm">
-            <p className="ml-2">
-              example chat: Hello!
-            </p>
+            <p className="ml-2">example chat: Hello!</p>
           </div>
         </CardContent>
         <CardFooter className="space-x-2">
@@ -28,6 +31,5 @@ export default function ChatHome() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
-
