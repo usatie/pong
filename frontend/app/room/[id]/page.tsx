@@ -23,7 +23,7 @@ type MessageLog = Array<Chat>;
 
 export default function ChatRoomPage() {
   const [message, setMessage] = useState("");
-  const [messageLog, setMessageLog] = useState<Chat>([
+  const [messageLog, setMessageLog] = useState<MessageLog>([
     {
       text: "example message logs",
     },
