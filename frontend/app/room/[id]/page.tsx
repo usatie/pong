@@ -36,7 +36,7 @@ export default function ChatRoomPage() {
   ]);
 
   useEffect(() => {
-    const newMessageReceived = (e) => {
+    const newMessageReceived = (e: any) => {
       console.log(`received message: `, e);
       setMessageLog((oldMessageLog) => [...oldMessageLog, { text: e }]);
       const newMessageLog = messageLog;
@@ -57,7 +57,7 @@ export default function ChatRoomPage() {
     };
   }, []);
 
-  const sendMessage = async (e: any) => {
+  const sendMessage = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     const newMessage = message;
     console.log(`sendMessage`, newMessage);
