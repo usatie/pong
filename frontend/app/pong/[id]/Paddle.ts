@@ -1,5 +1,21 @@
-class Paddle {
-  constructor(x, y, width, height, color) {
+import { clamp } from "@/app/lib/utils";
+import { Ball } from "./Ball";
+import { CANVAS_WIDTH } from "./const";
+
+export class Paddle {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+
+  constructor(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: string
+  ) {
     this.x = x;
     this.y = y;
     this.width = width;
@@ -7,11 +23,11 @@ class Paddle {
     this.color = color;
   }
 
-  clear = (ctx) => {
+  clear = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(this.x, this.y, this.width, this.height);
   };
 
-  draw = (ctx) => {
+  draw = (ctx: CanvasRenderingContext2D) => {
     ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -33,7 +49,7 @@ class Paddle {
     }
   };
 
-  collide_with = (ball) => {
+  collide_with = (ball: Ball) => {
     // Ball is in the same x-axis
     if (ball.x >= this.x && ball.x + ball.radius * 2 <= this.x + this.width) {
       // Ball is actually colliding with paddle

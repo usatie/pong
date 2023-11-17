@@ -1,5 +1,31 @@
-class Ball {
-  constructor(x, y, vx, vy, radius, color) {
+import { clamp } from "@/app/lib/utils";
+import { Paddle } from "./Paddle";
+
+export class Ball {
+  canvasHeight: number;
+  canvasWidth: number;
+  targetFrameMs: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  color: string;
+
+  constructor(
+    canvasHeight: number,
+    canvasWidth: number,
+    targetFrameMs: number,
+    x: number,
+    y: number,
+    vx: number,
+    vy: number,
+    radius: number,
+    color: string
+  ) {
+    this.canvasHeight = canvasHeight;
+    this.canvasWidth = canvasWidth;
+    this.targetFrameMs = targetFrameMs;
     this.x = x;
     this.y = y;
     this.vx = vx;
@@ -8,11 +34,11 @@ class Ball {
     this.color = color;
   }
 
-  clear = (ctx) => {
+  clear = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(this.x, this.y, this.radius * 2, this.radius * 2);
   };
 
-  draw = (ctx) => {
+  draw = (ctx: CanvasRenderingContext2D) => {
     ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.fillRect(this.x, this.y, this.radius * 2, this.radius * 2);
@@ -50,42 +76,42 @@ class Ball {
     let speed = this.speed();
     speed = clamp(
       speed * this.generate_random_scale(),
-      CANVAS_HEIGHT / 100,
-      CANVAS_HEIGHT / 10
+      this.canvasHeight / 100,
+      this.canvasHeight / 10
     );
     this.vx = speed * Math.cos(radian);
     this.vy = speed * Math.sin(radian);
   };
 
   reset = () => {
-    this.x = CANVAS_WIDTH / 2 - this.radius / 2;
-    this.y = CANVAS_HEIGHT / 2 - this.radius / 2;
+    this.x = this.canvasWidth / 2 - this.radius / 2;
+    this.y = this.canvasHeight / 2 - this.radius / 2;
     this.vx = 0;
     this.vy = 0;
   };
 
-  bounce_off_paddle = (paddle) => {
+  bounce_off_paddle = (paddle: Paddle) => {
     this.y = clamp(
       this.y,
       paddle.height,
-      CANVAS_HEIGHT - paddle.height - this.radius * 2
+      this.canvasHeight - paddle.height - this.radius * 2
     );
     this.vy = -this.vy;
     // this.fluctuate_velocity_vector();
   };
 
   collide_with_side = () => {
-    return this.x < 0 || this.x + this.radius * 2 > CANVAS_WIDTH;
+    return this.x < 0 || this.x + this.radius * 2 > this.canvasWidth;
   };
 
   bounce_off_side = () => {
-    this.x = clamp(this.x, 0, CANVAS_WIDTH - this.radius * 2);
+    this.x = clamp(this.x, 0, this.canvasWidth - this.radius * 2);
     this.vx = -this.vx;
   };
 
-  move = (elapsed) => {
-    this.x += (this.vx * elapsed) / TARGET_FRAME_MS;
-    this.y += (this.vy * elapsed) / TARGET_FRAME_MS;
+  move = (elapsed: number) => {
+    this.x += (this.vx * elapsed) / this.targetFrameMs;
+    this.y += (this.vy * elapsed) / this.targetFrameMs;
     this.x = Math.round(this.x);
     this.y = Math.round(this.y);
   };

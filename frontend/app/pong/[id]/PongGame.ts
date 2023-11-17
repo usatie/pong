@@ -1,5 +1,45 @@
-class PongGame {
-  constructor(ctx) {
+import { Socket } from "Socket.IO-client";
+import { Ball } from "./Ball";
+import { Paddle } from "./Paddle";
+import {
+  BALL_COLOR,
+  BALL_RADIUS,
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  INITIAL_BALL_SPEED,
+  PADDLE_COLOR,
+  PADDLE_HEIGHT,
+  PADDLE_WIDTH,
+  TARGET_FRAME_MS,
+} from "./const";
+
+export class PongGame {
+  ctx: CanvasRenderingContext2D;
+  player1: Paddle;
+  player2: Paddle;
+  ball: Ball;
+  score: { player1: number; player2: number };
+  updated_at: number;
+  fps_updated_at: number;
+  elapsed: number;
+  frame_count: number;
+  is_playing: boolean;
+  keyName: string;
+  keypress: { [key: string]: boolean };
+  socket: Socket;
+  setSpeed: (speed: number) => void;
+  setFps: (fps: number) => void;
+  setPlayer1Position: (player1: number) => void;
+  setPlayer2Position: (player2: number) => void;
+
+  constructor(
+    ctx: CanvasRenderingContext2D,
+    socket: Socket,
+    setSpeed: (speed: number) => void,
+    setFps: (fps: number) => void,
+    setPlayer1Position: (player1: number) => void,
+    setPlayer2Position: (player2: number) => void
+  ) {
     this.ctx = ctx;
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
@@ -18,6 +58,9 @@ class PongGame {
       PADDLE_COLOR
     );
     this.ball = new Ball(
+      CANVAS_HEIGHT,
+      CANVAS_WIDTH,
+      TARGET_FRAME_MS,
       CANVAS_WIDTH / 2 - BALL_RADIUS / 2,
       CANVAS_HEIGHT / 2 - BALL_RADIUS / 2,
       0,
@@ -29,13 +72,18 @@ class PongGame {
       player1: 0,
       player2: 0,
     };
-    this.updated_at = undefined;
-    this.fps_updated_at = undefined;
+    this.updated_at = Date.now();
+    this.fps_updated_at = Date.now();
     this.elapsed = 0;
     this.frame_count = 0;
     this.is_playing = false;
     this.keyName = "";
     this.keypress = {};
+    this.socket = socket;
+    this.setSpeed = setSpeed;
+    this.setFps = setFps;
+    this.setPlayer1Position = setPlayer1Position;
+    this.setPlayer2Position = setPlayer2Position;
   }
 
   update_fps = () => {
@@ -46,22 +94,21 @@ class PongGame {
     const elapsed_since_last_update = this.updated_at - this.fps_updated_at;
     if (elapsed_since_last_update > 500) {
       const fps = Math.round(
-        this.frame_count / (elapsed_since_last_update / 1000),
-        1
+        this.frame_count / (elapsed_since_last_update / 1000)
       );
-      document.getElementById("fps").innerHTML = "FPS: " + fps;
+      this.setFps(fps);
       this.frame_count = 0;
       this.fps_updated_at = this.updated_at;
     }
   };
 
-  update_speed(speed) {
-    document.getElementById("speed").innerHTML = "Speed: " + Math.round(speed);
+  update_speed(speed: number) {
+    this.setSpeed(speed);
   }
 
   update_players() {
-    document.getElementById("player1").innerHTML = this.player1.x;
-    document.getElementById("player2").innerHTML = this.player2.x;
+    this.setPlayer1Position(this.player1.x);
+    this.setPlayer2Position(this.player2.x);
   }
 
   draw_canvas = () => {
@@ -88,8 +135,16 @@ class PongGame {
     this.ball.draw(this.ctx);
     this.player1.draw(this.ctx);
     this.player2.draw(this.ctx);
-    this.ctx.fillText(this.score.player1, (CANVAS_WIDTH * 1) / 4, 100);
-    this.ctx.fillText(this.score.player2, (CANVAS_WIDTH * 3) / 4, 100);
+    this.ctx.fillText(
+      this.score.player1.toString(),
+      (CANVAS_WIDTH * 1) / 4,
+      100
+    );
+    this.ctx.fillText(
+      this.score.player2.toString(),
+      (CANVAS_WIDTH * 3) / 4,
+      100
+    );
   };
 
   update = () => {
@@ -101,14 +156,14 @@ class PongGame {
     this.update_players();
     if (this.keypress["ArrowLeft"]) {
       this.player1.clear(this.ctx);
-      this.player1.move_left(this.elapsed);
+      this.player1.move_left();
       this.player1.draw(this.ctx);
-      socket.emit("left");
+      this.socket.emit("left");
     } else if (this.keypress["ArrowRight"]) {
       this.player1.clear(this.ctx);
-      this.player1.move_right(this.elapsed);
+      this.player1.move_right();
       this.player1.draw(this.ctx);
-      socket.emit("right");
+      this.socket.emit("right");
     }
     if (this.is_playing) {
       this.draw_canvas();
@@ -137,7 +192,7 @@ class PongGame {
   };
 
   stop = () => {
-    this.updated_at = undefined;
+    this.updated_at = Date.now();
     this.ball.vx = 0;
     this.ball.vy = 0;
     this.is_playing = false;
