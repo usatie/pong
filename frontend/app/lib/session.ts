@@ -4,9 +4,9 @@ import * as jose from "jose";
 // TODO: add types
 export type Session = {};
 
-const secret = jose.base64url.decode(
-  process.env.JWT_SECRET || "zH4NRP1HMALxxCFnRZABFA7GOJtzU_gIj02alfL1lvI",
-);
+// If JWT_SECRET is not set, then it will throw an error
+const secret = jose.base64url.decode(process.env.JWT_SECRET!);
+const spki = process.env.JWT_PUBLIC_KEY!;
 
 /*
  * JWT token [for backend API] is stored in a cookie named "token"
@@ -30,8 +30,7 @@ export async function getUserId(): Promise<string | null> {
 
 async function getAccessTokenPayload(options: any) {
   const token = cookies()?.get("token")?.value;
-  const spki = process.env.JWT_PUBLIC_KEY;
-  if (!token || !spki) return null;
+  if (!token) return null;
   try {
     // Verify JWT token with public key
     const alg = "RS256";
