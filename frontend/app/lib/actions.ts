@@ -123,3 +123,38 @@ export async function deleteUser(
     return "Success";
   }
 }
+
+export async function getRoom(id: number) {
+  const res = await fetch(`${process.env.API_URL}/room/${id}`, {
+    cache: "no-cache",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("getRoom error: ", await res.json());
+  } else {
+    const room = await res.json();
+    return room;
+  }
+}
+
+export async function createRoom(formData: FormData) {
+  const res = await fetch(`${process.env.API_URL}/room`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + getAccessToken(),
+    },
+    body: JSON.stringify({
+      name: formData.get("name"),
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    console.error("createRoom error: ", data);
+  } else {
+    redirect(`/room/${data.id}`, RedirectType.push);
+  }
+}
+
