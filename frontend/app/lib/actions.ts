@@ -3,9 +3,11 @@
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { destroySession } from "./session";
 
 export async function signOut() {
-  cookies().delete("token");
+  cookies()?.delete("token");
+  destroySession();
   redirect("/");
 }
 
@@ -27,10 +29,12 @@ export async function signIn({
   if (!res.ok) {
     throw new Error("Authentication failed");
   }
-  cookies().set("token", data.accessToken, {
-    path: "/",
+  cookies()?.set("token", data.accessToken, {
     httpOnly: true, // JS cannot access
     secure: process.env.NODE_ENV === "production", // HTTPS only
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+    sameSite: "strict", // no CSRF
+    path: "/",
   });
 }
 
@@ -58,6 +62,22 @@ function getAccessToken() {
     throw new Error("No access token found");
   }
   return accessToken;
+}
+
+export async function getUser(id: number) {
+  const res = await fetch(`${process.env.API_URL}/user/${id}`, {
+    cache: "no-cache",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.log("getUser error: ", await res.json());
+    return null;
+  } else {
+    const user = await res.json();
+    return user;
+  }
 }
 
 export async function updateUser(

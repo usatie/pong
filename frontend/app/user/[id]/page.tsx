@@ -1,18 +1,6 @@
 import UserCard from "@/app/ui/user/card";
 import { cookies } from "next/headers";
-
-async function getUser(id: number) {
-  const cookieStore = cookies();
-  const accessToken = cookieStore?.get("token")?.value || "";
-  const res = await fetch(`${process.env.API_URL}/user/${id}`, {
-    cache: "no-cache",
-    headers: {
-      Authorization: "Bearer " + accessToken,
-    },
-  });
-  const user = await res.json();
-  return user;
-}
+import { getUser } from "@/app/lib/actions";
 
 export default async function FindUser({
   params: { id },
