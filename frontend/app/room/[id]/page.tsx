@@ -19,7 +19,7 @@ type Chat = {
   text: string;
 };
 
-type MessageLog = Array<Message>;
+type MessageLog = Array<Chat>;
 
 export default function ChatRoomPage() {
   const [message, setMessage] = useState("");
