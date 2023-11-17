@@ -124,8 +124,8 @@ export async function deleteUser(
   }
 }
 
-export async function getRoom(id: number) {
-  const res = await fetch(`${process.env.API_URL}/room/${id}`, {
+export async function getRoom(roomId: number) {
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
     cache: "no-cache",
     headers: {
       Authorization: "Bearer " + getAccessToken(),
@@ -158,3 +158,23 @@ export async function createRoom(formData: FormData) {
   }
 }
 
+export async function joinRoom(
+  prevState: void | undefined,
+  formData: FormData) {
+  const { roomId } = Object.fromEntries(formData.entries());
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  const data = await res.json();
+  if (res.status === 409) {
+    redirect(`/room/${roomId}`, RedirectType.push);
+  } else if (!res.ok) {
+    console.error("joinRoom error: ", data);
+  } else {
+    redirect(`/room/${roomId}`, RedirectType.push);
+  }
+}

@@ -14,7 +14,7 @@ export default async function getRoomInfo({
         room ID: {room.id} <br />
         room name: {room.name} <br />
         {
-          room.users.map((user) => {
+          room.users.map((user: Array<any>) => {
             return (
               Object.entries(user).map(([key, value]) => {
                 return (

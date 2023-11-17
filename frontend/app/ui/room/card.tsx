@@ -1,5 +1,6 @@
 "use client";
 
+import { useFormState } from "react-dom";
 import { redirect } from "next/navigation";
 
 // components
@@ -16,12 +17,14 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { updateRoom, deleteRoom } from "@/app/lib/client-actions";
+import { joinRoom } from "@/app/lib/actions";
 
 type Room = { id: number; name?: string };
 
 export type { Room };
 
 export default function RoomCard({ room }: { room: Room }) {
+  const [joinCode, joinAction] = useFormState(joinRoom, undefined);
   return (
     <>
       <Card className="w-[300px]">
@@ -47,9 +50,10 @@ export default function RoomCard({ room }: { room: Room }) {
           </form>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button asChild>
-            <Link href={`/room/${room.id}`}>Join</Link>
-          </Button>
+          <form action={joinAction}>
+            <input type="hidden" name="roomId" value={room.id} />
+            <Button type="submit">Join</Button>
+          </form>
           <Button
             type="button"
             onClick={(e) => {
