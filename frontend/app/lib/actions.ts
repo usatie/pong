@@ -123,3 +123,59 @@ export async function deleteUser(
     return "Success";
   }
 }
+
+export async function getRoom(roomId: number) {
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
+    cache: "no-cache",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("getRoom error: ", await res.json());
+  } else {
+    const room = await res.json();
+    return room;
+  }
+}
+
+export async function createRoom(formData: FormData) {
+  const res = await fetch(`${process.env.API_URL}/room`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + getAccessToken(),
+    },
+    body: JSON.stringify({
+      name: formData.get("name"),
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    console.error("createRoom error: ", data);
+  } else {
+    redirect(`/room/${data.id}`, RedirectType.push);
+  }
+}
+
+export async function joinRoom(
+  prevState: void | undefined,
+  formData: FormData,
+) {
+  const { roomId } = Object.fromEntries(formData.entries());
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  const data = await res.json();
+  if (res.status === 409) {
+    redirect(`/room/${roomId}`, RedirectType.push);
+  } else if (!res.ok) {
+    console.error("joinRoom error: ", data);
+  } else {
+    redirect(`/room/${roomId}`, RedirectType.push);
+  }
+}

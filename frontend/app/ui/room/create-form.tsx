@@ -1,6 +1,6 @@
 "use client";
 
-import { createRoom } from "@/app/lib/client-actions";
+import { createRoom } from "@/app/lib/actions";
 
 // components
 import { Input } from "@/components/ui/input";

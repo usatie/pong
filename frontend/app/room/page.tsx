@@ -1,5 +1,5 @@
-import RoomCard from "@/components/room-card";
-import type { Room } from "@/components/room-card";
+import RoomCard from "@/app/ui/room/card";
+import type { Room } from "@/app/ui/room/card";
 
 async function getRooms(): Promise<Room[]> {
   const res = await fetch(`${process.env.API_URL}/room`, {
