@@ -160,7 +160,8 @@ export async function createRoom(formData: FormData) {
 
 export async function joinRoom(
   prevState: void | undefined,
-  formData: FormData) {
+  formData: FormData,
+) {
   const { roomId } = Object.fromEntries(formData.entries());
   const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
     method: "POST",

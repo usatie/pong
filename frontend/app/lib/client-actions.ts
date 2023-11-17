@@ -30,7 +30,6 @@ export async function createUser(formData: FormData) {
   }
 }
 
-
 export async function updateRoom(
   event: React.FormEvent<HTMLFormElement>,
   roomId: number,

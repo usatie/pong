@@ -1,4 +1,4 @@
-import { getRoom } from '@/app/lib/actions';
+import { getRoom } from "@/app/lib/actions";
 
 export default async function getRoomInfo({
   params: { id },
@@ -11,21 +11,17 @@ export default async function getRoomInfo({
       <h1>
         <b>Room info</b>
       </h1>
-        room ID: {room.id} <br />
-        room name: {room.name} <br />
-        {
-          room.users.map((user: Array<any>) => {
-            return (
-              Object.entries(user).map(([key, value]) => {
-                return (
-                  <div key={key}>
-                    {key} : {value}
-                  </div>
-                )}
-              )
-            )
-          })
-        }
+      room ID: {room.id} <br />
+      room name: {room.name} <br />
+      {room.users.map((user: Array<any>) => {
+        return Object.entries(user).map(([key, value]) => {
+          return (
+            <div key={key}>
+              {key} : {value}
+            </div>
+          );
+        });
+      })}
     </div>
   );
 }
