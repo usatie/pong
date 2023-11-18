@@ -8,7 +8,8 @@ import { UserModule } from 'src/user/user.module';
 import { JwtStrategy } from './jwt.strategy';
 
 export const jwtConstants = {
-  secret: process.env.JWT_SECRET,
+  publicKey: process.env.JWT_PUBLIC_KEY,
+  privateKey: process.env.JWT_PRIVATE_KEY,
 };
 
 @Module({
@@ -16,8 +17,14 @@ export const jwtConstants = {
     PrismaModule,
     PassportModule,
     JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '30m' }, // 30 minutes
+      privateKey: jwtConstants.privateKey,
+      signOptions: {
+        expiresIn: '30m',
+        algorithm: 'RS256',
+      },
+      verifyOptions: {
+        algorithms: ['RS256'],
+      },
     }),
     UserModule,
   ],

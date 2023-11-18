@@ -1,12 +1,6 @@
 import UserCard from "@/app/ui/user/card";
-
-async function getUser(id: number) {
-  const res = await fetch(`${process.env.API_URL}/user/${id}`, {
-    cache: "no-cache",
-  });
-  const user = await res.json();
-  return user;
-}
+import { cookies } from "next/headers";
+import { getUser } from "@/app/lib/actions";
 
 export default async function FindUser({
   params: { id },
@@ -14,5 +8,6 @@ export default async function FindUser({
   params: { id: number };
 }) {
   const user = await getUser(id);
+  console.log(user);
   return <UserCard user={user} />;
 }

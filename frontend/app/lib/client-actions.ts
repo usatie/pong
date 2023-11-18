@@ -30,15 +30,20 @@ export async function createUser(formData: FormData) {
   }
 }
 
-export async function createRoom(formData: FormData) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room`, {
-    method: "POST",
+export async function updateRoom(
+  event: React.FormEvent<HTMLFormElement>,
+  roomId: number,
+) {
+  event.preventDefault();
+  const { id, ...updateData } = Object.fromEntries(
+    new FormData(event.currentTarget),
+  );
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room/${roomId}`, {
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      name: formData.get("name"),
-    }),
+    body: JSON.stringify(updateData),
   });
   const data = await res.json();
   if (!res.ok) {
@@ -49,8 +54,28 @@ export async function createRoom(formData: FormData) {
   } else {
     toast({
       title: "Success",
-      description: "Room created successfully.",
+      description: "room updated successfully.",
     });
-    redirect(`/room/${data.id}`, RedirectType.push);
+    redirect("/room", RedirectType.push);
+  }
+}
+
+export async function deleteRoom(event: React.SyntheticEvent, roomId: number) {
+  event.preventDefault();
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/room/${roomId}`, {
+    method: "DELETE",
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    toast({
+      title: res.status + " " + res.statusText,
+      description: data.message,
+    });
+  } else {
+    toast({
+      title: "Success",
+      description: "room deleted successfully.",
+    });
+    redirect("/room", RedirectType.push);
   }
 }
