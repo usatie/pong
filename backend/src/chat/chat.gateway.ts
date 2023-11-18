@@ -20,13 +20,35 @@ export class ChatGateway {
   private logger: Logger = new Logger('ChatGateway');
 
   @SubscribeMessage('newMessage')
-  chatMessage(
+  chatMessageToRoom(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): void {
     this.logger.log('message recieved');
     this.logger.log(data);
-    this.server.emit('sendToClient', data, client.id);
+    const rooms = [...client.rooms].slice(0);
+    this.logger.log('rooms', rooms);
+    this.server.to(rooms[1]).emit('sendToClient', data, client.id);
+  }
+
+  @SubscribeMessage('joinRoom')
+  handleJoin(
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`join room: ${client.id} joined room ${roomId}`);
+    const rooms = [...client.rooms].slice(0);
+    client.join(roomId);
+  }
+
+  @SubscribeMessage('leaveRoom')
+  handleLeave(
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`leave room: ${client.id} leaved room ${roomId}`);
+    const rooms = [...client.rooms].slice(0);
+    client.leave(roomId);
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
