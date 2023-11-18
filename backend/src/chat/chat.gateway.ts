@@ -26,7 +26,7 @@ export class ChatGateway {
   ): void {
     this.logger.log('message recieved');
     this.logger.log(data);
-    const rooms = [...client.rooms].slice(0);
+    const rooms = [...client.rooms];
     this.logger.log('rooms', rooms);
     this.server.to(rooms[1]).emit('sendToClient', data, client.id);
   }
