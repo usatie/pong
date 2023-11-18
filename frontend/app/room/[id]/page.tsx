@@ -26,22 +26,22 @@
 //  );
 //}
 
-import ChatRoomCard from '@/app/ui/room/chat-room';
-import { getUserId } from '@/app/lib/session';
-import { getUser } from '@/app/lib/actions';
+import ChatRoomCard from "@/app/ui/room/chat-room";
+import { getUserId } from "@/app/lib/session";
+import { getUser } from "@/app/lib/actions";
 
 export default async function Page({
-  params: { id }
+  params: { id },
 }: {
-  params: { id: number }
+  params: { id: number };
 }) {
   const currentUserId = await getUserId();
-  console.log('userId: ', currentUserId);
+  console.log("userId: ", currentUserId);
   if (!currentUserId) {
     console.error("error");
     return null;
   }
   const currentUser = await getUser(parseInt(currentUserId));
-  console.log('username: ', currentUser.name);
+  console.log("username: ", currentUser.name);
   return <ChatRoomCard id={id} user={currentUser} />;
 }

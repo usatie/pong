@@ -23,11 +23,7 @@ type Chat = {
 
 type MessageLog = Array<Chat>;
 
-export default function ChatHome({
-  id, user
-}: {
-  id: number, user: User
-}) {
+export default function ChatHome({ id, user }: { id: number; user: User }) {
   const [message, setMessage] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLog>([
     {
@@ -46,9 +42,12 @@ export default function ChatHome({
 
   useEffect(() => {
     const newMessageReceived = (e: Chat) => {
-      console.log('received message: ', e);
-      const { newMessage="error", name="Guest" } = { ...e };
-      setMessageLog((oldMessageLog) => [...oldMessageLog, { text: newMessage, userName: name }]);
+      console.log("received message: ", e);
+      const { newMessage = "error", name = "Guest" } = { ...e };
+      setMessageLog((oldMessageLog) => [
+        ...oldMessageLog,
+        { text: newMessage, userName: name },
+      ]);
       console.log(messageLog);
     };
     socket.on("sendToClient", newMessageReceived);
@@ -75,9 +74,9 @@ export default function ChatHome({
     e.preventDefault();
     const newMessage = message;
     console.log(`sendMessage`, newMessage);
-    console.log('name: ', user.name);
+    console.log("name: ", user.name);
     const name = user.name;
-    socket.emit("newMessage",  { newMessage, name });
+    socket.emit("newMessage", { newMessage, name });
     setMessage("");
   };
 
@@ -100,7 +99,7 @@ export default function ChatHome({
                         <div
                           className={cn(
                             "flex justify-center max-w-[500px] p-2 shadow mb-2",
-                            "bg-muted rounded-lg"
+                            "bg-muted rounded-lg",
                           )}
                         >
                           {message.text}
