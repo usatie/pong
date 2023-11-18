@@ -8,6 +8,11 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 
+type MessageRecieved = {
+  userName: string;
+  text: string;
+};
+
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -21,7 +26,7 @@ export class ChatGateway {
 
   @SubscribeMessage('newMessage')
   chatMessageToRoom(
-    @MessageBody() data: string,
+    @MessageBody() data: MessageRecieved,
     @ConnectedSocket() client: Socket,
   ): void {
     this.logger.log('message recieved');
