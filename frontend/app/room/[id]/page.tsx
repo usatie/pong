@@ -54,7 +54,6 @@ export default function ChatRoomPage({
 }: {
   params: { id: number };
 }) {
-
   const [message, setMessage] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLog>([
     {
@@ -83,12 +82,12 @@ export default function ChatRoomPage({
 
   useEffect(() => {
     socket.connect(); // no-op if the socket is already connected
-    socket.emit('joinRoom', id);
-    console.log('emit joinRoom');
+    socket.emit("joinRoom", id);
+    console.log("emit joinRoom");
 
     return () => {
-      socket.emit('leaveRoom', id);
-      console.log('emit leaveRoom');
+      socket.emit("leaveRoom", id);
+      console.log("emit leaveRoom");
       console.log("disconnect");
       socket.disconnect();
     };
