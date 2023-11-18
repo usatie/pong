@@ -28,10 +28,14 @@ model UserOnRoom {
 	id				Int @id @default(autoincrement())
 	user			User @relation(fields: [userId], references: [id])
 	userId			Int
-	role			String
-	// CHECK (role IN ('owner', 'administrator', 'member'))
-	// CHECK ENUM('owner', 'administrator', 'member')
+	role			Role @default(MEMBER)
 	room			Room @relation(fields: [roomId], references: [id])
 	roomId			Int
 	@@unique(fields: [userId, roomId], name: "userId_roomId_unique")
+}
+
+enum Role {
+  OWNER
+  ADMINiSTRATOR
+  MEMBER
 }

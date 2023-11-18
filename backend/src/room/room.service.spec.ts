@@ -14,6 +14,10 @@ describe('RoomService', () => {
     service = module.get<RoomService>(RoomService);
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   describe('create()', () => {
     const user = { id: 1, name: 'user_create()' };
     const createRoomDto: CreateRoomDto = { name: 'testRoom1'};
@@ -48,7 +52,7 @@ describe('RoomService', () => {
       expect(room).toHaveProperty('id');
       expect(room).toHaveProperty('name');
     });
-    it('should create a room', async () => {
+    it('should create another room', async () => {
       const room = await service.create(createRoomDto, user);
       console.log(room);
       expect(room).toHaveProperty('name');

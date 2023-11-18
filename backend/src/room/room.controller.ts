@@ -54,7 +54,7 @@ export class RoomController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   findOne(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
-    return this.roomService.findOne(id, request['user']['id']);
+    return this.roomService.findOne(id, request['user']);
   }
 
   @Patch(':id')

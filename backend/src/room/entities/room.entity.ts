@@ -5,6 +5,7 @@ export class RoomEntity implements Room {
   constructor(partial: Partial<RoomEntity>) {
     Object.assign(this, partial);
   }
+  @ApiProperty()
   id: number;
 
   @ApiProperty()
