@@ -2,21 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserOnRoomDto } from './dto/user-on-room.dto';
 import { UserOnRoomEntity } from './entities/roomOnRoom.entity';
+
+interface User {
+  id: number;
+  name: string;
+}
 
 @Injectable()
 export class RoomService {
   constructor(private prisma: PrismaService) {}
 
-  create(createRoomDto: CreateRoomDto, userId: number) {
+  create(createRoomDto: CreateRoomDto, user: User) {
     return this.prisma.room.create({
       data: {
         name: createRoomDto.name,
         users: {
           create: [
             {
-              userId: userId,
+              userId: user.id,
               role: 'owner',
             },
           ],
@@ -29,11 +33,11 @@ export class RoomService {
     return this.prisma.room.findMany();
   }
 
-  async findOne(id: number, userId: number) {
+  async findOne(id: number, user: User) {
     await this.prisma.userOnRoom.findUniqueOrThrow({
       where: {
         userId_roomId_unique: {
-          userId: userId,
+          userId: user.id,
           roomId: id,
         },
       },
@@ -57,22 +61,23 @@ export class RoomService {
     return this.prisma.room.delete({ where: { id } });
   }
 
-	async enterRoom(id: number, userId: number): Promise<UserOnRoomEntity> {
+	async enterRoom(id: number, user: User): Promise<UserOnRoomEntity> {
     return this.prisma.userOnRoom.create({
       data: {
         roomId: id,
-        userId: userId,
+        userId: user.id,
         role: 'member',
       },
     });
   }
 
-	leaveRoom(id: number, userId: number): Promise<UserOnRoomEntity> {
+	leaveRoom(roomId: number, user: User): Promise<UserOnRoomEntity> {
+    console.log(`leaveRoom: roomId: ${roomId}, userId: ${user.id}`);
     return this.prisma.userOnRoom.delete({
       where: {
         userId_roomId_unique: {
-          roomId: id,
-          userId: userId,
+          roomId: roomId,
+          userId: user.id,
         },
       },
     });
