@@ -32,12 +32,8 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoin(
-    @MessageBody() roomId: string,
-    @ConnectedSocket() client: Socket,
-  ) {
+  handleJoin(@MessageBody() roomId: string, @ConnectedSocket() client: Socket) {
     this.logger.log(`join room: ${client.id} joined room ${roomId}`);
-    const rooms = [...client.rooms].slice(0);
     client.join(roomId);
   }
 
@@ -47,7 +43,6 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
   ) {
     this.logger.log(`leave room: ${client.id} leaved room ${roomId}`);
-    const rooms = [...client.rooms].slice(0);
     client.leave(roomId);
   }
 
