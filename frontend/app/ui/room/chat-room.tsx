@@ -41,19 +41,18 @@ export default function ChatHome({ id, user }: { id: number; user: User }) {
   ]);
 
   useEffect(() => {
-    const newMessageReceived = (e: Chat) => {
-      console.log("received message: ", e);
-      const { newMessage = "error", name = "Guest" } = { ...e };
-      setMessageLog((oldMessageLog) => [
-        ...oldMessageLog,
-        { text: newMessage, userName: name },
+    const handleMessageReceived = (newMessageLog: Chat) => {
+      console.log("received message: ", newMessageLog);
+      setMessageLog((oldMessageLogs) => [
+        ...oldMessageLogs,
+        newMessageLog,
       ]);
       console.log(messageLog);
     };
-    socket.on("sendToClient", newMessageReceived);
+    socket.on("sendToClient", handleMessageReceived);
     return () => {
       console.log(`return from useEffect`);
-      socket.off("sendToClient", newMessageReceived);
+      socket.off("sendToClient", handleMessageReceived);
     };
   }, [messageLog]);
 
@@ -76,7 +75,7 @@ export default function ChatHome({ id, user }: { id: number; user: User }) {
     console.log(`sendMessage`, newMessage);
     console.log("name: ", user.name);
     const name = user.name;
-    socket.emit("newMessage", { newMessage, name });
+    socket.emit("newMessage", { userName: name, text: newMessage });
     setMessage("");
   };
 
