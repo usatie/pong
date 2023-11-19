@@ -43,10 +43,7 @@ export default function ChatHome({ id, user }: { id: number; user: User }) {
   useEffect(() => {
     const handleMessageReceived = (newMessageLog: Chat) => {
       console.log("received message: ", newMessageLog);
-      setMessageLog((oldMessageLogs) => [
-        ...oldMessageLogs,
-        newMessageLog,
-      ]);
+      setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);
       console.log(messageLog);
     };
     socket.on("sendToClient", handleMessageReceived);

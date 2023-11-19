@@ -36,12 +36,10 @@ export default async function Page({
   params: { id: number };
 }) {
   const currentUserId = await getUserId();
-  console.log("userId: ", currentUserId);
   if (!currentUserId) {
     console.error("error");
     return null;
   }
   const currentUser = await getUser(parseInt(currentUserId));
-  console.log("username: ", currentUser.name);
   return <ChatRoomCard id={id} user={currentUser} />;
 }
