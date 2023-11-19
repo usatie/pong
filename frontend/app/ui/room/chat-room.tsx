@@ -66,7 +66,7 @@ export default function ChatHome({ id, user }: { id: number; user: User }) {
     };
   }, []);
 
-  const sendMessage = async (e: React.SyntheticEvent) => {
+  const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();
     const newMessage = message;
     console.log(`sendMessage`, newMessage);
