@@ -12,10 +12,8 @@ import {
   PADDLE_WIDTH,
   TARGET_FRAME_MS,
 } from "./const";
-import { RefObject } from "react";
 
 export class PongGame {
-  canvasRef: RefObject<HTMLCanvasElement>;
   ctx: CanvasRenderingContext2D;
   player1: Paddle;
   player2: Paddle;
@@ -30,8 +28,7 @@ export class PongGame {
   keypress: { [key: string]: boolean };
   socket: Socket;
 
-  constructor(canvasRef: RefObject<HTMLCanvasElement>, socket: Socket) {
-    this.canvasRef = canvasRef;
+  constructor() {
     // todo: is there any better way to do this?
     this.ctx = undefined!;
 
@@ -71,15 +68,17 @@ export class PongGame {
     this.is_playing = false;
     this.keyName = "";
     this.keypress = {};
-    this.socket = socket;
+    this.socket = undefined!;
   }
 
-  // call only after canvasRef is set
-  setup_canvas = () => {
+  // call only after rendering finishes
+  setup_canvas = (ctx: CanvasRenderingContext2D, socket: Socket) => {
     // todo
-    this.ctx = this.canvasRef.current!.getContext("2d")!;
+    this.ctx = ctx;
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
+
+    this.socket = socket;
   };
 
   update_fps = () => {

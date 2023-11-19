@@ -5,17 +5,24 @@ import { useEffect, useRef, useState } from "react";
 import { PongGame } from "./PongGame";
 import { TARGET_FRAME_MS } from "./const";
 
-// todo
 export default function Page() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const socketRef = useRef<Socket>(
-    io(process.env.NEXT_PUBLIC_WEB_URL as string),
-  );
-  // todo: check if useRef is necessary. Just const is enough as it doesn't re-render?
-  const game = useRef<PongGame>(new PongGame(canvasRef, socketRef.current));
+  const [socket, setSocket] = useState<Socket>(undefined!);
+  // todo: useRef vs useState
+  const game = useRef<PongGame>(new PongGame());
 
   useEffect(() => {
-    game.current.setup_canvas();
+    // > If the contextType doesn't match a possible drawing context, or differs from the first contextType requested, null is returned."
+    // from https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) {
+      console.warn("2d canvas is not supported or there is a bug");
+      return;
+    }
+    const socket = io(process.env.NEXT_PUBLIC_WEB_URL as string);
+    setSocket(socket);
+
+    game.current.setup_canvas(ctx, socket);
     game.current.draw_canvas();
     const intervalId = setInterval(game.current.update, TARGET_FRAME_MS);
 
@@ -30,30 +37,31 @@ export default function Page() {
 
     document.addEventListener("keyup", handleKeyUp);
 
-    socketRef.current.on("connect", () => {
-      console.log(`Connected: ${socketRef.current.id}`);
+    socket.on("connect", () => {
+      console.log(`Connected: ${socket.id}`);
 
-      socketRef.current.emit("join");
+      socket.emit("join");
     });
 
-    socketRef.current.on("start", (data) => {
+    socket.on("start", (data) => {
       console.log(`Start: ${JSON.stringify(data)}`);
       game.current.start(data);
     });
 
-    socketRef.current.on("right", () => {
+    socket.on("right", () => {
       game.current.player2.clear(game.current.ctx);
       game.current.player2.move_left();
       game.current.player2.draw(game.current.ctx);
     });
 
-    socketRef.current.on("left", () => {
+    socket.on("left", () => {
       game.current.player2.clear(game.current.ctx);
       game.current.player2.move_right();
       game.current.player2.draw(game.current.ctx);
     });
 
     return () => {
+      socket.disconnect();
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
       clearInterval(intervalId);
@@ -62,7 +70,7 @@ export default function Page() {
 
   const start = () => {
     game.current.start();
-    socketRef.current.emit("start", {
+    socket.emit("start", {
       vx: -game.current.ball.vx,
       vy: -game.current.ball.vy,
     });
@@ -76,15 +84,13 @@ export default function Page() {
         <Button
           onClick={() => {
             game.current.switch_battle_mode();
-          }}
-        >
+          }}>
           Battle
         </Button>
         <Button
           onClick={() => {
             game.current.switch_practice_mode();
-          }}
-        >
+          }}>
           Practice
         </Button>
       </div>
@@ -92,8 +98,7 @@ export default function Page() {
         ref={canvasRef}
         width="256"
         height="512"
-        className="border w-[256px] h-[512px]"
-      ></canvas>
+        className="border w-[256px] h-[512px]"></canvas>
     </>
   );
 }
