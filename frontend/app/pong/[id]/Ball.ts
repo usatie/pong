@@ -1,4 +1,4 @@
-import { clamp } from "@/app/lib/utils";
+import { clamp } from "@/lib/utils";
 import { Paddle } from "./Paddle";
 
 export class Ball {

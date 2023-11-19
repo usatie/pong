@@ -1,4 +1,4 @@
-import { clamp } from "@/app/lib/utils";
+import { clamp } from "@/lib/utils";
 import { Ball } from "./Ball";
 import { CANVAS_WIDTH } from "./const";
 
