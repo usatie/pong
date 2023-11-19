@@ -24,9 +24,7 @@ export default function Nav() {
             <Link href="/user">User List</Link>
             <Link href="/room">ChatRoom List</Link>
             <Link href="/user/signup">Sign Up</Link>
-            <Link href="/playground/pong.html" target="_blank">
-              Pong
-            </Link>
+            <Link href="/pong">Pong</Link>
             <form action={signOut}>
               <Button type="submit">Sign Out</Button>
             </form>
