@@ -1,4 +1,4 @@
-import { Socket } from "Socket.IO-client";
+import { Socket } from "socket.io-client";
 import { Ball } from "./Ball";
 import { Paddle } from "./Paddle";
 import {
@@ -12,8 +12,10 @@ import {
   PADDLE_WIDTH,
   TARGET_FRAME_MS,
 } from "./const";
+import { RefObject } from "react";
 
 export class PongGame {
+  canvasRef: RefObject<HTMLCanvasElement>;
   ctx: CanvasRenderingContext2D;
   player1: Paddle;
   player2: Paddle;
@@ -27,22 +29,12 @@ export class PongGame {
   keyName: string;
   keypress: { [key: string]: boolean };
   socket: Socket;
-  setSpeed: (speed: number) => void;
-  setFps: (fps: number) => void;
-  setPlayer1Position: (player1: number) => void;
-  setPlayer2Position: (player2: number) => void;
 
-  constructor(
-    ctx: CanvasRenderingContext2D,
-    socket: Socket,
-    setSpeed: (speed: number) => void,
-    setFps: (fps: number) => void,
-    setPlayer1Position: (player1: number) => void,
-    setPlayer2Position: (player2: number) => void,
-  ) {
-    this.ctx = ctx;
-    this.ctx.textAlign = "center";
-    this.ctx.font = "48px serif";
+  constructor(canvasRef: RefObject<HTMLCanvasElement>, socket: Socket) {
+    this.canvasRef = canvasRef;
+    // todo: is there any better way to do this?
+    this.ctx = undefined!;
+
     this.player1 = new Paddle(
       CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
       CANVAS_HEIGHT - PADDLE_HEIGHT,
@@ -80,11 +72,15 @@ export class PongGame {
     this.keyName = "";
     this.keypress = {};
     this.socket = socket;
-    this.setSpeed = setSpeed;
-    this.setFps = setFps;
-    this.setPlayer1Position = setPlayer1Position;
-    this.setPlayer2Position = setPlayer2Position;
   }
+
+  // call only after canvasRef is set
+  setup_canvas = () => {
+    // todo
+    this.ctx = this.canvasRef.current!.getContext("2d")!;
+    this.ctx.textAlign = "center";
+    this.ctx.font = "48px serif";
+  };
 
   update_fps = () => {
     this.frame_count++;
@@ -96,19 +92,19 @@ export class PongGame {
       const fps = Math.round(
         this.frame_count / (elapsed_since_last_update / 1000),
       );
-      this.setFps(fps);
+      // this.setFps(fps);
       this.frame_count = 0;
       this.fps_updated_at = this.updated_at;
     }
   };
 
   update_speed(speed: number) {
-    this.setSpeed(speed);
+    // this.setSpeed(speed);
   }
 
   update_players() {
-    this.setPlayer1Position(this.player1.x);
-    this.setPlayer2Position(this.player2.x);
+    // this.setPlayer1Position(this.player1.x);
+    // this.setPlayer2Position(this.player2.x);
   }
 
   draw_canvas = () => {
