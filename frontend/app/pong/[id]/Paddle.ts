@@ -35,12 +35,14 @@ export class Paddle {
 
   move_left = () => {
     this.x -= (CANVAS_WIDTH / 100) * 3;
-    this.x = clamp(this.x, 0, CANVAS_WIDTH);
+    this.x = Math.round(this.x);
+    this.x = clamp(this.x, 0, CANVAS_WIDTH - this.width);
   };
 
   move_right = () => {
     this.x += (CANVAS_WIDTH / 100) * 3;
-    this.x = clamp(this.x, 0, CANVAS_WIDTH);
+    this.x = Math.round(this.x);
+    this.x = clamp(this.x, 0, CANVAS_WIDTH - this.width);
   };
 
   collide_with = (ball: Ball) => {
