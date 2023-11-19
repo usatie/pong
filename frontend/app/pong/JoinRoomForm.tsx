@@ -12,12 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { FC, useState } from "react";
+import { FC, FormEvent, useState } from "react";
 
 export default function JoinRoomForm() {
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
-  const handleSubmit = () => {
+  const handleSubmit = (event: React.SyntheticEvent) => {
+    event.preventDefault();
     router.push(`/pong/${inputValue}`);
   };
 
@@ -30,7 +31,7 @@ export default function JoinRoomForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="id">ID</Label>
@@ -40,12 +41,10 @@ export default function JoinRoomForm() {
                 onChange={(e) => setInputValue(e.target.value)}
               />
             </div>
+            <Button>Join</Button>
           </div>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button onClick={handleSubmit}>Join</Button>
-      </CardFooter>
     </Card>
   );
 }

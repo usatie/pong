@@ -1,6 +1,6 @@
 "use client";
 
-interface PongInformationBoard {
+interface PongInformationBoardProps {
   fps: number;
   speed: number;
   player1Position: number;
@@ -12,7 +12,7 @@ export default function PongInformationBoard({
   speed,
   player1Position,
   player2Position,
-}: PongInformationBoard) {
+}: PongInformationBoardProps) {
   return (
     <>
       <div id="fps">FPS: {fps}</div>

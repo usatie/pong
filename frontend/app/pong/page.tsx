@@ -5,7 +5,7 @@ import Link from "next/link";
 import JoinRoomForm from "./JoinRoomForm";
 import { v4 } from "uuid";
 
-export default async function CardWithForm() {
+export default function Page() {
   const roomId = v4();
   return (
     <div className="flex flex-col content-between gap-5 mx-auto">
