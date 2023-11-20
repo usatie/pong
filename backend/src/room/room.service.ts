@@ -1,4 +1,4 @@
-  import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -61,7 +61,7 @@ export class RoomService {
     return this.prisma.room.delete({ where: { id } });
   }
 
-	async enterRoom(id: number, user: User): Promise<UserOnRoomEntity> {
+  async enterRoom(id: number, user: User): Promise<UserOnRoomEntity> {
     return this.prisma.userOnRoom.create({
       data: {
         roomId: id,
@@ -71,8 +71,7 @@ export class RoomService {
     });
   }
 
-	leaveRoom(roomId: number, user: User): Promise<UserOnRoomEntity> {
-    console.log(`leaveRoom: roomId: ${roomId}, userId: ${user.id}`);
+  leaveRoom(roomId: number, user: User): Promise<UserOnRoomEntity> {
     return this.prisma.userOnRoom.delete({
       where: {
         userId_roomId_unique: {

@@ -36,6 +36,6 @@ model UserOnRoom {
 
 enum Role {
   OWNER
-  ADMINiSTRATOR
+  ADMINISTRATOR
   MEMBER
 }

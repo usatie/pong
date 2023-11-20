@@ -30,11 +30,8 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: CreateRoomDto })
-  create(
-    @Body() createRoomDto: CreateRoomDto,
-    @Req() request: Request,
-  ) {
-		return this.roomService.create(createRoomDto, request['user']);
+  create(@Body() createRoomDto: CreateRoomDto, @Req() request: Request) {
+    return this.roomService.create(createRoomDto, request['user']);
   }
 
   @Get()
