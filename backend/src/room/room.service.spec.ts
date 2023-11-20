@@ -20,7 +20,7 @@ describe('RoomService', () => {
 
   describe('create()', () => {
     const user = { id: 1, name: 'user_create()' };
-    const createRoomDto: CreateRoomDto = { name: 'testRoom1'};
+    const createRoomDto: CreateRoomDto = { name: 'testRoom1' };
 
     it('should create a room', async () => {
       const room = await service.create(createRoomDto, user);
