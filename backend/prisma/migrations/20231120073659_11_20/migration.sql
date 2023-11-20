@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('OWNER', 'ADMINiSTRATOR', 'MEMBER');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -20,7 +23,7 @@ CREATE TABLE "Room" (
 CREATE TABLE "UserOnRoom" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
-    "role" TEXT NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'MEMBER',
     "roomId" INTEGER NOT NULL,
 
     CONSTRAINT "UserOnRoom_pkey" PRIMARY KEY ("id")

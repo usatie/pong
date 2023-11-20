@@ -34,13 +34,7 @@ export class RoomController {
     @Body() createRoomDto: CreateRoomDto,
     @Req() request: Request,
   ) {
-	const userId = request['user']['id'];
-	if (!userId)
-		throw new Error('User Id is not available');
-	else
-	{
-		return this.roomService.create(createRoomDto, userId);
-	}
+		return this.roomService.create(createRoomDto, request['user']);
   }
 
   @Get()

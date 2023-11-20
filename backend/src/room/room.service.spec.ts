@@ -24,13 +24,16 @@ describe('RoomService', () => {
 
     it('should create a room', async () => {
       const room = await service.create(createRoomDto, user);
-      console.log(room);
       expect(room.name).toBe(createRoomDto.name);
+    });
+    it('should create another room', async () => {
+      const room = await service.create(createRoomDto, user);
+      expect(room).toHaveProperty('name');
     });
     it('should not create a room (user does not exist)', async () => {
       const NotExistUser = { id: 10000000, name: 'NotExistUser' };
       await expect(
-        service.create(CreateRoomDto, NotExistUser),
+        service.create(createRoomDto, NotExistUser),
       ).rejects.toThrow();
     });
   });
@@ -43,26 +46,25 @@ describe('RoomService', () => {
   });
 
   describe('enterRoom()', () => {
-    const user = { id: 1, name: 'user_enterRoom()' };
-    const createRoomDto: CreateRoomDto = { name: 'testRoom1'};
+    let room;
 
-    it('should create a room', async () => {
-      const room = await service.create(createRoomDto, user);
-      console.log(room);
-      expect(room).toHaveProperty('id');
-      expect(room).toHaveProperty('name');
+    beforeAll(async () => {
+      const owner = { id: 1, name: 'owner_enterRoom()' };
+      const createRoomDto: CreateRoomDto = { name: 'testRoom1'};
+      room = await service.create(createRoomDto, owner);
     });
-    it('should create another room', async () => {
-      const room = await service.create(createRoomDto, user);
-      console.log(room);
-      expect(room).toHaveProperty('name');
-    });
-    it('should not create a room', async () => {
-      const NotExistUser = { id: 10000000, name: 'NotExistUser' };
-      await expect(
-        service.create(CreateRoomDto, NotExistUser),
-      ).rejects.toThrow();
-    });
+
+    it('should enter room', async () => {
+        const validUser = { id: 2, name: 'validUser_enterRoom()' };
+        const enteredRoom = await service.enterRoom(room.id, validUser);
+        expect(enteredRoom).toHaveProperty('role');
+      });
+      it('should not enter a room', async () => {
+        const NotExistUser = { id: 10000000, name: 'NotExistUser' };
+        await expect(
+          service.enterRoom(room.id, NotExistUser),
+        ).rejects.toThrow();
+      });
   });
 
   describe('findOne()', () => {
@@ -74,14 +76,12 @@ describe('RoomService', () => {
     });
     it('should return a room', async () => {
       const room = await service.create(createRoomDto, user);
-      console.log(room);
       expect(room).toHaveProperty('id');
       expect(room).toHaveProperty('name');
       roomId = room.id;
     });
     it('should return a room', async () => {
       const room = await service.findOne(roomId, user);
-      console.log(room);
       expect(room).toHaveProperty('id');
       expect(room).toHaveProperty('name');
       expect(room).toHaveProperty('users');
@@ -97,7 +97,6 @@ describe('RoomService', () => {
     });
     it('should return a room', async () => {
       const room = await service.create(createRoomDto, user);
-      console.log(room);
       expect(room).toHaveProperty('id');
       expect(room).toHaveProperty('name');
       roomId = room.id;
@@ -106,27 +105,11 @@ describe('RoomService', () => {
       return service
         .leaveRoom(roomId, user)
         .then((room) => {
-          console.log(room);
           expect(room.id).toBe(roomId);
           expect(room.userId).toBe(user.id);
         })
         .catch((err) => {
-          console.log(err);
         });
     });
   });
-
-  /*
-{
-	"email": "susami@example.com",
-	"password": "password-susami"
-}
-*/
-
-  /*
-{
-	"email": "kakiba@example.com",
-	"password": "password-kakiba"
-}
-*/
 });
