@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Stack } from "@/app/ui/layout/stack";
 
 function AvatarSkeleton() {
-  return <Skeleton className="rounded-full h-20 w-20 " />;
+  return <Skeleton className="rounded-full h-20 w-20" />;
 }
 
 type ProfileItemProps = {
