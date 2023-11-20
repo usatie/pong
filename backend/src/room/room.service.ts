@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserOnRoomEntity } from './entities/roomOnRoom.entity';
+import { Role } from '@prisma/client';
+import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 
 interface User {
   id: number;
@@ -21,7 +22,7 @@ export class RoomService {
           create: [
             {
               userId: user.id,
-              role: 'OWNER',
+              role: Role.OWNER,
             },
           ],
         },
@@ -66,7 +67,7 @@ export class RoomService {
       data: {
         roomId: id,
         userId: user.id,
-        role: 'MEMBER',
+        role: Role.MEMBER,
       },
     });
   }
