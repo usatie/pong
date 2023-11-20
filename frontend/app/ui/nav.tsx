@@ -17,7 +17,7 @@ function AuthorizedMenu() {
   );
 }
 
-function UnauhtorizedMenu() {
+function UnauthorizedMenu() {
   return (
     <li className="flex gap-8 items-center">
       <Link href="/user/signup">Sign Up</Link>
@@ -28,6 +28,7 @@ function UnauhtorizedMenu() {
 }
 
 export default async function Nav() {
+  const isAuthorized = await isLoggedIn();
   return (
     <header>
       <nav>
@@ -35,7 +36,7 @@ export default async function Nav() {
           <Link href="/" className="font-black">
             Pong
           </Link>
-          {(await isLoggedIn()) ? <AuthorizedMenu /> : <UnauhtorizedMenu />}
+          {isAuthorized ? <AuthorizedMenu /> : <UnauthorizedMenu />}
         </ul>
       </nav>
     </header>
