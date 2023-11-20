@@ -33,7 +33,13 @@ const gaps = {
   96: "gap-96",
 };
 
-export function Stack({ className, spacing = 1, children }) {
+type StackProps = {
+  className?: string;
+  spacing?: keyof typeof gaps;
+  children: React.ReactNode;
+};
+
+export function Stack({ className, spacing = 1, children }: StackProps) {
   return (
     <div className={cn(`flex flex-col ${gaps[spacing]}`, className)}>
       {children}
@@ -42,7 +48,7 @@ export function Stack({ className, spacing = 1, children }) {
 }
 
 // center
-export function HStack({ className, spacing = 1, children }) {
+export function HStack({ className, spacing = 1, children }: StackProps) {
   return (
     <div className={cn(`flex ${gaps[spacing]}`, className)}>{children}</div>
   );

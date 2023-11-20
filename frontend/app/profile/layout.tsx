@@ -32,7 +32,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
     <>
       <div className="md:hidden">
-        <div className="space-y-6 p-10 pb-16">Can't be displayed.</div>
+        <div className="space-y-6 p-10 pb-16">Can&apos;t be displayed.</div>
       </div>
       <div className="hidden pb-16 md:block">
         <div className="space-y-0.5">

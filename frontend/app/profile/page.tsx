@@ -8,7 +8,12 @@ function AvatarSkeleton() {
   return <Skeleton className="rounded-full h-20 w-20 " />;
 }
 
-function ProfileItem({ title, value }) {
+type ProfileItemProps = {
+  title: string;
+  value: string;
+};
+
+function ProfileItem({ title, value }: ProfileItemProps) {
   return (
     <Stack spacing={1} className="flex-initial w-96">
       <div className="text-xs text-muted-foreground">{title}: </div>
@@ -30,11 +35,7 @@ export default function ProfilePage() {
               <Separator />
             </Stack>
             <AvatarSkeleton />
-            <ProfileItem
-              title="username"
-              value="susami"
-              className="flex-initial w-80"
-            />
+            <ProfileItem title="username" value="susami" />
             <ProfileItem title="email" value="susami@example.com" />
             <Button variant="secondary" className="flex-initial w-40">
               Save
