@@ -5,67 +5,77 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserController } from 'src/user/user.controller';
 import { AuthController } from 'src/auth/auth.controller';
 import { UserService } from 'src/user/user.service';
-import { AuthService } from 'src/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { AuthEntity } from 'src/auth/entity/auth.entity';
+import { AuthModule } from 'src/auth/auth.module';
+import { AuthService } from 'src/auth/auth.service';
+import { CreateRoomDto } from './dto/create-room.dto';
+import { RoomEntity } from './entities/room.entity';
+import { after } from 'node:test';
 
 describe('RoomController', () => {
   let controller: RoomController;
-  const testUser = {
+  let testUserOwner = {
     name: 'room_controller_spec',
-    email: 'room_controller_spec5@example.com',
+    email: 'room_controller_spec@example.com',
     password: 'password-room_controller_spec',
+    id: <number>undefined,
+    accessToken: undefined,
   };
-  const testUserLogin = { email: testUser.email, password: testUser.password };
-  let testUserId;
-  let testUserAccessToken;
   let userController: UserController;
 
   const testRoom = {
     name: 'testRoom1',
+    roomId: <number>undefined,
   };
-  let testRoomId;
-
 
   beforeEach(async () => {
-    console.log('here is beforeEach!!');
     const module: TestingModule = await Test.createTestingModule({
+      imports: [AuthModule],
       controllers: [RoomController, UserController, AuthController],
-      providers: [RoomService, PrismaService, UserService, AuthService, JwtService],
+      providers: [
+        RoomService,
+        PrismaService,
+        UserService,
+        JwtService,
+        AuthService,
+      ],
     }).compile();
 
     controller = module.get<RoomController>(RoomController);
     userController = module.get<UserController>(UserController);
-    const authController: AuthController = module.get<AuthController>(AuthController);
+    const roomService: RoomService = module.get<RoomService>(RoomService);
+    const authController: AuthController =
+      module.get<AuthController>(AuthController);
 
-    testUserId = await userController.create(testUser)
-    .then((userEntity) => {
-      return userEntity.id;
-    });
-    console.log('testUserId: ', testUserId);
+    testUserOwner.id = await userController
+      .create(testUserOwner)
+      .then((userEntity) => {
+        return userEntity.id;
+      });
 
-    testUserAccessToken = await authController.login(testUserLogin).then((authEntity: AuthEntity) => {
-      return authEntity.accessToken;
-    });
-    console.log('testUserAccessToken: ', testUserAccessToken);
-
-    testRoomId = await controller.create(testUser, testUserAccessToken).then((roomEntity) => {
-      return roomEntity.id;
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-    console.log('testRoomId: ', testRoomId);
-    await controller.enterRoom(testRoomId, testUserAccessToken);
-    return console.log(`${testUserId} ${testUserAccessToken} ${testRoomId}`);
+    testUserOwner.accessToken = await authController
+      .login(testUserOwner)
+      .then((authEntity: AuthEntity) => {
+        return authEntity.accessToken;
+      });
+	testRoom.roomId = await roomService // controller で書きたいけど request の書き方が分からない
+	.create(testRoom, { id: testUserOwner.id, name: testUserOwner.name })
+	.then((roomEntity: RoomEntity) => {
+	  return roomEntity.id;
+	});
   });
 
   afterEach(async () => {
-    await controller.remove(testRoomId);
-    await userController.remove(testUserId);
+    try {
+	  await controller.removeRoom(testRoom.roomId);
+	  await userController.remove(testUserOwner.id);
+    } catch (error) {
+      throw error;
+    }
   });
 
-  it('hould be defined', () => {
+  it('would be defined', () => {
     expect(controller).toBeDefined();
   });
 });
