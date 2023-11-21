@@ -98,7 +98,8 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
         ref={canvasRef}
         width="256"
         height="512"
-        className="border w-[256px] h-[512px]"></canvas>
+        className="border w-[256px] h-[512px]"
+      ></canvas>
     </>
   );
 }
