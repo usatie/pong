@@ -19,6 +19,8 @@ type BatchPayload = {
 export class RoomService {
   constructor(private prisma: PrismaService) {}
 
+  // room CRUD
+
   create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
     return this.prisma.room.create({
       data: {
@@ -73,6 +75,8 @@ export class RoomService {
       .catch((err) => err);
   }
 
+  // UserOnRoom CRUD
+
   createUserOnRoom(id: number, user: User): Promise<UserOnRoomEntity> {
     return this.prisma.userOnRoom.create({
       data: {
@@ -83,8 +87,8 @@ export class RoomService {
     });
   }
 
-  removeUserOnRoom(roomId: number, user: User): Promise<UserOnRoomEntity> {
-    return this.prisma.userOnRoom.delete({
+  findUserOnRoom = (roomId: number, user: User): Promise<UserOnRoomEntity> =>
+    this.prisma.userOnRoom.findUniqueOrThrow({
       where: {
         userId_roomId_unique: {
           roomId: roomId,
@@ -92,6 +96,35 @@ export class RoomService {
         },
       },
     });
+
+  updateUserOnRoom(roomId: number, user: User): Promise<UserOnRoomEntity> {
+    return this.prisma.userOnRoom.update({
+      where: {
+        userId_roomId_unique: {
+          roomId: roomId,
+          userId: user.id,
+        },
+      },
+      data: {},
+    });
+  }
+
+  removeUserOnRoom(roomId: number, clientUser: User, userId): Promise<UserOnRoomEntity> {
+	return this.findUserOnRoom(roomId, clientUser).then((userOnRoomEntity) => {
+		if (userOnRoomEntity.role = Role.owner) {
+			return this.prisma.userOnRoom.delete({
+			  where: {
+				userId_roomId_unique: {
+				  roomId: roomId,
+				  userId: userId,
+				},
+			  },
+			});
+		}
+		else {
+			throw (404);
+		}
+	}).catch((err) => {throw err})
   }
 
   removeAllUserOnRoom(roomId: number): Promise<BatchPayload> {

@@ -84,6 +84,6 @@ export class RoomController {
     @Param('userId', ParseIntPipe) userId: number,
     @Req() request: Request,
   ) {
-    return this.roomService.removeUserOnRoom(id, { id: userId, name: 'test' });
+    return this.roomService.removeUserOnRoom(id, { id: userId, name: 'test' }, userId);
   }
 }

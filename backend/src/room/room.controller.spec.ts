@@ -12,16 +12,48 @@ import { AuthService } from 'src/auth/auth.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomEntity } from './entities/room.entity';
 import { after } from 'node:test';
+import { UserEntity } from 'src/user/entities/user.entity';
+
+interface testUser {
+  name: string;
+  email: string;
+  password: string;
+  id: number;
+  accessToken: string;
+}
+
+enum UserType {
+  owner,
+  admin,
+  member,
+}
 
 describe('RoomController', () => {
   let controller: RoomController;
-  let testUserOwner = {
-    name: 'room_controller_spec',
-    email: 'room_controller_spec@example.com',
-    password: 'password-room_controller_spec',
-    id: <number>undefined,
-    accessToken: undefined,
-  };
+  let users: testUser[] = [
+    {
+      name: 'owner',
+      email: 'owner@example.com',
+      password: 'password-owner',
+      id: <number>undefined,
+      accessToken: undefined,
+    },
+    {
+      name: 'admin',
+      email: 'admin@example.com',
+      password: 'password-admin',
+      id: <number>undefined,
+      accessToken: undefined,
+    },
+    {
+      name: 'member',
+      email: 'member@example.com',
+      password: 'password-member',
+      id: <number>undefined,
+      accessToken: undefined,
+    },
+  ];
+
   let userController: UserController;
 
   const testRoom = {
@@ -48,28 +80,36 @@ describe('RoomController', () => {
     const authController: AuthController =
       module.get<AuthController>(AuthController);
 
-    testUserOwner.id = await userController
-      .create(testUserOwner)
-      .then((userEntity) => {
-        return userEntity.id;
-      });
-
-    testUserOwner.accessToken = await authController
-      .login(testUserOwner)
-      .then((authEntity: AuthEntity) => {
-        return authEntity.accessToken;
-      });
-	testRoom.roomId = await roomService // controller で書きたいけど request の書き方が分からない
-	.create(testRoom, { id: testUserOwner.id, name: testUserOwner.name })
-	.then((roomEntity: RoomEntity) => {
-	  return roomEntity.id;
+    await users.forEach((user) => {
+		userController.create(user).then(async(UserEntity) => {
+			user.id = UserEntity.id
+			if (user.name = 'owner') {
+				testRoom.roomId = await roomService // controller で書きたいけど request の書き方が分からない
+				.create(testRoom, users[UserType.owner])
+				.then((roomEntity: RoomEntity) => {
+				  return roomEntity.id;
+				});
+			}
+			else if (user.name = 'admin') {
+				roomService.createUserOnRoom(testRoom.roomId, user)
+				.then(() => {
+					roomService.updateUserOnRoom()
+				})
+			}
+		}).catch((err) => {throw err});
 	});
+
+    testRoom.roomId = await roomService // controller で書きたいけど request の書き方が分からない
+      .create(testRoom, users[UserType.owner])
+      .then((roomEntity: RoomEntity) => {
+        return roomEntity.id;
+      });
   });
 
   afterEach(async () => {
     try {
-	  await controller.removeRoom(testRoom.roomId);
-	  await userController.remove(testUserOwner.id);
+      await controller.removeRoom(testRoom.roomId);
+      await userController.remove(users[UserType.owner].id);
     } catch (error) {
       throw error;
     }
@@ -78,4 +118,10 @@ describe('RoomController', () => {
   it('would be defined', () => {
     expect(controller).toBeDefined();
   });
+
+  describe('/room/:id/:userId (GET)', () => {});
+
+  describe('/room/:id/:userId (PATCH)', () => {});
+
+  describe('/room/:id/:userId (DELETE)', () => {});
 });
