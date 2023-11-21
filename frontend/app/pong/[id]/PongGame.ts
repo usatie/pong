@@ -12,11 +12,9 @@ import {
   PADDLE_WIDTH,
   TARGET_FRAME_MS,
 } from "./const";
-import { RefObject } from "react";
 
 export class PongGame {
-  canvasRef: RefObject<HTMLCanvasElement>;
-  ctx: CanvasRenderingContext2D;
+  ctx!: CanvasRenderingContext2D;
   player1: Paddle;
   player2: Paddle;
   ball: Ball;
@@ -26,15 +24,11 @@ export class PongGame {
   elapsed: number;
   frame_count: number;
   is_playing: boolean;
-  keyName: string;
   keypress: { [key: string]: boolean };
-  socket: Socket;
+  socket!: Socket;
+  roomId!: string;
 
-  constructor(canvasRef: RefObject<HTMLCanvasElement>, socket: Socket) {
-    this.canvasRef = canvasRef;
-    // todo: is there any better way to do this?
-    this.ctx = undefined!;
-
+  constructor() {
     this.player1 = new Paddle(
       CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
       CANVAS_HEIGHT - PADDLE_HEIGHT,
@@ -69,17 +63,22 @@ export class PongGame {
     this.elapsed = 0;
     this.frame_count = 0;
     this.is_playing = false;
-    this.keyName = "";
     this.keypress = {};
-    this.socket = socket;
   }
 
-  // call only after canvasRef is set
-  setup_canvas = () => {
+  // call only after rendering finishes
+  setup_canvas = (
+    ctx: CanvasRenderingContext2D,
+    socket: Socket,
+    roomId: string,
+  ) => {
     // todo
-    this.ctx = this.canvasRef.current!.getContext("2d")!;
+    this.ctx = ctx;
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
+
+    this.socket = socket;
+    this.roomId = roomId;
   };
 
   update_fps = () => {
@@ -115,16 +114,12 @@ export class PongGame {
     this.ball.move(this.elapsed);
     if (this.player1.collide_with(this.ball)) {
       this.ball.bounce_off_paddle(this.player1);
-    } else if (this.player2.collide_with(this.ball)) {
-      this.ball.bounce_off_paddle(this.player2);
-    } else if (this.ball.y <= 0) {
-      console.log("collide with top");
-      this.ball.reset();
-      this.score.player2++;
+      this.socket.emit("bounce", this.roomId);
     } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
       console.log("collide with bottom");
       this.ball.reset();
-      this.score.player1++;
+      this.score.player2++;
+      this.socket.emit("collide", this.roomId);
     } else if (this.ball.collide_with_side()) {
       this.ball.bounce_off_side();
     }
@@ -154,12 +149,12 @@ export class PongGame {
       this.player1.clear(this.ctx);
       this.player1.move_left();
       this.player1.draw(this.ctx);
-      this.socket.emit("left");
+      this.socket.emit("left", this.roomId);
     } else if (this.keypress["ArrowRight"]) {
       this.player1.clear(this.ctx);
       this.player1.move_right();
       this.player1.draw(this.ctx);
-      this.socket.emit("right");
+      this.socket.emit("right", this.roomId);
     }
     if (this.is_playing) {
       this.draw_canvas();
