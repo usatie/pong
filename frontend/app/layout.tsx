@@ -30,7 +30,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="flex flex-col gap-8 p-16">
+          <main className="flex flex-col gap-8 pt-8 px-16">
             <Nav />
             {children}
           </main>
