@@ -15,23 +15,27 @@ model User {
   email String  @unique
   name  String?
   password String
-  rooms useronroom[]
+  rooms UserOnRoom[]
 }
 
 model Room {
   id    Int     @id @default(autoincrement())
   name  String
-  users useronroom[]
+  users UserOnRoom[]
 }
 
-model useronroom {
-	id Int @id @default(autoincrement())
-	user User @relation(fields: [userid], references: [id])
-	userid Int	
-	role String
-	// CHECK (role IN ('owner', 'administrator', 'member'))
-	// CHECK ENUM('owner', 'administrator', 'member')
-	room Room @relation(fields: [roomid], references: [id])
-	roomid Int
-	@@unique(fields: [userid, roomid], name: "userid_roomid_unique")
+model UserOnRoom {
+	id				Int @id @default(autoincrement())
+	user			User @relation(fields: [userId], references: [id])
+	userId			Int
+	role			Role @default(MEMBER)
+	room			Room @relation(fields: [roomId], references: [id])
+	roomId			Int
+	@@unique(fields: [userId, roomId], name: "userId_roomId_unique")
+}
+
+enum Role {
+  OWNER
+  ADMINISTRATOR
+  MEMBER
 }

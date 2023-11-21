@@ -7,60 +7,49 @@ const prisma = new PrismaClient();
 const roundsOfHashing = 10;
 
 async function main() {
-  const passwordSusami = await bcrypt.hash('password-susami', roundsOfHashing);
-  const passwordThara = await bcrypt.hash('password-thara', roundsOfHashing);
-  const passwordKakiba = await bcrypt.hash('password-kakiba', roundsOfHashing);
-  const passwordShongou = await bcrypt.hash(
-    'password-shongou',
-    roundsOfHashing,
-  );
+  const passwordHashes = await Promise.all([
+    bcrypt.hash('password-susami', roundsOfHashing),
+    bcrypt.hash('password-thara', roundsOfHashing),
+    bcrypt.hash('password-kakiba', roundsOfHashing),
+    bcrypt.hash('password-shongou', roundsOfHashing),
+  ]);
 
-  const user1 = await prisma.user.upsert({
-    where: { email: 'susami@example.com' },
-    update: {},
-    create: {
+  const user1 = await prisma.user.create({
+    data: {
       email: 'susami@example.com',
       name: 'Susami',
-      password: passwordSusami,
+      password: passwordHashes[0],
     },
   });
 
-  const user2 = await prisma.user.upsert({
-    where: { email: 'thara@example.com' },
-    update: {},
-    create: {
+  const user2 = await prisma.user.create({
+    data: {
       email: 'thara@example.com',
       name: 'Thara',
-      password: passwordThara,
+      password: passwordHashes[1],
     },
   });
 
-  const user3 = await prisma.user.upsert({
-    where: { email: 'kakiba@example.com' },
-    update: {},
-    create: {
+  const user3 = await prisma.user.create({
+    data: {
       email: 'kakiba@example.com',
       name: 'Kakiba',
-      password: passwordKakiba,
+      password: passwordHashes[2],
     },
   });
 
-  const user4 = await prisma.user.upsert({
-    where: { email: 'shongou@example.com' },
-    update: {},
-    create: {
+  const user4 = await prisma.user.create({
+    data: {
       email: 'shongou@example.com',
       name: 'Shongou',
-      password: passwordShongou,
+      password: passwordHashes[3],
     },
   });
 
   console.log({ user1, user2, user3, user4 });
 
-  const room1 = await prisma.room.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
+  await prisma.room.create({
+    data: {
       name: 'Room 1',
       users: {
         connect: [
@@ -72,10 +61,8 @@ async function main() {
       },
     },
   });
-  const room2 = await prisma.room.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
+  await prisma.room.create({
+    data: {
       name: 'Room 2',
       users: {
         connect: [{ id: user1.id }, { id: user2.id }, { id: user4.id }],
