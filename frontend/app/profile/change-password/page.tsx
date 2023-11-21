@@ -1,5 +1,5 @@
-import ChangePasswordForm from "@/app/ui/profile/change-password";
+import ChangePasswordCard from "@/app/ui/profile/change-password-card";
 
 export default function ChangePasswordPage() {
-  return <ChangePasswordForm />;
+  return <ChangePasswordCard />;
 }
