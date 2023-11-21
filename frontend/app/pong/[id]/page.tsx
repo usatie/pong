@@ -91,18 +91,8 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
       {/* <PongInformationBoard {} /> */}
       <div>
         <Button onClick={start}>Start</Button>
-        <Button
-          onClick={() => {
-            game.current.switch_battle_mode();
-          }}>
-          Battle
-        </Button>
-        <Button
-          onClick={() => {
-            game.current.switch_practice_mode();
-          }}>
-          Practice
-        </Button>
+        <Button onClick={game.current.switch_battle_mode}>Battle</Button>
+        <Button onClick={game.current.switch_practice_mode}>Practice</Button>
       </div>
       <canvas
         ref={canvasRef}

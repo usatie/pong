@@ -14,7 +14,7 @@ import {
 } from "./const";
 
 export class PongGame {
-  ctx: CanvasRenderingContext2D;
+  ctx!: CanvasRenderingContext2D;
   player1: Paddle;
   player2: Paddle;
   ball: Ball;
@@ -24,15 +24,11 @@ export class PongGame {
   elapsed: number;
   frame_count: number;
   is_playing: boolean;
-  keyName: string;
   keypress: { [key: string]: boolean };
-  socket: Socket;
-  roomId: string;
+  socket!: Socket;
+  roomId!: string;
 
   constructor() {
-    // todo: is there any better way to do this?
-    this.ctx = undefined!;
-
     this.player1 = new Paddle(
       CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
       CANVAS_HEIGHT - PADDLE_HEIGHT,
@@ -67,10 +63,7 @@ export class PongGame {
     this.elapsed = 0;
     this.frame_count = 0;
     this.is_playing = false;
-    this.keyName = "";
     this.keypress = {};
-    this.socket = undefined!;
-    this.roomId = undefined!;
   }
 
   // call only after rendering finishes
