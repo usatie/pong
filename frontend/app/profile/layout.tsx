@@ -7,6 +7,10 @@ const sidebarNavItems = [
     href: "/profile",
   },
   {
+    title: "Change Password",
+    href: "/profile/change-password",
+  },
+  {
     title: "Account",
     href: "/profile/account",
   },
