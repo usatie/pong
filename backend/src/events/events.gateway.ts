@@ -36,6 +36,11 @@ export class EventsGateway implements OnGatewayDisconnect {
       return 'too many clients';
     }
     client.join(data);
+    console.log(
+      `joined: ${client.id} ${
+        this.server.of('/').adapter.rooms.get(data).size
+      }`,
+    );
     return data;
   }
 
@@ -64,6 +69,24 @@ export class EventsGateway implements OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
     client.to(data).emit('right');
+    return;
+  }
+
+  @SubscribeMessage('bounce')
+  async bounce(
+    @MessageBody() data: string,
+    @ConnectedSocket() client: Socket,
+  ): Promise<string> {
+    client.to(data).emit('bounce');
+    return;
+  }
+
+  @SubscribeMessage('collide')
+  async collide(
+    @MessageBody() data: string,
+    @ConnectedSocket() client: Socket,
+  ): Promise<string> {
+    client.to(data).emit('collide');
     return;
   }
 }

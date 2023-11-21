@@ -60,6 +60,15 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
       game.current.player2.draw(game.current.ctx);
     });
 
+    socket.on("bounce", () => {
+      game.current.ball.bounce_off_paddle(game.current.player2);
+    });
+
+    socket.on("collide", () => {
+      game.current.ball.reset();
+      game.current.score.player1++;
+    });
+
     return () => {
       socket.disconnect();
       document.removeEventListener("keydown", handleKeyDown);

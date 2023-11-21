@@ -121,16 +121,12 @@ export class PongGame {
     this.ball.move(this.elapsed);
     if (this.player1.collide_with(this.ball)) {
       this.ball.bounce_off_paddle(this.player1);
-    } else if (this.player2.collide_with(this.ball)) {
-      this.ball.bounce_off_paddle(this.player2);
-    } else if (this.ball.y <= 0) {
-      console.log("collide with top");
-      this.ball.reset();
-      this.score.player2++;
+      this.socket.emit("bounce", this.roomId);
     } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
       console.log("collide with bottom");
       this.ball.reset();
-      this.score.player1++;
+      this.score.player2++;
+      this.socket.emit("collide", this.roomId);
     } else if (this.ball.collide_with_side()) {
       this.ball.bounce_off_side();
     }
