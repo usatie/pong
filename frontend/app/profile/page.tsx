@@ -1,5 +1,5 @@
-import ChangeProfileForm from "@/app/ui/profile/change-profile-form";
+import ProfileForm from "@/app/ui/profile/profile-form";
 
 export default function ProfilePage() {
-  return <ChangeProfileForm />;
+  return <ProfileForm />;
 }

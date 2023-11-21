@@ -22,7 +22,7 @@ export type ProfileItemProps = {
   value: string;
 };
 
-export default function ChangeProfileForm() {
+export default function ProfileForm() {
   // Menu: min 100px
   // Profile : the rest
   return (

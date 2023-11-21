@@ -1,5 +1,3 @@
-"use client";
-
 // layout
 import { Stack } from "@/app/ui/layout/stack";
 import { Button } from "@/components/ui/button";
@@ -16,16 +14,19 @@ export default function ChangePasswordCard() {
             <Input
               type="password"
               id="current-password"
+              name="current-password"
               placeholder="Enter your current password"
             />
             <Input
               type="password"
               id="new-password"
+              name="new-password"
               placeholder="New Password"
             />
             <Input
               type="password"
               id="confirm-password"
+              name="confirm-password"
               placeholder="Confirm Password"
             />
             <Button>Submit</Button>
