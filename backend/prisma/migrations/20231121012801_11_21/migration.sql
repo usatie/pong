@@ -1,23 +1,20 @@
+/*
+  Warnings:
+
+  - You are about to drop the `useronroom` table. If the table is not empty, all the data it contains will be lost.
+
+*/
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('OWNER', 'ADMINISTRATOR', 'MEMBER');
 
--- CreateTable
-CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
-    "email" TEXT NOT NULL,
-    "name" TEXT,
-    "password" TEXT NOT NULL,
+-- DropForeignKey
+ALTER TABLE "useronroom" DROP CONSTRAINT "useronroom_roomid_fkey";
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-);
+-- DropForeignKey
+ALTER TABLE "useronroom" DROP CONSTRAINT "useronroom_userid_fkey";
 
--- CreateTable
-CREATE TABLE "Room" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-
-    CONSTRAINT "Room_pkey" PRIMARY KEY ("id")
-);
+-- DropTable
+DROP TABLE "useronroom";
 
 -- CreateTable
 CREATE TABLE "UserOnRoom" (
@@ -28,9 +25,6 @@ CREATE TABLE "UserOnRoom" (
 
     CONSTRAINT "UserOnRoom_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserOnRoom_userId_roomId_key" ON "UserOnRoom"("userId", "roomId");
