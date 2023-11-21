@@ -27,6 +27,7 @@ export class PongGame {
   keyName: string;
   keypress: { [key: string]: boolean };
   socket: Socket;
+  roomId: string;
 
   constructor() {
     // todo: is there any better way to do this?
@@ -69,16 +70,22 @@ export class PongGame {
     this.keyName = "";
     this.keypress = {};
     this.socket = undefined!;
+    this.roomId = undefined!;
   }
 
   // call only after rendering finishes
-  setup_canvas = (ctx: CanvasRenderingContext2D, socket: Socket) => {
+  setup_canvas = (
+    ctx: CanvasRenderingContext2D,
+    socket: Socket,
+    roomId: string,
+  ) => {
     // todo
     this.ctx = ctx;
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
 
     this.socket = socket;
+    this.roomId = roomId;
   };
 
   update_fps = () => {
@@ -153,12 +160,12 @@ export class PongGame {
       this.player1.clear(this.ctx);
       this.player1.move_left();
       this.player1.draw(this.ctx);
-      this.socket.emit("left");
+      this.socket.emit("left", this.roomId);
     } else if (this.keypress["ArrowRight"]) {
       this.player1.clear(this.ctx);
       this.player1.move_right();
       this.player1.draw(this.ctx);
-      this.socket.emit("right");
+      this.socket.emit("right", this.roomId);
     }
     if (this.is_playing) {
       this.draw_canvas();

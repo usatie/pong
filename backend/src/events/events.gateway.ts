@@ -16,13 +16,11 @@ import { Server, Socket } from 'socket.io';
 export class EventsGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
-  clientConnected: number = 0;
   started: boolean = false;
 
   handleDisconnect(client: Socket) {
-    this.clientConnected--;
     this.started = false;
-    console.log(`disconnect: ${client.id} (${this.clientConnected})`);
+    console.log(`disconnect: ${client.id} `);
     this.server.emit('opponentLeft');
   }
 
@@ -31,42 +29,41 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    if (this.clientConnected == 2) {
-      console.log('full');
-      return 'full';
+    console.log(`join: ${JSON.stringify(data)} ${client.id}`);
+    const connectClients = this.server.of('/').adapter.rooms.get(data);
+    if (connectClients && connectClients.size > 1) {
+      console.log('too many clients');
+      return 'too many clients';
     }
-    this.clientConnected++;
-    console.log(
-      `join: ${JSON.stringify(data)} ${client.id} (${this.clientConnected})`,
-    );
+    client.join(data);
     return data;
   }
 
   @SubscribeMessage('start')
   async start(
-    @MessageBody() data: string,
+    @MessageBody() data: { roomId: string; vx: number; vy: number },
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
     console.log(`start: ${JSON.stringify(data)} ${client.id}`);
-    client.broadcast.emit('start', data);
-    return data;
+    client.to(data.roomId).emit('start', { vx: data.vx, vy: data.vy });
+    return;
   }
 
   @SubscribeMessage('left')
-  async keydown(
+  async left(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    client.broadcast.emit('left');
+    client.to(data).emit('left');
     return;
   }
 
   @SubscribeMessage('right')
-  async keyup(
+  async right(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    client.broadcast.emit('right');
+    client.to(data).emit('right');
     return;
   }
 }

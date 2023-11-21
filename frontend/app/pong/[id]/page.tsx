@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { PongGame } from "./PongGame";
 import { TARGET_FRAME_MS } from "./const";
 
-export default function Page() {
+export default function Page({ params: { id } }: { params: { id: string } }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [socket, setSocket] = useState<Socket>(undefined!);
   // todo: useRef vs useState
@@ -22,7 +22,7 @@ export default function Page() {
     const socket = io(process.env.NEXT_PUBLIC_WEB_URL as string);
     setSocket(socket);
 
-    game.current.setup_canvas(ctx, socket);
+    game.current.setup_canvas(ctx, socket, id);
     game.current.draw_canvas();
     const intervalId = setInterval(game.current.update, TARGET_FRAME_MS);
 
@@ -40,7 +40,7 @@ export default function Page() {
     socket.on("connect", () => {
       console.log(`Connected: ${socket.id}`);
 
-      socket.emit("join");
+      socket.emit("join", id);
     });
 
     socket.on("start", (data) => {
@@ -66,13 +66,14 @@ export default function Page() {
       document.removeEventListener("keyup", handleKeyUp);
       clearInterval(intervalId);
     };
-  }, []);
+  }, [id]);
 
   const start = () => {
     game.current.start();
     socket.emit("start", {
       vx: -game.current.ball.vx,
       vy: -game.current.ball.vy,
+      roomId: id,
     });
   };
 
