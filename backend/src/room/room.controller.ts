@@ -13,7 +13,6 @@ import {
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
-import { CreateRoomRequestDto } from './dto/create-room-request.dto';
 import {
   ApiTags,
   ApiCreatedResponse,
@@ -27,19 +26,12 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @ApiTags('room')
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
-
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: CreateRoomDto })
-  create(
-    @Body() createRoomRequestDto: CreateRoomRequestDto,
-    @Req() request: Request,
-  ) {
-    return this.roomService.create({
-      ...createRoomRequestDto,
-      userId: request['user']['id'],
-    });
+  create(@Body() createRoomDto: CreateRoomDto, @Req() request: Request) {
+    return this.roomService.create(createRoomDto, request['user']);
   }
 
   @Get()
@@ -53,7 +45,7 @@ export class RoomController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   findOne(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
-    return this.roomService.findOne(id, request['user']['id']);
+    return this.roomService.findOne(id, request['user']);
   }
 
   @Patch(':id')
