@@ -3,21 +3,25 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Stack } from "@/app/ui/layout/stack";
+import { Label } from "@/components/ui/label";
 
 function AvatarSkeleton() {
   return <Skeleton className="rounded-full h-20 w-20" />;
 }
 
-function ProfileItem({ title, value }: ProfileItemProps) {
+function ProfileItem({ type, title, value }: ProfileItemProps) {
   return (
     <Stack spacing={1} className="w-96">
-      <div className="text-xs text-muted-foreground">{title}: </div>
-      <Input defaultValue={value} />
+      <Label htmlFor={title} className="text-xs text-muted-foreground">
+        {title}
+      </Label>
+      <Input type={type} id={title} name={title} defaultValue={value} />
     </Stack>
   );
 }
 
 export type ProfileItemProps = {
+  type: string;
   title: string;
   value: string;
 };
@@ -33,8 +37,8 @@ export default function ProfileForm() {
           <Separator />
         </Stack>
         <AvatarSkeleton />
-        <ProfileItem title="username" value="susami" />
-        <ProfileItem title="email" value="susami@example.com" />
+        <ProfileItem type="text" title="name" value="susami" />
+        <ProfileItem type="email" title="email" value="susami@example.com" />
         <div></div>
         <Button variant="outline" className="w-40">
           Save
