@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
+import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 
 interface User {
   id: number;
@@ -87,44 +88,59 @@ export class RoomService {
     });
   }
 
-  findUserOnRoom = (roomId: number, user: User): Promise<UserOnRoomEntity> =>
+  findUserOnRoom = (
+    roomId: number,
+    userId: number,
+  ): Promise<UserOnRoomEntity> =>
     this.prisma.userOnRoom.findUniqueOrThrow({
       where: {
         userId_roomId_unique: {
           roomId: roomId,
-          userId: user.id,
+          userId: userId,
         },
       },
     });
 
-  updateUserOnRoom(roomId: number, user: User): Promise<UserOnRoomEntity> {
+  updateUserOnRoom(
+    roomId: number,
+    client: User,
+    userId: number,
+    updateUserOnRoom: UpdateUserOnRoomDto,
+  ): Promise<UserOnRoomEntity> {
     return this.prisma.userOnRoom.update({
       where: {
         userId_roomId_unique: {
           roomId: roomId,
-          userId: user.id,
+          userId: userId,
         },
       },
-      data: {},
+      data: updateUserOnRoom,
     });
   }
 
-  removeUserOnRoom(roomId: number, clientUser: User, userId): Promise<UserOnRoomEntity> {
-	return this.findUserOnRoom(roomId, clientUser).then((userOnRoomEntity) => {
-		if (userOnRoomEntity.role = Role.owner) {
-			return this.prisma.userOnRoom.delete({
-			  where: {
-				userId_roomId_unique: {
-				  roomId: roomId,
-				  userId: userId,
-				},
-			  },
-			});
-		}
-		else {
-			throw (404);
-		}
-	}).catch((err) => {throw err})
+  removeUserOnRoom(
+    roomId: number,
+    client: User,
+    userId: number,
+  ): Promise<UserOnRoomEntity> {
+    return this.findUserOnRoom(roomId, client.id)
+      .then((userOnRoomEntity) => {
+        if ((userOnRoomEntity.role = Role.OWNER)) {
+          return this.prisma.userOnRoom.delete({
+            where: {
+              userId_roomId_unique: {
+                roomId: roomId,
+                userId: userId,
+              },
+            },
+          });
+        } else {
+          throw 404;
+        }
+      })
+      .catch((err) => {
+        throw err;
+      });
   }
 
   removeAllUserOnRoom(roomId: number): Promise<BatchPayload> {

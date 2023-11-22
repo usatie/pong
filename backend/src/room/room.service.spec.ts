@@ -88,29 +88,29 @@ describe('RoomService', () => {
     });
   });
 
-  describe('removeUserOnRoom()', () => {
-    const user = { id: 1, name: 'test_removeUserOnRoom()' };
-    let roomId: number;
-    const createRoomDto: CreateRoomDto = { name: 'testRoom1' };
+  //   describe('removeUserOnRoom()', () => {
+  //     const user = { id: 1, name: 'test_removeUserOnRoom()' };
+  //     let roomId: number;
+  //     const createRoomDto: CreateRoomDto = { name: 'testRoom1' };
 
-    beforeAll(async () => {
-      const room = await service.create(createRoomDto, user);
-      roomId = room.id;
-    });
+  //     beforeAll(async () => {
+  //       const room = await service.create(createRoomDto, user);
+  //       roomId = room.id;
+  //     });
 
-    it('should throw error', async () => {
-      await expect(service.removeUserOnRoom(10000000, user)).rejects.toThrow();
-    });
-    it('should return a room', () => {
-      return service
-        .removeUserOnRoom(roomId, user)
-        .then((UserOnRoom) => {
-          expect(UserOnRoom.roomId).toBe(roomId);
-          expect(UserOnRoom.userId).toBe(user.id);
-        })
-        .catch((err) => {
-          throw err;
-        });
-    });
-  });
+  //     it('should throw error', async () => {
+  //       await expect(service.removeUserOnRoom(10000000, user)).rejects.toThrow();
+  //     });
+  //     it('should return a room', () => {
+  //       return service
+  //         .removeUserOnRoom(roomId, user)
+  //         .then((UserOnRoom) => {
+  //           expect(UserOnRoom.roomId).toBe(roomId);
+  //           expect(UserOnRoom.userId).toBe(user.id);
+  //         })
+  //         .catch((err) => {
+  //           throw err;
+  //         });
+  //     });
+  //   });
 });

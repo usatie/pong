@@ -22,6 +22,7 @@ import {
 import { RoomEntity } from './entities/room.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
+import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 
 @Controller('room')
 @ApiTags('room')
@@ -84,6 +85,29 @@ export class RoomController {
     @Param('userId', ParseIntPipe) userId: number,
     @Req() request: Request,
   ) {
-    return this.roomService.removeUserOnRoom(id, { id: userId, name: 'test' }, userId);
+    return this.roomService.removeUserOnRoom(
+      id,
+      { id: userId, name: 'test' },
+      userId,
+    );
+  }
+
+  @Patch(':id/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: UserOnRoomEntity })
+  UpdateUserOnRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body() updateUserOnRoomDto: UpdateUserOnRoomDto,
+    @Req() request: Request,
+  ) {
+    console.log(updateUserOnRoomDto);
+    return this.roomService.updateUserOnRoom(
+      id,
+      request['user'],
+      userId,
+      updateUserOnRoomDto,
+    );
   }
 }

@@ -13,6 +13,7 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomEntity } from './entities/room.entity';
 import { after } from 'node:test';
 import { UserEntity } from 'src/user/entities/user.entity';
+import { Role } from '@prisma/client';
 
 interface testUser {
   name: string;
@@ -20,6 +21,7 @@ interface testUser {
   password: string;
   id: number;
   accessToken: string;
+  role: Role;
 }
 
 enum UserType {
@@ -37,6 +39,7 @@ describe('RoomController', () => {
       password: 'password-owner',
       id: <number>undefined,
       accessToken: undefined,
+	  role: Role.OWNER,
     },
     {
       name: 'admin',
@@ -44,6 +47,7 @@ describe('RoomController', () => {
       password: 'password-admin',
       id: <number>undefined,
       accessToken: undefined,
+	  role: Role.ADMINISTRATOR,
     },
     {
       name: 'member',
@@ -51,6 +55,7 @@ describe('RoomController', () => {
       password: 'password-member',
       id: <number>undefined,
       accessToken: undefined,
+	  role: Role.MEMBER,
     },
   ];
 
@@ -81,23 +86,32 @@ describe('RoomController', () => {
       module.get<AuthController>(AuthController);
 
     await users.forEach((user) => {
-		userController.create(user).then(async(UserEntity) => {
-			user.id = UserEntity.id
-			if (user.name = 'owner') {
-				testRoom.roomId = await roomService // controller で書きたいけど request の書き方が分からない
-				.create(testRoom, users[UserType.owner])
-				.then((roomEntity: RoomEntity) => {
-				  return roomEntity.id;
-				});
-			}
-			else if (user.name = 'admin') {
-				roomService.createUserOnRoom(testRoom.roomId, user)
-				.then(() => {
-					roomService.updateUserOnRoom()
-				})
-			}
-		}).catch((err) => {throw err});
-	});
+      userController
+        .create(user)
+        .then(async (UserEntity) => {
+          user.id = UserEntity.id;
+          if ((user.name = 'owner')) {
+            testRoom.roomId = await roomService // controller で書きたいけど request の書き方が分からない
+              .create(testRoom, users[UserType.owner])
+              .then((roomEntity: RoomEntity) => {
+                return roomEntity.id;
+              });
+          } else {
+            roomService.createUserOnRoom(testRoom.roomId, user).then(() => {
+              if ((user.name = 'admin'))
+                roomService.updateUserOnRoom(
+                  testRoom.roomId,
+                  users[UserType.owner],
+                  user.id,
+                  { role: Role.ADMINISTRATOR },
+                );
+            });
+          }
+        })
+        .catch((err) => {
+          throw err;
+        });
+    });
 
     testRoom.roomId = await roomService // controller で書きたいけど request の書き方が分からない
       .create(testRoom, users[UserType.owner])
