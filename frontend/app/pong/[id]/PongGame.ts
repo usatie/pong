@@ -26,7 +26,6 @@ export class PongGame {
   is_playing: boolean;
   keypress: { [key: string]: boolean };
   socket!: Socket;
-  roomId!: string;
 
   constructor() {
     this.player1 = new Paddle(
@@ -67,18 +66,13 @@ export class PongGame {
   }
 
   // call only after rendering finishes
-  setup_canvas = (
-    ctx: CanvasRenderingContext2D,
-    socket: Socket,
-    roomId: string,
-  ) => {
+  setup_canvas = (ctx: CanvasRenderingContext2D, socket: Socket) => {
     // todo
     this.ctx = ctx;
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
 
     this.socket = socket;
-    this.roomId = roomId;
   };
 
   update_fps = () => {
@@ -114,12 +108,12 @@ export class PongGame {
     this.ball.move(this.elapsed);
     if (this.player1.collide_with(this.ball)) {
       this.ball.bounce_off_paddle(this.player1);
-      this.socket.emit("bounce", this.roomId);
+      this.socket.emit("bounce");
     } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
       console.log("collide with bottom");
       this.ball.reset();
       this.score.player2++;
-      this.socket.emit("collide", this.roomId);
+      this.socket.emit("collide");
     } else if (this.ball.collide_with_side()) {
       this.ball.bounce_off_side();
     }
@@ -149,12 +143,12 @@ export class PongGame {
       this.player1.clear(this.ctx);
       this.player1.move_left();
       this.player1.draw(this.ctx);
-      this.socket.emit("left", this.roomId);
+      this.socket.emit("left");
     } else if (this.keypress["ArrowRight"]) {
       this.player1.clear(this.ctx);
       this.player1.move_right();
       this.player1.draw(this.ctx);
-      this.socket.emit("right", this.roomId);
+      this.socket.emit("right");
     }
     if (this.is_playing) {
       this.draw_canvas();

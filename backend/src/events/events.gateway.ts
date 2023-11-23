@@ -36,6 +36,7 @@ export class EventsGateway implements OnGatewayDisconnect {
       return 'too many clients';
     }
     client.join(data);
+    console.log(client.rooms);
     console.log(
       `joined: ${client.id} ${
         this.server.of('/').adapter.rooms.get(data).size
@@ -46,11 +47,11 @@ export class EventsGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('start')
   async start(
-    @MessageBody() data: { roomId: string; vx: number; vy: number },
+    @MessageBody() data: { vx: number; vy: number },
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
     console.log(`start: ${JSON.stringify(data)} ${client.id}`);
-    client.to(data.roomId).emit('start', { vx: data.vx, vy: data.vy });
+    this.broadcastToRooms(client, 'start', data);
     return;
   }
 
@@ -59,7 +60,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    client.to(data).emit('left');
+    this.broadcastToRooms(client, 'left');
     return;
   }
 
@@ -68,7 +69,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    client.to(data).emit('right');
+    this.broadcastToRooms(client, 'right');
     return;
   }
 
@@ -77,7 +78,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    client.to(data).emit('bounce');
+    this.broadcastToRooms(client, 'bounce');
     return;
   }
 
@@ -86,7 +87,16 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    client.to(data).emit('collide');
+    this.broadcastToRooms(client, 'collide');
     return;
+  }
+
+  broadcastToRooms(socket: Socket, eventName: string, data: any = null) {
+    socket.rooms.forEach((room: string) => {
+      if (room != socket.id) {
+        if (data) socket.to(room).emit(eventName, data);
+        else socket.to(room).emit(eventName);
+      }
+    });
   }
 }
