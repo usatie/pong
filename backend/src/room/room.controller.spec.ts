@@ -108,7 +108,7 @@ describe('RoomController', () => {
         });
     });
 
-    return Promise.all(userCreationPromises).then(() => {
+    const roomCreationPromise = Promise.all(userCreationPromises).then(() => {
       console.log('userCreationPromises done');
       const user = {id: users[UserType.owner].id, name: users[UserType.owner].name};
       console.log(user);
@@ -120,24 +120,22 @@ describe('RoomController', () => {
     }).catch((err) => {
       throw err;
     });
-    // .then(() => {
-    //   return users.map((user) => {
-    //     return authController
-    //       .login(user)
-    //       .then((authEntity: AuthEntity) => {
-    //         user.accessToken = authEntity.accessToken;
-    //       })
-    //       .catch((err) => {
-    //         throw err;
-    //       });
-    //   });
-    // }).catch((err) => {
-    //   throw err;
-    // }).then(() => {
-    //   console.log(users);
-    // });
 
-
+    await Promise.all(userCreationPromises); // I'm tired of promise hell
+    const loginPromises = users.map((user) => {
+        return authController
+          .login(user)
+          .then((authEntity: AuthEntity) => {
+            user.accessToken = authEntity.accessToken;
+            console.log('user.accessToken: ' + user.accessToken);
+          })
+          .catch((err) => {
+            throw err;
+          });
+      });
+    return Promise.all([roomCreationPromise, loginPromises]).then(() => {
+      return console.log('roomCreationPromise done', users);
+    });
     // enter room
 
     // await roomService.createUserOnRoom(testRoom.roomId, users[UserType.admin]).then(() => {
