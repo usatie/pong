@@ -64,6 +64,14 @@ function getAccessToken() {
   return accessToken;
 }
 
+export async function getUsers(): Promise<User[]> {
+  const res = await fetch(`${process.env.API_URL}/user`, {
+    cache: "no-cache",
+  });
+  const users = await res.json();
+  return users;
+}
+
 export async function getUser(id: number) {
   const res = await fetch(`${process.env.API_URL}/user/${id}`, {
     cache: "no-cache",
