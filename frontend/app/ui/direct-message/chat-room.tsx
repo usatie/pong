@@ -41,10 +41,12 @@ export default function ChatRome({ yourself, other }: { yourself: User; other: U
       text: "hoge hoge",
     },
   ]);
+  const otherNameId = other.name + other.id;
+  const yourselfNameId = yourself.name + yourself.id;
 
   useEffect(() => {
     const handleMessageReceived = (newMessageLog: Chat) => {
-      if (newMessageLog.from === other.name + other.id || newMessageLog.from === yourself.name + yourself.id) {
+      if (newMessageLog.from === otherNameId || newMessageLog.from === yourselfNameId) {
         console.log("received message: ", newMessageLog);
         setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);
         console.log(messageLog);
@@ -55,20 +57,20 @@ export default function ChatRome({ yourself, other }: { yourself: User; other: U
       console.log(`return from useEffect`);
       socket.off("sendToUser", handleMessageReceived);
     };
-  }, [messageLog]);
+  }, [messageLog, yourselfNameId, otherNameId]);
 
   useEffect(() => {
     socket.connect(); // no-op if the socket is already connected
-    socket.emit("joinDM", yourself.name + yourself.id);
+    socket.emit("joinDM", yourselfNameId);
     console.log("emit joinDM");
 
     return () => {
-      socket.emit("leaveDM", yourself.name + yourself.id);
+      socket.emit("leaveDM", yourselfNameId);
       console.log("emit leaveDM");
       console.log("disconnect");
       socket.disconnect();
     };
-  }, []);
+  }, [yourselfNameId]);
 
   const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -76,8 +78,8 @@ export default function ChatRome({ yourself, other }: { yourself: User; other: U
     console.log(`privateMassage`, newMessage);
     console.log("name: ", yourself.name);
     const name = yourself.name;
-    const fromName = name + yourself.id;
-    const toName = other.name + other.id;
+    const fromName = yourselfNameId;
+    const toName = otherNameId;
     socket.emit("privateMessage", { from: fromName, to: toName, userName: name, text: newMessage });
     setMessage("");
   };

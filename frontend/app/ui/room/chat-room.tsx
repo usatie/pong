@@ -64,7 +64,7 @@ export default function ChatHome({ id, user }: { id: number; user: User }) {
       console.log("disconnect");
       socket.disconnect();
     };
-  }, []);
+  }, [id]);
 
   const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();
