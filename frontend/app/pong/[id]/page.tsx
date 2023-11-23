@@ -22,7 +22,7 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
     const socket = io(process.env.NEXT_PUBLIC_WEB_URL as string);
     setSocket(socket);
 
-    game.current.setup_canvas(ctx, socket, id);
+    game.current.setup_canvas(ctx, socket);
     game.current.draw_canvas();
     const intervalId = setInterval(game.current.update, TARGET_FRAME_MS);
 
@@ -82,7 +82,6 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
     socket.emit("start", {
       vx: -game.current.ball.vx,
       vy: -game.current.ball.vy,
-      roomId: id,
     });
   };
 
