@@ -13,6 +13,13 @@ type MessageRecieved = {
   text: string;
 };
 
+type privateRecieved = {
+  from: string;
+  to: string;
+  userName: string;
+  text: string;
+};
+
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -36,14 +43,45 @@ export class ChatGateway {
     this.server.to(rooms[1]).emit('sendToClient', data, client.id);
   }
 
+  @SubscribeMessage('privateMessage')
+  privateMessageToUser(
+    @MessageBody() data: privateRecieved,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    this.logger.log('private message recieved');
+    this.logger.log(data);
+    this.server.to(data.from).to(data.to).emit('sendToUser', data, client.id);
+  }
+
   @SubscribeMessage('joinRoom')
-  handleJoin(@MessageBody() roomId: string, @ConnectedSocket() client: Socket) {
+  handleJoinRoom(
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
     this.logger.log(`join room: ${client.id} joined room ${roomId}`);
     client.join(roomId);
   }
 
+  @SubscribeMessage('joinDM')
+  handleJoinUser(
+    @MessageBody() userId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`join room: ${client.id} joined room ${userId}`);
+    client.join(userId);
+  }
+
+  @SubscribeMessage('leaveDM')
+  handleLeaveUser(
+    @MessageBody() userId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`leave room: ${client.id} leaved room ${userId}`);
+    client.leave(userId);
+  }
+
   @SubscribeMessage('leaveRoom')
-  handleLeave(
+  handleLeaveRoom(
     @MessageBody() roomId: string,
     @ConnectedSocket() client: Socket,
   ) {
