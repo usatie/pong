@@ -14,6 +14,7 @@ import { RoomEntity } from './entities/room.entity';
 import { after } from 'node:test';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { Role } from '@prisma/client';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 interface testUser {
   name: string;
@@ -60,6 +61,7 @@ describe('RoomController', () => {
   ];
 
   let userController: UserController;
+  let roomService: RoomService;
 
   const testRoom = {
     name: 'testRoom1',
@@ -81,50 +83,99 @@ describe('RoomController', () => {
 
     controller = module.get<RoomController>(RoomController);
     userController = module.get<UserController>(UserController);
-    const roomService: RoomService = module.get<RoomService>(RoomService);
+    const userService: UserService = module.get<UserService>(UserService);
+    roomService = module.get<RoomService>(RoomService);
     const authController: AuthController =
       module.get<AuthController>(AuthController);
 
-    await users.forEach((user) => {
-      userController
-        .create(user)
-        .then(async (UserEntity) => {
-          user.id = UserEntity.id;
-          if ((user.name = 'owner')) {
-            testRoom.roomId = await roomService // controller で書きたいけど request の書き方が分からない
-              .create(testRoom, users[UserType.owner])
-              .then((roomEntity: RoomEntity) => {
-                return roomEntity.id;
-              });
-          } else {
-            roomService.createUserOnRoom(testRoom.roomId, user).then(() => {
-              if ((user.name = 'admin'))
-                roomService.updateUserOnRoom(
-                  testRoom.roomId,
-                  users[UserType.owner],
-                  user.id,
-                  { role: Role.ADMINISTRATOR },
-                );
-            });
-          }
+    // create user
+    const userCreationPromises = users.map(user => {
+      const createUserDto: CreateUserDto = {
+        name: user.name,
+        email: user.email,
+        password: user.password,
+      };
+      // ここで非同期処理を行う
+      return userService.create(createUserDto)
+        .then(userEntity => {
+          user.id = userEntity.id;
+          console.log('user.id: ' + user.id);
         })
-        .catch((err) => {
+        .catch(err => {
+          // エラー処理
+          console.error(err);
           throw err;
         });
     });
 
-    testRoom.roomId = await roomService // controller で書きたいけど request の書き方が分からない
-      .create(testRoom, users[UserType.owner])
-      .then((roomEntity: RoomEntity) => {
-        return roomEntity.id;
-      });
+    return Promise.all(userCreationPromises).then(() => {
+      console.log('userCreationPromises done');
+      const user = {id: users[UserType.owner].id, name: users[UserType.owner].name};
+      console.log(user);
+      return roomService // controller で書きたいけど request の書き方が分からない
+        .create(testRoom, user)
+    }).then((roomEntity: RoomEntity) => {
+      testRoom.roomId = roomEntity.id;
+      console.log(testRoom);
+    }).catch((err) => {
+      throw err;
+    });
+    // .then(() => {
+    //   return users.map((user) => {
+    //     return authController
+    //       .login(user)
+    //       .then((authEntity: AuthEntity) => {
+    //         user.accessToken = authEntity.accessToken;
+    //       })
+    //       .catch((err) => {
+    //         throw err;
+    //       });
+    //   });
+    // }).catch((err) => {
+    //   throw err;
+    // }).then(() => {
+    //   console.log(users);
+    // });
+
+
+    // enter room
+
+    // await roomService.createUserOnRoom(testRoom.roomId, users[UserType.admin]).then(() => {
+    //   roomService.updateUserOnRoom(
+    //     testRoom.roomId,
+    //     users[UserType.owner],
+    //     users[UserType.admin].id,
+    //     { role: Role.ADMINISTRATOR },
+    //   );
+    // });
+    // await roomService.createUserOnRoom(testRoom.roomId, users[UserType.member]);
+    
+    // Promise.all(
+    //   users.map((user) => {
+    //     return authController
+    //       .login(user)
+    //       .then((authEntity: AuthEntity) => {
+    //         user.accessToken = authEntity.accessToken;
+    //       })
+    //       .catch((err) => {
+    //         throw err;
+    //       });
+    //   }),
+    // ).then(() => {
+    //   console.log(users);
+    // }).catch((err) => {
+    //   throw err;
+    // });
   });
 
   afterEach(async () => {
     try {
+      console.log('afterEach', testRoom);
       await controller.removeRoom(testRoom.roomId);
-      await userController.remove(users[UserType.owner].id);
-    } catch (error) {
+      for (const user of users) {
+        await userController.remove(user.id);
+      }
+      } catch (error) {
       throw error;
     }
   });

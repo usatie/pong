@@ -73,7 +73,7 @@ export class RoomService {
           where: { id },
         }),
       )
-      .catch((err) => err);
+      .catch((err) => {throw err});
   }
 
   // UserOnRoom CRUD
