@@ -13,6 +13,8 @@ import {
   TARGET_FRAME_MS,
 } from "./const";
 
+type setFunction = (value: number) => void;
+
 export class PongGame {
   ctx!: CanvasRenderingContext2D;
   player1: Paddle;
@@ -25,9 +27,20 @@ export class PongGame {
   frame_count: number;
   is_playing: boolean;
   keypress: { [key: string]: boolean };
+
+  setFps: setFunction;
+  setSpeed: setFunction;
+  setPlayer1Position: setFunction;
+  setPlayer2Position: setFunction;
+
   socket!: Socket;
 
-  constructor() {
+  constructor(
+    setFps: setFunction,
+    setSpeed: setFunction,
+    setPlayer1Position: setFunction,
+    setPlayer2Position: setFunction,
+  ) {
     this.player1 = new Paddle(
       CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
       CANVAS_HEIGHT - PADDLE_HEIGHT,
@@ -63,6 +76,10 @@ export class PongGame {
     this.frame_count = 0;
     this.is_playing = false;
     this.keypress = {};
+    this.setFps = setFps;
+    this.setSpeed = setSpeed;
+    this.setPlayer1Position = setPlayer1Position;
+    this.setPlayer2Position = setPlayer2Position;
   }
 
   // call only after rendering finishes
@@ -85,19 +102,19 @@ export class PongGame {
       const fps = Math.round(
         this.frame_count / (elapsed_since_last_update / 1000),
       );
-      // this.setFps(fps);
+      this.setFps(fps);
       this.frame_count = 0;
       this.fps_updated_at = this.updated_at;
     }
   };
 
   update_speed(speed: number) {
-    // this.setSpeed(speed);
+    this.setSpeed(speed);
   }
 
   update_players() {
-    // this.setPlayer1Position(this.player1.x);
-    // this.setPlayer2Position(this.player2.x);
+    this.setPlayer1Position(this.player1.x);
+    this.setPlayer2Position(this.player2.x);
   }
 
   draw_canvas = () => {

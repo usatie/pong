@@ -14,7 +14,7 @@ export default function PongInformationBoard({
   player2Position,
 }: PongInformationBoardProps) {
   return (
-    <>
+    <div className="flex flex-col">
       <div id="fps">FPS: {fps}</div>
       <div id="speed">Speed: {speed}</div>
       <div>
@@ -23,6 +23,6 @@ export default function PongInformationBoard({
       <div>
         player2: <span id="player2">{player2Position}</span>
       </div>
-    </>
+    </div>
   );
 }
