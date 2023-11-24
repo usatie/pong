@@ -9,14 +9,7 @@ export const UserButton = ({ user }: { user: User }) => {
 
   const HandleOnClick = () => {
     router.push(`/direct-message/${user.id}`);
-  }
+  };
 
-  return (
-    <button
-      onClick={HandleOnClick}
-    >
-      {user.name}
-    </button>
-  )
-
-}
+  return <button onClick={HandleOnClick}>{user.name}</button>;
+};

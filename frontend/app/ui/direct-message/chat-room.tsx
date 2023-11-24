@@ -25,7 +25,13 @@ type DM = {
 
 type MessageLog = Array<DM>;
 
-export default function ChatRome({ yourself, other }: { yourself: User; other: User }) {
+export default function ChatRome({
+  yourself,
+  other,
+}: {
+  yourself: User;
+  other: User;
+}) {
   const [message, setMessage] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLog>([
     {
@@ -52,7 +58,10 @@ export default function ChatRome({ yourself, other }: { yourself: User; other: U
 
   useEffect(() => {
     const handleMessageReceived = (newMessageLog: DM) => {
-      if (newMessageLog.from === otherNameId || newMessageLog.from === yourselfNameId) {
+      if (
+        newMessageLog.from === otherNameId ||
+        newMessageLog.from === yourselfNameId
+      ) {
         console.log("received message: ", newMessageLog);
         setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);
         console.log(messageLog);
@@ -86,7 +95,12 @@ export default function ChatRome({ yourself, other }: { yourself: User; other: U
     const name = yourself.name;
     const fromName = yourselfNameId;
     const toName = otherNameId;
-    socket.emit("privateMessage", { from: fromName, to: toName, userName: name, text: newMessage });
+    socket.emit("privateMessage", {
+      from: fromName,
+      to: toName,
+      userName: name,
+      text: newMessage,
+    });
     setMessage("");
   };
 

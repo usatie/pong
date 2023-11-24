@@ -20,7 +20,9 @@ export default async function Page({
     return null;
   }
   const otherUsers = await getUsers();
-  const otherUser = otherUsers.find((user) => user.id === parseInt(directMessageId));
+  const otherUser = otherUsers.find(
+    (user) => user.id === parseInt(directMessageId),
+  );
   if (!otherUser) {
     console.error("error");
     return null;
