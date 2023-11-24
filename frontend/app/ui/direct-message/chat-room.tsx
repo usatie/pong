@@ -17,8 +17,8 @@ import { socket } from "@/socket";
 import type { User } from "@/app/ui/user/card";
 
 type DM = {
-  fromUser: string;
-  toUser: string;
+  from: string;
+  to: string;
   userName: string;
   text: string;
 };
@@ -29,23 +29,29 @@ export default function ChatRome({ yourself, other }: { yourself: User; other: U
   const [message, setMessage] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLog>([
     {
+      from: "Guest",
+      to: "Guest",
       userName: "Guest",
       text: "example message logs",
     },
     {
+      from: "Guest",
+      to: "Guest",
       userName: "Guest",
       text: "Hello world",
     },
     {
+      from: "Guest",
+      to: "Guest",
       userName: "Guest",
       text: "hoge hoge",
     },
   ]);
-  const otherNameId = other.name + other.id;
-  const yourselfNameId = yourself.name + yourself.id;
+  const yourselfNameId = yourself.name! + yourself.id!;
+  const otherNameId = other.name! + other.id!;
 
   useEffect(() => {
-    const handleMessageReceived = (newMessageLog: Chat) => {
+    const handleMessageReceived = (newMessageLog: DM) => {
       if (newMessageLog.from === otherNameId || newMessageLog.from === yourselfNameId) {
         console.log("received message: ", newMessageLog);
         setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);

@@ -6,10 +6,14 @@ import { UserButton } from "@/app/direct-message/user-button";
 
 const DirectMessageSidebar = async () => {
   const users = await getUsers();
-  const currentUserId = await getUserId();
   if (!users) {
     console.error("getUsers Error");
-    return NULL;
+    return null;
+  }
+  const currentUserId = await getUserId();
+  if (!currentUserId) {
+    console.error("getUserId Error");
+    return null;
   }
   return (
     <div
@@ -20,7 +24,7 @@ const DirectMessageSidebar = async () => {
         <Separator className="bg-zinc-200 dark:bg-zinc-700 rounded-md my-2"/>
         <div className="space-y-[2px]">
           {users.map((user, index) => (
-             currentUserId !== user.id && <UserButton key={index} user={user} />
+             parseInt(currentUserId) !== user.id && <UserButton key={index} user={user} />
             )
           )}
         </div>
