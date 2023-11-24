@@ -25,20 +25,7 @@ type MessageLog = Array<Chat>;
 
 export default function ChatRoom({ id, user }: { id: number; user: User }) {
   const [message, setMessage] = useState("");
-  const [messageLog, setMessageLog] = useState<MessageLog>([
-    {
-      userName: "Guest",
-      text: "example message logs",
-    },
-    {
-      userName: "Guest",
-      text: "Hello world",
-    },
-    {
-      userName: "Guest",
-      text: "hoge hoge",
-    },
-  ]);
+  const [messageLog, setMessageLog] = useState<MessageLog>([]);
 
   useEffect(() => {
     const handleMessageReceived = (newMessageLog: Chat) => {

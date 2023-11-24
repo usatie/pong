@@ -33,26 +33,7 @@ export default function ChatRoom({
   other: User;
 }) {
   const [message, setMessage] = useState("");
-  const [messageLog, setMessageLog] = useState<MessageLog>([
-    {
-      from: "Guest",
-      to: "Guest",
-      userName: "Guest",
-      text: "example message logs",
-    },
-    {
-      from: "Guest",
-      to: "Guest",
-      userName: "Guest",
-      text: "Hello world",
-    },
-    {
-      from: "Guest",
-      to: "Guest",
-      userName: "Guest",
-      text: "hoge hoge",
-    },
-  ]);
+  const [messageLog, setMessageLog] = useState<MessageLog>([]);
   const yourselfNameId = yourself.name! + yourself.id!;
   const otherNameId = other.name! + other.id!;
 

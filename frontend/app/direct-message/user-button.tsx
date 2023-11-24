@@ -1,7 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import type { User } from "@/app/ui/user/card";
 
 export const UserButton = ({ user }: { user: User }) => {
@@ -11,5 +13,12 @@ export const UserButton = ({ user }: { user: User }) => {
     router.push(`/direct-message/${user.id}`);
   };
 
-  return <button onClick={handleOnClick}>{user.name}</button>;
+  return (
+    <button
+      onClick={handleOnClick}
+      className="hover:text-black dark:hover:text-white text-slate-500 text-muted-foreground"
+    >
+      {user.name}
+    </button>
+  );
 };
