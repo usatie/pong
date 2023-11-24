@@ -25,7 +25,7 @@ type DM = {
 
 type MessageLog = Array<DM>;
 
-export default function ChatRome({
+export default function ChatRoom({
   yourself,
   other,
 }: {

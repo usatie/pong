@@ -8,12 +8,12 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 
-type MessageRecieved = {
+type MessageReceived = {
   userName: string;
   text: string;
 };
 
-type privateRecieved = {
+type privateReceived = {
   from: string;
   to: string;
   userName: string;
@@ -33,7 +33,7 @@ export class ChatGateway {
 
   @SubscribeMessage('newMessage')
   chatMessageToRoom(
-    @MessageBody() data: MessageRecieved,
+    @MessageBody() data: MessageReceived,
     @ConnectedSocket() client: Socket,
   ): void {
     this.logger.log('message recieved');
@@ -45,7 +45,7 @@ export class ChatGateway {
 
   @SubscribeMessage('privateMessage')
   privateMessageToUser(
-    @MessageBody() data: privateRecieved,
+    @MessageBody() data: privateReceived,
     @ConnectedSocket() client: Socket,
   ): void {
     this.logger.log('private message recieved');
@@ -67,7 +67,7 @@ export class ChatGateway {
     @MessageBody() userId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.log(`join room: ${client.id} joined room ${userId}`);
+    this.logger.log(`join DM: ${client.id} joined DM ${userId}`);
     client.join(userId);
   }
 
@@ -76,7 +76,7 @@ export class ChatGateway {
     @MessageBody() userId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.log(`leave room: ${client.id} leaved room ${userId}`);
+    this.logger.log(`leave DM: ${client.id} leaved DM ${userId}`);
     client.leave(userId);
   }
 

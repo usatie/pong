@@ -1,5 +1,4 @@
 import UserCard from "@/app/ui/user/card";
-import type { User } from "@/app/ui/user/card";
 import { getUsers } from "@/app/lib/actions";
 
 export default async function UserListPage() {

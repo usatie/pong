@@ -7,9 +7,9 @@ import type { User } from "@/app/ui/user/card";
 export const UserButton = ({ user }: { user: User }) => {
   const router = useRouter();
 
-  const HandleOnClick = () => {
+  const handleOnClick = () => {
     router.push(`/direct-message/${user.id}`);
   };
 
-  return <button onClick={HandleOnClick}>{user.name}</button>;
+  return <button onClick={handleOnClick}>{user.name}</button>;
 };

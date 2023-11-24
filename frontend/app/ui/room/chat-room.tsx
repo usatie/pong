@@ -23,7 +23,7 @@ type Chat = {
 
 type MessageLog = Array<Chat>;
 
-export default function ChatHome({ id, user }: { id: number; user: User }) {
+export default function ChatRoom({ id, user }: { id: number; user: User }) {
   const [message, setMessage] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLog>([
     {

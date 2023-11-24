@@ -27,7 +27,5 @@ export default async function Page({
     console.error("error");
     return null;
   }
-  console.log(typeof directMessageId);
-  console.log(otherUser);
   return <ChatRoomCard yourself={currentUser} other={otherUser} />;
 }
