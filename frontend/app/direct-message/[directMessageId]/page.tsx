@@ -1,7 +1,6 @@
 import ChatRoomCard from "@/app/ui/direct-message/chat-room";
 import { getUserId } from "@/app/lib/session";
-import { getUsers } from "@/app/lib/actions";
-import { getUser } from "@/app/lib/actions";
+import { getUsers, getUser } from "@/app/lib/actions";
 import type { User } from "@/app/ui/user/card";
 
 export default async function Page({
