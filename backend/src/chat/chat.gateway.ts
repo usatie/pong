@@ -13,7 +13,7 @@ type MessageReceived = {
   text: string;
 };
 
-type privateReceived = {
+type PrivateReceived = {
   from: string;
   to: string;
   userName: string;
@@ -36,7 +36,7 @@ export class ChatGateway {
     @MessageBody() data: MessageReceived,
     @ConnectedSocket() client: Socket,
   ): void {
-    this.logger.log('message recieved');
+    this.logger.log('message received');
     this.logger.log(data);
     const rooms = [...client.rooms];
     this.logger.log('rooms', rooms);
@@ -45,10 +45,10 @@ export class ChatGateway {
 
   @SubscribeMessage('privateMessage')
   privateMessageToUser(
-    @MessageBody() data: privateReceived,
+    @MessageBody() data: PrivateReceived,
     @ConnectedSocket() client: Socket,
   ): void {
-    this.logger.log('private message recieved');
+    this.logger.log('private message received');
     this.logger.log(data);
     this.server.to(data.from).to(data.to).emit('sendToUser', data, client.id);
   }
@@ -76,7 +76,7 @@ export class ChatGateway {
     @MessageBody() userId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.log(`leave DM: ${client.id} leaved DM ${userId}`);
+    this.logger.log(`leave DM: ${client.id} left DM ${userId}`);
     client.leave(userId);
   }
 
@@ -85,7 +85,7 @@ export class ChatGateway {
     @MessageBody() roomId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.log(`leave room: ${client.id} leaved room ${roomId}`);
+    this.logger.log(`leave room: ${client.id} left room ${roomId}`);
     client.leave(roomId);
   }
 
