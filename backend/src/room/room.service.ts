@@ -90,9 +90,18 @@ export class RoomService {
 
   findUserOnRoom = (
     roomId: number,
+    client: User,
     userId: number,
-  ): Promise<UserOnRoomEntity> =>
-    this.prisma.userOnRoom.findUniqueOrThrow({
+  ): Promise<UserOnRoomEntity> => {
+  return this.prisma.userOnRoom.findUniqueOrThrow({
+    where: {
+      userId_roomId_unique: {
+        roomId: roomId,
+        userId: client.id,
+      },
+    }
+  }).then(() => {
+    return this.prisma.userOnRoom.findUniqueOrThrow({
       where: {
         userId_roomId_unique: {
           roomId: roomId,
@@ -100,6 +109,8 @@ export class RoomService {
         },
       },
     });
+  }).catch((err) => err);
+  }
 
   updateUserOnRoom(
     roomId: number,
@@ -107,6 +118,7 @@ export class RoomService {
     userId: number,
     updateUserOnRoom: UpdateUserOnRoomDto,
   ): Promise<UserOnRoomEntity> {
+    const
     return this.prisma.userOnRoom.update({
       where: {
         userId_roomId_unique: {

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Request } from 'express';
 import { RoomController } from './room.controller';
 import { RoomService } from './room.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -29,6 +30,7 @@ enum UserType {
   owner,
   admin,
   member,
+  NotMember,
 }
 
 describe('RoomController', () => {
@@ -57,6 +59,14 @@ describe('RoomController', () => {
       id: <number>undefined,
       accessToken: undefined,
 	  role: Role.MEMBER,
+    },
+    {
+      name: 'NotMember',
+      email: 'NotMember@example.com',
+      password: 'password-NotMember',
+      id: <number>undefined,
+      accessToken: undefined,
+	    role: undefined,
     },
   ];
 
@@ -133,37 +143,18 @@ describe('RoomController', () => {
             throw err;
           });
       });
-    return Promise.all([roomCreationPromise, loginPromises]).then(() => {
+    await Promise.all([roomCreationPromise, loginPromises]).then(() => {
       return console.log('roomCreationPromise done', users);
     });
-    // enter room
-
-    // await roomService.createUserOnRoom(testRoom.roomId, users[UserType.admin]).then(() => {
-    //   roomService.updateUserOnRoom(
-    //     testRoom.roomId,
-    //     users[UserType.owner],
-    //     users[UserType.admin].id,
-    //     { role: Role.ADMINISTRATOR },
-    //   );
-    // });
-    // await roomService.createUserOnRoom(testRoom.roomId, users[UserType.member]);
-    
-    // Promise.all(
-    //   users.map((user) => {
-    //     return authController
-    //       .login(user)
-    //       .then((authEntity: AuthEntity) => {
-    //         user.accessToken = authEntity.accessToken;
-    //       })
-    //       .catch((err) => {
-    //         throw err;
-    //       });
-    //   }),
-    // ).then(() => {
-    //   console.log(users);
-    // }).catch((err) => {
-    //   throw err;
-    // });
+    await roomService.createUserOnRoom(testRoom.roomId, users[UserType.admin]).then(() => {
+      roomService.updateUserOnRoom(
+        testRoom.roomId,
+        users[UserType.owner],
+        users[UserType.admin].id,
+        { role: Role.ADMINISTRATOR },
+      );
+    });
+    return await roomService.createUserOnRoom(testRoom.roomId, users[UserType.member]);
   });
 
   afterEach(async () => {
@@ -182,7 +173,46 @@ describe('RoomController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('/room/:id/:userId (GET)', () => {});
+  describe('/room/:id/:userId (GET)', () => {
+
+    const targetId = users[UserType.owner].id;
+    it('should return a room', async () => {
+
+      const mockRequest = {
+        body: {
+        firstName: 'J',
+        lastName: 'Doe',
+        email: 'jdoe@abc123.com',
+        password: 'Abcd1234',
+        passwordConfirm: 'Abcd1234',
+        company: 'ABC Inc.',
+        },
+      } as Request;
+      // const testRequest: Request = {
+        // user: {
+        //   id: users[UserType.owner].id,
+        //   name: users[UserType.owner].name,
+        // },
+      // };  
+
+      const res = await controller.GetUserOnRoom(testRoom.roomId, targetId, testRequest);
+      expect(res).toBeDefined();
+    });
+
+    // it('should return a room', async () => {
+    //   const res = await controller.findRoom(testRoom.roomId, users[UserType.admin]);
+    //   expect(res).toBeDefined();
+    // });
+
+    // it('should return a room', async () => {
+    //   const res = await controller.findRoom(testRoom.roomId, users[UserType.member]);
+    //   expect(res).toBeDefined();
+    // });
+
+    // it('should not return a room', async () => {
+    //   expect(controller.findRoom(testRoom.roomId, users[UserType.NotMember])).rejects.toThrow();
+    // });
+  });
 
   describe('/room/:id/:userId (PATCH)', () => {});
 

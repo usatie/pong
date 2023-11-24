@@ -76,6 +76,22 @@ export class RoomController {
     return this.roomService.createUserOnRoom(id, request['user']);
   }
 
+  @Get(':id/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: UserOnRoomEntity })
+  GetUserOnRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Req() request: Request,
+  ) {
+    return this.roomService.findUserOnRoom(
+      id,
+      request['user'],
+      userId,
+    );
+  }
+
   @Delete(':id/:userId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
