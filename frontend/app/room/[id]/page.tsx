@@ -45,5 +45,5 @@ export default async function Page({
     return null;
   }
   const currentUser = await getUser(parseInt(currentUserId));
-  return <ChatRoomCard id={id} user={currentUser} />;
+  return <ChatRoomCard id={id} user={currentUser} roomName={roomInfo.name} />;
 }

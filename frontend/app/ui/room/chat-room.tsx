@@ -23,7 +23,15 @@ type Chat = {
 
 type MessageLog = Array<Chat>;
 
-export default function ChatRoom({ id, user }: { id: number; user: User }) {
+export default function ChatRoom({
+  id,
+  user,
+  roomName,
+}: {
+  id: number;
+  user: User;
+  roomName: string;
+}) {
   const [message, setMessage] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLog>([]);
 
@@ -67,7 +75,7 @@ export default function ChatRoom({ id, user }: { id: number; user: User }) {
     <div className="flex items-center justify-center">
       <Card className="w-[600px] grid grid-rows-[min-content_1fr_min-content]">
         <CardHeader>
-          <CardTitle>Chat room</CardTitle>
+          <CardTitle>{roomName} room</CardTitle>
           <CardDescription>Experimental chat room</CardDescription>
         </CardHeader>
         <CardContent>
