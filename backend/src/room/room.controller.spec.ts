@@ -42,7 +42,7 @@ describe('RoomController', () => {
       password: 'password-owner',
       id: <number>undefined,
       accessToken: undefined,
-	  role: Role.OWNER,
+      role: Role.OWNER,
     },
     {
       name: 'admin',
@@ -50,7 +50,7 @@ describe('RoomController', () => {
       password: 'password-admin',
       id: <number>undefined,
       accessToken: undefined,
-	  role: Role.ADMINISTRATOR,
+      role: Role.ADMINISTRATOR,
     },
     {
       name: 'member',
@@ -58,7 +58,7 @@ describe('RoomController', () => {
       password: 'password-member',
       id: <number>undefined,
       accessToken: undefined,
-	  role: Role.MEMBER,
+      role: Role.MEMBER,
     },
     {
       name: 'NotMember',
@@ -66,7 +66,7 @@ describe('RoomController', () => {
       password: 'password-NotMember',
       id: <number>undefined,
       accessToken: undefined,
-	    role: undefined,
+      role: undefined,
     },
   ];
 
@@ -99,62 +99,74 @@ describe('RoomController', () => {
       module.get<AuthController>(AuthController);
 
     // create user
-    const userCreationPromises = users.map(user => {
+    const userCreationPromises = users.map((user) => {
       const createUserDto: CreateUserDto = {
         name: user.name,
         email: user.email,
         password: user.password,
       };
       // ここで非同期処理を行う
-      return userService.create(createUserDto)
-        .then(userEntity => {
+      return userService
+        .create(createUserDto)
+        .then((userEntity) => {
           user.id = userEntity.id;
           console.log('user.id: ' + user.id);
         })
-        .catch(err => {
+        .catch((err) => {
           // エラー処理
           console.error(err);
           throw err;
         });
     });
 
-    const roomCreationPromise = Promise.all(userCreationPromises).then(() => {
-      console.log('userCreationPromises done');
-      const user = {id: users[UserType.owner].id, name: users[UserType.owner].name};
-      console.log(user);
-      return roomService // controller で書きたいけど request の書き方が分からない
-        .create(testRoom, user)
-    }).then((roomEntity: RoomEntity) => {
-      testRoom.roomId = roomEntity.id;
-      console.log(testRoom);
-    }).catch((err) => {
-      throw err;
-    });
+    const roomCreationPromise = Promise.all(userCreationPromises)
+      .then(() => {
+        console.log('userCreationPromises done');
+        const user = {
+          id: users[UserType.owner].id,
+          name: users[UserType.owner].name,
+        };
+        console.log(user);
+        return roomService // controller で書きたいけど request の書き方が分からない
+          .create(testRoom, user);
+      })
+      .then((roomEntity: RoomEntity) => {
+        testRoom.roomId = roomEntity.id;
+        console.log(testRoom);
+      })
+      .catch((err) => {
+        throw err;
+      });
 
     await Promise.all(userCreationPromises); // I'm tired of promise hell
     const loginPromises = users.map((user) => {
-        return authController
-          .login(user)
-          .then((authEntity: AuthEntity) => {
-            user.accessToken = authEntity.accessToken;
-            console.log('user.accessToken: ' + user.accessToken);
-          })
-          .catch((err) => {
-            throw err;
-          });
-      });
+      return authController
+        .login(user)
+        .then((authEntity: AuthEntity) => {
+          user.accessToken = authEntity.accessToken;
+          console.log('user.accessToken: ' + user.accessToken);
+        })
+        .catch((err) => {
+          throw err;
+        });
+    });
     await Promise.all([roomCreationPromise, loginPromises]).then(() => {
       return console.log('roomCreationPromise done', users);
     });
-    await roomService.createUserOnRoom(testRoom.roomId, users[UserType.admin]).then(() => {
-      roomService.updateUserOnRoom(
-        testRoom.roomId,
-        users[UserType.owner],
-        users[UserType.admin].id,
-        { role: Role.ADMINISTRATOR },
-      );
-    });
-    return await roomService.createUserOnRoom(testRoom.roomId, users[UserType.member]);
+    await roomService
+      .createUserOnRoom(testRoom.roomId, users[UserType.admin])
+      .then(() => {
+        roomService.updateUserOnRoom(
+          testRoom.roomId,
+          users[UserType.owner],
+          users[UserType.admin].id,
+          { role: Role.ADMINISTRATOR },
+        );
+      });
+    return await roomService.createUserOnRoom(
+      testRoom.roomId,
+      users[UserType.member],
+    );
   });
 
   afterEach(async () => {
@@ -164,7 +176,7 @@ describe('RoomController', () => {
       for (const user of users) {
         await userController.remove(user.id);
       }
-      } catch (error) {
+    } catch (error) {
       throw error;
     }
   });
@@ -174,28 +186,30 @@ describe('RoomController', () => {
   });
 
   describe('/room/:id/:userId (GET)', () => {
-
     const targetId = users[UserType.owner].id;
     it('should return a room', async () => {
-
-      const mockRequest = {
-        body: {
-        firstName: 'J',
-        lastName: 'Doe',
-        email: 'jdoe@abc123.com',
-        password: 'Abcd1234',
-        passwordConfirm: 'Abcd1234',
-        company: 'ABC Inc.',
-        },
-      } as Request;
+      // const mockRequest = {
+      //   body: {
+      //   firstName: 'J',
+      //   lastName: 'Doe',
+      //   email: 'jdoe@abc123.com',
+      //   password: 'Abcd1234',
+      //   passwordConfirm: 'Abcd1234',
+      //   company: 'ABC Inc.',
+      //   },
+      // } as Request;
       // const testRequest: Request = {
-        // user: {
-        //   id: users[UserType.owner].id,
-        //   name: users[UserType.owner].name,
-        // },
-      // };  
+      // user: {
+      //   id: users[UserType.owner].id,
+      //   name: users[UserType.owner].name,
+      // },
+      // };
 
-      const res = await controller.GetUserOnRoom(testRoom.roomId, targetId, testRequest);
+      // const a: Partial<Request> = {   user: {     id: 'hoge',     name: 'hoge',   } };
+      // const b = a as Request;
+
+      // const res = await controller.GetUserOnRoom(testRoom.roomId, targetId, testRequest);
+      const res = await controller.GetUserOnRoom(testRoom.roomId, targetId, b);
       expect(res).toBeDefined();
     });
 

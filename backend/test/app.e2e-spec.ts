@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
@@ -206,6 +207,125 @@ describe('AppController (e2e)', () => {
           .expect(204)
           .expect({});
       });
+    });
+  });
+  describe('/room', () => {
+    interface testUser {
+      name: string;
+      email: string;
+      password: string;
+      id: number;
+      accessToken: string;
+      role: Role;
+    }
+    enum UserType {
+      owner,
+      admin,
+      member,
+      NotMember,
+    }
+    let users: testUser[] = [
+      {
+        name: 'owner',
+        email: 'owner@example.com',
+        password: 'password-owner',
+        id: <number>undefined,
+        accessToken: undefined,
+        role: Role.OWNER,
+      },
+      {
+        name: 'admin',
+        email: 'admin@example.com',
+        password: 'password-admin',
+        id: <number>undefined,
+        accessToken: undefined,
+        role: Role.ADMINISTRATOR,
+      },
+      {
+        name: 'member',
+        email: 'member@example.com',
+        password: 'password-member',
+        id: <number>undefined,
+        accessToken: undefined,
+        role: Role.MEMBER,
+      },
+      {
+        name: 'NotMember',
+        email: 'NotMember@example.com',
+        password: 'password-NotMember',
+        id: <number>undefined,
+        accessToken: undefined,
+        role: undefined,
+      },
+    ];
+
+    // beforeEach(async () => {
+      // create user
+      // const userCreationPromises = users.map((user) => {
+      //   const createUserDto: CreateUserDto = {
+      //     name: user.name,
+      //     email: user.email,
+      //     password: user.password,
+      //   };
+      //   // ここで非同期処理を行う
+      //   return request(app.getHttpServer())
+      //     .post('/user')
+      //     .send(user)
+      //     .then((res) => {
+      //       user.id = res.body.id;
+      //       console.log('user.id: ' + user.id);
+      //     });
+      // });
+      // const roomCreationPromise = Promise.all(userCreationPromises)
+      //   .then(() => {
+      //     console.log('userCreationPromises done');
+      //     const user = {
+      //       id: users[UserType.owner].id,
+      //       name: users[UserType.owner].name,
+      //     };
+      //     console.log(user);
+      //     return roomService // controller で書きたいけど request の書き方が分からない
+      //       .create(testRoom, user);
+      //   })
+      //   .then((roomEntity: RoomEntity) => {
+      //     testRoom.roomId = roomEntity.id;
+      //     console.log(testRoom);
+      //   })
+      //   .catch((err) => {
+      //     throw err;
+      //   });
+      // await Promise.all(userCreationPromises); // I'm tired of promise hell
+      // const loginPromises = users.map((user) => {
+      //   return authController
+      //     .login(user)
+      //     .then((authEntity: AuthEntity) => {
+      //       user.accessToken = authEntity.accessToken;
+      //       console.log('user.accessToken: ' + user.accessToken);
+      //     })
+      //     .catch((err) => {
+      //       throw err;
+      //     });
+      // });
+      // await Promise.all([roomCreationPromise, loginPromises]).then(() => {
+      //   return console.log('roomCreationPromise done', users);
+      // });
+      // await roomService
+      //   .createUserOnRoom(testRoom.roomId, users[UserType.admin])
+      //   .then(() => {
+      //     roomService.updateUserOnRoom(
+      //       testRoom.roomId,
+      //       users[UserType.owner],
+      //       users[UserType.admin].id,
+      //       { role: Role.ADMINISTRATOR },
+      //     );
+      //   });
+      // return await roomService.createUserOnRoom(
+      //   testRoom.roomId,
+      //   users[UserType.member],
+      // );
+    // });
+    it('nothing', () => {
+      return expect(true).toBe(true);
     });
   });
 });

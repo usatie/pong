@@ -85,11 +85,7 @@ export class RoomController {
     @Param('userId', ParseIntPipe) userId: number,
     @Req() request: Request,
   ) {
-    return this.roomService.findUserOnRoom(
-      id,
-      request['user'],
-      userId,
-    );
+    return this.roomService.findUserOnRoom(id, request['user'], userId);
   }
 
   @Delete(':id/:userId')
