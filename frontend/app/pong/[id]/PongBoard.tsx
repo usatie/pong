@@ -1,7 +1,7 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { memo, useEffect, useRef } from "react";
+import { pongSocket as socket } from "@/socket";
 import { PongGame } from "./PongGame";
 import { TARGET_FRAME_MS } from "./const";
 import { Button } from "@/components/ui/button";
@@ -23,11 +23,16 @@ function PongBoard({
   setPlayer2Position: setPlayer2Position,
 }: PongBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [socket, setSocket] = useState<Socket>(undefined!);
-  // todo: useRef vs useState
   const game = useRef<PongGame>(
-    new PongGame(setFps, setSpeed, setPlayer1Position, setPlayer2Position),
+    new PongGame(
+      socket,
+      setFps,
+      setSpeed,
+      setPlayer1Position,
+      setPlayer2Position,
+    ),
   );
+
   useEffect(() => {
     // > If the contextType doesn't match a possible drawing context, or differs from the first contextType requested, null is returned."
     // from https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
@@ -36,13 +41,12 @@ function PongBoard({
       console.warn("2d canvas is not supported or there is a bug");
       return;
     }
-    const socket = io(process.env.NEXT_PUBLIC_WEB_URL! + "/pong");
-    setSocket(socket);
-
-    game.current.setup_canvas(ctx, socket);
+    game.current.setup_canvas(ctx);
     game.current.draw_canvas();
     const intervalId = setInterval(game.current.update, TARGET_FRAME_MS);
-
+    return () => clearInterval(intervalId);
+  });
+  useEffect(() => {
     const handleKeyUp = (event: KeyboardEvent) => {
       game.current.keypress[event.key] = false;
     };
@@ -51,46 +55,62 @@ function PongBoard({
     };
 
     document.addEventListener("keydown", handleKeyDown);
-
     document.addEventListener("keyup", handleKeyUp);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+    };
+  });
 
-    socket.on("connect", () => {
+  useEffect(() => {
+    socket.connect();
+
+    const handleConnect = () => {
       console.log(`Connected: ${socket.id}`);
-
       socket.emit("join", id);
-    });
+    };
 
-    socket.on("start", (data) => {
+    const handleStart = (data: { vx: number; vy: number }) => {
       console.log(`Start: ${JSON.stringify(data)}`);
       game.current.start(data);
-    });
+    };
 
-    socket.on("right", () => {
+    const handleRight = () => {
       game.current.player2.clear(game.current.ctx);
       game.current.player2.move_left();
       game.current.player2.draw(game.current.ctx);
-    });
+    };
 
-    socket.on("left", () => {
+    const handleLeft = () => {
       game.current.player2.clear(game.current.ctx);
       game.current.player2.move_right();
       game.current.player2.draw(game.current.ctx);
-    });
+    };
 
-    socket.on("bounce", () => {
+    const handleBounce = () => {
       game.current.ball.bounce_off_paddle(game.current.player2);
-    });
+    };
 
-    socket.on("collide", () => {
+    const handleCollide = () => {
       game.current.ball.reset();
       game.current.score.player1++;
-    });
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("start", handleStart);
+    socket.on("right", handleRight);
+    socket.on("left", handleLeft);
+    socket.on("bounce", handleBounce);
+    socket.on("collide", handleCollide);
 
     return () => {
       socket.disconnect();
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("keyup", handleKeyUp);
-      clearInterval(intervalId);
+      socket.off("connect", handleConnect);
+      socket.off("start", handleStart);
+      socket.off("right", handleRight);
+      socket.off("left", handleLeft);
+      socket.off("bounce", handleBounce);
+      socket.off("collide", handleCollide);
     };
   }, [id]);
 

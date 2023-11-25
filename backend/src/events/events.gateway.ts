@@ -19,6 +19,10 @@ export class EventsGateway implements OnGatewayDisconnect {
   server: Namespace;
   started: boolean = false;
 
+  handleConnect(client: Socket) {
+    console.log(`connect: ${client.id} `);
+  }
+
   handleDisconnect(client: Socket) {
     this.started = false;
     console.log(`disconnect: ${client.id} `);
