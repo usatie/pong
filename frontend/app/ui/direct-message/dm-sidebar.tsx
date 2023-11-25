@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { getUsers } from "@/app/lib/actions";
 import { getUserId } from "@/app/lib/session";
-import { UserButton } from "@/app/direct-message/user-button";
+import { UserButton } from "@/app/ui/direct-message/user-button";
 
 const DirectMessageSidebar = async () => {
   const users = await getUsers();
