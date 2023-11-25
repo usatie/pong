@@ -6,16 +6,17 @@ import {
   ConnectedSocket,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
+  namespace: '/pong',
 })
 export class EventsGateway implements OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server: Namespace;
   started: boolean = false;
 
   handleDisconnect(client: Socket) {
@@ -30,7 +31,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
     console.log(`join: ${JSON.stringify(data)} ${client.id}`);
-    const connectClients = this.server.of('/').adapter.rooms.get(data);
+    const connectClients = this.server.adapter.rooms.get(data);
     if (connectClients && connectClients.size > 1) {
       console.log('too many clients');
       return 'too many clients';
@@ -38,9 +39,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     client.join(data);
     console.log(client.rooms);
     console.log(
-      `joined: ${client.id} ${
-        this.server.of('/').adapter.rooms.get(data).size
-      }`,
+      `joined: ${client.id} ${this.server.adapter.rooms.get(data).size}`,
     );
     return data;
   }

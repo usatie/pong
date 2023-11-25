@@ -36,7 +36,7 @@ function PongBoard({
       console.warn("2d canvas is not supported or there is a bug");
       return;
     }
-    const socket = io(process.env.NEXT_PUBLIC_WEB_URL as string);
+    const socket = io(process.env.NEXT_PUBLIC_WEB_URL! + "/pong");
     setSocket(socket);
 
     game.current.setup_canvas(ctx, socket);
