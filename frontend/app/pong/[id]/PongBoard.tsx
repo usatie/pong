@@ -23,13 +23,17 @@ function PongBoard({
   setPlayer2Position: setPlayer2Position,
 }: PongBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // todo: useRef vs useState
   const game = useRef<PongGame>(
-    new PongGame(setFps, setSpeed, setPlayer1Position, setPlayer2Position),
+    new PongGame(
+      socket,
+      setFps,
+      setSpeed,
+      setPlayer1Position,
+      setPlayer2Position,
+    ),
   );
-  useEffect(() => {
-    socket.connect();
 
+  useEffect(() => {
     // > If the contextType doesn't match a possible drawing context, or differs from the first contextType requested, null is returned."
     // from https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
     const ctx = canvasRef.current?.getContext("2d");
@@ -37,10 +41,12 @@ function PongBoard({
       console.warn("2d canvas is not supported or there is a bug");
       return;
     }
-    game.current.setup_canvas(ctx, socket);
+    game.current.setup_canvas(ctx);
     game.current.draw_canvas();
     const intervalId = setInterval(game.current.update, TARGET_FRAME_MS);
-
+    return () => clearInterval(intervalId);
+  });
+  useEffect(() => {
     const handleKeyUp = (event: KeyboardEvent) => {
       game.current.keypress[event.key] = false;
     };
@@ -49,8 +55,15 @@ function PongBoard({
     };
 
     document.addEventListener("keydown", handleKeyDown);
-
     document.addEventListener("keyup", handleKeyUp);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+    };
+  });
+
+  useEffect(() => {
+    socket.connect();
 
     const handleConnect = () => {
       console.log(`Connected: ${socket.id}`);
@@ -98,10 +111,6 @@ function PongBoard({
       socket.off("left", handleLeft);
       socket.off("bounce", handleBounce);
       socket.off("collide", handleCollide);
-
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("keyup", handleKeyUp);
-      clearInterval(intervalId);
     };
   }, [id]);
 

@@ -33,9 +33,10 @@ export class PongGame {
   setPlayer1Position: setFunction;
   setPlayer2Position: setFunction;
 
-  socket!: Socket;
+  socket: Socket;
 
   constructor(
+    socket: Socket,
     setFps: setFunction,
     setSpeed: setFunction,
     setPlayer1Position: setFunction,
@@ -76,6 +77,7 @@ export class PongGame {
     this.frame_count = 0;
     this.is_playing = false;
     this.keypress = {};
+    this.socket = socket;
     this.setFps = setFps;
     this.setSpeed = setSpeed;
     this.setPlayer1Position = setPlayer1Position;
@@ -83,13 +85,11 @@ export class PongGame {
   }
 
   // call only after rendering finishes
-  setup_canvas = (ctx: CanvasRenderingContext2D, socket: Socket) => {
+  setup_canvas = (ctx: CanvasRenderingContext2D) => {
     // todo
     this.ctx = ctx;
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
-
-    this.socket = socket;
   };
 
   update_fps = () => {
