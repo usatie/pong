@@ -6,6 +6,7 @@ import { AppModule } from './../src/app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import { HttpAdapterHost, Reflector } from '@nestjs/core';
+import { CreateRoomDto } from 'src/room/dto/create-room.dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -258,73 +259,72 @@ describe('AppController (e2e)', () => {
         role: undefined,
       },
     ];
+    const testRoom = {
+      name: 'testRoom1',
+      roomId: <number>undefined,
+    };
 
-    // beforeEach(async () => {
-      // create user
-      // const userCreationPromises = users.map((user) => {
-      //   const createUserDto: CreateUserDto = {
-      //     name: user.name,
-      //     email: user.email,
-      //     password: user.password,
-      //   };
-      //   // ここで非同期処理を行う
-      //   return request(app.getHttpServer())
-      //     .post('/user')
-      //     .send(user)
-      //     .then((res) => {
-      //       user.id = res.body.id;
-      //       console.log('user.id: ' + user.id);
-      //     });
-      // });
-      // const roomCreationPromise = Promise.all(userCreationPromises)
-      //   .then(() => {
-      //     console.log('userCreationPromises done');
-      //     const user = {
-      //       id: users[UserType.owner].id,
-      //       name: users[UserType.owner].name,
-      //     };
-      //     console.log(user);
-      //     return roomService // controller で書きたいけど request の書き方が分からない
-      //       .create(testRoom, user);
-      //   })
-      //   .then((roomEntity: RoomEntity) => {
-      //     testRoom.roomId = roomEntity.id;
-      //     console.log(testRoom);
-      //   })
-      //   .catch((err) => {
-      //     throw err;
-      //   });
-      // await Promise.all(userCreationPromises); // I'm tired of promise hell
-      // const loginPromises = users.map((user) => {
-      //   return authController
-      //     .login(user)
-      //     .then((authEntity: AuthEntity) => {
-      //       user.accessToken = authEntity.accessToken;
-      //       console.log('user.accessToken: ' + user.accessToken);
-      //     })
-      //     .catch((err) => {
-      //       throw err;
-      //     });
-      // });
-      // await Promise.all([roomCreationPromise, loginPromises]).then(() => {
-      //   return console.log('roomCreationPromise done', users);
-      // });
-      // await roomService
-      //   .createUserOnRoom(testRoom.roomId, users[UserType.admin])
-      //   .then(() => {
-      //     roomService.updateUserOnRoom(
-      //       testRoom.roomId,
-      //       users[UserType.owner],
-      //       users[UserType.admin].id,
-      //       { role: Role.ADMINISTRATOR },
-      //     );
-      //   });
-      // return await roomService.createUserOnRoom(
-      //   testRoom.roomId,
-      //   users[UserType.member],
-      // );
-    // });
+    beforeEach(() => {
+      return Promise.all(
+        users.map((user) => {
+          return request(app.getHttpServer())
+            .post('/user')
+            .send(user)
+            .then((res) => {
+              expect(res.body).toHaveProperty('id');
+              expect(res.body.id).not.toBeUndefined();
+              user.id = res.body.id;
+              return request(app.getHttpServer())
+                .post('/auth/login')
+                .send(user)
+                .then((res) => {
+                  user.accessToken = res.body.accessToken;
+                });
+            })
+            .catch((err) => {
+              throw err;
+            });
+        }),
+      )
+        .then(() => {
+          const createRoomDto: CreateRoomDto = {
+            name: testRoom.name,
+          };
+          return request(app.getHttpServer())
+            .post('/room')
+            .set('Authorization', `Bearer ${users[UserType.owner].accessToken}`)
+            .send(createRoomDto)
+            .then((res) => {
+              testRoom.roomId = res.body.id;
+            })
+            .catch((err) => {
+              throw err;
+            });
+        })
+        .catch((err) => {
+          throw err;
+        });
+    });
+    afterEach(() => {
+      return request(app.getHttpServer())
+        .delete(`/room/${testRoom.roomId}`)
+        .set('Authorization', `Bearer ${users[UserType.owner].accessToken}`)
+        .then(() => {
+          return Promise.all(
+            users.map((user) => {
+              return request(app.getHttpServer())
+                .delete(`/user/${user.id}`)
+                .set('Authorization', `Bearer ${user.accessToken}`);
+            }),
+          );
+        });
+    });
+
     it('nothing', () => {
+      return expect(true).toBe(true);
+    });
+
+    it('nothing2', () => {
       return expect(true).toBe(true);
     });
   });
