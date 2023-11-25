@@ -296,6 +296,40 @@ describe('AppController (e2e)', () => {
             .send(createRoomDto)
             .then((res) => {
               testRoom.roomId = res.body.id;
+              const addMemberPromises = users
+                .filter(
+                  (user) => user.role !== Role.OWNER && user.role !== undefined,
+                )
+                .map((user) => {
+                  return request(app.getHttpServer())
+                    .post(`/room/${testRoom.roomId}`)
+                    .set('Authorization', `Bearer ${user.accessToken}`);
+                });
+              const updateRolePromises = users
+                .filter((user) => user.role === Role.ADMINISTRATOR)
+                .map((user) => {
+                  return request(app.getHttpServer())
+                    .patch(`/room/${testRoom.roomId}/${user.id}`)
+                    .set(
+                      'Authorization',
+                      `Bearer ${users[UserType.owner].accessToken}`,
+                    )
+                    .send({ role: user.role });
+                });
+              return Promise.all([
+                ...addMemberPromises,
+                ...updateRolePromises,
+              ]).then(() => {
+                return request(app.getHttpServer())
+                  .get(`/room/${testRoom.roomId}`)
+                  .set(
+                    'Authorization',
+                    `Bearer ${users[UserType.owner].accessToken}`,
+                  )
+                  .then((res) => {
+                    console.log(res.body);
+                  });
+              });
             })
             .catch((err) => {
               throw err;
