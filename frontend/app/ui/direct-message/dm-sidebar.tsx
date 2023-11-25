@@ -26,14 +26,16 @@ const DirectMessageSidebar = async () => {
           <ScrollArea className="flex-1 px-1">
             <Separator className="bg-zinc-200 dark:bg-zinc-700 rounded-md mb-2" />
             <div className="space-y-[2px]">
-              {users.map(
-                (user) =>
-                  parseInt(currentUserId) !== user.id && (
-                    <ul key={user.id}>
-                      <UserButton key={user.id} user={user} />
-                    </ul>
-                  ),
-              )}
+              <ul>
+                {users.map(
+                  (user) =>
+                    parseInt(currentUserId) !== user.id && (
+                      <li key={user.id}>
+                        <UserButton key={user.id} user={user} />
+                      </li>
+                    ),
+                )}
+              </ul>
             </div>
           </ScrollArea>
         </CardContent>
