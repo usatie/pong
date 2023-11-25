@@ -1,4 +1,4 @@
-import DirectMessageSidebar from "@/app/direct-message/dm-sidebar";
+import DirectMessageSidebar from "@/app/ui/direct-message/dm-sidebar";
 
 const DMlayout = async ({ children }: { children: React.ReactNode }) => {
   return (
