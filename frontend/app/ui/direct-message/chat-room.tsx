@@ -16,50 +16,72 @@ import { useState, useEffect } from "react";
 import { socket } from "@/socket";
 import type { User } from "@/app/ui/user/card";
 
-type Chat = {
+type DM = {
+  from: string;
+  to: string;
   userName: string;
   text: string;
 };
 
-type MessageLog = Array<Chat>;
+type MessageLog = Array<DM>;
 
-export default function ChatRoom({ id, user }: { id: number; user: User }) {
+export default function ChatRoom({
+  yourself,
+  other,
+}: {
+  yourself: User;
+  other: User;
+}) {
   const [message, setMessage] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLog>([]);
+  const yourselfNameId = yourself.name! + yourself.id!;
+  const otherNameId = other.name! + other.id!;
 
   useEffect(() => {
-    const handleMessageReceived = (newMessageLog: Chat) => {
-      console.log("received message: ", newMessageLog);
-      setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);
-      console.log(messageLog);
+    const handleMessageReceived = (newMessageLog: DM) => {
+      if (
+        newMessageLog.from === otherNameId ||
+        newMessageLog.from === yourselfNameId
+      ) {
+        console.log("received message: ", newMessageLog);
+        setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);
+        console.log(messageLog);
+      }
     };
-    socket.on("sendToClient", handleMessageReceived);
+    socket.on("sendToUser", handleMessageReceived);
     return () => {
       console.log(`return from useEffect`);
-      socket.off("sendToClient", handleMessageReceived);
+      socket.off("sendToUser", handleMessageReceived);
     };
-  }, [messageLog]);
+  }, [messageLog, yourselfNameId, otherNameId]);
 
   useEffect(() => {
     socket.connect(); // no-op if the socket is already connected
-    socket.emit("joinRoom", id);
-    console.log("emit joinRoom");
+    socket.emit("joinDM", yourselfNameId);
+    console.log("emit joinDM");
 
     return () => {
-      socket.emit("leaveRoom", id);
-      console.log("emit leaveRoom");
+      socket.emit("leaveDM", yourselfNameId);
+      console.log("emit leaveDM");
       console.log("disconnect");
       socket.disconnect();
     };
-  }, [id]);
+  }, [yourselfNameId]);
 
   const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();
     const newMessage = message;
-    console.log(`sendMessage`, newMessage);
-    console.log("name: ", user.name);
-    const name = user.name;
-    socket.emit("newMessage", { userName: name, text: newMessage });
+    console.log(`privateMassage`, newMessage);
+    console.log("name: ", yourself.name);
+    const name = yourself.name;
+    const fromName = yourselfNameId;
+    const toName = otherNameId;
+    socket.emit("privateMessage", {
+      from: fromName,
+      to: toName,
+      userName: name,
+      text: newMessage,
+    });
     setMessage("");
   };
 
