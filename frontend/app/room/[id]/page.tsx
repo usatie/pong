@@ -1,4 +1,3 @@
-//import { getRoom } from "@/app/lib/actions";
 //
 //export default async function getRoomInfo({
 //  params: { id },
@@ -28,18 +27,23 @@
 
 import ChatRoomCard from "@/app/ui/room/chat-room";
 import { getUserId } from "@/app/lib/session";
-import { getUser } from "@/app/lib/actions";
+import { getRoom, getUser } from "@/app/lib/actions";
+import { notFound } from "next/navigation";
 
 export default async function Page({
   params: { id },
 }: {
   params: { id: number };
 }) {
+  const roomInfo = await getRoom(id);
+  if (!roomInfo) {
+    notFound();
+  }
   const currentUserId = await getUserId();
   if (!currentUserId) {
     console.error("error");
     return null;
   }
   const currentUser = await getUser(parseInt(currentUserId));
-  return <ChatRoomCard id={id} user={currentUser} />;
+  return <ChatRoomCard id={id} user={currentUser} roomName={roomInfo.name} />;
 }

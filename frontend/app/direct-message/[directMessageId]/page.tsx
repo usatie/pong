@@ -2,6 +2,7 @@ import ChatRoomCard from "@/app/ui/direct-message/chat-room";
 import { getUserId } from "@/app/lib/session";
 import { getUsers, getUser } from "@/app/lib/actions";
 import type { User } from "@/app/ui/user/card";
+import { notFound } from "next/navigation";
 
 export default async function Page({
   params: { directMessageId },
@@ -22,9 +23,8 @@ export default async function Page({
   const otherUser = otherUsers.find(
     (user) => user.id === parseInt(directMessageId),
   );
-  if (!otherUser) {
-    console.error("error");
-    return null;
+  if (!otherUser || otherUser.id === parseInt(currentUserId)) {
+    notFound();
   }
   return <ChatRoomCard yourself={currentUser} other={otherUser} />;
 }

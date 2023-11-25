@@ -89,7 +89,7 @@ export default function ChatRoom({
     <div className="flex items-center justify-center">
       <Card className="w-[600px] grid grid-rows-[min-content_1fr_min-content]">
         <CardHeader>
-          <CardTitle>Chat room</CardTitle>
+          <CardTitle>{other.name}</CardTitle>
           <CardDescription>Experimental chat room</CardDescription>
         </CardHeader>
         <CardContent>
