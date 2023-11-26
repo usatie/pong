@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { pongSocket as socket } from "@/socket";
 import { PongGame } from "./PongGame";
 import { TARGET_FRAME_MS } from "./const";
@@ -34,6 +34,9 @@ function PongBoard({
       setPlayer2Position,
     ),
   );
+  const [startDisabled, setStartDisabled] = useState(true);
+  const [practiceDisabled, setPracticeDisabled] = useState(true);
+  const [battleDisabled, setBattleDisabled] = useState(true);
 
   useEffect(() => {
     // > If the contextType doesn't match a possible drawing context, or differs from the first contextType requested, null is returned."
@@ -69,12 +72,23 @@ function PongBoard({
 
     const handleConnect = () => {
       console.log(`Connected: ${socket.id}`);
-      socket.emit("join", id);
+      socket.emit("join", id, (response: "success" | "fail") => {
+        let log: string;
+        if (response === "success") {
+          log = "You joined";
+          setStartDisabled(false);
+          setPracticeDisabled(true);
+        } else {
+          log = "You failed to join";
+        }
+        setLogs((logs) => [...logs, log]);
+      });
     };
 
     const handleStart = (data: { vx: number; vy: number }) => {
       console.log(`Start: ${JSON.stringify(data)}`);
       game.current.start(data);
+      setStartDisabled(true);
     };
 
     const handleRight = () => {
@@ -96,16 +110,21 @@ function PongBoard({
     const handleCollide = () => {
       game.current.ball.reset();
       game.current.score.player1++;
+      setStartDisabled(false);
     };
 
     const handleJoin = () => {
       const log = `Your friend has joined`;
       setLogs((logs) => [...logs, log]);
+      setStartDisabled(false);
+      setPracticeDisabled(true);
     };
 
     const handleLeave = () => {
       const log = `Your friend has left`;
       setLogs((logs) => [...logs, log]);
+      setStartDisabled(true);
+      setPracticeDisabled(false);
     };
 
     socket.on("connect", handleConnect);
@@ -132,6 +151,7 @@ function PongBoard({
   }, [id, setLogs]);
 
   const start = () => {
+    setStartDisabled(true);
     game.current.start();
     socket.emit("start", {
       vx: -game.current.ball.vx,
@@ -141,10 +161,22 @@ function PongBoard({
 
   return (
     <>
-      <div>
-        <Button onClick={start}>Start</Button>
-        <Button onClick={game.current.switch_battle_mode}>Battle</Button>
-        <Button onClick={game.current.switch_practice_mode}>Practice</Button>
+      <div className="flex gap-2">
+        <Button onClick={start} disabled={startDisabled}>
+          Start
+        </Button>
+        <Button
+          onClick={game.current.switch_battle_mode}
+          disabled={battleDisabled}
+        >
+          Battle
+        </Button>
+        <Button
+          onClick={game.current.switch_practice_mode}
+          disabled={practiceDisabled}
+        >
+          Practice
+        </Button>
       </div>
       <canvas
         ref={canvasRef}

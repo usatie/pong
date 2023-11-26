@@ -36,8 +36,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     console.log(`join: ${JSON.stringify(data)} ${client.id}`);
     const connectClients = this.server.adapter.rooms.get(data);
     if (connectClients && connectClients.size > 1) {
-      console.log('too many clients');
-      return 'too many clients';
+      return 'fail';
     }
     client.join(data);
     console.log(client.rooms);
@@ -45,7 +44,7 @@ export class EventsGateway implements OnGatewayDisconnect {
       `joined: ${client.id} ${this.server.adapter.rooms.get(data).size}`,
     );
     this.broadcastToRooms(client, 'join');
-    return;
+    return 'success';
   }
 
   @SubscribeMessage('leave')
