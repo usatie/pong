@@ -24,6 +24,8 @@ type PrivateReceived = {
   cors: {
     origin: '*',
   },
+  path: '/socket.io/chat/',
+  namespace: 'chat',
 })
 export class ChatGateway {
   @WebSocketServer()
