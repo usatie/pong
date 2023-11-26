@@ -1,19 +1,20 @@
 "use client";
 
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { pongSocket as socket } from "@/socket";
 import { PongGame } from "./PongGame";
 import { TARGET_FRAME_MS } from "./const";
 import { Button } from "@/components/ui/button";
 
-type setFunction = (value: number) => void;
+type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 
 interface PongBoardProps {
   id: string;
-  setFps: setFunction;
-  setSpeed: setFunction;
-  setPlayer1Position: setFunction;
-  setPlayer2Position: setFunction;
+  setFps: (value: number | ((prevState: number) => number)) => void;
+  setSpeed: setFunction<number>;
+  setPlayer1Position: setFunction<number>;
+  setPlayer2Position: setFunction<number>;
+  setLogs: setFunction<string[]>;
 }
 function PongBoard({
   id: id,
@@ -21,6 +22,7 @@ function PongBoard({
   setSpeed: setSpeed,
   setPlayer1Position: setPlayer1Position,
   setPlayer2Position: setPlayer2Position,
+  setLogs: setLogs,
 }: PongBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const game = useRef<PongGame>(
@@ -32,6 +34,9 @@ function PongBoard({
       setPlayer2Position,
     ),
   );
+  const [startDisabled, setStartDisabled] = useState(true);
+  const [practiceDisabled, setPracticeDisabled] = useState(true);
+  const [battleDisabled, setBattleDisabled] = useState(true);
 
   useEffect(() => {
     // > If the contextType doesn't match a possible drawing context, or differs from the first contextType requested, null is returned."
@@ -67,12 +72,23 @@ function PongBoard({
 
     const handleConnect = () => {
       console.log(`Connected: ${socket.id}`);
-      socket.emit("join", id);
+      socket.emit("join", id, (response: "success" | "fail") => {
+        let log: string;
+        if (response === "success") {
+          log = "You joined";
+          setStartDisabled(false);
+          setPracticeDisabled(true);
+        } else {
+          log = "You failed to join";
+        }
+        setLogs((logs) => [...logs, log]);
+      });
     };
 
     const handleStart = (data: { vx: number; vy: number }) => {
       console.log(`Start: ${JSON.stringify(data)}`);
       game.current.start(data);
+      setStartDisabled(true);
     };
 
     const handleRight = () => {
@@ -94,6 +110,22 @@ function PongBoard({
     const handleCollide = () => {
       game.current.ball.reset();
       game.current.score.player1++;
+      setStartDisabled(false);
+    };
+
+    const handleJoin = () => {
+      const log = `Your friend has joined`;
+      setLogs((logs) => [...logs, log]);
+      setStartDisabled(false);
+      setPracticeDisabled(true);
+      game.current.resetPlayerPosition();
+    };
+
+    const handleLeave = () => {
+      const log = `Your friend has left`;
+      setLogs((logs) => [...logs, log]);
+      setStartDisabled(true);
+      setPracticeDisabled(false);
     };
 
     socket.on("connect", handleConnect);
@@ -102,8 +134,11 @@ function PongBoard({
     socket.on("left", handleLeft);
     socket.on("bounce", handleBounce);
     socket.on("collide", handleCollide);
+    socket.on("join", handleJoin);
+    socket.on("leave", handleLeave);
 
     return () => {
+      socket.emit("leave", id);
       socket.disconnect();
       socket.off("connect", handleConnect);
       socket.off("start", handleStart);
@@ -111,10 +146,13 @@ function PongBoard({
       socket.off("left", handleLeft);
       socket.off("bounce", handleBounce);
       socket.off("collide", handleCollide);
+      socket.off("join", handleJoin);
+      socket.off("leave", handleLeave);
     };
-  }, [id]);
+  }, [id, setLogs]);
 
   const start = () => {
+    setStartDisabled(true);
     game.current.start();
     socket.emit("start", {
       vx: -game.current.ball.vx,
@@ -124,10 +162,22 @@ function PongBoard({
 
   return (
     <>
-      <div>
-        <Button onClick={start}>Start</Button>
-        <Button onClick={game.current.switch_battle_mode}>Battle</Button>
-        <Button onClick={game.current.switch_practice_mode}>Practice</Button>
+      <div className="flex gap-2">
+        <Button onClick={start} disabled={startDisabled}>
+          Start
+        </Button>
+        <Button
+          onClick={game.current.switch_battle_mode}
+          disabled={battleDisabled}
+        >
+          Battle
+        </Button>
+        <Button
+          onClick={game.current.switch_practice_mode}
+          disabled={practiceDisabled}
+        >
+          Practice
+        </Button>
       </div>
       <canvas
         ref={canvasRef}
