@@ -42,20 +42,8 @@ export class PongGame {
     setPlayer1Position: setFunction<number>,
     setPlayer2Position: setFunction<number>,
   ) {
-    this.player1 = new Paddle(
-      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
-      CANVAS_HEIGHT - PADDLE_HEIGHT,
-      PADDLE_WIDTH,
-      PADDLE_HEIGHT,
-      PADDLE_COLOR,
-    );
-    this.player2 = new Paddle(
-      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
-      0,
-      PADDLE_WIDTH,
-      PADDLE_HEIGHT,
-      PADDLE_COLOR,
-    );
+    this.player1 = this.initPlayer1();
+    this.player2 = this.initPlayer2();
     this.ball = new Ball(
       CANVAS_HEIGHT,
       CANVAS_WIDTH,
@@ -224,4 +212,28 @@ export class PongGame {
     this.player2 = new Paddle(0, 0, CANVAS_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
     this.player2.draw(this.ctx);
   };
+
+  resetPlayerPosition = () => {
+    this.player1 = this.initPlayer1();
+    this.player2 = this.initPlayer2();
+    this.draw_canvas();
+  };
+
+  initPlayer1 = () =>
+    new Paddle(
+      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
+      CANVAS_HEIGHT - PADDLE_HEIGHT,
+      PADDLE_WIDTH,
+      PADDLE_HEIGHT,
+      PADDLE_COLOR,
+    );
+
+  initPlayer2 = () =>
+    new Paddle(
+      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
+      0,
+      PADDLE_WIDTH,
+      PADDLE_HEIGHT,
+      PADDLE_COLOR,
+    );
 }

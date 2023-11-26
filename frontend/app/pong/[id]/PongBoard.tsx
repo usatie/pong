@@ -118,6 +118,7 @@ function PongBoard({
       setLogs((logs) => [...logs, log]);
       setStartDisabled(false);
       setPracticeDisabled(true);
+      game.current.resetPlayerPosition();
     };
 
     const handleLeave = () => {
