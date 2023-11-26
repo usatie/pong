@@ -6,14 +6,15 @@ import { PongGame } from "./PongGame";
 import { TARGET_FRAME_MS } from "./const";
 import { Button } from "@/components/ui/button";
 
-type setFunction = (value: number) => void;
+type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 
 interface PongBoardProps {
   id: string;
-  setFps: setFunction;
-  setSpeed: setFunction;
-  setPlayer1Position: setFunction;
-  setPlayer2Position: setFunction;
+  setFps: (value: number | ((prevState: number) => number)) => void;
+  setSpeed: setFunction<number>;
+  setPlayer1Position: setFunction<number>;
+  setPlayer2Position: setFunction<number>;
+  setLogs: setFunction<string[]>;
 }
 function PongBoard({
   id: id,
@@ -21,6 +22,7 @@ function PongBoard({
   setSpeed: setSpeed,
   setPlayer1Position: setPlayer1Position,
   setPlayer2Position: setPlayer2Position,
+  setLogs: setLogs,
 }: PongBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const game = useRef<PongGame>(
@@ -96,14 +98,27 @@ function PongBoard({
       game.current.score.player1++;
     };
 
+    const handleJoin = () => {
+      const log = `Your friend has joined`;
+      setLogs((logs) => [...logs, log]);
+    };
+
+    const handleLeave = () => {
+      const log = `Your friend has left`;
+      setLogs((logs) => [...logs, log]);
+    };
+
     socket.on("connect", handleConnect);
     socket.on("start", handleStart);
     socket.on("right", handleRight);
     socket.on("left", handleLeft);
     socket.on("bounce", handleBounce);
     socket.on("collide", handleCollide);
+    socket.on("join", handleJoin);
+    socket.on("leave", handleLeave);
 
     return () => {
+      socket.emit("leave", id);
       socket.disconnect();
       socket.off("connect", handleConnect);
       socket.off("start", handleStart);
@@ -111,8 +126,10 @@ function PongBoard({
       socket.off("left", handleLeft);
       socket.off("bounce", handleBounce);
       socket.off("collide", handleCollide);
+      socket.off("join", handleJoin);
+      socket.off("leave", handleLeave);
     };
-  }, [id]);
+  }, [id, setLogs]);
 
   const start = () => {
     game.current.start();

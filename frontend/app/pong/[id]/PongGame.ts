@@ -13,7 +13,7 @@ import {
   TARGET_FRAME_MS,
 } from "./const";
 
-type setFunction = (value: number) => void;
+type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 
 export class PongGame {
   ctx!: CanvasRenderingContext2D;
@@ -28,19 +28,19 @@ export class PongGame {
   is_playing: boolean;
   keypress: { [key: string]: boolean };
 
-  setFps: setFunction;
-  setSpeed: setFunction;
-  setPlayer1Position: setFunction;
-  setPlayer2Position: setFunction;
+  setFps: setFunction<number>;
+  setSpeed: setFunction<number>;
+  setPlayer1Position: setFunction<number>;
+  setPlayer2Position: setFunction<number>;
 
   socket: Socket;
 
   constructor(
     socket: Socket,
-    setFps: setFunction,
-    setSpeed: setFunction,
-    setPlayer1Position: setFunction,
-    setPlayer2Position: setFunction,
+    setFps: setFunction<number>,
+    setSpeed: setFunction<number>,
+    setPlayer1Position: setFunction<number>,
+    setPlayer2Position: setFunction<number>,
   ) {
     this.player1 = new Paddle(
       CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,

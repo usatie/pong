@@ -26,7 +26,6 @@ export class EventsGateway implements OnGatewayDisconnect {
   handleDisconnect(client: Socket) {
     this.started = false;
     console.log(`disconnect: ${client.id} `);
-    this.server.emit('opponentLeft');
   }
 
   @SubscribeMessage('join')
@@ -45,7 +44,20 @@ export class EventsGateway implements OnGatewayDisconnect {
     console.log(
       `joined: ${client.id} ${this.server.adapter.rooms.get(data).size}`,
     );
-    return data;
+    this.broadcastToRooms(client, 'join');
+    return;
+  }
+
+  @SubscribeMessage('leave')
+  async leave(
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: Socket,
+  ): Promise<string> {
+    console.log(`leave: ${roomId} ${client.id}`);
+    console.log(client.rooms);
+    this.broadcastToRoom(client, roomId, 'leave');
+    client.leave(roomId);
+    return;
   }
 
   @SubscribeMessage('start')
@@ -101,5 +113,15 @@ export class EventsGateway implements OnGatewayDisconnect {
         else socket.to(room).emit(eventName);
       }
     });
+  }
+
+  broadcastToRoom(
+    socket: Socket,
+    roomId: string,
+    eventName: string,
+    data: any = null,
+  ) {
+    if (data) socket.to(roomId).emit(eventName, data);
+    else socket.to(roomId).emit(eventName);
   }
 }
