@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
-import { socket } from "@/socket";
+import { chatSocket as socket } from "@/socket";
 import type { User } from "@/app/ui/user/card";
 
 type Chat = {
