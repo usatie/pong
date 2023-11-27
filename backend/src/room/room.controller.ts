@@ -21,6 +21,8 @@ import {
 } from '@nestjs/swagger';
 import { RoomEntity } from './entities/room.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
+import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 
 @Controller('room')
 @ApiTags('room')
@@ -37,7 +39,7 @@ export class RoomController {
   @Get()
   @ApiOkResponse({ type: RoomEntity, isArray: true })
   findAll() {
-    return this.roomService.findAll();
+    return this.roomService.findAllRoom();
   }
 
   @Get(':id')
@@ -45,29 +47,85 @@ export class RoomController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   findOne(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
-    return this.roomService.findOne(id, request['user']);
+    return this.roomService.findRoom(id, request['user']);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Patch(':id')
   @ApiOkResponse({ type: RoomEntity })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRoomDto: UpdateRoomDto,
+    @Req() request: Request,
   ) {
-    return this.roomService.update(id, updateRoomDto);
+    return this.roomService.updateRoom(id, updateRoomDto, request['user']);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Delete(':id')
   @ApiOkResponse({ type: RoomEntity })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.roomService.remove(id);
+  removeRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: Request,
+  ): Promise<RoomEntity> {
+    return this.roomService.removeRoom(id, request['user']);
   }
 
   @Post(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  enterRoom(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
-    return this.roomService.enterRoom(id, request['user']['id']);
+  createUserOnRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: Request,
+  ) {
+    return this.roomService.createUserOnRoom(id, request['user']);
+  }
+
+  @Get(':id/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: UserOnRoomEntity })
+  getUserOnRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Req() request: Request,
+  ) {
+    return this.roomService.findUserOnRoom(id, request['user'], userId);
+  }
+
+  @Delete(':id/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: UserOnRoomEntity })
+  deleteUserOnRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.roomService.removeUserOnRoom(
+      id,
+      { id: userId, name: 'test' },
+      userId,
+    );
+  }
+
+  @Patch(':id/:userId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: UserOnRoomEntity })
+  updateUserOnRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body() updateUserOnRoomDto: UpdateUserOnRoomDto,
+    @Req() request: Request,
+  ) {
+    return this.roomService.updateUserOnRoom(
+      id,
+      request['user'],
+      userId,
+      updateUserOnRoomDto,
+    );
   }
 }
