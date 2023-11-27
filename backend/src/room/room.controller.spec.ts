@@ -1,4 +1,4 @@
-import { RoomService } from "./room.service";
+import { RoomService } from './room.service';
 
 describe('RoomService', () => {
   it('should be defined', () => {
