@@ -50,13 +50,16 @@ export class RoomController {
     return this.roomService.findRoom(id, request['user']);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Patch(':id')
   @ApiOkResponse({ type: RoomEntity })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRoomDto: UpdateRoomDto,
+    @Req() request: Request,
   ) {
-    return this.roomService.updateRoom(id, updateRoomDto);
+    return this.roomService.updateRoom(id, updateRoomDto, request['user']);
   }
 
   @Delete(':id')

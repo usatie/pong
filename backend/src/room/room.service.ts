@@ -38,11 +38,11 @@ export class RoomService {
     });
   }
 
-  findAllRoom() {
+  findAllRoom(): Promise<RoomEntity[]> {
     return this.prisma.room.findMany();
   }
 
-  async findRoom(id: number, user: User) {
+  findRoom(id: number, user: User): Promise<RoomEntity> {
     return this.prisma.room
       .findUniqueOrThrow({
         where: { id },
@@ -62,10 +62,20 @@ export class RoomService {
       });
   }
 
-  updateRoom(id: number, updateRoomDto: UpdateRoomDto) {
-    return this.prisma.room.update({
-      where: { id },
-      data: updateRoomDto,
+  updateRoom(
+    id: number,
+    updateRoomDto: UpdateRoomDto,
+    user: User,
+  ): Promise<RoomEntity> {
+    return this.findUserOnRoom(id, user, user.id).then((userOnRoomEntity) => {
+      if (userOnRoomEntity.role !== Role.OWNER) {
+        throw new HttpException('Forbidden', 403);
+      } else {
+        return this.prisma.room.update({
+          where: { id },
+          data: updateRoomDto,
+        });
+      }
     });
   }
 
