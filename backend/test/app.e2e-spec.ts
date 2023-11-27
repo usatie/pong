@@ -464,7 +464,7 @@ describe('AppController (e2e)', () => {
             .filter((user) => user.role !== undefined)
             .map((user) => {
               return request(app.getHttpServer())
-                .patch(`/room/${testRoom.roomId}/${user.id}`)
+                .patch(`/room/${testRoom.roomId}`)
                 .set('Authorization', `Bearer ${user.accessToken}`)
                 .send({ name: newName })
                 .expect(200);
@@ -479,7 +479,7 @@ describe('AppController (e2e)', () => {
       });
       it('from notMember: should return 403 Forbidden', () => {
         return request(app.getHttpServer())
-          .patch(`/room/${testRoom.roomId}/${users[UserType.NotMember].id}`)
+          .patch(`/room/${testRoom.roomId}`)
           .set(
             'Authorization',
             `Bearer ${users[UserType.NotMember].accessToken}`,
@@ -489,7 +489,7 @@ describe('AppController (e2e)', () => {
       });
       it('from unAuthorized User: should return 401 Unauthorized', () => {
         return request(app.getHttpServer())
-          .patch(`/room/${testRoom.roomId}/${users[UserType.NotMember].id}`)
+          .patch(`/room/${testRoom.roomId}`)
           .send({ name: newName })
           .expect(401);
       });
