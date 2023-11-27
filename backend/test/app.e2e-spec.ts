@@ -353,13 +353,44 @@ describe('AppController (e2e)', () => {
           );
         });
     });
-
-    it('nothing', () => {
-      return expect(true).toBe(true);
-    });
-
-    it('nothing2', () => {
-      return expect(true).toBe(true);
+    describe('/:id', () => {
+      it('GET from roomMember should return the room', () => {
+        return users
+          .filter((user) => user.role !== undefined)
+          .map((user) => {
+            return request(app.getHttpServer())
+              .get(`/room/${testRoom.roomId}`)
+              .set('Authorization', `Bearer ${user.accessToken}`)
+              .expect(200)
+              .then((res) => {
+                expect(res.body).toHaveProperty('id');
+                expect(res.body).toHaveProperty('name');
+                expect(res.body).toHaveProperty('users');
+                expect(res.body.users).toBeInstanceOf(Array);
+                expect(res.body.users.length).toBeGreaterThan(0);
+                res.body.users.forEach((user) => {
+                  expect(user).toHaveProperty('id');
+                  expect(user).toHaveProperty('Role');
+                  expect(user).toHaveProperty('roomId');
+                  expect(user).not.toHaveProperty('userId');
+                });
+              });
+          });
+      });
+      it('GET should from notMember return 401 Unauthorized', () => {
+        return request(app.getHttpServer())
+          .get(`/room/${testRoom.roomId}`)
+          .set(
+            'Authorization',
+            `Bearer ${users[UserType.NotMember].accessToken}`,
+          )
+          .expect(401);
+      });
+      it('GET should without Authorization return 401 Unauthorized', () => {
+        return request(app.getHttpServer())
+          .get(`/room/${testRoom.roomId}`)
+          .expect(401);
+      });
     });
   });
 });
