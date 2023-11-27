@@ -25,13 +25,7 @@ function PongBoard({
   setLogs: setLogs,
 }: PongBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [socket, _] = useState(() =>
-    io("/pong", {
-      query: {
-        game_id: id,
-      },
-    }),
-  );
+  const [socket] = useState(() => io("/pong", { query: { game_id: id } }));
   const game = useRef<PongGame>(
     new PongGame(
       socket,
@@ -167,14 +161,12 @@ function PongBoard({
         </Button>
         <Button
           onClick={game.current.switch_battle_mode}
-          disabled={battleDisabled}
-        >
+          disabled={battleDisabled}>
           Battle
         </Button>
         <Button
           onClick={game.current.switch_practice_mode}
-          disabled={practiceDisabled}
-        >
+          disabled={practiceDisabled}>
           Practice
         </Button>
       </div>
@@ -182,8 +174,7 @@ function PongBoard({
         ref={canvasRef}
         width="256"
         height="512"
-        className="border w-[256px] h-[512px]"
-      ></canvas>
+        className="border w-[256px] h-[512px]"></canvas>
     </>
   );
 }
