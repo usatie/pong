@@ -188,7 +188,7 @@ export class RoomService {
   ): Promise<UserOnRoomEntity> {
     return this.findUserOnRoom(roomId, client, client.id)
       .then((userOnRoomEntity) => {
-        if (userOnRoomEntity.role === Role.OWNER) {
+        if (userOnRoomEntity.role === Role.OWNER || client.id === userId) {
           return this.prisma.userOnRoom.delete({
             where: {
               userId_roomId_unique: {
