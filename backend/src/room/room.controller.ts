@@ -77,7 +77,7 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  UserOnRoomCreate(
+  createUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Req() request: Request,
   ) {
@@ -88,7 +88,7 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
-  GetUserOnRoom(
+  getUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
     @Req() request: Request,
@@ -100,7 +100,7 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
-  UserOnRoomDelete(
+  deleteUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
   ) {
@@ -115,7 +115,7 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
-  UpdateUserOnRoom(
+  updateUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
     @Body() updateUserOnRoomDto: UpdateUserOnRoomDto,
