@@ -25,11 +25,13 @@ function PongBoard({
   setLogs: setLogs,
 }: PongBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [socket, _] = useState(() => io('/pong', {
-    query: {
-      game_id: id,
-    },
-  }));
+  const [socket, _] = useState(() =>
+    io("/pong", {
+      query: {
+        game_id: id,
+      },
+    }),
+  );
   const game = useRef<PongGame>(
     new PongGame(
       socket,
@@ -75,7 +77,7 @@ function PongBoard({
   useEffect(() => {
     const handleLog = (log: string) => {
       setLogs((logs) => [...logs, log]);
-    }
+    };
     const handleConnect = () => {
       console.log(`Connected: ${socket.id}`);
       const log = "Connected to server";

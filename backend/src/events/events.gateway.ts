@@ -32,7 +32,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     this.broadcastToRooms(client, 'join');
     client.emit('log', 'You joined the game.');
     if (connectClients && connectClients.size == 2) {
-      client.emit('log', 'Your friend is already here. You can start.')
+      client.emit('log', 'Your friend is already here. You can start.');
     }
   }
 
