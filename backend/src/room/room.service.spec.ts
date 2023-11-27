@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RoomService } from './room.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateRoomDto } from './dto/create-room.dto';
 
 describe('RoomService', () => {
   let service: RoomService;

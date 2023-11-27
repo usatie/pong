@@ -103,7 +103,6 @@ export class RoomController {
   UserOnRoomDelete(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
-    @Req() request: Request,
   ) {
     return this.roomService.removeUserOnRoom(
       id,
