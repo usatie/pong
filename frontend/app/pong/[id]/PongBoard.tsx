@@ -51,7 +51,7 @@ function PongBoard({
     game.current.draw_canvas();
     const intervalId = setInterval(game.current.update, TARGET_FRAME_MS);
     return () => clearInterval(intervalId);
-  });
+  }, []);
   useEffect(() => {
     const handleKeyUp = (event: KeyboardEvent) => {
       game.current.keypress[event.key] = false;
@@ -66,7 +66,7 @@ function PongBoard({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  });
+  }, []);
 
   useEffect(() => {
     const handleLog = (log: string) => {
@@ -142,7 +142,7 @@ function PongBoard({
       socket.off("leave", handleLeave);
       socket.off("log", handleLog);
     };
-  }, [id, setLogs]);
+  }, [id, setLogs, socket]);
 
   const start = () => {
     setStartDisabled(true);
@@ -161,12 +161,14 @@ function PongBoard({
         </Button>
         <Button
           onClick={game.current.switch_battle_mode}
-          disabled={battleDisabled}>
+          disabled={battleDisabled}
+        >
           Battle
         </Button>
         <Button
           onClick={game.current.switch_practice_mode}
-          disabled={practiceDisabled}>
+          disabled={practiceDisabled}
+        >
           Practice
         </Button>
       </div>
@@ -174,7 +176,8 @@ function PongBoard({
         ref={canvasRef}
         width="256"
         height="512"
-        className="border w-[256px] h-[512px]"></canvas>
+        className="border w-[256px] h-[512px]"
+      ></canvas>
     </>
   );
 }
