@@ -114,7 +114,6 @@ export class RoomController {
     @Body() updateUserOnRoomDto: UpdateUserOnRoomDto,
     @Req() request: Request,
   ) {
-    console.log(updateUserOnRoomDto);
     return this.roomService.updateUserOnRoom(
       id,
       request['user'],

@@ -109,15 +109,24 @@ export class RoomService {
         where: { roomId: roomId },
       })
       .then((userOnRoomEntities) => {
-        const clientUserOnRoomEntity = userOnRoomEntities.find(
-          (userOnRoomEntity) => userOnRoomEntity.userId === client.id,
-        );
-        if (clientUserOnRoomEntity) {
-          return userOnRoomEntities.find(
-            (userOnRoomEntity) => userOnRoomEntity.userId === userId,
-          );
+        if (userOnRoomEntities === undefined) {
+          throw new HttpException('Not Found Room', 404);
         } else {
-          throw 404;
+          const clientUserOnRoomEntity = userOnRoomEntities.find(
+            (userOnRoomEntity) => userOnRoomEntity.userId === client.id,
+          );
+          if (clientUserOnRoomEntity === undefined) {
+            throw new HttpException('Forbidden', 403);
+          } else {
+            const targetUser = userOnRoomEntities.find(
+              (userOnRoomEntity) => userOnRoomEntity.userId === userId,
+            );
+            if (targetUser === undefined) {
+              throw new HttpException('Not Found User', 404);
+            } else {
+              return targetUser;
+            }
+          }
         }
       });
   };
