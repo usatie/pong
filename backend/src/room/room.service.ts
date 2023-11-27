@@ -176,7 +176,7 @@ export class RoomService {
             data: updateUserOnRoom,
           });
         } else {
-          throw 404;
+          throw new HttpException('Not found', 404);
         }
       });
   }
