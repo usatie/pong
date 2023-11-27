@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -43,20 +43,23 @@ export class RoomService {
   }
 
   async findRoom(id: number, user: User) {
-    await this.prisma.userOnRoom.findUniqueOrThrow({
-      where: {
-        userId_roomId_unique: {
-          userId: user.id,
-          roomId: id,
+    return this.prisma.room
+      .findUniqueOrThrow({
+        where: { id },
+        include: {
+          users: true,
         },
-      },
-    });
-    return this.prisma.room.findUnique({
-      where: { id },
-      include: {
-        users: true,
-      },
-    });
+      })
+      .then((roomEntity) => {
+        const userOnRoomEntity = roomEntity.users.find(
+          (userOnRoomEntity) => userOnRoomEntity.userId === user.id,
+        );
+        if (userOnRoomEntity === undefined) {
+          throw new HttpException('Forbidden', 403);
+        } else {
+          return roomEntity;
+        }
+      });
   }
 
   updateRoom(id: number, updateRoomDto: UpdateRoomDto) {
