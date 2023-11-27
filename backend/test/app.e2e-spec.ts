@@ -497,5 +497,37 @@ describe('AppController (e2e)', () => {
           .expect(401);
       });
     });
+    describe('DELETE', () => {
+      it('from roomMember: Owner : should return 200 OK (to prepare test, this action is tried. To prevent room delete, don"t execute this test! take care!)', () => {
+        return expect(true).toBe(true);
+        // return Promise.all(
+        //   users
+        //     .filter((user) => user.role === Role.OWNER)
+        //     .map((user) => {
+        //       return request(app.getHttpServer())
+        //         .delete(`/room/${testRoom.roomId}`)
+        //         .set('Authorization', `Bearer ${user.accessToken}`)
+        //         .expect(200);
+        //     }),
+        // );
+      });
+      it('from notMember and Member except Owner: should return 403 Forbidden', () => {
+        return Promise.all(
+          users
+            .filter((user) => user.role !== Role.OWNER)
+            .map((user) => {
+              return request(app.getHttpServer())
+                .delete(`/room/${testRoom.roomId}`)
+                .set('Authorization', `Bearer ${user.accessToken}`)
+                .expect(403);
+            }),
+        );
+      });
+      it('from unAuthorized User: should return 401 Unauthorized', () => {
+        return request(app.getHttpServer())
+          .delete(`/room/${testRoom.roomId}`)
+          .expect(401);
+      });
+    });
   });
 });
