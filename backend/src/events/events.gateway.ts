@@ -17,46 +17,30 @@ import { Namespace, Socket } from 'socket.io';
 export class EventsGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   server: Namespace;
-  started: boolean = false;
 
-  handleConnect(client: Socket) {
+  handleConnection(client: Socket) {
     console.log(`connect: ${client.id} `);
+    const gameId = client.handshake.query['game_id'] as string;
+    const connectClients = this.server.adapter.rooms.get(gameId);
+    if (connectClients && connectClients.size > 1) {
+      console.log(`full: ${gameId} ${client.id}`);
+      client.emit('log', 'The game is full.');
+      return;
+    }
+    console.log(`join: ${gameId} ${client.id}`);
+    client.join(gameId);
+    this.broadcastToRooms(client, 'join');
+    client.emit('log', 'You joined the game.');
+    if (connectClients && connectClients.size == 2) {
+      client.emit('log', 'Your friend is already here. You can start.');
+    }
   }
 
   handleDisconnect(client: Socket) {
-    this.started = false;
     console.log(`disconnect: ${client.id} `);
-  }
-
-  @SubscribeMessage('join')
-  async join(
-    @MessageBody() data: string,
-    @ConnectedSocket() client: Socket,
-  ): Promise<string> {
-    console.log(`join: ${JSON.stringify(data)} ${client.id}`);
-    const connectClients = this.server.adapter.rooms.get(data);
-    if (connectClients && connectClients.size > 1) {
-      return 'fail';
-    }
-    client.join(data);
-    console.log(client.rooms);
-    console.log(
-      `joined: ${client.id} ${this.server.adapter.rooms.get(data).size}`,
-    );
-    this.broadcastToRooms(client, 'join');
-    return 'success';
-  }
-
-  @SubscribeMessage('leave')
-  async leave(
-    @MessageBody() roomId: string,
-    @ConnectedSocket() client: Socket,
-  ): Promise<string> {
-    console.log(`leave: ${roomId} ${client.id}`);
-    console.log(client.rooms);
+    const roomId = client.handshake.query['game_id'] as string;
     this.broadcastToRoom(client, roomId, 'leave');
     client.leave(roomId);
-    return;
   }
 
   @SubscribeMessage('start')

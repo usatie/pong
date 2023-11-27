@@ -1,10 +1,10 @@
 "use client";
 
 import { memo, useEffect, useRef, useState } from "react";
-import { pongSocket as socket } from "@/socket";
 import { PongGame } from "./PongGame";
 import { TARGET_FRAME_MS } from "./const";
 import { Button } from "@/components/ui/button";
+import { io } from "socket.io-client";
 
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 
@@ -25,6 +25,7 @@ function PongBoard({
   setLogs: setLogs,
 }: PongBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [socket] = useState(() => io("/pong", { query: { game_id: id } }));
   const game = useRef<PongGame>(
     new PongGame(
       socket,
@@ -50,7 +51,7 @@ function PongBoard({
     game.current.draw_canvas();
     const intervalId = setInterval(game.current.update, TARGET_FRAME_MS);
     return () => clearInterval(intervalId);
-  });
+  }, []);
   useEffect(() => {
     const handleKeyUp = (event: KeyboardEvent) => {
       game.current.keypress[event.key] = false;
@@ -65,24 +66,16 @@ function PongBoard({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  });
+  }, []);
 
   useEffect(() => {
-    socket.connect();
-
+    const handleLog = (log: string) => {
+      setLogs((logs) => [...logs, log]);
+    };
     const handleConnect = () => {
       console.log(`Connected: ${socket.id}`);
-      socket.emit("join", id, (response: "success" | "fail") => {
-        let log: string;
-        if (response === "success") {
-          log = "You joined";
-          setStartDisabled(false);
-          setPracticeDisabled(true);
-        } else {
-          log = "You failed to join";
-        }
-        setLogs((logs) => [...logs, log]);
-      });
+      const log = "Connected to server";
+      setLogs((logs) => [...logs, log]);
     };
 
     const handleStart = (data: { vx: number; vy: number }) => {
@@ -114,7 +107,7 @@ function PongBoard({
     };
 
     const handleJoin = () => {
-      const log = `Your friend has joined`;
+      const log = `Your friend has joined to the game`;
       setLogs((logs) => [...logs, log]);
       setStartDisabled(false);
       setPracticeDisabled(true);
@@ -136,10 +129,9 @@ function PongBoard({
     socket.on("collide", handleCollide);
     socket.on("join", handleJoin);
     socket.on("leave", handleLeave);
+    socket.on("log", handleLog);
 
     return () => {
-      socket.emit("leave", id);
-      socket.disconnect();
       socket.off("connect", handleConnect);
       socket.off("start", handleStart);
       socket.off("right", handleRight);
@@ -148,8 +140,9 @@ function PongBoard({
       socket.off("collide", handleCollide);
       socket.off("join", handleJoin);
       socket.off("leave", handleLeave);
+      socket.off("log", handleLog);
     };
-  }, [id, setLogs]);
+  }, [id, setLogs, socket]);
 
   const start = () => {
     setStartDisabled(true);
