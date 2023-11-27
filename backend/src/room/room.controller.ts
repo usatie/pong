@@ -62,10 +62,15 @@ export class RoomController {
     return this.roomService.updateRoom(id, updateRoomDto, request['user']);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Delete(':id')
   @ApiOkResponse({ type: RoomEntity })
-  removeRoom(@Param('id', ParseIntPipe) id: number) {
-    return this.roomService.removeRoom(id);
+  removeRoom(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: Request,
+  ): Promise<RoomEntity> {
+    return this.roomService.removeRoom(id, request['user']);
   }
 
   @Post(':id')

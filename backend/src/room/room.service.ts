@@ -79,16 +79,18 @@ export class RoomService {
     });
   }
 
-  removeRoom(id: number): Promise<RoomEntity> {
-    return this.removeAllUserOnRoom(id)
-      .then(() =>
-        this.prisma.room.delete({
-          where: { id },
-        }),
-      )
-      .catch((err) => {
-        throw err;
-      });
+  removeRoom(id: number, user: User): Promise<RoomEntity> {
+    return this.findUserOnRoom(id, user, user.id).then((userOnRoomEntity) => {
+      if (userOnRoomEntity.role !== Role.OWNER) {
+        throw new HttpException('Forbidden', 403);
+      } else {
+        return this.removeAllUserOnRoom(id).then(() =>
+          this.prisma.room.delete({
+            where: { id },
+          }),
+        );
+      }
+    });
   }
 
   // UserOnRoom CRUD
