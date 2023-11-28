@@ -57,7 +57,11 @@ export class ChatGateway {
   ): void {
     this.logger.log('private message received');
     this.logger.log(data);
-    this.server.to(data.from).to(data.to).emit('sendToUser', data, client.id);
+    this.server
+      .except('block' + data.from)
+      .to(data.from)
+      .to(data.to)
+      .emit('sendToUser', data, client.id);
   }
 
   @SubscribeMessage('joinRoom')
@@ -67,6 +71,24 @@ export class ChatGateway {
   ) {
     this.logger.log(`join room: ${client.id} joined room ${roomId}`);
     client.join(roomId);
+  }
+
+  @SubscribeMessage('block')
+  handleBlockUser(
+    @MessageBody() userNameId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`block user: ${userNameId}(${client.id})`);
+    client.join('block' + userNameId);
+  }
+
+  @SubscribeMessage('unblock')
+  handleUnblockUser(
+    @MessageBody() userNameId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`unblock user: ${userNameId}(${client.id})`);
+    client.leave('block' + userNameId);
   }
 
   @SubscribeMessage('joinDM')
