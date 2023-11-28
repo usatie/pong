@@ -20,6 +20,7 @@ import * as z from "zod";
 type Chat = {
   userName: string;
   text: string;
+  roomId: string;
 };
 
 type MessageLog = Array<Chat>;
@@ -72,7 +73,11 @@ export default function ChatRoom({
       console.log(`sendMessage`, newMessage);
       console.log("name: ", user.name);
       const name = user.name;
-      socket.emit("newMessage", { userName: name, text: newMessage });
+      socket.emit("newMessage", {
+        userName: name,
+        text: newMessage,
+        roomId: id.toString(),
+      });
       setMessage("");
     }
   };
