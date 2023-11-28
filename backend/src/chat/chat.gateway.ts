@@ -11,6 +11,7 @@ import { Logger } from '@nestjs/common';
 type MessageReceived = {
   userName: string;
   text: string;
+  roomId: string;
 };
 
 type PrivateReceived = {
@@ -42,7 +43,11 @@ export class ChatGateway {
     this.logger.log(data);
     const rooms = [...client.rooms];
     this.logger.log('rooms', rooms);
-    this.server.to(rooms[1]).emit('sendToClient', data, client.id);
+    if (rooms.includes(data.roomId)) {
+      this.server.to(data.roomId).emit('sendToClient', data, client.id);
+    } else {
+      this.logger.error('socket has not joined this room');
+    }
   }
 
   @SubscribeMessage('privateMessage')
