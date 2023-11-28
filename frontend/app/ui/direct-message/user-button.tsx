@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { User } from "@/app/ui/user/card";
 import {
   ContextMenu,
@@ -10,12 +11,24 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { chatSocket as socket } from "@/socket";
 
 export const UserButton = ({ user }: { user: User }) => {
+  const [isBlocked, setIsBlocked] = useState(false);
   const router = useRouter();
 
   const handleOnClick = () => {
     router.push(`/direct-message/${user.id}`);
+  };
+
+  const blockUser = () => {
+    socket.emit("block", user.name! + user.id!);
+    setIsBlocked(true);
+  };
+
+  const unblockUser = () => {
+    socket.emit("unblock", user.name! + user.id!);
+    setIsBlocked(false);
   };
 
   return (
@@ -31,9 +44,11 @@ export const UserButton = ({ user }: { user: User }) => {
       <ContextMenuContent className="w-56">
         <ContextMenuItem inset>Go profile</ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem inset>Block</ContextMenuItem>
-        <ContextMenuItem inset disabled>
-          Unblock
+        <ContextMenuItem inset disabled={isBlocked}>
+          <button onClick={blockUser}>Block</button>
+        </ContextMenuItem>
+        <ContextMenuItem inset disabled={!isBlocked}>
+          <button onClick={unblockUser}>Unblock</button>
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
