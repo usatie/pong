@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import { chatSocket as socket } from "@/socket";
 import type { User } from "@/app/ui/user/card";
+import * as z from "zod";
 
 type Chat = {
   userName: string;
@@ -22,6 +23,8 @@ type Chat = {
 };
 
 type MessageLog = Array<Chat>;
+
+const formSchema = z.string().min(1);
 
 export default function ChatRoom({
   id,
@@ -64,11 +67,14 @@ export default function ChatRoom({
   const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();
     const newMessage = message;
-    console.log(`sendMessage`, newMessage);
-    console.log("name: ", user.name);
-    const name = user.name;
-    socket.emit("newMessage", { userName: name, text: newMessage });
-    setMessage("");
+    const result = formSchema.safeParse(newMessage);
+    if (result.success) {
+      console.log(`sendMessage`, newMessage);
+      console.log("name: ", user.name);
+      const name = user.name;
+      socket.emit("newMessage", { userName: name, text: newMessage });
+      setMessage("");
+    }
   };
 
   return (
