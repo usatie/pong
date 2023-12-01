@@ -17,14 +17,14 @@ import { chatSocket as socket } from "@/socket";
 import type { User } from "@/app/ui/user/card";
 import * as z from "zod";
 
-type DM = {
+type PrivateMessage = {
   from: string;
   to: string;
   userName: string;
   text: string;
 };
 
-type MessageLog = Array<DM>;
+type MessageLog = Array<PrivateMessage>;
 
 const formSchema = z.string().min(1);
 
@@ -41,7 +41,7 @@ export default function ChatRoom({
   const otherNameId = other.name! + other.id!;
 
   useEffect(() => {
-    const handleMessageReceived = (newMessageLog: DM) => {
+    const handleMessageReceived = (newMessageLog: PrivateMessage) => {
       if (
         newMessageLog.from === otherNameId ||
         newMessageLog.from === yourselfNameId

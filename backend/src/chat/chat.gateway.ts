@@ -8,13 +8,13 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 
-type MessageReceived = {
+type RoomChat = {
   userName: string;
   text: string;
   roomId: string;
 };
 
-type PrivateReceived = {
+type PrivateMessage = {
   from: string;
   to: string;
   userName: string;
@@ -36,7 +36,7 @@ export class ChatGateway {
 
   @SubscribeMessage('newMessage')
   chatMessageToRoom(
-    @MessageBody() data: MessageReceived,
+    @MessageBody() data: RoomChat,
     @ConnectedSocket() client: Socket,
   ): void {
     this.logger.log('message received');
@@ -52,7 +52,7 @@ export class ChatGateway {
 
   @SubscribeMessage('privateMessage')
   privateMessageToUser(
-    @MessageBody() data: PrivateReceived,
+    @MessageBody() data: PrivateMessage,
     @ConnectedSocket() client: Socket,
   ): void {
     this.logger.log('private message received');
