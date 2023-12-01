@@ -28,48 +28,33 @@ type MessageLog = Array<PrivateMessage>;
 
 const formSchema = z.string().min(1);
 
-export default function ChatRoom({
-  yourself,
-  other,
-}: {
-  yourself: User;
-  other: User;
-}) {
+export default function ChatRoom({ me, other }: { me: User; other: User }) {
   const [message, setMessage] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLog>([]);
-  const yourselfNameId = yourself.name! + yourself.id!;
-  const otherNameId = other.name! + other.id!;
-
-  useEffect(() => {
-    const handleMessageReceived = (newMessageLog: PrivateMessage) => {
-      if (
-        newMessageLog.from === otherNameId ||
-        newMessageLog.from === yourselfNameId
-      ) {
-        console.log("received message: ", newMessageLog);
-        setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);
-        console.log(messageLog);
-      }
-    };
-    socket.on("sendToUser", handleMessageReceived);
-    return () => {
-      console.log(`return from useEffect`);
-      socket.off("sendToUser", handleMessageReceived);
-    };
-  }, [messageLog, yourselfNameId, otherNameId]);
+  const myId = me.id.toString();
+  const otherId = other.id.toString();
 
   useEffect(() => {
     socket.connect(); // no-op if the socket is already connected
-    socket.emit("joinDM", yourselfNameId);
+    socket.emit("joinDM", myId);
     console.log("emit joinDM");
 
+    const handleMessageReceived = (newMessageLog: PrivateMessage) => {
+      if (newMessageLog.from === otherId || newMessageLog.from === myId) {
+        console.log("received message: ", newMessageLog);
+        setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);
+        console.log(newMessageLog);
+      }
+    };
+    socket.on("sendToUser", handleMessageReceived);
+
     return () => {
-      socket.emit("leaveDM", yourselfNameId);
-      console.log("emit leaveDM");
+      console.log(`return from useEffect`);
+      socket.off("sendToUser", handleMessageReceived);
       console.log("disconnect");
       socket.disconnect();
     };
-  }, [yourselfNameId]);
+  }, [myId, otherId]);
 
   const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -77,13 +62,13 @@ export default function ChatRoom({
     const result = formSchema.safeParse(newMessage);
     if (result.success) {
       console.log(`privateMassage`, newMessage);
-      console.log("name: ", yourself.name);
-      const name = yourself.name;
-      const fromName = yourselfNameId;
-      const toName = otherNameId;
+      console.log("name: ", me.name);
+      const name = me.name;
+      const fromId = myId;
+      const toId = otherId;
       socket.emit("privateMessage", {
-        from: fromName,
-        to: toName,
+        from: fromId,
+        to: toId,
         userName: name,
         text: newMessage,
       });

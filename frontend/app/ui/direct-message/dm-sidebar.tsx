@@ -28,12 +28,11 @@ const DirectMessageSidebar = async () => {
             <Separator className="bg-zinc-200 dark:bg-zinc-700 rounded-md mb-2" />
             <div className="space-y-[2px]">
               <ul>
-                {users.map(
-                  (user) =>
-                      <li key={user.id}>
-                        <UserButton key={user.id} user={user} />
-                      </li>
-                )}
+                {users.map((user) => (
+                  <li key={user.id}>
+                    <UserButton key={user.id} user={user} />
+                  </li>
+                ))}
               </ul>
             </div>
           </ScrollArea>

@@ -22,12 +22,12 @@ export const UserButton = ({ user }: { user: User }) => {
   };
 
   const blockUser = () => {
-    socket.emit("block", user.name! + user.id!);
+    socket.emit("block", user.id);
     setIsBlocked(true);
   };
 
   const unblockUser = () => {
-    socket.emit("unblock", user.name! + user.id!);
+    socket.emit("unblock", user.id);
     setIsBlocked(false);
   };
 
