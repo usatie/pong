@@ -46,15 +46,13 @@ function UnauthorizedMenu() {
 export default async function Nav() {
   const isAuthorized = await isLoggedIn();
   return (
-    <header>
-      <nav>
-        <ul className="flex items-center justify-between">
-          <Link href="/" className="font-black">
-            Pong
-          </Link>
-          {isAuthorized ? <AuthorizedMenu /> : <UnauthorizedMenu />}
-        </ul>
-      </nav>
-    </header>
+    <nav className="py-4">
+      <ul className="flex items-center justify-between">
+        <Link href="/" className="font-black">
+          Pong
+        </Link>
+        {isAuthorized ? <AuthorizedMenu /> : <UnauthorizedMenu />}
+      </ul>
+    </nav>
   );
 }

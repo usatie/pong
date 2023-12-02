@@ -23,17 +23,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={"overflow-hidden " + inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <main className="flex flex-col gap-8 pt-8 px-16">
+          <div className="flex flex-col px-16 h-[100vh]">
             <Nav />
             {children}
-          </main>
+          </div>
           <Toaster />
         </ThemeProvider>
       </body>
