@@ -81,18 +81,20 @@ export class RoomService {
 
   removeRoom(id: number, user: User): Promise<RoomEntity> {
     return this.findUserOnRoom(id, user, user.id)
-	.catch(e => {throw new HttpException('Forbidden', 403);})
-	.then((userOnRoomEntity) => {
-      if (userOnRoomEntity.role !== Role.OWNER) {
+      .catch((e) => {
         throw new HttpException('Forbidden', 403);
-      } else {
-        return this.removeAllUserOnRoom(id).then(() =>
-          this.prisma.room.delete({
-            where: { id },
-          }),
-        );
-      }
-    });
+      })
+      .then((userOnRoomEntity) => {
+        if (userOnRoomEntity.role !== Role.OWNER) {
+          throw new HttpException('Forbidden', 403);
+        } else {
+          return this.removeAllUserOnRoom(id).then(() =>
+            this.prisma.room.delete({
+              where: { id },
+            }),
+          );
+        }
+      });
   }
 
   // UserOnRoom CRUD
