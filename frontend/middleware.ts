@@ -4,7 +4,11 @@ import { isLoggedIn } from "@/app/lib/session";
 
 function isPathProtected(path: string) {
   if (path == "/user/signup") return false;
-  return path.startsWith("/user") || path.startsWith("/room");
+  return (
+    path.startsWith("/user") ||
+    path.startsWith("/room") ||
+    path.startsWith("/direct-message")
+  );
 }
 
 function isPathGuestOnly(path: string) {
