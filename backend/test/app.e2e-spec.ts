@@ -12,7 +12,7 @@ describe('AppController (e2e)', () => {
   let app: INestApplication;
   const testUser = {
     name: 'test_user',
-    email: 'test@example.com',
+    email: 'test@test.com',
     password: 'password-test',
   };
   const testUserLogin = { email: testUser.email, password: testUser.password };
