@@ -9,6 +9,7 @@ import { HttpAdapterHost, Reflector } from '@nestjs/core';
 import { CreateRoomDto } from 'src/room/dto/create-room.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
+import { RoomEntity } from 'src/room/entities/room.entity';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -277,18 +278,18 @@ describe('AppController (e2e)', () => {
             return res.body;
           });
       };
-      const getAccessTokenOfUser = ({
-        email,
-        password,
-      }: {
-        email: string;
-        password: string;
-      }): Promise<{ accessToken: string }> => {
+      type UserWithToken = UserEntity & {
+        accessToken: string;
+      };
+      const getUserWithToken = (user: UserEntity): Promise<UserWithToken> => {
         return request(app.getHttpServer())
           .post('/auth/login')
-          .send({ email, password })
+          .send(user)
           .then((res) => {
-            return { accessToken: res.body.accessToken };
+            return {
+              ...user,
+              accessToken: res.body.accessToken,
+            };
           });
       };
       const createUserDtos: CreateUserDto[] = [
@@ -321,65 +322,73 @@ describe('AppController (e2e)', () => {
           }));
         }),
       );
-      const usersWithToken = await Promise.all(
-        createdUsers.map((u) => {
-          return getAccessTokenOfUser(u).then((token) => ({ ...u, ...token }));
-        }),
-      );
-	  const createRoom = ({accessToken}: {accessToken: string}, createRoomDto: CreateRoomDto) => (
-		request(app.getHttpServer())
-              .post('/room')
-              .set('Authorization', `Bearer ${accessToken}`)
-              .send(createRoomDto).then((res) => res.body)
-	  );
-	  const ownerUser = usersWithToken.find(u => u.name === 'owner');
-	  const room = await createRoom(ownerUser, {name: 'test'});
-	  console.log(room);
-      return;
 
-        //         testRoom.roomId = res.body.id;
-        //         const addMemberPromises = users
-        //           .filter(
-        //             (user) => user.role !== Role.OWNER && user.role !== undefined,
-        //           )
-        //           .map((user) => {
-        //             return request(app.getHttpServer())
-        //               .post(`/room/${testRoom.roomId}`)
-        //               .set('Authorization', `Bearer ${user.accessToken}`);
-        //           });
-        //         const updateRolePromises = users
-        //           .filter((user) => user.role === Role.ADMINISTRATOR)
-        //           .map((user) => {
-        //             return request(app.getHttpServer())
-        //               .patch(`/room/${testRoom.roomId}/${user.id}`)
-        //               .set(
-        //                 'Authorization',
-        //                 `Bearer ${users[UserType.owner].accessToken}`,
-        //               )
-        //               .send({ role: user.role });
-        //           });
-        //         return Promise.all([
-        //           ...addMemberPromises,
-        //           ...updateRolePromises,
-        //         ]).then(() => {
-        //           return request(app.getHttpServer())
-        //             .get(`/room/${testRoom.roomId}`)
-        //             .set(
-        //               'Authorization',
-        //               `Bearer ${users[UserType.owner].accessToken}`,
-        //             )
-        //             .then((res) => {
-        //               console.log(res.body);
-        //             });
-        //         });
-        //       })
-        //       .catch((err) => {
-        //         throw err;
-        //       });
-        //   })
-        //   .catch((err) => {
-        //     throw err;
-        //   });
+      const usersWithToken: UserWithToken[] = await Promise.all(
+        createdUsers.map((u) => getUserWithToken(u))
+      );
+      const createRoom = (
+        user: UserWithToken,
+        createRoomDto: CreateRoomDto,
+      ): Promise<RoomEntity> =>
+        request(app.getHttpServer())
+          .post('/room')
+          .set('Authorization', `Bearer ${user.accessToken}`)
+          .send(createRoomDto)
+          .then((res) => res.body);
+      const ownerUser = usersWithToken.find((u) => u.name === 'owner');
+	  const roomName = 'testRoom';
+      const room = await createRoom(ownerUser, { name: roomName });
+      console.log(room);
+
+	  type Member = UserWithToken & {
+		role: Role,
+	  };
+
+      const enterRoom = (user: UserWithToken, room: RoomEntity): Promise<Member> =>
+        request(app.getHttpServer())
+          .post(`/room/${room.id}`)
+          .set('Authorization', `Bearer ${user.accessToken}`)
+		  .send()
+		  .then(res => ({...res.body, ...user}));
+
+      const members = await Promise.all(usersWithToken.filter((u) => u.name === 'member' || u.name === 'admin').map((roomMember) =>
+        enterRoom(roomMember, room),
+      ));
+
+	  return console.log(members);
+      //         const updateRolePromises = users
+      //           .filter((user) => user.role === Role.ADMINISTRATOR)
+      //           .map((user) => {
+      //             return request(app.getHttpServer())
+      //               .patch(`/room/${testRoom.roomId}/${user.id}`)
+      //               .set(
+      //                 'Authorization',
+      //                 `Bearer ${users[UserType.owner].accessToken}`,
+      //               )
+      //               .send({ role: user.role });
+      //           });
+      //         return Promise.all([
+      //           ...addMemberPromises,
+      //           ...updateRolePromises,
+      //         ]).then(() => {
+      //           return request(app.getHttpServer())
+      //             .get(`/room/${testRoom.roomId}`)
+      //             .set(
+      //               'Authorization',
+      //               `Bearer ${users[UserType.owner].accessToken}`,
+      //             )
+      //             .then((res) => {
+      //               console.log(res.body);
+      //             });
+      //         });
+      //       })
+      //       .catch((err) => {
+      //         throw err;
+      //       });
+      //   })
+      //   .catch((err) => {
+      //     throw err;
+      //   });
     });
     afterAll(() => {
       return request(app.getHttpServer())
