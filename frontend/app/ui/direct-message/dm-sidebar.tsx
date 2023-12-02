@@ -30,7 +30,7 @@ const DirectMessageSidebar = async () => {
               <ul>
                 {users.map((user) => (
                   <li key={user.id}>
-                    <UserButton key={user.id} user={user} />
+                    <UserButton user={user} />
                   </li>
                 ))}
               </ul>

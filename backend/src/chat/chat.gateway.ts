@@ -43,9 +43,7 @@ export class ChatGateway {
   ): void {
     this.logger.log('message received');
     this.logger.log(data);
-    const rooms = [...client.rooms];
-    this.logger.log('rooms', rooms);
-    if (rooms.includes('room' + data.roomId)) {
+    if (client.rooms.has('room' + data.roomId)) {
       this.server
         .to('room' + data.roomId)
         .emit('sendToClient', data, client.id);
