@@ -8,13 +8,13 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 
-type MessageReceived = {
+type RoomChat = {
   userName: string;
   text: string;
   roomId: string;
 };
 
-type PrivateReceived = {
+type PrivateMessage = {
   from: string;
   to: string;
   userName: string;
@@ -25,7 +25,7 @@ type PrivateReceived = {
   cors: {
     origin: '*',
   },
-  path: '/socket.io/chat/',
+  path: '/chat/',
   namespace: 'chat',
 })
 export class ChatGateway {
@@ -34,17 +34,19 @@ export class ChatGateway {
 
   private logger: Logger = new Logger('ChatGateway');
 
+  private userMap = new Map<string, string>();
+
   @SubscribeMessage('newMessage')
   chatMessageToRoom(
-    @MessageBody() data: MessageReceived,
+    @MessageBody() data: RoomChat,
     @ConnectedSocket() client: Socket,
   ): void {
     this.logger.log('message received');
     this.logger.log(data);
-    const rooms = [...client.rooms];
-    this.logger.log('rooms', rooms);
-    if (rooms.includes(data.roomId)) {
-      this.server.to(data.roomId).emit('sendToClient', data, client.id);
+    if (client.rooms.has('room' + data.roomId)) {
+      this.server
+        .to('room' + data.roomId)
+        .emit('sendToClient', data, client.id);
     } else {
       this.logger.error('socket has not joined this room');
     }
@@ -52,16 +54,43 @@ export class ChatGateway {
 
   @SubscribeMessage('privateMessage')
   privateMessageToUser(
-    @MessageBody() data: PrivateReceived,
+    @MessageBody() data: PrivateMessage,
     @ConnectedSocket() client: Socket,
   ): void {
     this.logger.log('private message received');
     this.logger.log(data);
     this.server
       .except('block' + data.from)
-      .to(data.from)
-      .to(data.to)
+      .to(this.userMap.get(data.from))
+      .to(this.userMap.get(data.to))
       .emit('sendToUser', data, client.id);
+  }
+
+  @SubscribeMessage('block')
+  handleBlockUser(
+    @MessageBody() userId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`block user: ${userId}(${client.id})`);
+    client.join('block' + userId);
+  }
+
+  @SubscribeMessage('unblock')
+  handleUnblockUser(
+    @MessageBody() userId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`unblock user: ${userId}(${client.id})`);
+    client.leave('block' + userId);
+  }
+
+  @SubscribeMessage('joinDM')
+  handleJoinUser(
+    @MessageBody() userId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.userMap.set(userId, client.id);
+    this.logger.log(`join DM: ${client.id} joined DM user${userId}`);
   }
 
   @SubscribeMessage('joinRoom')
@@ -70,43 +99,7 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
   ) {
     this.logger.log(`join room: ${client.id} joined room ${roomId}`);
-    client.join(roomId);
-  }
-
-  @SubscribeMessage('block')
-  handleBlockUser(
-    @MessageBody() userNameId: string,
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.logger.log(`block user: ${userNameId}(${client.id})`);
-    client.join('block' + userNameId);
-  }
-
-  @SubscribeMessage('unblock')
-  handleUnblockUser(
-    @MessageBody() userNameId: string,
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.logger.log(`unblock user: ${userNameId}(${client.id})`);
-    client.leave('block' + userNameId);
-  }
-
-  @SubscribeMessage('joinDM')
-  handleJoinUser(
-    @MessageBody() userId: string,
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.logger.log(`join DM: ${client.id} joined DM ${userId}`);
-    client.join(userId);
-  }
-
-  @SubscribeMessage('leaveDM')
-  handleLeaveUser(
-    @MessageBody() userId: string,
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.logger.log(`leave DM: ${client.id} left DM ${userId}`);
-    client.leave(userId);
+    client.join('room' + roomId);
   }
 
   @SubscribeMessage('leaveRoom')
@@ -115,7 +108,7 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
   ) {
     this.logger.log(`leave room: ${client.id} left room ${roomId}`);
-    client.leave(roomId);
+    client.leave('room' + roomId);
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {

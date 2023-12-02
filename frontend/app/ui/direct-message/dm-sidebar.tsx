@@ -6,8 +6,8 @@ import { getUserId } from "@/app/lib/session";
 import { UserButton } from "@/app/ui/direct-message/user-button";
 
 const DirectMessageSidebar = async () => {
-  const users = await getUsers();
-  if (!users) {
+  const tmpUsers = await getUsers();
+  if (!tmpUsers) {
     console.error("getUsers Error");
     return null;
   }
@@ -16,6 +16,7 @@ const DirectMessageSidebar = async () => {
     console.error("getUserId Error");
     return null;
   }
+  const users = tmpUsers.filter((user) => parseInt(currentUserId) !== user.id);
   return (
     <div>
       <Card className="flex flex-col h-full text-primary w-full dark:bg-[#1E1F22] bg-[#F2F3F5]">
@@ -27,14 +28,11 @@ const DirectMessageSidebar = async () => {
             <Separator className="bg-zinc-200 dark:bg-zinc-700 rounded-md mb-2" />
             <div className="space-y-[2px]">
               <ul>
-                {users.map(
-                  (user) =>
-                    parseInt(currentUserId) !== user.id && (
-                      <li key={user.id}>
-                        <UserButton key={user.id} user={user} />
-                      </li>
-                    ),
-                )}
+                {users.map((user) => (
+                  <li key={user.id}>
+                    <UserButton user={user} />
+                  </li>
+                ))}
               </ul>
             </div>
           </ScrollArea>

@@ -26,5 +26,5 @@ export default async function Page({
   if (!otherUser || otherUser.id === parseInt(currentUserId)) {
     notFound();
   }
-  return <ChatRoomCard yourself={currentUser} other={otherUser} />;
+  return <ChatRoomCard me={currentUser} other={otherUser} />;
 }

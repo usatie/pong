@@ -17,13 +17,13 @@ import { chatSocket as socket } from "@/socket";
 import type { User } from "@/app/ui/user/card";
 import * as z from "zod";
 
-type Chat = {
+type RoomChat = {
   userName: string;
   text: string;
   roomId: string;
 };
 
-type MessageLog = Array<Chat>;
+type MessageLog = Array<RoomChat>;
 
 const formSchema = z.string().min(1);
 
@@ -40,24 +40,18 @@ export default function ChatRoom({
   const [messageLog, setMessageLog] = useState<MessageLog>([]);
 
   useEffect(() => {
-    const handleMessageReceived = (newMessageLog: Chat) => {
-      console.log("received message: ", newMessageLog);
-      setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);
-      console.log(messageLog);
-    };
-    socket.on("sendToClient", handleMessageReceived);
-    return () => {
-      console.log(`return from useEffect`);
-      socket.off("sendToClient", handleMessageReceived);
-    };
-  }, [messageLog]);
-
-  useEffect(() => {
     socket.connect(); // no-op if the socket is already connected
     socket.emit("joinRoom", id);
     console.log("emit joinRoom");
+    const handleMessageReceived = (newMessageLog: RoomChat) => {
+      console.log("received message: ", newMessageLog);
+      setMessageLog((oldMessageLogs) => [...oldMessageLogs, newMessageLog]);
+      console.log(newMessageLog);
+    };
+    socket.on("sendToClient", handleMessageReceived);
 
     return () => {
+      socket.off("sendToClient", handleMessageReceived);
       socket.emit("leaveRoom", id);
       console.log("emit leaveRoom");
       console.log("disconnect");
