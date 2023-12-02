@@ -80,7 +80,9 @@ export class RoomService {
   }
 
   removeRoom(id: number, user: User): Promise<RoomEntity> {
-    return this.findUserOnRoom(id, user, user.id).then((userOnRoomEntity) => {
+    return this.findUserOnRoom(id, user, user.id)
+	.catch(e => {throw new HttpException('Forbidden', 403);})
+	.then((userOnRoomEntity) => {
       if (userOnRoomEntity.role !== Role.OWNER) {
         throw new HttpException('Forbidden', 403);
       } else {
@@ -116,31 +118,14 @@ export class RoomService {
     client: User,
     userId: number,
   ): Promise<UserOnRoomEntity> => {
-    return this.prisma.userOnRoom
-      .findMany({
-        where: { roomId: roomId },
-      })
-      .then((userOnRoomEntities) => {
-        if (userOnRoomEntities === undefined) {
-          throw new HttpException('Not Found Room', 404);
-        } else {
-          const clientUserOnRoomEntity = userOnRoomEntities.find(
-            (userOnRoomEntity) => userOnRoomEntity.userId === client.id,
-          );
-          if (clientUserOnRoomEntity === undefined) {
-            throw new HttpException('Forbidden', 403);
-          } else {
-            const targetUser = userOnRoomEntities.find(
-              (userOnRoomEntity) => userOnRoomEntity.userId === userId,
-            );
-            if (targetUser === undefined) {
-              throw new HttpException('Not Found User', 404);
-            } else {
-              return targetUser;
-            }
-          }
-        }
-      });
+    return this.prisma.userOnRoom.findUniqueOrThrow({
+      where: {
+        userId_roomId_unique: {
+          roomId: roomId,
+          userId: userId,
+        },
+      },
+    });
   };
 
   updateUserOnRoom(
@@ -149,36 +134,15 @@ export class RoomService {
     userId: number,
     updateUserOnRoom: UpdateUserOnRoomDto,
   ): Promise<UserOnRoomEntity> {
-    return this.prisma.userOnRoom
-      .findMany({
-        where: { roomId: roomId },
-      })
-      .then((userOnRoomEntities) => {
-        const clientUserOnRoomEntity = userOnRoomEntities.find(
-          (userOnRoomEntity) => userOnRoomEntity.userId === client.id,
-        );
-        const userOnRoomEntity = userOnRoomEntities.find(
-          (userOnRoomEntity) => userOnRoomEntity.userId === userId,
-        );
-        if (
-          clientUserOnRoomEntity &&
-          userOnRoomEntity &&
-          clientUserOnRoomEntity.role >= userOnRoomEntity.role &&
-          updateUserOnRoom.role <= clientUserOnRoomEntity.role
-        ) {
-          return this.prisma.userOnRoom.update({
-            where: {
-              userId_roomId_unique: {
-                roomId: roomId,
-                userId: userId,
-              },
-            },
-            data: updateUserOnRoom,
-          });
-        } else {
-          throw new HttpException('Not found', 404);
-        }
-      });
+    return this.prisma.userOnRoom.update({
+      where: {
+        userId_roomId_unique: {
+          roomId: roomId,
+          userId: userId,
+        },
+      },
+      data: updateUserOnRoom,
+    });
   }
 
   removeUserOnRoom(
