@@ -11,13 +11,13 @@ export default async function Page({
 }) {
   const currentUserId = await getUserId();
   if (!currentUserId) {
-    console.error("error");
-    return null;
+    console.error("getUserId error");
+    throw new Error("getUserId error");
   }
   const currentUser = await getUser(parseInt(currentUserId));
   if (!currentUser) {
-    console.error("error");
-    return null;
+    console.error("getUser error");
+    throw new Error("getUser error");
   }
   const otherUsers = await getUsers();
   const otherUser = otherUsers.find(

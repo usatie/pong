@@ -41,8 +41,8 @@ export default async function Page({
   }
   const currentUserId = await getUserId();
   if (!currentUserId) {
-    console.error("error");
-    return null;
+    console.error("getUserId error");
+    throw new Error("getUserId error");
   }
   const currentUser = await getUser(parseInt(currentUserId));
   return <ChatRoomCard id={id} user={currentUser} roomName={roomInfo.name} />;
