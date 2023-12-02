@@ -7,46 +7,31 @@ const prisma = new PrismaClient();
 const roundsOfHashing = 10;
 
 async function main() {
-  const passwordHashes = await Promise.all([
-    bcrypt.hash('password-susami', roundsOfHashing),
-    bcrypt.hash('password-thara', roundsOfHashing),
-    bcrypt.hash('password-kakiba', roundsOfHashing),
-    bcrypt.hash('password-shongou', roundsOfHashing),
-  ]);
+  const userNames = ['Susami', 'Thara', 'Kakiba', 'Shongou', 'Test'];
+  const userData = userNames.map((name) => ({
+    email: `${name.toLowerCase()}@example.com`,
+    name,
+    password: bcrypt.hashSync(
+      `password-${name.toLowerCase()}`,
+      roundsOfHashing,
+    ),
+  }));
+  const users = await Promise.all(
+    userData.map(async (data) => {
+      const user = await prisma.user.create({
+        data,
+      });
+      return user;
+    }),
+  );
 
-  const user1 = await prisma.user.create({
-    data: {
-      email: 'susami@example.com',
-      name: 'Susami',
-      password: passwordHashes[0],
-    },
-  });
+  const user1 = users[0];
+  const user2 = users[1];
+  const user3 = users[2];
+  const user4 = users[3];
+  const user5 = users[4];
 
-  const user2 = await prisma.user.create({
-    data: {
-      email: 'thara@example.com',
-      name: 'Thara',
-      password: passwordHashes[1],
-    },
-  });
-
-  const user3 = await prisma.user.create({
-    data: {
-      email: 'kakiba@example.com',
-      name: 'Kakiba',
-      password: passwordHashes[2],
-    },
-  });
-
-  const user4 = await prisma.user.create({
-    data: {
-      email: 'shongou@example.com',
-      name: 'Shongou',
-      password: passwordHashes[3],
-    },
-  });
-
-  console.log({ user1, user2, user3, user4 });
+  console.log({ user1, user2, user3, user4, user5 });
 
   await prisma.room.create({
     data: {
