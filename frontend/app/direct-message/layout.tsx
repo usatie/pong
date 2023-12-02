@@ -1,15 +1,13 @@
 import DirectMessageSidebar from "@/app/ui/direct-message/dm-sidebar";
 
 const DMlayout = async ({ children }: { children: React.ReactNode }) => {
+  // flex-grow: to fill the remaining space
   return (
-    <div className="flex h-full flex-row">
-      <div
-        className="hidden md:flex h-full w-[140px]
-      z-20 flex-col inset-y-100"
-      >
+    <div className="flex-grow flex flex-row gap-8">
+      <aside>
         <DirectMessageSidebar />
-      </div>
-      <main className="md:pl-[140px] h-full">{children}</main>
+      </aside>
+      <main className="flex-grow">{children}</main>
     </div>
   );
 };
