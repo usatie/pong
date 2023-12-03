@@ -26,15 +26,7 @@ function PongBoard({
 }: PongBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [socket] = useState(() => io("/pong", { query: { game_id: id } }));
-  const game = useRef<PongGame>(
-    new PongGame(
-      socket,
-      setFps,
-      setSpeed,
-      setPlayer1Position,
-      setPlayer2Position,
-    ),
-  );
+  const [game, setGame] = useState<PongGame | undefined>();
   const [startDisabled, setStartDisabled] = useState(true);
   const [practiceDisabled, setPracticeDisabled] = useState(true);
   const [battleDisabled, setBattleDisabled] = useState(true);
@@ -47,17 +39,33 @@ function PongBoard({
       console.warn("2d canvas is not supported or there is a bug");
       return;
     }
-    game.current.setup_canvas(ctx);
-    game.current.draw_canvas();
-    const intervalId = setInterval(game.current.update, TARGET_FRAME_MS);
-    return () => clearInterval(intervalId);
-  }, []);
+    setGame(
+      new PongGame(
+        socket,
+        ctx,
+        setFps,
+        setSpeed,
+        setPlayer1Position,
+        setPlayer2Position,
+      ),
+    );
+  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position, socket]);
+
   useEffect(() => {
+    if (!game) return;
+    game.draw_canvas();
+    const intervalId = setInterval(game.update, TARGET_FRAME_MS);
+
+    return () => clearInterval(intervalId);
+  }, [game]);
+  useEffect(() => {
+    if (!game) return;
+
     const handleKeyUp = (event: KeyboardEvent) => {
-      game.current.keypress[event.key] = false;
+      game.keypress[event.key] = false;
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      game.current.keypress[event.key] = true;
+      game.keypress[event.key] = true;
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -66,9 +74,11 @@ function PongBoard({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [game]);
 
   useEffect(() => {
+    if (!game) return;
+
     const handleLog = (log: string) => {
       setLogs((logs) => [...logs, log]);
     };
@@ -80,29 +90,29 @@ function PongBoard({
 
     const handleStart = (data: { vx: number; vy: number }) => {
       console.log(`Start: ${JSON.stringify(data)}`);
-      game.current.start(data);
+      game.start(data);
       setStartDisabled(true);
     };
 
     const handleRight = () => {
-      game.current.player2.clear(game.current.ctx);
-      game.current.player2.move_left();
-      game.current.player2.draw(game.current.ctx);
+      game.player2.clear(game.ctx);
+      game.player2.move_left();
+      game.player2.draw(game.ctx);
     };
 
     const handleLeft = () => {
-      game.current.player2.clear(game.current.ctx);
-      game.current.player2.move_right();
-      game.current.player2.draw(game.current.ctx);
+      game.player2.clear(game.ctx);
+      game.player2.move_right();
+      game.player2.draw(game.ctx);
     };
 
     const handleBounce = () => {
-      game.current.ball.bounce_off_paddle(game.current.player2);
+      game.ball.bounce_off_paddle(game.player2);
     };
 
     const handleCollide = () => {
-      game.current.ball.reset();
-      game.current.score.player1++;
+      game.ball.reset();
+      game.score.player1++;
       setStartDisabled(false);
     };
 
@@ -111,7 +121,7 @@ function PongBoard({
       setLogs((logs) => [...logs, log]);
       setStartDisabled(false);
       setPracticeDisabled(true);
-      game.current.resetPlayerPosition();
+      game.resetPlayerPosition();
     };
 
     const handleLeave = () => {
@@ -142,14 +152,16 @@ function PongBoard({
       socket.off("leave", handleLeave);
       socket.off("log", handleLog);
     };
-  }, [id, setLogs, socket]);
+  }, [id, setLogs, socket, game]);
 
   const start = () => {
+    if (!game) return;
+
     setStartDisabled(true);
-    game.current.start();
+    game.start();
     socket.emit("start", {
-      vx: -game.current.ball.vx,
-      vy: -game.current.ball.vy,
+      vx: -game.ball.vx,
+      vy: -game.ball.vy,
     });
   };
 
@@ -159,14 +171,11 @@ function PongBoard({
         <Button onClick={start} disabled={startDisabled}>
           Start
         </Button>
-        <Button
-          onClick={game.current.switch_battle_mode}
-          disabled={battleDisabled}
-        >
+        <Button onClick={game?.switch_battle_mode} disabled={battleDisabled}>
           Battle
         </Button>
         <Button
-          onClick={game.current.switch_practice_mode}
+          onClick={game?.switch_practice_mode}
           disabled={practiceDisabled}
         >
           Practice

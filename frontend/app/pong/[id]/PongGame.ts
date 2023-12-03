@@ -16,7 +16,7 @@ import {
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 
 export class PongGame {
-  ctx!: CanvasRenderingContext2D;
+  ctx: CanvasRenderingContext2D;
   player1: Paddle;
   player2: Paddle;
   ball: Ball;
@@ -37,11 +37,15 @@ export class PongGame {
 
   constructor(
     socket: Socket,
+    ctx: CanvasRenderingContext2D,
     setFps: setFunction<number>,
     setSpeed: setFunction<number>,
     setPlayer1Position: setFunction<number>,
     setPlayer2Position: setFunction<number>,
   ) {
+    this.ctx = ctx;
+    this.ctx.textAlign = "center";
+    this.ctx.font = "48px serif";
     this.player1 = this.initPlayer1();
     this.player2 = this.initPlayer2();
     this.ball = new Ball(
@@ -71,14 +75,6 @@ export class PongGame {
     this.setPlayer1Position = setPlayer1Position;
     this.setPlayer2Position = setPlayer2Position;
   }
-
-  // call only after rendering finishes
-  setup_canvas = (ctx: CanvasRenderingContext2D) => {
-    // todo
-    this.ctx = ctx;
-    this.ctx.textAlign = "center";
-    this.ctx.font = "48px serif";
-  };
 
   update_fps = () => {
     this.frame_count++;
