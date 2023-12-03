@@ -158,7 +158,7 @@ function PongBoard({
     if (!game) return;
 
     setStartDisabled(true);
-    game.start();
+    game.start({ vx: undefined, vy: undefined });
     socket.emit("start", {
       vx: -game.ball.vx,
       vy: -game.ball.vy,
