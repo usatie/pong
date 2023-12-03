@@ -25,7 +25,6 @@ type PrivateMessage = {
   cors: {
     origin: '*',
   },
-  path: '/chat/',
   namespace: 'chat',
 })
 export class ChatGateway {
