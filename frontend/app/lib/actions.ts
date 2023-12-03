@@ -188,3 +188,41 @@ export async function joinRoom(
     redirect(`/room/${roomId}`, RedirectType.push);
   }
 }
+
+export async function getConversation(userOneId: string, userTwoId: string) {
+  const res = await fetch(
+    `${process.env.API_URL}/chat?userOneId=${userOneId}&userTwoId=${userTwoId}`,
+    {
+      cache: "no-cache",
+    },
+  );
+  if (res.status === 404) {
+    return null;
+  } else if (!res.ok) {
+    console.error("getConversation error: ", await res.json());
+    throw new Error("createConversation error");
+  } else {
+    const conversation = await res.json();
+    return conversation;
+  }
+}
+
+export async function createConversation(userOneId: string, userTwoId: string) {
+  const res = await fetch(`${process.env.API_URL}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userOneId,
+      userTwoId,
+    }),
+  });
+  if (!res.ok) {
+    console.error("createConversation error: ", await res.json());
+    throw new Error("createConversation error");
+  } else {
+    const newConversation = await res.json();
+    return newConversation;
+  }
+}

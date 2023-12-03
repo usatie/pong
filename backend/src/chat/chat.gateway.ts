@@ -7,6 +7,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import { ChatService } from './chat.service';
+import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 
 type RoomChat = {
   userName: string;
@@ -14,12 +16,13 @@ type RoomChat = {
   roomId: string;
 };
 
-type PrivateMessage = {
-  from: string;
-  to: string;
-  userName: string;
-  text: string;
-};
+//type PrivateMessage = {
+//  conversationId: string;
+//  from: string;
+//  to: string;
+//  userName: string;
+//  text: string;
+//};
 
 @WebSocketGateway({
   cors: {
@@ -28,6 +31,8 @@ type PrivateMessage = {
   namespace: 'chat',
 })
 export class ChatGateway {
+  constructor(private readonly chatService: ChatService) {}
+
   @WebSocketServer()
   server: Server;
 
@@ -53,11 +58,12 @@ export class ChatGateway {
 
   @SubscribeMessage('privateMessage')
   privateMessageToUser(
-    @MessageBody() data: PrivateMessage,
+    @MessageBody() data: CreateDirectMessageDto,
     @ConnectedSocket() client: Socket,
   ): void {
     this.logger.log('private message received');
     this.logger.log(data);
+    this.chatService.createDirectMessage(+data.conversationId, data);
     this.server
       .except('block' + data.from)
       .to(this.userMap.get(data.from))

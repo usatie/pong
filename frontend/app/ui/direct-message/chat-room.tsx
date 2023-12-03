@@ -12,7 +12,7 @@ type PrivateMessage = {
   from: string;
   to: string;
   userName: string;
-  text: string;
+  content: string;
 };
 
 type MessageLog = Array<PrivateMessage>;
@@ -39,7 +39,7 @@ function Content({ messageLog }: { messageLog: MessageLog }) {
           >
             <a>{message.userName}</a>
             <div className="flex justify-center p-2 shadow mb-2 bg-muted rounded-lg">
-              {message.text}
+              {message.content}
             </div>
           </li>
         );
@@ -68,7 +68,17 @@ function TextInput({ sendMessage, setMessage, message }: TextInputProps) {
   );
 }
 
-export default function ChatRoom({ me, other }: { me: User; other: User }) {
+export default function ChatRoom({
+  id,
+  oldLog,
+  me,
+  other,
+}: {
+  id: string;
+  oldLog: MessageLog;
+  me: User;
+  other: User;
+}) {
   const [message, setMessage] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLog>([]);
   const myId = me.id.toString();
@@ -78,6 +88,9 @@ export default function ChatRoom({ me, other }: { me: User; other: User }) {
     socket.connect(); // no-op if the socket is already connected
     socket.emit("joinDM", myId);
     console.log("emit joinDM");
+    if (oldLog.length > 0) {
+      setMessageLog(() => [...oldLog]);
+    }
 
     const handleMessageReceived = (newMessageLog: PrivateMessage) => {
       if (newMessageLog.from === otherId || newMessageLog.from === myId) {
@@ -94,7 +107,7 @@ export default function ChatRoom({ me, other }: { me: User; other: User }) {
       console.log("disconnect");
       socket.disconnect();
     };
-  }, [myId, otherId]);
+  }, [myId, otherId, oldLog]);
 
   const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -107,10 +120,11 @@ export default function ChatRoom({ me, other }: { me: User; other: User }) {
       const fromId = myId;
       const toId = otherId;
       socket.emit("privateMessage", {
+        conversationId: id,
         from: fromId,
         to: toId,
         userName: name,
-        text: newMessage,
+        content: newMessage,
       });
       setMessage("");
     }
