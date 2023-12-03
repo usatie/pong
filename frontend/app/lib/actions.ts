@@ -188,3 +188,38 @@ export async function joinRoom(
     redirect(`/room/${roomId}`, RedirectType.push);
   }
 }
+
+export async function getConversation(userOneId: string, userTwoId: string) {
+  const res = await fetch(
+    `${process.env.API_URL}/chat?userOneId=${userOneId}&userTwoId=${userTwoId}`,
+    {
+      cache: "no-cache",
+    },
+  );
+  if (!res.ok) {
+    console.error("getConversation error: ", await res.json());
+    return null;
+  } else {
+    const conversation = await res.json();
+    return conversation;
+  }
+}
+
+export async function createConversation(userOneId: string, userTwoId: string) {
+  const res = await fetch(`${process.env.API_URL}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userOneId,
+      userTwoId,
+    }),
+  });
+  if (!res.ok) {
+    console.error("createRoom error: ", await res.json());
+  } else {
+    const newConversation = await res.json();
+    return newConversation;
+  }
+}
