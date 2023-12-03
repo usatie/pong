@@ -24,7 +24,10 @@ export default async function Page({
     console.error("getUser error");
     throw new Error("getUser error");
   }
-  const otherUsers = await getUsers();
+  const tmpUsers = await getUsers();
+  const otherUsers = tmpUsers.filter(
+    (user) => user.id !== parseInt(currentUserId),
+  );
   const otherUser = otherUsers.find(
     (user) => user.id === parseInt(directMessageId),
   );
@@ -54,6 +57,7 @@ export default async function Page({
       oldLog={conversation.directmessages}
       me={currentUser}
       other={otherUser}
+      users={otherUsers}
     />
   );
 }
