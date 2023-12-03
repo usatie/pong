@@ -218,6 +218,7 @@ export async function createConversation(userOneId: string, userTwoId: string) {
   });
   if (!res.ok) {
     console.error("createRoom error: ", await res.json());
+    return null;
   } else {
     const newConversation = await res.json();
     return newConversation;

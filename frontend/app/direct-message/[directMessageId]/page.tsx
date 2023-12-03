@@ -1,6 +1,11 @@
 import ChatRoomCard from "@/app/ui/direct-message/chat-room";
 import { getUserId } from "@/app/lib/session";
-import { getUsers, getUser } from "@/app/lib/actions";
+import {
+  getUsers,
+  getUser,
+  getConversation,
+  createConversation,
+} from "@/app/lib/actions";
 import type { User } from "@/app/ui/user/card";
 import { notFound } from "next/navigation";
 
@@ -26,5 +31,32 @@ export default async function Page({
   if (!otherUser || otherUser.id === parseInt(currentUserId)) {
     notFound();
   }
-  return <ChatRoomCard me={currentUser} other={otherUser} />;
+  let conversation =
+    (await getConversation(String(currentUserId), String(otherUser.id))) ||
+    (await getConversation(String(otherUser.id), String(currentUserId)));
+  if (!conversation) {
+    const res = await createConversation(
+      String(currentUserId),
+      String(otherUser.id),
+    );
+    if (!res) {
+      throw new Error("createConversation error");
+    }
+    conversation = await getConversation(
+      String(currentUserId),
+      String(otherUser.id),
+    );
+    if (!conversation) {
+      throw new Error("getConversation error");
+    }
+  }
+  console.log(conversation);
+  return (
+    <ChatRoomCard
+      id={conversation.id}
+      oldLog={conversation.directmessages}
+      me={currentUser}
+      other={otherUser}
+    />
+  );
 }
