@@ -47,6 +47,7 @@ model Conversation {
 
     directmessages DirectMessage[]
 
+    @@index([userTwoId])
     @@unique([userOneId, userTwoId])
 }
 
@@ -57,4 +58,6 @@ model DirectMessage {
 
     conversationId Int
     conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+    @@index([conversationId])
 }
