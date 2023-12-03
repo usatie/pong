@@ -41,7 +41,11 @@ async function getAccessTokenPayload(options: any) {
     });
     return payload;
   } catch (e) {
-    console.log("jwt token is invalid: ", e);
+    if (e instanceof jose.errors.JOSEError) {
+      console.log("jose error: ", e.message);
+    } else {
+      console.log("unknown error: ", e);
+    }
     return null;
   }
 }
