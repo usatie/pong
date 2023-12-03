@@ -75,24 +75,32 @@ function Sidebar({ users }: { users: User[] }) {
   );
 }
 
-export default function ChatPage() {
-  let prev_user_id: number | undefined;
-  let block: Message[] = [];
-  let blocks: Message[][] = [];
+function groupMessagesByUser(messages: Message[]): Message[][] {
+  let prevUserId: number | undefined = undefined;
+  const groupedMessages: Message[][] = [];
+  let currentGroup: Message[] = [];
+
   for (const msg of messages) {
-    if (prev_user_id === msg.user_id) {
-      block.push(msg);
+    if (msg.user_id === prevUserId) {
+      currentGroup.push(msg);
     } else {
-      if (block.length > 0) {
-        blocks.push(block);
+      if (currentGroup.length) {
+        groupedMessages.push(currentGroup);
       }
-      block = [msg];
+      currentGroup = [msg];
     }
-    prev_user_id = msg.user_id;
+    prevUserId = msg.user_id;
   }
-  if (block.length > 0) {
-    blocks.push(block);
+
+  if (currentGroup.length) {
+    groupedMessages.push(currentGroup);
   }
+
+  return groupedMessages;
+}
+
+export default function ChatPage() {
+  const blocks = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   useEffect(() => {
@@ -119,8 +127,9 @@ export default function ChatPage() {
           {/* Messages */}
           <div
             ref={contentRef}
-            className={`overflow-auto flex-grow pb-4 ${isScrolledToBottom ? "" : "invisible"
-              }`}
+            className={`overflow-auto flex-grow pb-4 ${
+              isScrolledToBottom ? "" : "invisible"
+            }`}
           >
             <Stack spacing={4}>
               {blocks.map((block) => (
