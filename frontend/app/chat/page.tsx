@@ -118,12 +118,28 @@ export default function ChatPage() {
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
+  // コンポーネントがマウントされた時に実行
   useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollTop = contentRef.current.scrollHeight;
       setIsScrolledToBottom(true);
     }
-  }, []);
+  }, []); // 空の依存配列で初回マウント時のみ実行
+
+  // メッセージが更新された時に実行
+  useEffect(() => {
+    if (contentRef.current) {
+      const isScrolledToBottom =
+        contentRef.current.scrollHeight - contentRef.current.scrollTop ===
+        contentRef.current.clientHeight;
+
+      if (isScrolledToBottom) {
+        contentRef.current.scrollTop = contentRef.current.scrollHeight;
+        setIsScrolledToBottom(true);
+      }
+    }
+  }, [messages]);
+
   return (
     <>
       <div className="overflow-auto flex-grow flex gap-4 pb-4">
