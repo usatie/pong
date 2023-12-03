@@ -1,4 +1,3 @@
-"use client";
 import { Separator } from "@/components/ui/separator";
 import { users } from "./test-data";
 import { Sidebar } from "./sidebar";

@@ -1,3 +1,4 @@
+"use client";
 import { Stack } from "@/app/ui/layout/stack";
 import { useEffect, useRef, useState } from "react";
 import { MessageGroup } from "./message-group";
