@@ -156,12 +156,7 @@ export class PongGame {
     }
   };
 
-  start = (
-    { vx, vy }: { vx: number | undefined; vy: number | undefined } = {
-      vx: undefined,
-      vy: undefined,
-    },
-  ) => {
+  start = ({ vx, vy }: { vx: number | undefined; vy: number | undefined }) => {
     this.is_playing = true;
     if (vx && vy) {
       this.ball.vx = vx;
