@@ -39,3 +39,25 @@ enum Role {
   ADMINISTRATOR
   MEMBER
 }
+
+model Conversation {
+    id Int @id @default(autoincrement())
+    userOneId String
+    userTwoId String
+
+    directmessages DirectMessage[]
+
+    @@index([userTwoId])
+    @@unique([userOneId, userTwoId])
+}
+
+model DirectMessage {
+    id Int @id @default(autoincrement())
+    content String
+    userName String
+
+    conversationId Int
+    conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+    @@index([conversationId])
+}
