@@ -32,16 +32,13 @@ export default async function Page({
     notFound();
   }
   let conversation =
-    (await getConversation(String(currentUserId), String(otherUser.id))) ||
+    (await getConversation(String(currentUserId), String(otherUser.id))) ??
     (await getConversation(String(otherUser.id), String(currentUserId)));
   if (!conversation) {
     const res = await createConversation(
       String(currentUserId),
       String(otherUser.id),
     );
-    if (!res) {
-      throw new Error("createConversation error");
-    }
     conversation = await getConversation(
       String(currentUserId),
       String(otherUser.id),

@@ -196,9 +196,11 @@ export async function getConversation(userOneId: string, userTwoId: string) {
       cache: "no-cache",
     },
   );
-  if (!res.ok) {
-    console.error("getConversation error: ", await res.json());
+  if (res.status === 404) {
     return null;
+  } else if (!res.ok) {
+    console.error("getConversation error: ", await res.json());
+    throw new Error("createConversation error");
   } else {
     const conversation = await res.json();
     return conversation;
@@ -217,8 +219,8 @@ export async function createConversation(userOneId: string, userTwoId: string) {
     }),
   });
   if (!res.ok) {
-    console.error("createRoom error: ", await res.json());
-    return null;
+    console.error("createConversation error: ", await res.json());
+    throw new Error("createConversation error");
   } else {
     const newConversation = await res.json();
     return newConversation;
