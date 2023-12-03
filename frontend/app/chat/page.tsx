@@ -12,7 +12,7 @@ import {
   MessageSkeleton,
 } from "./skeleton";
 
-function ChatMessage({ message }: { message: Message }) {
+function MessageWithAvatar({ message }: { message: Message }) {
   return (
     <HStack spacing={4} className="hover:opacity-60">
       <AvatarSkeleton />
@@ -29,7 +29,7 @@ function ChatMessage({ message }: { message: Message }) {
   );
 }
 
-function SimpleMessage({ message }: { message: Message }) {
+function MessageWithoutAvatar({ message }: { message: Message }) {
   const created_at_hhmm = message.created_at.split(" ")[1].slice(0, 5);
   return (
     <HStack spacing={4} className="group hover:opacity-60 mt-0">
@@ -44,9 +44,9 @@ function SimpleMessage({ message }: { message: Message }) {
 function MessageBlock({ messages }: { messages: Message[] }) {
   return (
     <Stack spacing={1}>
-      {<ChatMessage message={messages[0]} />}
+      {<MessageWithAvatar message={messages[0]} />}
       {messages.slice(1).map((msg) => (
-        <SimpleMessage message={msg} key={msg.id} />
+        <MessageWithoutAvatar message={msg} key={msg.id} />
       ))}
     </Stack>
   );
@@ -119,9 +119,8 @@ export default function ChatPage() {
           {/* Messages */}
           <div
             ref={contentRef}
-            className={`overflow-auto flex-grow pb-4 ${
-              isScrolledToBottom ? "" : "invisible"
-            }`}
+            className={`overflow-auto flex-grow pb-4 ${isScrolledToBottom ? "" : "invisible"
+              }`}
           >
             <Stack spacing={4}>
               {blocks.map((block) => (
