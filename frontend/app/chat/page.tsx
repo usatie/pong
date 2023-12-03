@@ -12,42 +12,53 @@ import {
   MessageSkeleton,
 } from "./skeleton";
 
-function MessageWithAvatar({ message }: { message: Message }) {
-  return (
-    <HStack spacing={4} className="hover:opacity-60">
-      <AvatarSkeleton />
-      <Stack>
-        <HStack spacing={2}>
-          <div className="text-xs">{message.user_name}</div>
-          <div className="text-xs text-muted-foreground">
-            {message.created_at}
-          </div>
-        </HStack>
-        <div className="text-sm text-muted-foreground">{message.text}</div>
-      </Stack>
-    </HStack>
-  );
-}
-
-function MessageWithoutAvatar({ message }: { message: Message }) {
+function MessageItem({
+  message,
+  withAvatar,
+}: {
+  message: Message;
+  withAvatar: boolean;
+}) {
   const created_at_hhmm = message.created_at.split(" ")[1].slice(0, 5);
+
   return (
-    <HStack spacing={4} className="group hover:opacity-60 mt-0">
-      <div className="group-hover:text-muted-foreground flex-none text-background text-xs w-10 text-center">
-        {created_at_hhmm}
-      </div>
-      <div className="text-sm text-muted-foreground">{message.text}</div>
+    <HStack spacing={4} className="group hover:opacity-60">
+      {withAvatar && (
+        <>
+          {/* Left Side */}
+          <AvatarSkeleton />
+          {/* Right Side */}
+          <Stack>
+            <HStack spacing={2}>
+              <div className="text-xs">{message.user_name}</div>
+              <div className="text-xs text-muted-foreground">
+                {message.created_at}
+              </div>
+            </HStack>
+            <div className="text-sm text-muted-foreground">{message.text}</div>
+          </Stack>
+        </>
+      )}
+      {!withAvatar && (
+        <>
+          {/* Left Side */}
+          <div className="group-hover:text-muted-foreground flex-none text-background text-xs w-10 text-center">
+            {created_at_hhmm}
+          </div>
+          {/* Right Side */}
+          <div className="text-sm text-muted-foreground">{message.text}</div>
+        </>
+      )}
     </HStack>
   );
 }
 
-function MessageBlock({ messages }: { messages: Message[] }) {
+function MessageGroup({ messages }: { messages: Message[] }) {
   return (
     <Stack spacing={1}>
-      {<MessageWithAvatar message={messages[0]} />}
-      {messages.slice(1).map((msg) => (
-        <MessageWithoutAvatar message={msg} key={msg.id} />
-      ))}
+      {messages.map((msg, i) => {
+        return <MessageItem message={msg} withAvatar={i === 0} key={msg.id} />;
+      })}
     </Stack>
   );
 }
@@ -100,7 +111,7 @@ function groupMessagesByUser(messages: Message[]): Message[][] {
 }
 
 export default function ChatPage() {
-  const blocks = groupMessagesByUser(messages);
+  const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   useEffect(() => {
@@ -132,8 +143,8 @@ export default function ChatPage() {
             }`}
           >
             <Stack spacing={4}>
-              {blocks.map((block) => (
-                <MessageBlock messages={block} key={block[0].id} />
+              {messageGroups.map((group) => (
+                <MessageGroup messages={group} key={group[0].id} />
               ))}
             </Stack>
           </div>
