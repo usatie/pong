@@ -8,11 +8,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ChatService {
   constructor(private prisma: PrismaService) {}
 
-  create(createChatDto: CreateChatDto) {
+  createConversation(createChatDto: CreateChatDto) {
     return this.prisma.conversation.create({ data: createChatDto });
   }
 
-  findAll(createChatDto: CreateChatDto) {
+  findConversation(createChatDto: CreateChatDto) {
     return this.prisma.conversation.findFirstOrThrow({
       where: {
         AND: [
@@ -42,8 +42,6 @@ export class ChatService {
     conversationId: number,
     createDirectMessageDto: CreateDirectMessageDto,
   ) {
-    console.log(conversationId);
-    console.log(createDirectMessageDto);
     return this.prisma.directMessage.create({
       data: {
         conversationId: conversationId,

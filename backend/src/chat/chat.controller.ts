@@ -20,13 +20,13 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post()
-  create(@Body() createChatDto: CreateChatDto) {
-    return this.chatService.create(createChatDto);
+  createConversation(@Body() createChatDto: CreateChatDto) {
+    return this.chatService.createConversation(createChatDto);
   }
 
   @Get()
-  findAll(@Query() createChatDto: CreateChatDto) {
-    return this.chatService.findAll(createChatDto);
+  findConversation(@Query() createChatDto: CreateChatDto) {
+    return this.chatService.findConversation(createChatDto);
   }
 
   //  @Get(':id')
