@@ -225,7 +225,7 @@ describe('AppController (e2e)', () => {
       member,
       NotMember,
     }
-    let users: testUser[] = [
+    const users: testUser[] = [
       {
         name: 'owner',
         email: 'owner@example.com',
