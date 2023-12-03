@@ -63,6 +63,13 @@ function MessageGroup({ messages }: { messages: Message[] }) {
   );
 }
 
+function truncateString(str: string, num: number): string {
+  if (str.length <= num) {
+    return str;
+  }
+  return str.slice(0, num) + "...";
+}
+
 function Sidebar({ users }: { users: User[] }) {
   return (
     <div className="overflow-y-auto shrink-0 basis-36 flex-grow pb-4">
@@ -74,10 +81,7 @@ function Sidebar({ users }: { users: User[] }) {
           >
             <SmallAvatarSkeleton />
             <a className="text-muted-foreground text-sm whitespace-nowrap group-hover:text-primary">
-              {/* if name is long, trim and append "..." */}
-              {user.name.length > 15
-                ? user.name.slice(0, 15) + "..."
-                : user.name}
+              {truncateString(user.name, 15)}
             </a>
           </button>
         ))}
