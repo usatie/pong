@@ -1,5 +1,4 @@
 "use client";
-import { Skeleton } from "@/components/ui/skeleton";
 import { HStack, Stack } from "@/app/ui/layout/stack";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,26 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { users, messages } from "./test-data";
 import type { Message, User } from "./test-data";
-
-function AvatarSkeleton() {
-  return <Skeleton className="flex-none rounded-full h-10 w-10" />;
-}
-
-function SmallAvatarSkeleton() {
-  return <Skeleton className="flex-none rounded-full h-6 w-6" />;
-}
-
-function MessageSkeleton() {
-  return (
-    <div className="flex gap-4">
-      <AvatarSkeleton />
-      <div className="flex-grow flex flex-col justify-between">
-        <Skeleton className="max-w-md h-1/3" />
-        <Skeleton className="max-w-lg h-1/2" />
-      </div>
-    </div>
-  );
-}
+import {
+  AvatarSkeleton,
+  SmallAvatarSkeleton,
+  MessageSkeleton,
+} from "./skeleton";
 
 function ChatMessage({ message }: { message: Message }) {
   return (
