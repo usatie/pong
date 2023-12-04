@@ -2,18 +2,30 @@ import { Socket } from "socket.io-client";
 import { Ball } from "./Ball";
 import { Paddle } from "./Paddle";
 import {
-  BALL_COLOR,
   BALL_RADIUS,
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
   INITIAL_BALL_SPEED,
-  PADDLE_COLOR,
   PADDLE_HEIGHT,
   PADDLE_WIDTH,
   TARGET_FRAME_MS,
 } from "./const";
 
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
+
+let PADDLE_COLOR = "#000000";
+let BALL_COLOR = "#000000";
+
+// Get the value of --foreground from global CSS
+function getForegroundColor() {
+  // Access the root element (you can replace this with any other element if needed)
+  const root = document.documentElement;
+  // Get the computed style of the root
+  const style = getComputedStyle(root);
+  // Access the --foreground variable
+  const foregroundColor = style.getPropertyValue("--foreground").trim();
+  return `hsl(${foregroundColor})`;
+}
 
 export class PongGame {
   ctx: CanvasRenderingContext2D;
@@ -32,7 +44,6 @@ export class PongGame {
   setSpeed: setFunction<number>;
   setPlayer1Position: setFunction<number>;
   setPlayer2Position: setFunction<number>;
-
   socket: Socket;
 
   constructor(
@@ -43,11 +54,15 @@ export class PongGame {
     setPlayer1Position: setFunction<number>,
     setPlayer2Position: setFunction<number>,
   ) {
+    // TODO: Use useTheme() to change the color variables
+    PADDLE_COLOR = getForegroundColor();
+    BALL_COLOR = getForegroundColor();
     this.ctx = ctx;
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
     this.player1 = this.initPlayer1();
     this.player2 = this.initPlayer2();
+
     this.ball = new Ball(
       CANVAS_HEIGHT,
       CANVAS_WIDTH,
