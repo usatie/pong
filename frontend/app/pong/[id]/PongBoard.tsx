@@ -178,7 +178,7 @@ function PongBoard({ id: id }: PongBoardProps) {
   };
 
   return (
-    <div className="overflow-auto flex-grow flex gap-8">
+    <div className="overflow-hidden flex-grow flex gap-8 pb-8">
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
@@ -186,7 +186,7 @@ function PongBoard({ id: id }: PongBoardProps) {
         className="border flex-grow"
       ></canvas>
       <div className="flex flex-col gap-4">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
             Start
           </Button>
