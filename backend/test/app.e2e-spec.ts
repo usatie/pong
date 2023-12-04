@@ -10,9 +10,7 @@ import { CreateRoomDto } from 'src/room/dto/create-room.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { RoomEntity } from 'src/room/entities/room.entity';
-import { UserOnRoomEntity } from 'src/room/entities/UserOnRoom.entity';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
-import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -285,31 +283,6 @@ describe('AppController (e2e)', () => {
     const payloadFromJWT = ({ accessToken }: { accessToken: string }) =>
       atob(accessToken.split('.')[1]);
 
-    const getUserIdFromJWT = ({ accessToken }: { accessToken: string }) =>
-      JSON.parse(payloadFromJWT({ accessToken })).userId;
-
-    const updateUserRole = (
-      changer: UserWithToken,
-      changed: UserWithToken,
-      { role }: { role: Role },
-      room: RoomEntity,
-    ): Promise<Member> =>
-      request(app.getHttpServer())
-        .patch(`/room/${room.id}/${getUserIdFromJWT(changed)}`)
-        .set('Authorization', `Bearer ${changer.accessToken}`)
-        .send({ role })
-        .then((res) => ({ ...changed, ...res.body }));
-
-    const getOneUserOnRoom = (
-      room: RoomEntity,
-      user: UserWithToken,
-    ): Promise<UserOnRoomEntity> =>
-      request(app.getHttpServer())
-        .get(`/room/${room.id}/${JSON.parse(payloadFromJWT(user)).userId}`)
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .send()
-        .then((res) => res.body);
-
     const getUserWithToken = (user: UserEntity): Promise<UserWithToken> => {
       return request(app.getHttpServer())
         .post('/auth/login')
@@ -361,15 +334,6 @@ describe('AppController (e2e)', () => {
         .send(dto)
         .then((res) => res.body);
 
-    const getMembers = (
-      room: RoomEntity,
-      client: dtoWithToken,
-    ): Promise<Member[]> =>
-      request(app.getHttpServer())
-        .get(`/room/${room.id}`)
-        .set('Authorization', `Bearer ${client.accessToken}`)
-        .then((res) => res.body.users);
-
     beforeAll(async () => {
       const createdUsers = await Promise.all(
         userDtos.map((dto) => {
@@ -387,17 +351,10 @@ describe('AppController (e2e)', () => {
       const ownerUser = usersWithToken.find((u) => u.name === 'OWNER');
       const room = await createRoom(ownerUser, createRoomDto);
 
-      await Promise.all(
+      return Promise.all(
         usersWithToken
           .filter((u) => u.name === 'MEMBER' || u.name === 'ADMINISTRATOR')
           .map((roomMember) => enterRoom(roomMember, room)),
-      );
-
-      const admin = await updateUserRole(
-        usersWithToken.find((u) => u.name === 'OWNER'),
-        usersWithToken.find((u) => u.name === 'ADMINISTRATOR'),
-        { role: Role.ADMINISTRATOR },
-        room,
       );
     });
 
@@ -414,59 +371,56 @@ describe('AppController (e2e)', () => {
           );
         });
     });
-    describe('test', () => {
-      it('test', () => {
-        return expect(true).toBe(true);
-      });
-      it('test2', () => {
-        return expect(true).toBe(true);
-      });
-    });
 
     describe('GET', () => {
+      const testGet = (
+        { accessToken }: { accessToken: string },
+        status: number,
+        rm: RoomEntity,
+      ) =>
+        request(app.getHttpServer())
+          .get(`/room/${rm.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(status)
+          .then((res) => {
+            if (status / 100 === 2) {
+              expect(res.body).toHaveProperty('id');
+              expect(res.body).toHaveProperty('name');
+              expect(res.body).toHaveProperty('users');
+              expect(res.body.users).toBeInstanceOf(Array);
+              expect(res.body.users.length).toBeGreaterThan(0);
+              res.body.users.forEach((user) => {
+                expect(user).toHaveProperty('id');
+                expect(user).toHaveProperty('role');
+                expect(user).toHaveProperty('roomId');
+                expect(user).toHaveProperty('userId');
+              });
+            }
+          });
+
+      const memberFilter = (user: UserWithToken) =>
+        user.name === 'MEMBER' ||
+        user.name === 'ADMINISTRATOR' ||
+        user.name === 'OWNER';
+
       it('from roomMember: should return the room 200 OK', async () => {
         const users = await Promise.all(userDtos.map((u) => loginUser(u)));
         const room = await getRoom(createRoomDto.name);
+        const members = users.filter(memberFilter);
 
-        return Promise.all(
-          users
-            .filter((user) => user.name !== 'NotMEMBER')
-            .map((user) => {
-              return request(app.getHttpServer())
-                .get(`/room/${room.id}`)
-                .set('Authorization', `Bearer ${user.accessToken}`)
-                .expect(200)
-                .then((res) => {
-                  expect(res.body).toHaveProperty('id');
-                  expect(res.body).toHaveProperty('name');
-                  expect(res.body).toHaveProperty('users');
-                  expect(res.body.users).toBeInstanceOf(Array);
-                  expect(res.body.users.length).toBeGreaterThan(0);
-                  res.body.users.forEach((user) => {
-                    expect(user).toHaveProperty('id');
-                    expect(user).toHaveProperty('role');
-                    expect(user).toHaveProperty('roomId');
-                    expect(user).toHaveProperty('userId');
-                  });
-                });
-            }),
-        );
+        return Promise.all(members.map((user) => testGet(user, 200, room)));
       });
       it('from notMember: should return 403 Forbidden', async () => {
         const users = await Promise.all(userDtos.map((u) => loginUser(u)));
         const room = await getRoom(createRoomDto.name);
         const notMember = users.find((u) => u.name === 'NotMEMBER');
-        console.log('user    test!!', users);
 
-        return request(app.getHttpServer())
-          .get(`/room/${room.id}`)
-          .set('Authorization', `Bearer ${notMember.accessToken}`)
-          .expect(403);
+        return testGet(notMember, 403, room);
       });
       it('from unAuthorized User: should return 401 Unauthorized', async () => {
         const room = await getRoom(createRoomDto.name);
 
-        return request(app.getHttpServer()).get(`/room/${room.id}`).expect(401);
+        return testGet({ accessToken: '' }, 401, room);
       });
     });
 
@@ -563,34 +517,62 @@ describe('AppController (e2e)', () => {
           .expect(401);
       });
     });
-    // });
 
-    // describe('DELETE', () => {
-    //   it('from roomMember: Owner : should return 200 OK (to prepare test, this action is tried. To prevent room delete, don"t execute this test! take care!)', () => {
-    //     return expect(true).toBe(true);
-    //   });
-    //   it('from notMember and Member except Owner: should return 403 Forbidden', async () => {
-    //     const users = await Promise.all(userDtos.map((u) => loginUser(u)));
-    //     const room = await getRoom(createRoomDto.name);
+    describe('DELETE', () => {
+      const testDelete = (
+        { accessToken }: { accessToken: string },
+        status: number,
+        rm: RoomEntity,
+      ) =>
+        request(app.getHttpServer())
+          .delete(`/room/${rm.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(status);
 
-    //     return Promise.all(
-    //       users
-    //         .filter((user) => user.name !== 'OWNER')
-    //         .map((user) => {
-    //           return request(app.getHttpServer())
-    //             .delete(`/room/${room.id}`)
-    //             .set('Authorization', `Bearer ${user.accessToken}`)
-    //             .expect(403);
-    //         }),
-    //     );
-    //   });
-    //   it('from unAuthorized User: should return 401 Unauthorized', async () => {
-    //     const room = await getRoom(createRoomDto.name);
+      it('from roomMember: Owner : should return 200 OK (to prepare test, this action is tried. To prevent room delete, don"t execute this test! take care!)', () => {
+        return expect(true).toBe(true);
+      });
 
-    //     return request(app.getHttpServer())
-    //       .delete(`/room/${room.id}`)
-    //       .expect(401);
-    //   });
-    // });
+      it('except Owner: should return 403 Forbidden', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const membersExceptOwner = users.filter((u) => u.name !== 'OWNER');
+
+        return Promise.all(
+          membersExceptOwner.map((user) => testDelete(user, 403, room)),
+        );
+      });
+
+      it('from unAuthorized User: should return 401 Unauthorized', async () => {
+        const room = await getRoom(createRoomDto.name);
+
+        return testDelete({ accessToken: '' }, 401, room);
+      });
+    });
+
+    describe('PATCH /room/:id/:userId', () => {
+      // const getUserIdFromJWT = ({ accessToken }: { accessToken: string }) =>
+      //   JSON.parse(payloadFromJWT({ accessToken })).userId;
+      // const updateUserRole = (
+      //   changer: UserWithToken,
+      //   changed: UserWithToken,
+      //   { role }: { role: Role },
+      //   room: RoomEntity,
+      // ): Promise<Member> =>
+      //   request(app.getHttpServer())
+      //     .patch(`/room/${room.id}/${getUserIdFromJWT(changed)}`)
+      //     .set('Authorization', `Bearer ${changer.accessToken}`)
+      //     .send({ role })
+      //     .then((res) => ({ ...changed, ...res.body }));
+      // const getOneUserOnRoom = (
+      //   room: RoomEntity,
+      //   user: UserWithToken,
+      // ): Promise<UserOnRoomEntity> =>
+      //   request(app.getHttpServer())
+      //     .get(`/room/${room.id}/${JSON.parse(payloadFromJWT(user)).userId}`)
+      //     .set('Authorization', `Bearer ${user.accessToken}`)
+      //     .send()
+      //     .then((res) => res.body);
+    });
   });
 });
