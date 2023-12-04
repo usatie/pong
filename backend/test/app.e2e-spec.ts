@@ -554,15 +554,15 @@ describe('AppController (e2e)', () => {
 
         return testPatch(notMembers, 403, room, { name: newName });
       });
-    });
-    //   it('from unAuthorized User: should return 401 Unauthorized', async () => {
-    //     const room = await getRoom(createRoomDto.name);
+      it('from unAuthorized User: should return 401 Unauthorized', async () => {
+        const room = await getRoom(createRoomDto.name);
 
-    //     return request(app.getHttpServer())
-    //       .patch(`/room/${room.id}`)
-    //       .send({ name: newName })
-    //       .expect(401);
-    //   });
+        return request(app.getHttpServer())
+          .patch(`/room/${room.id}`)
+          .send({ name: newName })
+          .expect(401);
+      });
+    });
     // });
 
     // describe('DELETE', () => {
