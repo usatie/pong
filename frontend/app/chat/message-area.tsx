@@ -4,59 +4,37 @@ import { useEffect, useRef, useState } from "react";
 import { MessageGroup } from "./message-group";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { messages } from "./test-data";
+import { testData } from "./test-data";
 import type { Message } from "./test-data";
 import { MessageSkeleton } from "./skeleton";
+import { groupMessagesByUser, useScrollToBottom } from "./helper";
 
-function groupMessagesByUser(messages: Message[]): Message[][] {
-  let prevUserId: number | undefined = undefined;
-  const groupedMessages: Message[][] = [];
-  let currentGroup: Message[] = [];
-
-  for (const msg of messages) {
-    if (msg.user_id === prevUserId) {
-      currentGroup.push(msg);
-    } else {
-      if (currentGroup.length) {
-        groupedMessages.push(currentGroup);
-      }
-      currentGroup = [msg];
-    }
-    prevUserId = msg.user_id;
-  }
-
-  if (currentGroup.length) {
-    groupedMessages.push(currentGroup);
-  }
-
-  return groupedMessages;
+async function getMessages() {
+  // TODO: Implement this function
+  return testData.messages;
 }
 
 function MessageArea() {
+  const [messages, setMessages] = useState<Message[]>([]);
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
-  const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
+  const isScrolledToBottom = useScrollToBottom(contentRef, messages);
 
-  // コンポーネントがマウントされた時に実行
+  // TODO: Messageを取得するsocketのロジック等を実装
+  // メッセージを取得
   useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.scrollTop = contentRef.current.scrollHeight;
-      setIsScrolledToBottom(true);
-    }
-  }, []); // 空の依存配列で初回マウント時のみ実行
+    const fetchMessages = async () => {
+      const messages = await getMessages();
+      setMessages(messages);
+    };
+    fetchMessages();
+  }, []);
 
-  // メッセージが更新された時に実行
-  useEffect(() => {
-    if (contentRef.current) {
-      const isScrolledToBottom =
-        contentRef.current.scrollHeight - contentRef.current.scrollTop ===
-        contentRef.current.clientHeight;
-
-      if (isScrolledToBottom) {
-        contentRef.current.scrollTop = contentRef.current.scrollHeight;
-      }
-    }
-  }, [messages]);
+  const sendMessage = (e: React.SyntheticEvent) => {
+    // TODO: Implement this function
+    e.preventDefault();
+    console.log("sendMessage");
+  };
 
   return (
     <div className="flex-grow flex flex-col">
@@ -83,7 +61,7 @@ function MessageArea() {
       {/* メッセージ入力エリア */}
       <div className="flex gap-4">
         <Input placeholder="Type message here" />
-        <Button>Send</Button>
+        <Button onClick={sendMessage}>Send</Button>
       </div>
     </div>
   );

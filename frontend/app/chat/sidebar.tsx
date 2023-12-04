@@ -12,7 +12,7 @@ function truncateString(str: string, num: number): string {
 export function Sidebar({ users }: { users: User[] }) {
   // TODO: If users is empty, show a message like "No users found"
   return (
-    <div className="overflow-y-auto shrink-0 basis-36 flex-grow pb-4">
+    <div className="overflow-y-auto shrink-0 basis-36 pb-4">
       <Stack spacing={2}>
         {users.map((user) => (
           <button
