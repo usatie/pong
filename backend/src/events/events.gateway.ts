@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -16,18 +17,19 @@ import { Namespace, Socket } from 'socket.io';
 })
 export class EventsGateway implements OnGatewayDisconnect {
   @WebSocketServer()
-  server: Namespace;
+  private server: Namespace;
+  private logger: Logger = new Logger('EventsGateway');
 
   handleConnection(client: Socket) {
-    console.log(`connect: ${client.id} `);
+    this.logger.log(`connect: ${client.id} `);
     const gameId = client.handshake.query['game_id'] as string;
     const connectClients = this.server.adapter.rooms.get(gameId);
     if (connectClients && connectClients.size > 1) {
-      console.log(`full: ${gameId} ${client.id}`);
+      this.logger.log(`full: ${gameId} ${client.id}`);
       client.emit('log', 'The game is full.');
       return;
     }
-    console.log(`join: ${gameId} ${client.id}`);
+    this.logger.log(`join: ${gameId} ${client.id}`);
     client.join(gameId);
     this.broadcastToRooms(client, 'join');
     client.emit('log', 'You joined the game.');
@@ -37,7 +39,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`disconnect: ${client.id} `);
+    this.logger.log(`disconnect: ${client.id} `);
     const roomId = client.handshake.query['game_id'] as string;
     this.broadcastToRoom(client, roomId, 'leave');
     client.leave(roomId);
@@ -48,7 +50,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: { vx: number; vy: number },
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    console.log(`start: ${JSON.stringify(data)} ${client.id}`);
+    this.logger.log(`start: ${JSON.stringify(data)} ${client.id}`);
     this.broadcastToRooms(client, 'start', data);
     return;
   }
@@ -58,6 +60,10 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
+    this.logger.log(`left: ${client.id}`);
+    this.logger.log(client.rooms);
+    this.logger.log(this.server.adapter.rooms);
+    this.logger.log('---');
     this.broadcastToRooms(client, 'left');
     return;
   }

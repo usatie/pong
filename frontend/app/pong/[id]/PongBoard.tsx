@@ -25,7 +25,10 @@ function PongBoard({
   setLogs: setLogs,
 }: PongBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [socket] = useState(() => io("/pong", { query: { game_id: id } }));
+  const [socket] = useState(() => {
+    console.log(id);
+    return io("/pong", { query: { game_id: id }, autoConnect: false });
+  });
   const [game, setGame] = useState<PongGame | undefined>();
   const [startDisabled, setStartDisabled] = useState(true);
   const [practiceDisabled, setPracticeDisabled] = useState(true);
@@ -117,7 +120,7 @@ function PongBoard({
     };
 
     const handleJoin = () => {
-      const log = `Your friend has joined to the game`;
+      const log = `Your friend has joined the game`;
       setLogs((logs) => [...logs, log]);
       setStartDisabled(false);
       setPracticeDisabled(true);
@@ -140,8 +143,10 @@ function PongBoard({
     socket.on("join", handleJoin);
     socket.on("leave", handleLeave);
     socket.on("log", handleLog);
+    socket.connect();
 
     return () => {
+      socket.disconnect();
       socket.off("connect", handleConnect);
       socket.off("start", handleStart);
       socket.off("right", handleRight);
