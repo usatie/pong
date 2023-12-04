@@ -81,7 +81,7 @@ export class RoomService {
 
   removeRoom(id: number, user: User): Promise<RoomEntity> {
     return this.findUserOnRoom(id, user, user.id)
-      .catch((e) => {
+      .catch(() => {
         throw new HttpException('Forbidden', 403);
       })
       .then((userOnRoomEntity) => {
