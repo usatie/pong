@@ -54,7 +54,6 @@ function MessageArea() {
 
       if (isScrolledToBottom) {
         contentRef.current.scrollTop = contentRef.current.scrollHeight;
-        setIsScrolledToBottom(true);
       }
     }
   }, [messages]);
@@ -76,8 +75,8 @@ function MessageArea() {
         }`}
       >
         <Stack spacing={4}>
-          {messageGroups.map((group, index) => (
-            <MessageGroup messages={group} key={index} />
+          {messageGroups.map((group) => (
+            <MessageGroup messages={group} key={group[0].id} />
           ))}
         </Stack>
       </div>
