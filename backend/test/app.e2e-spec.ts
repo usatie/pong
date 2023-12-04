@@ -11,6 +11,8 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { RoomEntity } from 'src/room/entities/room.entity';
 import { UserOnRoomEntity } from 'src/room/entities/UserOnRoom.entity';
+import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
+import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -507,47 +509,52 @@ describe('AppController (e2e)', () => {
       });
     });
 
-    // describe('PATCH', () => {
-    //   const newName = 'new_name';
-    //   it('from roomMember: Owner : should return 200 OK', async () => {
-    //     const users = await Promise.all(userDtos.map((u) => loginUser(u)));
-    //     const room = await getRoom(createRoomDto.name);
-    //     const owner = users.find((u) => u.name === 'OWNER');
+    describe('PATCH', () => {
+      const testPatch = (
+        { accessToken }: { accessToken: string },
+        status: number,
+        rm: RoomEntity,
+        data: UpdateRoomDto,
+      ) =>
+        request(app.getHttpServer())
+          .patch(`/room/${rm.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send(data)
+          .expect(status)
+          .then((res) => {
+            if (status < 300) expect(res.body.name).toEqual(data.name);
+          });
 
-    //     return Promise.all(
-    //       users
-    //         .filter((user) => user.name === Role.OWNER)
-    //         .map((user) => {
-    //           return request(app.getHttpServer())
-    //             .patch(`/room/${room.id}`)
-    //             .set('Authorization', `Bearer ${user.accessToken}`)
-    //             .send({ name: newName })
-    //             .expect(200);
-    //         }),
-    //     ).then(() => {
-    //       return request(app.getHttpServer())
-    //         .get(`/room/${room.id}`)
-    //         .set('Authorization', `Bearer ${owner.accessToken}}`)
-    //         .expect(200)
-    //         .then((res) => expect(res.body.name).toBe(newName));
-    //     });
-    //   });
-    //   it('from notMember and Member except Owner: should return 403 Forbidden', async () => {
-    //     const users = await Promise.all(userDtos.map((u) => loginUser(u)));
-    //     const room = await getRoom(createRoomDto.name);
+      const newName = 'new_name';
 
-    //     return Promise.all(
-    //       users
-    //         .filter((user) => user.name !== Role.OWNER)
-    //         .map((user) => {
-    //           return request(app.getHttpServer())
-    //             .patch(`/room/${room.id}`)
-    //             .set('Authorization', `Bearer ${user.accessToken}`)
-    //             .send({ name: newName })
-    //             .expect(403);
-    //         }),
-    //     );
-    //   });
+      it('from Owner: should return 200 OK', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const owner = users.find((u) => u.name === 'OWNER');
+
+        return testPatch(owner, 200, room, { name: newName }).then(() =>
+          testPatch(owner, 200, room, { name: createRoomDto.name }),
+        );
+      });
+      it('from Member and Admin : should return 403', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const members = users.filter(
+          (u) => u.name === 'MEMBER' || u.name === 'ADMINISTRATOR',
+        );
+
+        return Promise.all(
+          members.map((user) => testPatch(user, 403, room, { name: newName })),
+        );
+      });
+      it('from notMember : should return 403 Forbidden', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const notMembers = users.find((u) => u.name === 'NotMEMBER');
+
+        return testPatch(notMembers, 403, room, { name: newName });
+      });
+    });
     //   it('from unAuthorized User: should return 401 Unauthorized', async () => {
     //     const room = await getRoom(createRoomDto.name);
 
