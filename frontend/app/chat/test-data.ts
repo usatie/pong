@@ -11,7 +11,7 @@ export type User = {
   name: string;
 };
 
-export const users: User[] = [
+const users: User[] = [
   { id: 29387, name: "susami" },
   { id: 29388, name: "shongou" },
   { id: 29389, name: "kakiba" },
@@ -38,7 +38,7 @@ export const users: User[] = [
   { id: 29410, name: "Sad Fox" },
 ];
 
-export const messages: Message[] = [
+const messages: Message[] = [
   {
     id: 1,
     user_id: 29387,
@@ -124,3 +124,8 @@ export const messages: Message[] = [
     created_at: "2023-11-18 12:28:40",
   },
 ];
+
+export const testData = {
+  users,
+  messages,
+};
