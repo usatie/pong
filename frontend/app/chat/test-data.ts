@@ -1,9 +1,16 @@
-export type Message = {
+export type Chat = {
   id: number;
   user_id: number;
   user_name: string;
   text: string;
   created_at: string;
+};
+
+export type Message = {
+  to: string;
+  from: string;
+  userName: string;
+  content: string;
 };
 
 export type User = {
@@ -38,7 +45,7 @@ const users: User[] = [
   { id: 29410, name: "Sad Fox" },
 ];
 
-const messages: Message[] = [
+const messages: Chat[] = [
   {
     id: 1,
     user_id: 29387,
