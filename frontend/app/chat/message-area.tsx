@@ -59,10 +59,6 @@ function MessageArea({ me, other }: { me: User; other: User }) {
   const myId = me.id.toString();
   const otherId = other.id.toString();
 
-  console.log("myId", myId);
-  console.log(typeof myId);
-  console.log("otherId", otherId);
-  console.log(typeof otherId);
   // TODO: Messageを取得するsocketのロジック等を実装
   // メッセージを取得
   useEffect(() => {
@@ -84,7 +80,7 @@ function MessageArea({ me, other }: { me: User; other: User }) {
       console.log("disconnect");
       socket.disconnect();
     };
-  }, []);
+  }, [myId, otherId]);
 
   const didLogRef = useRef(false);
   useEffect(() => {
@@ -94,13 +90,12 @@ function MessageArea({ me, other }: { me: User; other: User }) {
         const conversation = await getMessages(myId, otherId);
         const messages = conversation.directmessages;
         const id = conversation.id;
-        console.log(id);
         setMessages(messages);
         setId(id);
       };
       fetchMessages();
     }
-  }, []);
+  }, [myId, otherId]);
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
@@ -114,7 +109,6 @@ function MessageArea({ me, other }: { me: User; other: User }) {
       const name = me.name;
       const fromId = myId;
       const toId = otherId;
-      console.log(id);
       socket.emit("privateMessage", {
         conversationId: id,
         from: fromId,
