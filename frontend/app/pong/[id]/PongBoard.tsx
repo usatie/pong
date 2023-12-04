@@ -1,29 +1,36 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { PongGame } from "./PongGame";
-import { TARGET_FRAME_MS } from "./const";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
 import { Button } from "@/components/ui/button";
 import { io } from "socket.io-client";
+import PongInformationBoard from "./PongInformationBoard";
 
-type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
+type setState<T> = T | ((prevState: T) => T);
+
+function useStateCallback<T>(
+  initialState: T | (() => T),
+): [T, (arg: setState<T>) => void] {
+  const [state, setState] = useState<T>(initialState);
+  const memoizedSetFunction = useCallback(
+    (arg: setState<T>) => setState(arg),
+    [],
+  );
+
+  return [state, memoizedSetFunction];
+}
 
 interface PongBoardProps {
   id: string;
-  setFps: (value: number | ((prevState: number) => number)) => void;
-  setSpeed: setFunction<number>;
-  setPlayer1Position: setFunction<number>;
-  setPlayer2Position: setFunction<number>;
-  setLogs: setFunction<string[]>;
 }
-function PongBoard({
-  id: id,
-  setFps: setFps,
-  setSpeed: setSpeed,
-  setPlayer1Position: setPlayer1Position,
-  setPlayer2Position: setPlayer2Position,
-  setLogs: setLogs,
-}: PongBoardProps) {
+function PongBoard({ id: id }: PongBoardProps) {
+  const [fps, setFps] = useStateCallback<number>(0);
+  const [speed, setSpeed] = useStateCallback<number>(0);
+  const [player1Position, setPlayer1Position] = useStateCallback<number>(0);
+  const [player2Position, setPlayer2Position] = useStateCallback<number>(0);
+  const [logs, setLogs] = useStateCallback<string[]>([]);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [socket] = useState(() => {
     console.log(id);
@@ -171,28 +178,37 @@ function PongBoard({
   };
 
   return (
-    <>
-      <div className="flex gap-2">
-        <Button onClick={start} disabled={startDisabled}>
-          Start
-        </Button>
-        <Button onClick={game?.switch_battle_mode} disabled={battleDisabled}>
-          Battle
-        </Button>
-        <Button
-          onClick={game?.switch_practice_mode}
-          disabled={practiceDisabled}
-        >
-          Practice
-        </Button>
-      </div>
+    <div className="overflow-auto flex-grow flex gap-8">
       <canvas
         ref={canvasRef}
-        width="256"
-        height="512"
-        className="border w-[256px] h-[512px]"
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+        className="border flex-grow"
       ></canvas>
-    </>
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-2">
+          <Button onClick={start} disabled={startDisabled}>
+            Start
+          </Button>
+          <Button onClick={game?.switch_battle_mode} disabled={battleDisabled}>
+            Battle
+          </Button>
+          <Button
+            onClick={game?.switch_practice_mode}
+            disabled={practiceDisabled}
+          >
+            Practice
+          </Button>
+        </div>
+        <PongInformationBoard
+          fps={fps}
+          speed={speed}
+          player1Position={player1Position}
+          player2Position={player2Position}
+          logs={logs}
+        />
+      </div>
+    </div>
   );
 }
 
