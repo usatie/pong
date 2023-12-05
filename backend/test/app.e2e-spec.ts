@@ -268,7 +268,11 @@ describe('AppController (e2e)', () => {
         .post('/room')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .send(createRoomDto)
-        .then((res) => res.body);
+        .then((res) => {
+          const expectedProps: (keyof RoomEntity)[] = ['id', 'name'];
+          const isRoomEntity = expectedProps.every((prop) => prop in res.body);
+          return isRoomEntity ? res.body : Promise.reject(res.body);
+        });
 
     const enterRoom = (
       user: UserWithToken,
@@ -278,7 +282,16 @@ describe('AppController (e2e)', () => {
         .post(`/room/${room.id}`)
         .set('Authorization', `Bearer ${user.accessToken}`)
         .send()
-        .then((res) => ({ ...res.body, ...user }));
+        .then((res) => {
+          const expectedProps: (keyof UserOnRoomEntity)[] = [
+            'id',
+            'role',
+            'userId',
+            'roomId',
+          ];
+          const isMember = expectedProps.every((prop) => prop in res.body);
+          return isMember ? { ...res.body, ...user } : Promise.reject(res.body);
+        });
 
     const payloadFromJWT = ({ accessToken }: { accessToken: string }) =>
       atob(accessToken.split('.')[1]);
@@ -288,10 +301,13 @@ describe('AppController (e2e)', () => {
         .post('/auth/login')
         .send(user)
         .then((res) => {
-          return {
-            ...user,
-            accessToken: res.body.accessToken,
-          };
+          const expectedProps: (keyof AuthEntity)[] = ['accessToken'];
+          const isUserWithToken = expectedProps.every(
+            (prop) => prop in res.body,
+          );
+          return isUserWithToken
+            ? { ...res.body, ...user }
+            : Promise.reject(res.body);
         });
     };
 
