@@ -107,11 +107,9 @@ function MessageArea({ me, other }: { me: User; other: User }) {
     const result = formSchema.safeParse(message);
     if (result.success) {
       const name = me.name;
-      const fromId = myId;
       const toId = otherId;
       socket.emit("privateMessage", {
         conversationId: id,
-        from: fromId,
         to: toId,
         userName: name,
         content: message,

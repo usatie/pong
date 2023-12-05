@@ -117,11 +117,9 @@ export default function ChatRoom({
       console.log(`privateMassage`, newMessage);
       console.log("name: ", me.name);
       const name = me.name;
-      const fromId = myId;
       const toId = otherId;
       socket.emit("privateMessage", {
         conversationId: id,
-        from: fromId,
         to: toId,
         userName: name,
         content: newMessage,

@@ -63,6 +63,11 @@ export class ChatGateway {
   ): void {
     this.logger.log('private message received');
     this.logger.log(data);
+    for (const [key, value] of this.userMap.entries()) {
+      if (value == client.id) {
+        data.from = key;
+      }
+    }
     this.chatService.createDirectMessage(+data.conversationId, data);
     this.server
       .except('block' + data.from)
