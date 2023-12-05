@@ -66,12 +66,13 @@ export class ChatGateway {
     for (const [key, value] of this.userMap.entries()) {
       if (value == client.id) {
         data.from = key;
+        break;
       }
     }
     this.chatService.createDirectMessage(+data.conversationId, data);
     this.server
       .except('block' + data.from)
-      .to(this.userMap.get(data.from))
+      .to(client.id)
       .to(this.userMap.get(data.to))
       .emit('sendToUser', data, client.id);
   }
