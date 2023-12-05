@@ -18,9 +18,6 @@ export default async function ChatPage() {
     throw new Error("getUserId error");
   }
   const users = tmpUsers.filter((user) => user.id !== parseInt(currentUserId));
-  if (!users) {
-    return null;
-  }
   return (
     <>
       <div className="overflow-auto flex-grow flex gap-4 pb-4">
