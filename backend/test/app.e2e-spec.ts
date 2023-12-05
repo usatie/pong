@@ -318,34 +318,29 @@ describe('AppController (e2e)', () => {
 
     beforeEach(async () => {
       console.log('beforeEach', await getUsers());
-      await Promise.all(
-        userDtos.map((dto) =>
-          createUser(dto)
-            .then((user) => ({
-              ...user,
-              password: dto.password,
-            }))
-            .catch((e) => {
-              console.error(e);
-              return Promise.reject(e);
-            }),
-        ),
-      );
-      return console.log('beforeEach finished : ', await getUsers());
+      for (const dto of userDtos) {
+        await createUser(dto)
+          .then((user) => ({
+            ...user,
+            password: dto.password,
+          }))
+          .catch((e) => {
+            console.error(e);
+            return Promise.reject(e);
+          });
+      }
+      console.log('beforeEach finished : ', await getUsers());
     });
 
     afterEach(async () => {
       console.log('afterEach', await getUsers());
 
-      await Promise.all(
-        userDtos.map((u) =>
-          loginUser(u)
-            .then((uToken) => deleteUser(uToken))
-            .catch((e) => console.error(e)),
-        ),
-      );
-
-      return console.log('afterEach finished : ', await getUsers());
+      for (const u of userDtos) {
+        await loginUser(u)
+          .then((uToken) => deleteUser(uToken))
+          .catch((e) => console.error(e));
+      }
+      console.log('afterEach finished : ', await getUsers());
     });
 
     it('should be defined', () => {
