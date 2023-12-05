@@ -31,45 +31,45 @@ function PongBoard({ id: id }: PongBoardProps) {
   const [player2Position, setPlayer2Position] = useStateCallback<number>(0);
   const [logs, setLogs] = useStateCallback<string[]>([]);
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [socket] = useState(() => {
     console.log(id);
     return io("/pong", { query: { game_id: id }, autoConnect: false });
   });
-  const [game, setGame] = useState<PongGame | undefined>();
-  const [startDisabled, setStartDisabled] = useState(true);
-  const [practiceDisabled, setPracticeDisabled] = useState(true);
-  const [battleDisabled, setBattleDisabled] = useState(true);
-
-  useEffect(() => {
-    // > If the contextType doesn't match a possible drawing context, or differs from the first contextType requested, null is returned."
-    // from https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const gameRef = useRef<PongGame | null>(null);
+  const getGame = () => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) {
-      console.warn("2d canvas is not supported or there is a bug");
-      return;
+      throw new Error("canvas not ready");
     }
-    setGame(
-      new PongGame(
+    if (!gameRef.current) {
+      const game = new PongGame(
         socket,
         ctx,
         setFps,
         setSpeed,
         setPlayer1Position,
         setPlayer2Position,
-      ),
-    );
-  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position, socket]);
+      );
+      gameRef.current = game;
+      return game;
+    }
+    return gameRef.current;
+  }
+  const [startDisabled, setStartDisabled] = useState(true);
+  const [practiceDisabled, setPracticeDisabled] = useState(true);
+  const [battleDisabled] = useState(true);
 
   useEffect(() => {
-    if (!game) return;
+    const game = getGame();
     game.draw_canvas();
     const intervalId = setInterval(game.update, TARGET_FRAME_MS);
 
     return () => clearInterval(intervalId);
-  }, [game]);
+  }, []);
+
   useEffect(() => {
-    if (!game) return;
+    const game = getGame();
 
     const handleKeyUp = (event: KeyboardEvent) => {
       game.keypress[event.key] = false;
@@ -84,10 +84,10 @@ function PongBoard({ id: id }: PongBoardProps) {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, [game]);
+  }, []);
 
   useEffect(() => {
-    if (!game) return;
+    const game = getGame();
 
     const handleLog = (log: string) => {
       setLogs((logs) => [...logs, log]);
@@ -164,10 +164,10 @@ function PongBoard({ id: id }: PongBoardProps) {
       socket.off("leave", handleLeave);
       socket.off("log", handleLog);
     };
-  }, [id, setLogs, socket, game]);
+  }, [id, setLogs, socket]);
 
   const start = () => {
-    if (!game) return;
+    const game = getGame();
 
     setStartDisabled(true);
     game.start({ vx: undefined, vy: undefined });
@@ -190,11 +190,11 @@ function PongBoard({ id: id }: PongBoardProps) {
           <Button onClick={start} disabled={startDisabled}>
             Start
           </Button>
-          <Button onClick={game?.switch_battle_mode} disabled={battleDisabled}>
+          <Button onClick={() => gameRef.current?.switch_battle_mode()} disabled={battleDisabled}>
             Battle
           </Button>
           <Button
-            onClick={game?.switch_practice_mode}
+            onClick={() => gameRef.current?.switch_practice_mode()}
             disabled={practiceDisabled}
           >
             Practice

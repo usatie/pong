@@ -10,6 +10,7 @@ import {
   PADDLE_WIDTH,
   TARGET_FRAME_MS,
 } from "./const";
+import { RefObject } from "react";
 
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 
