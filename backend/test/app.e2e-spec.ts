@@ -313,14 +313,52 @@ describe('AppController (e2e)', () => {
         });
     };
 
+    const isSuccessResponse = (res): boolean =>
+      res.status / 100 > 2 && res.status / 100 < 3;
+
+    const black = '\u001b[30m';
+    const red = '\u001b[31m';
+    const green = '\u001b[32m';
+    const yellow = '\u001b[33m';
+    const blue = '\u001b[34m';
+    const magenta = '\u001b[35m';
+    const cyan = '\u001b[36m';
+    const white = '\u001b[37m';
+
+    const reset = '\u001b[0m';
+
+    // console.log(red + 'This text is red. ' + green + 'Greeeeeeen!' + reset);
+
     const loginUser = (u: CreateUserDto): Promise<dtoWithToken> =>
       request(app.getHttpServer())
         .post('/auth/login')
         .send(u)
-        .then((res) => ({
-          ...u,
-          ...res.body,
-        }));
+        .then((res) => {
+          isSuccessResponse(res)
+            ? console.log(
+                'login',
+                res.status,
+                res.status / 100,
+                isSuccessResponse(res),
+                res.body,
+                reset,
+              )
+            : console.log(
+                green + 'login',
+                res.status,
+                res.status / 100,
+                isSuccessResponse(res),
+                res.body,
+                reset,
+              );
+          return isSuccessResponse(res)
+            ? {
+                ...u,
+                ...res.body,
+              }
+            : Promise.reject(res.body);
+        });
+
     const getRooms = (): Promise<RoomEntity[]> =>
       request(app.getHttpServer())
         .get(`/room`)
@@ -343,7 +381,9 @@ describe('AppController (e2e)', () => {
       return request(app.getHttpServer())
         .delete(`/user/${payload.userId}`)
         .set('Authorization', `Bearer ${u.accessToken}`)
-        .then((res) => res.body);
+        .then((res) =>
+          isSuccessResponse(res) ? res.body : Promise.reject(res.body),
+        );
     };
 
     const createUser = (dto: CreateUserDto): Promise<UserEntity> =>
@@ -351,31 +391,18 @@ describe('AppController (e2e)', () => {
         .post('/user')
         .send(dto)
         .then((res) => {
-          // UserEntity の型から特定のキー（この場合は 'password'）を除外するユーティリティ型
-          type OmitKey<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
-
-          // 'password' 以外の UserEntity のキーを取得する
-          type UserEntityKeysWithoutPassword = keyof OmitKey<
-            UserEntity,
-            'password'
-          >;
-
-          // 'password' 以外のキーを配列として取得する
-          const expectedProps: UserEntityKeysWithoutPassword[] = Object.keys(
-            new UserEntity({ id: 0, name: '', email: '' }),
-          ) as UserEntityKeysWithoutPassword[];
-          console.log(expectedProps);
-          const isUserEntity = expectedProps.every((prop) => prop in res.body);
-          return isUserEntity ? res.body : Promise.reject(res.body);
+          return isSuccessResponse(res) ? res.body : Promise.reject(res.body);
         });
+
     const getUsers = () => {
       return request(app.getHttpServer())
         .get('/user')
         .then((res) => res.body);
     };
 
-    beforeEach(() => {
-      return Promise.all(
+    beforeEach(async () => {
+      console.log('beforeEach', await getUsers());
+      await Promise.all(
         userDtos.map((dto) =>
           createUser(dto)
             .then((user) => ({
@@ -388,12 +415,21 @@ describe('AppController (e2e)', () => {
             }),
         ),
       );
+      return console.log('beforeEach finished : ', await getUsers());
     });
 
-    afterEach(() => {
-      return Promise.all(
-        userDtos.map((u) => loginUser(u).then((uToken) => deleteUser(uToken))),
+    afterEach(async () => {
+      console.log('afterEach', await getUsers());
+
+      await Promise.all(
+        userDtos.map((u) =>
+          loginUser(u)
+            .then((uToken) => deleteUser(uToken))
+            .catch((e) => console.error(e)),
+        ),
       );
+
+      return console.log('afterEach finished : ', await getUsers());
     });
 
     it('should be defined', () => {
@@ -406,7 +442,10 @@ describe('AppController (e2e)', () => {
     it('test 2', () => {
       return expect(true).toBe(true);
     });
-    it('test 3', () => {
+    it('test 1', () => {
+      return expect(true).toBe(true);
+    });
+    it('test 2', () => {
       return expect(true).toBe(true);
     });
     it('test 1', () => {
@@ -415,169 +454,10 @@ describe('AppController (e2e)', () => {
     it('test 2', () => {
       return expect(true).toBe(true);
     });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
     it('test 1', () => {
       return expect(true).toBe(true);
     });
     it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 1', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 2', () => {
-      return expect(true).toBe(true);
-    });
-    it('test 3', () => {
       return expect(true).toBe(true);
     });
   });
