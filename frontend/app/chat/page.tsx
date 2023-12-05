@@ -1,5 +1,5 @@
 import { Separator } from "@/components/ui/separator";
-import { testData } from "./test-data";
+//import { testData } from "./test-data";
 import { Sidebar } from "./sidebar";
 import MessageArea from "./message-area";
 import { getUserId } from "@/app/lib/session";

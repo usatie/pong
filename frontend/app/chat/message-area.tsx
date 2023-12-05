@@ -56,6 +56,9 @@ function MessageArea({ me, other }: { me: User; other: User }) {
   const [message, setMessage] = useState("");
   const [id, setId] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const messageGroups = groupMessagesByUser(messages);
+  const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
+  const isScrolledToBottom = useScrollToBottom(contentRef, messages);
   const myId = me.id.toString();
   const otherId = other.id.toString();
 
@@ -96,9 +99,6 @@ function MessageArea({ me, other }: { me: User; other: User }) {
       fetchMessages();
     }
   }, [myId, otherId]);
-  const messageGroups = groupMessagesByUser(messages);
-  const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
-  const isScrolledToBottom = useScrollToBottom(contentRef, messages);
 
   const sendMessage = (e: React.SyntheticEvent) => {
     // TODO: Implement this function

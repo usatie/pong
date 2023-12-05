@@ -23,14 +23,14 @@ export default async function ChatPage({
   }
   const currentUser = await getUser(parseInt(currentUserId));
   const users = tmpUsers.filter((user) => user.id !== parseInt(currentUserId));
-  if (!users) {
-    console.error("users error");
-    return null;
+  if (users.length === 0) {
+    console.error("No other users exist");
+    throw new Error("No other users exist");
   }
   const otherUser = users.find((user) => String(user.id) === id);
   if (!otherUser) {
-    console.error("other error");
-    return null;
+    console.error("Can't find the other user");
+    throw new Error("Can't find the other user");
   }
   return (
     <>
