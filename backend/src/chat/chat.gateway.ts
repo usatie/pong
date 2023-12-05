@@ -47,9 +47,9 @@ export class ChatGateway {
   ): void {
     this.logger.log('message received');
     this.logger.log(data);
-    if (client.rooms.has('room' + data.roomId)) {
+    if (client.rooms.has('room/' + data.roomId)) {
       this.server
-        .to('room' + data.roomId)
+        .to('room/' + data.roomId)
         .emit('sendToClient', data, client.id);
     } else {
       this.logger.error('socket has not joined this room');
@@ -109,7 +109,7 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
   ) {
     this.logger.log(`join room: ${client.id} joined room ${roomId}`);
-    client.join('room' + roomId);
+    client.join('room/' + roomId);
   }
 
   @SubscribeMessage('leaveRoom')
@@ -118,7 +118,7 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
   ) {
     this.logger.log(`leave room: ${client.id} left room ${roomId}`);
-    client.leave('room' + roomId);
+    client.leave('room/' + roomId);
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
