@@ -348,6 +348,25 @@ describe('AppController (e2e)', () => {
       request(app.getHttpServer())
         .post('/user')
         .send(dto)
+        .then((res) => {
+          // UserEntity の型から特定のキー（この場合は 'password'）を除外するユーティリティ型
+          type OmitKey<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+
+          // 'password' 以外の UserEntity のキーを取得する
+          type UserEntityKeysWithoutPassword = keyof OmitKey<
+            UserEntity,
+            'password'
+          >;
+
+          // 'password' 以外のキーを配列として取得する
+          const expectedProps: UserEntityKeysWithoutPassword[] = Object.keys(
+            new UserEntity({ id: 0, name: '', email: '' }),
+          ) as UserEntityKeysWithoutPassword[];
+          console.log(expectedProps);
+          const isUserEntity = expectedProps.every((prop) => prop in res.body);
+          return isUserEntity ? res.body : Promise.reject(res.body);
+        });
+    const getUsers = () => {
         .then((res) => res.body);
 
     beforeAll(async () => {
