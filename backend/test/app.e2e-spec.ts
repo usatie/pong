@@ -292,11 +292,6 @@ describe('AppController (e2e)', () => {
             : Promise.reject(res.body);
         });
 
-    const getRooms = (): Promise<RoomEntity[]> =>
-      request(app.getHttpServer())
-        .get(`/room`)
-        .then((res) => res.body);
-
     const deleteUser = (u: dtoWithToken) => {
       const payload: PayloadOfJWT = JSON.parse(payloadFromJWT(u));
       return request(app.getHttpServer())
