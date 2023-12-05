@@ -367,7 +367,10 @@ describe('AppController (e2e)', () => {
           return isUserEntity ? res.body : Promise.reject(res.body);
         });
     const getUsers = () => {
+      return request(app.getHttpServer())
+        .get('/user')
         .then((res) => res.body);
+    };
 
     beforeAll(async () => {
       const createdUsers = await Promise.all(
