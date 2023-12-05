@@ -45,10 +45,10 @@ export class PongGame {
   setSpeed: setFunction<number>;
   setPlayer1Position: setFunction<number>;
   setPlayer2Position: setFunction<number>;
-  socket: Socket;
+  socketRef: RefObject<Socket | null>;
 
   constructor(
-    socket: Socket,
+    socketRef: RefObject<Socket | null>,
     ctx: CanvasRenderingContext2D,
     setFps: setFunction<number>,
     setSpeed: setFunction<number>,
@@ -85,7 +85,7 @@ export class PongGame {
     this.frame_count = 0;
     this.is_playing = false;
     this.keypress = {};
-    this.socket = socket;
+    this.socketRef = socketRef;
     this.setFps = setFps;
     this.setSpeed = setSpeed;
     this.setPlayer1Position = setPlayer1Position;
@@ -125,12 +125,12 @@ export class PongGame {
     this.ball.move(this.elapsed);
     if (this.player1.collide_with(this.ball)) {
       this.ball.bounce_off_paddle(this.player1);
-      this.socket.emit("bounce");
+      this.socketRef.current?.emit("bounce");
     } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
       console.log("collide with bottom");
       this.ball.reset();
       this.score.player2++;
-      this.socket.emit("collide");
+      this.socketRef.current?.emit("collide");
     } else if (this.ball.collide_with_side()) {
       this.ball.bounce_off_side();
     }
@@ -160,12 +160,12 @@ export class PongGame {
       this.player1.clear(this.ctx);
       this.player1.move_left();
       this.player1.draw(this.ctx);
-      this.socket.emit("left");
+      this.socketRef.current?.emit("left");
     } else if (this.keypress["ArrowRight"]) {
       this.player1.clear(this.ctx);
       this.player1.move_right();
       this.player1.draw(this.ctx);
-      this.socket.emit("right");
+      this.socketRef.current?.emit("right");
     }
     if (this.is_playing) {
       this.draw_canvas();

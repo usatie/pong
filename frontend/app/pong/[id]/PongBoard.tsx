@@ -5,6 +5,7 @@ import { PongGame } from "./PongGame";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
 import { Button } from "@/components/ui/button";
 import { io } from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import PongInformationBoard from "./PongInformationBoard";
 
 type setState<T> = T | ((prevState: T) => T);
@@ -31,20 +32,21 @@ function PongBoard({ id: id }: PongBoardProps) {
   const [player2Position, setPlayer2Position] = useStateCallback<number>(0);
   const [logs, setLogs] = useStateCallback<string[]>([]);
 
-  const [socket] = useState(() => {
-    console.log(id);
-    return io("/pong", { query: { game_id: id }, autoConnect: false });
-  });
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const gameRef = useRef<PongGame | null>(null);
-  const getGame = () => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null); // only initialized once
+  const gameRef = useRef<PongGame | null>(null); // only initialized once
+  const socketRef = useRef<Socket | null>(null); // updated on `id` change
+  const [startDisabled, setStartDisabled] = useState(true);
+  const [practiceDisabled, setPracticeDisabled] = useState(true);
+  const [battleDisabled] = useState(true);
+
+  const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) {
       throw new Error("canvas not ready");
     }
     if (!gameRef.current) {
       const game = new PongGame(
-        socket,
+        socketRef,
         ctx,
         setFps,
         setSpeed,
@@ -55,10 +57,18 @@ function PongBoard({ id: id }: PongBoardProps) {
       return game;
     }
     return gameRef.current;
-  }
-  const [startDisabled, setStartDisabled] = useState(true);
-  const [practiceDisabled, setPracticeDisabled] = useState(true);
-  const [battleDisabled] = useState(true);
+  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position]);
+
+  const start = () => {
+    const game = getGame();
+
+    setStartDisabled(true);
+    game.start({ vx: undefined, vy: undefined });
+    socketRef.current?.emit("start", {
+      vx: -game.ball.vx,
+      vy: -game.ball.vy,
+    });
+  };
 
   useEffect(() => {
     const game = getGame();
@@ -66,7 +76,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     const intervalId = setInterval(game.update, TARGET_FRAME_MS);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [getGame]);
 
   useEffect(() => {
     const game = getGame();
@@ -84,16 +94,18 @@ function PongBoard({ id: id }: PongBoardProps) {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [getGame]);
 
   useEffect(() => {
+    const socket = io("/pong", { query: { game_id: id } });
+    socketRef.current = socket;
     const game = getGame();
 
     const handleLog = (log: string) => {
       setLogs((logs) => [...logs, log]);
     };
     const handleConnect = () => {
-      console.log(`Connected: ${socket.id}`);
+      console.log(`Connected: ${socketRef.current?.id}`);
       const log = "Connected to server";
       setLogs((logs) => [...logs, log]);
     };
@@ -150,10 +162,8 @@ function PongBoard({ id: id }: PongBoardProps) {
     socket.on("join", handleJoin);
     socket.on("leave", handleLeave);
     socket.on("log", handleLog);
-    socket.connect();
 
     return () => {
-      socket.disconnect();
       socket.off("connect", handleConnect);
       socket.off("start", handleStart);
       socket.off("right", handleRight);
@@ -163,19 +173,9 @@ function PongBoard({ id: id }: PongBoardProps) {
       socket.off("join", handleJoin);
       socket.off("leave", handleLeave);
       socket.off("log", handleLog);
+      socket.disconnect();
     };
-  }, [id, setLogs, socket]);
-
-  const start = () => {
-    const game = getGame();
-
-    setStartDisabled(true);
-    game.start({ vx: undefined, vy: undefined });
-    socket.emit("start", {
-      vx: -game.ball.vx,
-      vy: -game.ball.vy,
-    });
-  };
+  }, [id, getGame, setLogs]);
 
   return (
     <div className="overflow-hidden flex-grow flex gap-8 pb-8">
@@ -190,7 +190,10 @@ function PongBoard({ id: id }: PongBoardProps) {
           <Button onClick={start} disabled={startDisabled}>
             Start
           </Button>
-          <Button onClick={() => gameRef.current?.switch_battle_mode()} disabled={battleDisabled}>
+          <Button
+            onClick={() => gameRef.current?.switch_battle_mode()}
+            disabled={battleDisabled}
+          >
             Battle
           </Button>
           <Button
