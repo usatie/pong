@@ -197,6 +197,7 @@ export async function getConversation(userOneId: string, userTwoId: string) {
     },
   );
   if (res.status === 404) {
+    console.error("Not found conversation: ", await res.json());
     return null;
   } else if (!res.ok) {
     console.error("getConversation error: ", await res.json());
@@ -218,7 +219,10 @@ export async function createConversation(userOneId: string, userTwoId: string) {
       userTwoId,
     }),
   });
-  if (!res.ok) {
+  if (res.status === 409) {
+    console.error("Already exists: ", await res.json());
+    return null;
+  } else if (!res.ok) {
     console.error("createConversation error: ", await res.json());
     throw new Error("createConversation error");
   } else {

@@ -7,7 +7,7 @@ export function groupMessagesByUser(messages: Message[]): Message[][] {
   let currentGroup: Message[] = [];
 
   for (const msg of messages) {
-    if (msg.user_id === prevUserId) {
+    if (parseInt(msg.from) === prevUserId) {
       currentGroup.push(msg);
     } else {
       if (currentGroup.length) {
@@ -15,7 +15,7 @@ export function groupMessagesByUser(messages: Message[]): Message[][] {
       }
       currentGroup = [msg];
     }
-    prevUserId = msg.user_id;
+    prevUserId = parseInt(msg.from);
   }
 
   if (currentGroup.length) {
