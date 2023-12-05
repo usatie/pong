@@ -240,18 +240,6 @@ describe('AppController (e2e)', () => {
       },
     ];
 
-    const createRoomDto: CreateRoomDto = {
-      name: 'testRoom',
-    };
-
-    type UserWithToken = UserEntity & {
-      accessToken: string;
-    };
-
-    type Member = UserWithToken & {
-      role: Role;
-    };
-
     type dtoWithToken = CreateUserDto & {
       accessToken: string;
     };
@@ -262,68 +250,13 @@ describe('AppController (e2e)', () => {
       exp;
     };
 
-    const createRoom = (
-      user: UserWithToken,
-      createRoomDto: CreateRoomDto,
-    ): Promise<RoomEntity> =>
-      request(app.getHttpServer())
-        .post('/room')
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .send(createRoomDto)
-        .then((res) => {
-          const expectedProps: (keyof RoomEntity)[] = ['id', 'name'];
-          const isRoomEntity = expectedProps.every((prop) => prop in res.body);
-          return isRoomEntity ? res.body : Promise.reject(res.body);
-        });
-
-    const enterRoom = (
-      user: UserWithToken,
-      room: RoomEntity,
-    ): Promise<Member> =>
-      request(app.getHttpServer())
-        .post(`/room/${room.id}`)
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .send()
-        .then((res) => {
-          const expectedProps: (keyof UserOnRoomEntity)[] = [
-            'id',
-            'role',
-            'userId',
-            'roomId',
-          ];
-          const isMember = expectedProps.every((prop) => prop in res.body);
-          return isMember ? { ...res.body, ...user } : Promise.reject(res.body);
-        });
-
     const payloadFromJWT = ({ accessToken }: { accessToken: string }) =>
       atob(accessToken.split('.')[1]);
-
-    const getUserWithToken = (user: UserEntity): Promise<UserWithToken> => {
-      return request(app.getHttpServer())
-        .post('/auth/login')
-        .send(user)
-        .then((res) => {
-          const expectedProps: (keyof AuthEntity)[] = ['accessToken'];
-          const isUserWithToken = expectedProps.every(
-            (prop) => prop in res.body,
-          );
-          return isUserWithToken
-            ? { ...res.body, ...user }
-            : Promise.reject(res.body);
-        });
-    };
 
     const isSuccessResponse = (res): boolean =>
       res.status / 100 > 2 && res.status / 100 < 3;
 
-    const black = '\u001b[30m';
-    const red = '\u001b[31m';
     const green = '\u001b[32m';
-    const yellow = '\u001b[33m';
-    const blue = '\u001b[34m';
-    const magenta = '\u001b[35m';
-    const cyan = '\u001b[36m';
-    const white = '\u001b[37m';
 
     const reset = '\u001b[0m';
 
@@ -336,44 +269,32 @@ describe('AppController (e2e)', () => {
         .then((res) => {
           isSuccessResponse(res)
             ? console.log(
-                'login',
-                res.status,
-                res.status / 100,
-                isSuccessResponse(res),
-                res.body,
-                reset,
-              )
+              'login',
+              res.status,
+              res.status / 100,
+              isSuccessResponse(res),
+              res.body,
+              reset,
+            )
             : console.log(
-                green + 'login',
-                res.status,
-                res.status / 100,
-                isSuccessResponse(res),
-                res.body,
-                reset,
-              );
+              green + 'login',
+              res.status,
+              res.status / 100,
+              isSuccessResponse(res),
+              res.body,
+              reset,
+            );
           return isSuccessResponse(res)
             ? {
-                ...u,
-                ...res.body,
-              }
+              ...u,
+              ...res.body,
+            }
             : Promise.reject(res.body);
         });
 
     const getRooms = (): Promise<RoomEntity[]> =>
       request(app.getHttpServer())
         .get(`/room`)
-        .then((res) => res.body);
-
-    const getRoom = (name: string) =>
-      getRooms().then((rms) => rms.find((rm) => rm.name === name));
-
-    const deleteRoom = (
-      room: RoomEntity,
-      { accessToken }: { accessToken: string },
-    ) =>
-      request(app.getHttpServer())
-        .delete(`/room/${room.id}`)
-        .set('Authorization', `Bearer ${accessToken}`)
         .then((res) => res.body);
 
     const deleteUser = (u: dtoWithToken) => {
