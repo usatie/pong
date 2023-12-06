@@ -23,7 +23,7 @@ describe('AppController (e2e)', () => {
   };
   const testUserLogin = { email: testUser.email, password: testUser.password };
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
