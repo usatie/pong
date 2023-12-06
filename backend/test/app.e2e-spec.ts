@@ -11,6 +11,8 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { RoomEntity } from 'src/room/entities/room.entity';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
+import { UserOnRoomEntity } from 'src/room/entities/UserOnRoom.entity';
+import { AuthEntity } from 'src/auth/entity/auth.entity';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
