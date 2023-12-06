@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import PongInformationBoard from "./PongInformationBoard";
+import { useTheme } from "next-themes";
 
 type setState<T> = T | ((prevState: T) => T);
 
@@ -38,6 +39,9 @@ function PongBoard({ id: id }: PongBoardProps) {
   const [startDisabled, setStartDisabled] = useState(true);
   const [practiceDisabled, setPracticeDisabled] = useState(true);
   const [battleDisabled] = useState(true);
+  const { resolvedTheme } = useTheme();
+  const paddleColor = useRef("hsl(0, 0%, 0%)");
+  const ballColor = useRef("hsl(0, 0%, 0%)");
 
   const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
@@ -52,6 +56,8 @@ function PongBoard({ id: id }: PongBoardProps) {
         setSpeed,
         setPlayer1Position,
         setPlayer2Position,
+        paddleColor,
+        ballColor,
       );
       gameRef.current = game;
       return game;
@@ -69,6 +75,20 @@ function PongBoard({ id: id }: PongBoardProps) {
       vy: -game.ball.vy,
     });
   };
+
+  useEffect(() => {
+    // TODO: Use --foreground color from CSS
+    // Somehow it didn't work (theme is changed but not yet committed to CSS/DOM?)
+    if (resolvedTheme === "dark") {
+      paddleColor.current = "hsl(0, 0%, 100%)";
+      ballColor.current = "hsl(0, 0%, 100%)";
+    } else {
+      paddleColor.current = "hsl(0, 0%, 0%)";
+      ballColor.current = "hsl(0, 0%, 0%)";
+    }
+    const game = getGame();
+    game.draw_canvas();
+  }, [resolvedTheme, getGame]);
 
   useEffect(() => {
     const game = getGame();

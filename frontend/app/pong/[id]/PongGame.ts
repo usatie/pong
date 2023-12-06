@@ -10,23 +10,9 @@ import {
   PADDLE_WIDTH,
   TARGET_FRAME_MS,
 } from "./const";
-import { RefObject } from "react";
+import { Ref, RefObject } from "react";
 
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
-
-let PADDLE_COLOR = "#000000";
-let BALL_COLOR = "#000000";
-
-// Get the value of --foreground from global CSS
-function getForegroundColor() {
-  // Access the root element (you can replace this with any other element if needed)
-  const root = document.documentElement;
-  // Get the computed style of the root
-  const style = getComputedStyle(root);
-  // Access the --foreground variable
-  const foregroundColor = style.getPropertyValue("--foreground").trim();
-  return `hsl(${foregroundColor})`;
-}
 
 export class PongGame {
   ctx: CanvasRenderingContext2D;
@@ -46,6 +32,8 @@ export class PongGame {
   setPlayer1Position: setFunction<number>;
   setPlayer2Position: setFunction<number>;
   socketRef: RefObject<Socket | null>;
+  paddleColor: RefObject<string>;
+  ballColor: RefObject<string>;
 
   constructor(
     socketRef: RefObject<Socket | null>,
@@ -54,13 +42,14 @@ export class PongGame {
     setSpeed: setFunction<number>,
     setPlayer1Position: setFunction<number>,
     setPlayer2Position: setFunction<number>,
+    paddleColor: RefObject<string>,
+    ballColor: RefObject<string>,
   ) {
-    // TODO: Use useTheme() to change the color variables
-    PADDLE_COLOR = getForegroundColor();
-    BALL_COLOR = getForegroundColor();
     this.ctx = ctx;
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
+    this.paddleColor = paddleColor;
+    this.ballColor = ballColor;
     this.player1 = this.initPlayer1();
     this.player2 = this.initPlayer2();
 
@@ -73,7 +62,7 @@ export class PongGame {
       0,
       0,
       BALL_RADIUS,
-      BALL_COLOR,
+      this.ballColor,
     );
     this.score = {
       player1: 0,
@@ -208,7 +197,7 @@ export class PongGame {
       0,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
-      PADDLE_COLOR,
+      this.paddleColor,
     );
     this.player2.draw(this.ctx);
   };
@@ -216,7 +205,13 @@ export class PongGame {
   switch_practice_mode = () => {
     // Make the left player a wall
     this.player2.clear(this.ctx);
-    this.player2 = new Paddle(0, 0, CANVAS_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
+    this.player2 = new Paddle(
+      0,
+      0,
+      CANVAS_WIDTH,
+      PADDLE_HEIGHT,
+      this.paddleColor,
+    );
     this.player2.draw(this.ctx);
   };
 
@@ -232,7 +227,7 @@ export class PongGame {
       CANVAS_HEIGHT - PADDLE_HEIGHT,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
-      PADDLE_COLOR,
+      this.paddleColor,
     );
 
   initPlayer2 = () =>
@@ -241,6 +236,6 @@ export class PongGame {
       0,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
-      PADDLE_COLOR,
+      this.paddleColor,
     );
 }
