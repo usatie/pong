@@ -1,68 +1,105 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { PongGame } from "./PongGame";
-import { TARGET_FRAME_MS } from "./const";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
 import { Button } from "@/components/ui/button";
 import { io } from "socket.io-client";
+import type { Socket } from "socket.io-client";
+import PongInformationBoard from "./PongInformationBoard";
+import { useTheme } from "next-themes";
 
-type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
+type setState<T> = T | ((prevState: T) => T);
+
+function useStateCallback<T>(
+  initialState: T | (() => T),
+): [T, (arg: setState<T>) => void] {
+  const [state, setState] = useState<T>(initialState);
+  const memoizedSetFunction = useCallback(
+    (arg: setState<T>) => setState(arg),
+    [],
+  );
+
+  return [state, memoizedSetFunction];
+}
 
 interface PongBoardProps {
   id: string;
-  setFps: (value: number | ((prevState: number) => number)) => void;
-  setSpeed: setFunction<number>;
-  setPlayer1Position: setFunction<number>;
-  setPlayer2Position: setFunction<number>;
-  setLogs: setFunction<string[]>;
 }
-function PongBoard({
-  id: id,
-  setFps: setFps,
-  setSpeed: setSpeed,
-  setPlayer1Position: setPlayer1Position,
-  setPlayer2Position: setPlayer2Position,
-  setLogs: setLogs,
-}: PongBoardProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [socket] = useState(() => {
-    console.log(id);
-    return io("/pong", { query: { game_id: id }, autoConnect: false });
-  });
-  const [game, setGame] = useState<PongGame | undefined>();
+function PongBoard({ id: id }: PongBoardProps) {
+  const [fps, setFps] = useStateCallback<number>(0);
+  const [speed, setSpeed] = useStateCallback<number>(0);
+  const [player1Position, setPlayer1Position] = useStateCallback<number>(0);
+  const [player2Position, setPlayer2Position] = useStateCallback<number>(0);
+  const [logs, setLogs] = useStateCallback<string[]>([]);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null); // only initialized once
+  const gameRef = useRef<PongGame | null>(null); // only initialized once
+  const socketRef = useRef<Socket | null>(null); // updated on `id` change
   const [startDisabled, setStartDisabled] = useState(true);
   const [practiceDisabled, setPracticeDisabled] = useState(true);
-  const [battleDisabled, setBattleDisabled] = useState(true);
+  const [battleDisabled] = useState(true);
+  const { resolvedTheme } = useTheme();
+  const paddleColor = useRef("hsl(0, 0%, 0%)");
+  const ballColor = useRef("hsl(0, 0%, 0%)");
 
-  useEffect(() => {
-    // > If the contextType doesn't match a possible drawing context, or differs from the first contextType requested, null is returned."
-    // from https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
+  const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) {
-      console.warn("2d canvas is not supported or there is a bug");
-      return;
+      throw new Error("canvas not ready");
     }
-    setGame(
-      new PongGame(
-        socket,
+    if (!gameRef.current) {
+      const game = new PongGame(
+        socketRef,
         ctx,
         setFps,
         setSpeed,
         setPlayer1Position,
         setPlayer2Position,
-      ),
-    );
-  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position, socket]);
+        paddleColor,
+        ballColor,
+      );
+      gameRef.current = game;
+      return game;
+    }
+    return gameRef.current;
+  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position]);
+
+  const start = () => {
+    const game = getGame();
+
+    setStartDisabled(true);
+    game.start({ vx: undefined, vy: undefined });
+    socketRef.current?.emit("start", {
+      vx: -game.ball.vx,
+      vy: -game.ball.vy,
+    });
+  };
 
   useEffect(() => {
-    if (!game) return;
+    // TODO: Use --foreground color from CSS
+    // Somehow it didn't work (theme is changed but not yet committed to CSS/DOM?)
+    if (resolvedTheme === "dark") {
+      paddleColor.current = "hsl(0, 0%, 100%)";
+      ballColor.current = "hsl(0, 0%, 100%)";
+    } else {
+      paddleColor.current = "hsl(0, 0%, 0%)";
+      ballColor.current = "hsl(0, 0%, 0%)";
+    }
+    const game = getGame();
+    game.draw_canvas();
+  }, [resolvedTheme, getGame]);
+
+  useEffect(() => {
+    const game = getGame();
     game.draw_canvas();
     const intervalId = setInterval(game.update, TARGET_FRAME_MS);
 
     return () => clearInterval(intervalId);
-  }, [game]);
+  }, [getGame]);
+
   useEffect(() => {
-    if (!game) return;
+    const game = getGame();
 
     const handleKeyUp = (event: KeyboardEvent) => {
       game.keypress[event.key] = false;
@@ -77,16 +114,18 @@ function PongBoard({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, [game]);
+  }, [getGame]);
 
   useEffect(() => {
-    if (!game) return;
+    const socket = io("/pong", { query: { game_id: id } });
+    socketRef.current = socket;
+    const game = getGame();
 
     const handleLog = (log: string) => {
       setLogs((logs) => [...logs, log]);
     };
     const handleConnect = () => {
-      console.log(`Connected: ${socket.id}`);
+      console.log(`Connected: ${socketRef.current?.id}`);
       const log = "Connected to server";
       setLogs((logs) => [...logs, log]);
     };
@@ -143,10 +182,8 @@ function PongBoard({
     socket.on("join", handleJoin);
     socket.on("leave", handleLeave);
     socket.on("log", handleLog);
-    socket.connect();
 
     return () => {
-      socket.disconnect();
       socket.off("connect", handleConnect);
       socket.off("start", handleStart);
       socket.off("right", handleRight);
@@ -156,43 +193,45 @@ function PongBoard({
       socket.off("join", handleJoin);
       socket.off("leave", handleLeave);
       socket.off("log", handleLog);
+      socket.disconnect();
     };
-  }, [id, setLogs, socket, game]);
-
-  const start = () => {
-    if (!game) return;
-
-    setStartDisabled(true);
-    game.start({ vx: undefined, vy: undefined });
-    socket.emit("start", {
-      vx: -game.ball.vx,
-      vy: -game.ball.vy,
-    });
-  };
+  }, [id, getGame, setLogs]);
 
   return (
-    <>
-      <div className="flex gap-2">
-        <Button onClick={start} disabled={startDisabled}>
-          Start
-        </Button>
-        <Button onClick={game?.switch_battle_mode} disabled={battleDisabled}>
-          Battle
-        </Button>
-        <Button
-          onClick={game?.switch_practice_mode}
-          disabled={practiceDisabled}
-        >
-          Practice
-        </Button>
-      </div>
+    <div className="overflow-hidden flex-grow flex gap-8 pb-8">
       <canvas
         ref={canvasRef}
-        width="256"
-        height="512"
-        className="border w-[256px] h-[512px]"
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+        className="border flex-grow"
       ></canvas>
-    </>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={start} disabled={startDisabled}>
+            Start
+          </Button>
+          <Button
+            onClick={() => gameRef.current?.switch_battle_mode()}
+            disabled={battleDisabled}
+          >
+            Battle
+          </Button>
+          <Button
+            onClick={() => gameRef.current?.switch_practice_mode()}
+            disabled={practiceDisabled}
+          >
+            Practice
+          </Button>
+        </div>
+        <PongInformationBoard
+          fps={fps}
+          speed={speed}
+          player1Position={player1Position}
+          player2Position={player2Position}
+          logs={logs}
+        />
+      </div>
+    </div>
   );
 }
 

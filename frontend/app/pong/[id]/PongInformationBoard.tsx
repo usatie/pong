@@ -16,7 +16,7 @@ export default function PongInformationBoard({
   logs,
 }: PongInformationBoardProps) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="overflow-hidden flex-grow flex flex-col gap-1">
       <div id="fps">FPS: {fps}</div>
       <div id="speed">Speed: {speed}</div>
       <div>
@@ -27,11 +27,11 @@ export default function PongInformationBoard({
       </div>
       <div
         id="logs"
-        className="flex flex-col gap-0 border border-spacing-1 p-1"
+        className="flex-grow overflow-y-auto flex flex-col gap-0 border border-spacing-1 p-1"
       >
         <div>logs: </div>
         {logs.map((log, index) => (
-          <div key={index}>{log}</div>
+          <p key={index}>{log}</p>
         ))}
       </div>
     </div>
