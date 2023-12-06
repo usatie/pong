@@ -1,55 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { CreateChatDto } from './dto/create-chat.dto';
-//import { UpdateChatDto } from './dto/update-chat.dto';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class ChatService {
   constructor(private prisma: PrismaService) {}
 
-  createConversation(createChatDto: CreateChatDto) {
-    return this.prisma.conversation.create({ data: createChatDto });
-  }
-
-  findConversation(createChatDto: CreateChatDto) {
-    return this.prisma.conversation.findFirstOrThrow({
-      where: {
-        AND: [
-          { userOneId: createChatDto.userOneId },
-          { userTwoId: createChatDto.userTwoId },
-        ],
-      },
-      include: {
-        directmessages: true,
-      },
-    });
-  }
-
-  //  findOne(id: number) {
-  //    return `This action returns a #${id} chat`;
-  //  }
-  //
-  //  update(id: number, updateChatDto: UpdateChatDto) {
-  //    return `This action updates a #${id} chat`;
-  //  }
-  //
-  //  remove(id: number) {
-  //    return `This action removes a #${id} chat`;
-  //  }
-
-  async createDirectMessage(
-    conversationId: number,
-    userName: string,
-    createDirectMessageDto: CreateDirectMessageDto,
-  ) {
+  async createDirectMessage(senderId: number, dto: CreateDirectMessageDto) {
     return this.prisma.directMessage.create({
       data: {
-        conversationId: conversationId,
-        userId: '0', //TODO
-        userName: userName, //TODO
-        content: createDirectMessageDto.content,
+        senderId,
+        ...dto, //TODO receiverIdのvalidationどうする？
       },
     });
+  }
+
+  async findConversation(userId: number, me: User) {
+    console.log(userId);
+    console.log(me);
+    return []; //TODO
   }
 }

@@ -70,13 +70,12 @@ export class ChatGateway {
         break;
       }
     }
-    const conversationId = 0; //TODO
-    const userName = 'foo'; //TODO
-    this.chatService.createDirectMessage(conversationId, userName, data);
+    const userName = 'hoge'; //TODO mapを増やすか、mapのvalueを増やすか user name取得関数実装
+    this.chatService.createDirectMessage(userId, data); //TODO userIdが見つからなかった場合どうする？
     this.server
       .except('block' + userId)
       .to(client.id)
-      .to(this.userMap.get(data.to))
+      .to(this.userMap.get(data.receiverId.toString())) //TODO receiverIdが見つからなかった時のvalidation
       .emit('sendToUser', { ...data, from: userId, userName }, client.id);
   }
 
