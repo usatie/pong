@@ -368,11 +368,6 @@ describe('AppController (e2e)', () => {
           const isUserEntity = expectedProps.every((prop) => prop in res.body);
           return isUserEntity ? res.body : Promise.reject(res.body);
         });
-    const getUsers = () => {
-      return request(app.getHttpServer())
-        .get('/user')
-        .then((res) => res.body);
-    };
 
     beforeAll(async () => {
       let room;
