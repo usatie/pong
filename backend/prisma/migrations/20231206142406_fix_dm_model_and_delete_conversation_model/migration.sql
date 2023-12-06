@@ -2,7 +2,6 @@
   Warnings:
 
   - You are about to drop the column `conversationId` on the `DirectMessage` table. All the data in the column will be lost.
-  - You are about to drop the column `userId` on the `DirectMessage` table. All the data in the column will be lost.
   - You are about to drop the column `userName` on the `DirectMessage` table. All the data in the column will be lost.
   - You are about to drop the `Conversation` table. If the table is not empty, all the data it contains will be lost.
   - Added the required column `receiverId` to the `DirectMessage` table without a default value. This is not possible if the table is not empty.
@@ -17,8 +16,8 @@ DROP INDEX "DirectMessage_conversationId_idx";
 
 -- AlterTable
 ALTER TABLE "DirectMessage" DROP COLUMN "conversationId",
-DROP COLUMN "userId",
 DROP COLUMN "userName",
+ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 ADD COLUMN     "receiverId" INTEGER NOT NULL,
 ADD COLUMN     "senderId" INTEGER NOT NULL;
 
