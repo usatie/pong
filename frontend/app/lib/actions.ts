@@ -189,13 +189,13 @@ export async function joinRoom(
   }
 }
 
-export async function getConversation(userOneId: string, userTwoId: string) {
-  const res = await fetch(
-    `${process.env.API_URL}/chat?userOneId=${userOneId}&userTwoId=${userTwoId}`,
-    {
-      cache: "no-cache",
+export async function getConversation(userId: number) {
+  const res = await fetch(`${process.env.API_URL}/chat/${userId}`, {
+    cache: "no-cache",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
     },
-  );
+  });
   if (res.status === 404) {
     console.error("Not found conversation: ", await res.json());
     return null;
@@ -205,28 +205,5 @@ export async function getConversation(userOneId: string, userTwoId: string) {
   } else {
     const conversation = await res.json();
     return conversation;
-  }
-}
-
-export async function createConversation(userOneId: string, userTwoId: string) {
-  const res = await fetch(`${process.env.API_URL}/chat`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      userOneId,
-      userTwoId,
-    }),
-  });
-  if (res.status === 409) {
-    console.error("Already exists: ", await res.json());
-    return null;
-  } else if (!res.ok) {
-    console.error("createConversation error: ", await res.json());
-    throw new Error("createConversation error");
-  } else {
-    const newConversation = await res.json();
-    return newConversation;
   }
 }
