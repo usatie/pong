@@ -19,6 +19,19 @@ export class ChatService {
   async findConversation(userId: number, me: User) {
     console.log(userId);
     console.log(me);
-    return []; //TODO
+    return this.prisma.directMessage.findMany({
+      where: {
+        OR: [
+          {
+            receiverId: userId,
+            senderId: me.id,
+          },
+          {
+            receiverId: me.id,
+            senderId: userId,
+          },
+        ],
+      },
+    });
   }
 }

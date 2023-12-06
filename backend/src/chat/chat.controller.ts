@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('chat')
@@ -17,6 +17,7 @@ export class ChatController {
 
   @Get(':userId')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   findConversation(
     @Param('userId', ParseIntPipe) userId: number,
     @Req() request: Request,
