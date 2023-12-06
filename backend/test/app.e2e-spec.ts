@@ -375,41 +375,28 @@ describe('AppController (e2e)', () => {
     };
 
     beforeAll(async () => {
-      const createdUsers = await Promise.all(
-        userDtos.map((dto) => {
-          return createUser(dto).then((user) => ({
-            ...user,
-            password: dto.password,
-          }));
-        }),
-      );
-
-      const usersWithToken: UserWithToken[] = await Promise.all(
-        createdUsers.map((u) => getUserWithToken(u)),
-      );
-
-      const ownerUser = usersWithToken.find((u) => u.name === 'OWNER');
-      const room = await createRoom(ownerUser, createRoomDto);
-
-      return Promise.all(
-        usersWithToken
-          .filter((u) => u.name === 'MEMBER' || u.name === 'ADMINISTRATOR')
-          .map((roomMember) => enterRoom(roomMember, room)),
-      );
+      let room;
+      for (const dto of userDtos) {
+        const user = await createUser(dto);
+        const userWithToken = await getUserWithToken({ ...user, password: dto.password });
+        if (user.name === 'OWNER') {
+          room = await createRoom(userWithToken, createRoomDto);
+        } else if (user.name === 'MEMBER' || user.name === "ADMINISTRATOR") {
+          await enterRoom(userWithToken, room);
+        }
+      }
     });
 
-    afterAll(() => {
-      return loginUser(userDtos.find((c) => c.name === 'OWNER'))
-        .then((u) =>
-          getRooms().then((rooms) => rooms.map((r) => deleteRoom(r, u))),
-        )
-        .then(() => {
-          Promise.all(
-            userDtos.map((u) =>
-              loginUser(u).then((uToken) => deleteUser(uToken)),
-            ),
-          );
-        });
+    afterAll(async () => {
+      const ownerUser = await loginUser(userDtos.find((c) => c.name === 'OWNER'));
+      const rooms = await getRooms();
+      for (const room of rooms) {
+        await deleteRoom(room, ownerUser);
+      }
+      for (const dto of userDtos) {
+        const user = await loginUser(dto);
+        await deleteUser(user);
+      }
     });
 
     describe('GET', () => {
@@ -448,19 +435,20 @@ describe('AppController (e2e)', () => {
         const room = await getRoom(createRoomDto.name);
         const members = users.filter(memberFilter);
 
-        return Promise.all(members.map((user) => testGet(user, 200, room)));
+        for (const member of members) {
+          await testGet(member, 200, room);
+        }
+        //return Promise.all(members.map((user) => testGet(user, 200, room)));
       });
       it('from notMember: should return 403 Forbidden', async () => {
-        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
         const room = await getRoom(createRoomDto.name);
-        const notMember = users.find((u) => u.name === 'NotMEMBER');
-
-        return testGet(notMember, 403, room);
+        const notMember = await loginUser(userDtos.find((c) => c.name === 'NotMEMBER'));
+        await testGet(notMember, 403, room);
       });
       it('from unAuthorized User: should return 401 Unauthorized', async () => {
         const room = await getRoom(createRoomDto.name);
 
-        return testGet({ accessToken: '' }, 401, room);
+        await testGet({ accessToken: '' }, 401, room);
       });
     });
 
