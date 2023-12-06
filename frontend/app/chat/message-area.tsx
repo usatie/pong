@@ -95,12 +95,8 @@ function MessageArea({ me, other }: { me: User; other: User }) {
     console.log("sendMessage");
     const result = formSchema.safeParse(message);
     if (result.success) {
-      const name = me.name;
-      const toId = otherId;
       socket.emit("privateMessage", {
-        conversationId: id,
-        to: toId,
-        userName: name,
+        receiverId: other.id,
         content: message,
       });
       setMessage("");

@@ -71,7 +71,7 @@ export class ChatGateway {
       }
     }
     const userName = 'hoge'; //TODO mapを増やすか、mapのvalueを増やすか user name取得関数実装
-    this.chatService.createDirectMessage(userId, data); //TODO userIdが見つからなかった場合どうする？
+    this.chatService.createDirectMessage(+userId, data); //TODO userIdが見つからなかった場合どうする？
     this.server
       .except('block' + userId)
       .to(client.id)
