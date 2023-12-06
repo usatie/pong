@@ -60,7 +60,7 @@ model DirectMessage {
     conversationId Int
     conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-    createdAt String
+    createdAt DateTime @default(now())
 
     @@index([conversationId])
 }
