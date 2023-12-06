@@ -63,18 +63,20 @@ export class ChatGateway {
   ): void {
     this.logger.log('private message received');
     this.logger.log(data);
+    let userId;
     for (const [key, value] of this.userMap.entries()) {
       if (value == client.id) {
-        data.from = key;
+        userId = key;
         break;
       }
     }
-    this.chatService.createDirectMessage(+data.conversationId, data);
+    const userName = 'hoge'; //TODO mapを増やすか、mapのvalueを増やすか user name取得関数実装
+    this.chatService.createDirectMessage(+userId, data); //TODO userIdが見つからなかった場合どうする？
     this.server
-      .except('block' + data.from)
+      .except('block' + userId)
       .to(client.id)
-      .to(this.userMap.get(data.to))
-      .emit('sendToUser', data, client.id);
+      .to(this.userMap.get(data.receiverId.toString())) //TODO receiverIdが見つからなかった時のvalidation
+      .emit('sendToUser', { ...data, from: userId, userName }, client.id);
   }
 
   @SubscribeMessage('block')

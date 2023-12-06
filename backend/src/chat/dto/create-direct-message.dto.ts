@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateDirectMessageDto {
   @IsString()
@@ -7,20 +7,7 @@ export class CreateDirectMessageDto {
   @ApiProperty()
   content: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsNumber()
   @ApiProperty()
-  userName: string;
-
-  @IsString()
-  @ApiProperty({ required: false })
-  conversationId?: string;
-
-  @IsString()
-  @ApiProperty({ required: false })
-  from?: string;
-
-  @IsString()
-  @ApiProperty({ required: false })
-  to?: string;
+  receiverId: number;
 }

@@ -16,6 +16,8 @@ model User {
   name  String?
   password String
   rooms UserOnRoom[]
+  sentMessages DirectMessage[] @relation("SentMessages")
+  receivedMessages DirectMessage[] @relation("ReceivedMessages")
 }
 
 model Room {
@@ -40,24 +42,15 @@ enum Role {
   MEMBER
 }
 
-model Conversation {
-    id Int @id @default(autoincrement())
-    userOneId String
-    userTwoId String
-
-    directmessages DirectMessage[]
-
-    @@index([userTwoId])
-    @@unique([userOneId, userTwoId])
-}
 
 model DirectMessage {
     id Int @id @default(autoincrement())
     content String
-    userName String
 
-    conversationId Int
-    conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+    senderId Int
+    sender User @relation("SentMessages", fields: [senderId], references: [id])
+    receiverId Int
+    receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
 
-    @@index([conversationId])
+    createdAt DateTime @default(now())
 }

@@ -10,23 +10,14 @@ import type { User } from "@/app/ui/user/card";
 import { MessageSkeleton } from "./skeleton";
 import { groupMessagesByUser, useScrollToBottom } from "./helper";
 import { chatSocket as socket } from "@/socket";
-import { getConversation, createConversation } from "@/app/lib/actions";
+import { getConversation } from "@/app/lib/actions";
 import * as z from "zod";
 
-async function getMessages(myId: string, otherId: string) {
+async function getMessages(otherId: number) {
+  console.log("conversation: ");
   // TODO: Implement this function
-  let conversation =
-    (await getConversation(myId, otherId)) ??
-    (await getConversation(otherId, myId));
-  console.log(conversation);
-  if (!conversation) {
-    const res = await createConversation(myId, otherId);
-    conversation = await getConversation(myId, otherId);
-    console.log(conversation);
-    if (!conversation) {
-      throw new Error("getConversation error");
-    }
-  }
+  let conversation = await getConversation(otherId);
+  console.log("conversation: ", conversation);
   return conversation;
 }
 
@@ -60,7 +51,7 @@ function MessageArea({ me, other }: { me: User; other: User }) {
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
   const myId = me.id.toString();
-  const otherId = other.id.toString();
+  const otherId = other.id;
 
   // TODO: Messageを取得するsocketのロジック等を実装
   // メッセージを取得
@@ -69,7 +60,7 @@ function MessageArea({ me, other }: { me: User; other: User }) {
     socket.emit("joinDM", myId);
 
     const handleMessageReceived = (newMessage: Message) => {
-      if (newMessage.from === otherId || newMessage.from === myId) {
+      if (newMessage.from === otherId.toString() || newMessage.from === myId) {
         console.log("received message: ", newMessage);
         setMessages((oldMessages) => [...oldMessages, newMessage]);
         console.log(newMessage);
@@ -90,11 +81,9 @@ function MessageArea({ me, other }: { me: User; other: User }) {
     if (didLogRef.current === false) {
       didLogRef.current = true;
       const fetchMessages = async () => {
-        const conversation = await getMessages(myId, otherId);
-        const messages = conversation.directmessages;
-        const id = conversation.id;
+        const conversation = await getMessages(otherId);
+        const messages = conversation;
         setMessages(messages);
-        setId(id);
       };
       fetchMessages();
     }
@@ -106,12 +95,8 @@ function MessageArea({ me, other }: { me: User; other: User }) {
     console.log("sendMessage");
     const result = formSchema.safeParse(message);
     if (result.success) {
-      const name = me.name;
-      const toId = otherId;
       socket.emit("privateMessage", {
-        conversationId: id,
-        to: toId,
-        userName: name,
+        receiverId: other.id,
         content: message,
       });
       setMessage("");
