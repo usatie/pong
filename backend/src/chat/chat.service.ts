@@ -40,13 +40,15 @@ export class ChatService {
 
   async createDirectMessage(
     conversationId: number,
+    userName: string,
     createDirectMessageDto: CreateDirectMessageDto,
   ) {
     return this.prisma.directMessage.create({
       data: {
         conversationId: conversationId,
+        userId: '0', //TODO
+        userName: userName, //TODO
         content: createDirectMessageDto.content,
-        userName: createDirectMessageDto.userName,
       },
     });
   }

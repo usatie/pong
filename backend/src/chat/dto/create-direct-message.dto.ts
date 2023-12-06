@@ -8,19 +8,6 @@ export class CreateDirectMessageDto {
   content: string;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty()
-  userName: string;
-
-  @IsString()
-  @ApiProperty({ required: false })
-  conversationId?: string;
-
-  @IsString()
-  @ApiProperty({ required: false })
-  from?: string;
-
-  @IsString()
-  @ApiProperty({ required: false })
-  to?: string;
+  to: string;
 }

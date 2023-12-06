@@ -43,12 +43,4 @@ export class ChatController {
   //  remove(@Param('id') id: string) {
   //    return this.chatService.remove(+id);
   //  }
-
-  @Post(':id')
-  createDirectMessage(
-    @Param('id') id: string,
-    @Body() createDirectMessageDto: CreateDirectMessageDto,
-  ) {
-    return this.chatService.createDirectMessage(+id, createDirectMessageDto);
-  }
 }
