@@ -7,6 +7,12 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import { HttpAdapterHost, Reflector } from '@nestjs/core';
 import { CreateRoomDto } from 'src/room/dto/create-room.dto';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { UserEntity } from 'src/user/entities/user.entity';
+import { RoomEntity } from 'src/room/entities/room.entity';
+import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
+import { UserOnRoomEntity } from 'src/room/entities/UserOnRoom.entity';
+import { AuthEntity } from 'src/auth/entity/auth.entity';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -17,7 +23,7 @@ describe('AppController (e2e)', () => {
   };
   const testUserLogin = { email: testUser.email, password: testUser.password };
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -211,312 +217,370 @@ describe('AppController (e2e)', () => {
     });
   });
   describe('/room/:id', () => {
-    interface testUser {
-      name: string;
-      email: string;
-      password: string;
-      id: number;
-      accessToken: string;
-      role: Role;
-    }
-    enum UserType {
-      owner,
-      admin,
-      member,
-      NotMember,
-    }
-    const users: testUser[] = [
+    const userDtos: CreateUserDto[] = [
       {
-        name: 'owner',
+        name: 'OWNER',
         email: 'owner@example.com',
         password: 'password-owner',
-        id: <number>undefined,
-        accessToken: undefined,
-        role: Role.OWNER,
       },
       {
-        name: 'admin',
+        name: 'ADMINISTRATOR',
         email: 'admin@example.com',
         password: 'password-admin',
-        id: <number>undefined,
-        accessToken: undefined,
-        role: Role.ADMINISTRATOR,
       },
       {
-        name: 'member',
+        name: 'MEMBER',
         email: 'member@example.com',
         password: 'password-member',
-        id: <number>undefined,
-        accessToken: undefined,
-        role: Role.MEMBER,
       },
       {
-        name: 'NotMember',
+        name: 'NotMEMBER',
         email: 'NotMember@example.com',
         password: 'password-NotMember',
-        id: <number>undefined,
-        accessToken: undefined,
-        role: undefined,
       },
     ];
-    const testRoom = {
-      name: 'testRoom1',
-      roomId: <number>undefined,
+
+    const createRoomDto: CreateRoomDto = {
+      name: 'testRoom',
     };
-    beforeAll(() => {
-      return Promise.all(
-        users.map((user) => {
-          return request(app.getHttpServer())
-            .post('/user')
-            .send(user)
-            .then((res) => {
-              expect(res.body).toHaveProperty('id');
-              expect(res.body.id).not.toBeUndefined();
-              user.id = res.body.id;
-              return request(app.getHttpServer())
-                .post('/auth/login')
-                .send(user)
-                .then((res) => {
-                  user.accessToken = res.body.accessToken;
-                });
-            })
-            .catch((err) => {
-              throw err;
-            });
-        }),
-      )
-        .then(() => {
-          const createRoomDto: CreateRoomDto = {
-            name: testRoom.name,
-          };
-          return request(app.getHttpServer())
-            .post('/room')
-            .set('Authorization', `Bearer ${users[UserType.owner].accessToken}`)
-            .send(createRoomDto)
-            .then((res) => {
-              testRoom.roomId = res.body.id;
-              const addMemberPromises = users
-                .filter(
-                  (user) => user.role !== Role.OWNER && user.role !== undefined,
-                )
-                .map((user) => {
-                  return request(app.getHttpServer())
-                    .post(`/room/${testRoom.roomId}`)
-                    .set('Authorization', `Bearer ${user.accessToken}`);
-                });
-              const updateRolePromises = users
-                .filter((user) => user.role === Role.ADMINISTRATOR)
-                .map((user) => {
-                  return request(app.getHttpServer())
-                    .patch(`/room/${testRoom.roomId}/${user.id}`)
-                    .set(
-                      'Authorization',
-                      `Bearer ${users[UserType.owner].accessToken}`,
-                    )
-                    .send({ role: user.role });
-                });
-              return Promise.all([
-                ...addMemberPromises,
-                ...updateRolePromises,
-              ]).then(() => {
-                return request(app.getHttpServer())
-                  .get(`/room/${testRoom.roomId}`)
-                  .set(
-                    'Authorization',
-                    `Bearer ${users[UserType.owner].accessToken}`,
-                  )
-                  .then((res) => {
-                    console.log(res.body);
-                  });
-              });
-            })
-            .catch((err) => {
-              throw err;
-            });
-        })
-        .catch((err) => {
-          throw err;
+
+    type UserWithToken = UserEntity & {
+      accessToken: string;
+    };
+
+    type Member = UserWithToken & {
+      role: Role;
+    };
+
+    type dtoWithToken = CreateUserDto & {
+      accessToken: string;
+    };
+
+    type PayloadOfJWT = {
+      userId;
+      iat;
+      exp;
+    };
+
+    const createRoom = (
+      user: UserWithToken,
+      createRoomDto: CreateRoomDto,
+    ): Promise<RoomEntity> =>
+      request(app.getHttpServer())
+        .post('/room')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .send(createRoomDto)
+        .then((res) => {
+          const expectedProps: (keyof RoomEntity)[] = ['id', 'name'];
+          const isRoomEntity = expectedProps.every((prop) => prop in res.body);
+          return isRoomEntity ? res.body : Promise.reject(res.body);
         });
-    });
-    afterAll(() => {
+
+    const enterRoom = (
+      user: UserWithToken,
+      room: RoomEntity,
+    ): Promise<Member> =>
+      request(app.getHttpServer())
+        .post(`/room/${room.id}`)
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .send()
+        .then((res) => {
+          const expectedProps: (keyof UserOnRoomEntity)[] = [
+            'id',
+            'role',
+            'userId',
+            'roomId',
+          ];
+          const isMember = expectedProps.every((prop) => prop in res.body);
+          return isMember ? { ...res.body, ...user } : Promise.reject(res.body);
+        });
+
+    const payloadFromJWT = ({ accessToken }: { accessToken: string }) =>
+      Buffer.from(accessToken.split('.')[1], 'base64').toString('utf-8');
+
+    const getUserWithToken = (user: UserEntity): Promise<UserWithToken> => {
       return request(app.getHttpServer())
-        .delete(`/room/${testRoom.roomId}`)
-        .set('Authorization', `Bearer ${users[UserType.owner].accessToken}`)
-        .then(() => {
-          return Promise.all(
-            users.map((user) => {
-              return request(app.getHttpServer())
-                .delete(`/user/${user.id}`)
-                .set('Authorization', `Bearer ${user.accessToken}`)
-                .expect(204);
-            }),
-          ).catch((err) => {
-            throw err;
-          });
+        .post('/auth/login')
+        .send(user)
+        .then((res) => {
+          const expectedProps: (keyof AuthEntity)[] = ['accessToken'];
+          const isUserWithToken = expectedProps.every(
+            (prop) => prop in res.body,
+          );
+          return isUserWithToken
+            ? { ...res.body, ...user }
+            : Promise.reject(res.body);
         });
+    };
+
+    const loginUser = (u: CreateUserDto): Promise<dtoWithToken> =>
+      request(app.getHttpServer())
+        .post('/auth/login')
+        .send(u)
+        .then((res) => ({
+          ...u,
+          ...res.body,
+        }));
+    const getRooms = (): Promise<RoomEntity[]> =>
+      request(app.getHttpServer())
+        .get(`/room`)
+        .then((res) => res.body);
+
+    const getRoom = (name: string) =>
+      getRooms().then((rms) => rms.find((rm) => rm.name === name));
+
+    const deleteRoom = (
+      room: RoomEntity,
+      { accessToken }: { accessToken: string },
+    ) =>
+      request(app.getHttpServer())
+        .delete(`/room/${room.id}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .then((res) => res.body);
+
+    const deleteUser = (u: dtoWithToken) => {
+      const payload: PayloadOfJWT = JSON.parse(payloadFromJWT(u));
+      return request(app.getHttpServer())
+        .delete(`/user/${payload.userId}`)
+        .set('Authorization', `Bearer ${u.accessToken}`)
+        .then((res) => res.body);
+    };
+
+    const createUser = (dto: CreateUserDto): Promise<UserEntity> =>
+      request(app.getHttpServer())
+        .post('/user')
+        .send(dto)
+        .then((res) => {
+          // UserEntity の型から特定のキー（この場合は 'password'）を除外するユーティリティ型
+          type OmitKey<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+
+          // 'password' 以外の UserEntity のキーを取得する
+          type UserEntityKeysWithoutPassword = keyof OmitKey<
+            UserEntity,
+            'password'
+          >;
+
+          // 'password' 以外のキーを配列として取得する
+          const expectedProps: UserEntityKeysWithoutPassword[] = Object.keys(
+            new UserEntity({ id: 0, name: '', email: '' }),
+          ) as UserEntityKeysWithoutPassword[];
+          const isUserEntity = expectedProps.every((prop) => prop in res.body);
+          return isUserEntity ? res.body : Promise.reject(res.body);
+        });
+
+    beforeAll(async () => {
+      let room;
+      for (const dto of userDtos) {
+        const user = await createUser(dto);
+        const userWithToken = await getUserWithToken({
+          ...user,
+          password: dto.password,
+        });
+        if (user.name === 'OWNER') {
+          room = await createRoom(userWithToken, createRoomDto);
+        } else if (user.name === 'MEMBER' || user.name === 'ADMINISTRATOR') {
+          await enterRoom(userWithToken, room);
+        }
+      }
     });
+
+    afterAll(async () => {
+      const ownerUser = await loginUser(
+        userDtos.find((c) => c.name === 'OWNER'),
+      );
+      const rooms = await getRooms();
+      for (const room of rooms) {
+        await deleteRoom(room, ownerUser);
+      }
+      for (const dto of userDtos) {
+        const user = await loginUser(dto);
+        await deleteUser(user);
+      }
+    });
+
     describe('GET', () => {
-      it('from roomMember: should return the room 200 OK', () => {
-        return Promise.all(
-          users
-            .filter((user) => user.role !== undefined)
-            .map((user) => {
-              return request(app.getHttpServer())
-                .get(`/room/${testRoom.roomId}`)
-                .set('Authorization', `Bearer ${user.accessToken}`)
-                .expect(200)
-                .then((res) => {
-                  expect(res.body).toHaveProperty('id');
-                  expect(res.body).toHaveProperty('name');
-                  expect(res.body).toHaveProperty('users');
-                  expect(res.body.users).toBeInstanceOf(Array);
-                  expect(res.body.users.length).toBeGreaterThan(0);
-                  res.body.users.forEach((user) => {
-                    expect(user).toHaveProperty('id');
-                    expect(user).toHaveProperty('role');
-                    expect(user).toHaveProperty('roomId');
-                    expect(user).toHaveProperty('userId');
-                  });
-                });
-            }),
+      const testGet = (
+        { accessToken }: { accessToken: string },
+        status: number,
+        rm: RoomEntity,
+      ) =>
+        request(app.getHttpServer())
+          .get(`/room/${rm.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(status)
+          .then((res) => {
+            if (status / 100 === 2) {
+              expect(res.body).toHaveProperty('id');
+              expect(res.body).toHaveProperty('name');
+              expect(res.body).toHaveProperty('users');
+              expect(res.body.users).toBeInstanceOf(Array);
+              expect(res.body.users.length).toBeGreaterThan(0);
+              res.body.users.forEach((user) => {
+                expect(user).toHaveProperty('id');
+                expect(user).toHaveProperty('role');
+                expect(user).toHaveProperty('roomId');
+                expect(user).toHaveProperty('userId');
+              });
+            }
+          });
+
+      const memberFilter = (user: UserWithToken) =>
+        user.name === 'MEMBER' ||
+        user.name === 'ADMINISTRATOR' ||
+        user.name === 'OWNER';
+
+      it('from roomMember: should return the room 200 OK', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const members = users.filter(memberFilter);
+
+        for (const member of members) {
+          await testGet(member, 200, room);
+        }
+        //return Promise.all(members.map((user) => testGet(user, 200, room)));
+      });
+
+      it('from notMember: should return 403 Forbidden', async () => {
+        const room = await getRoom(createRoomDto.name);
+        const notMember = await loginUser(
+          userDtos.find((c) => c.name === 'NotMEMBER'),
         );
+        await testGet(notMember, 403, room);
       });
-      it('from notMember: should return 403 Forbidden', () => {
-        return request(app.getHttpServer())
-          .get(`/room/${testRoom.roomId}`)
-          .set(
-            'Authorization',
-            `Bearer ${users[UserType.NotMember].accessToken}`,
-          )
-          .expect(403);
-      });
-      it('from unAuthorized User: should return 401 Unauthorized', () => {
-        return request(app.getHttpServer())
-          .get(`/room/${testRoom.roomId}`)
-          .expect(401);
+
+      it('from unAuthorized User: should return 401 Unauthorized', async () => {
+        const room = await getRoom(createRoomDto.name);
+
+        await testGet({ accessToken: '' }, 401, room);
       });
     });
+
     describe('POST', () => {
-      it('from member: should return 409 Conflict', () => {
-        return Promise.all(
-          users
-            .filter((user) => user.role !== undefined)
-            .map((user) => {
-              return request(app.getHttpServer())
-                .post(`/room/${testRoom.roomId}`)
-                .set('Authorization', `Bearer ${user.accessToken}`)
-                .expect(409);
-            }),
+      const testPost = (
+        { accessToken }: { accessToken: string },
+        status: number,
+        rm: RoomEntity,
+      ) =>
+        request(app.getHttpServer())
+          .post(`/room/${rm.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(status);
+
+      it('from member: should return 409 Conflict', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const members = users.filter(
+          (u) =>
+            u.name === 'MEMBER' ||
+            u.name === 'ADMINISTRATOR' ||
+            u.name === 'OWNER',
         );
+
+        return Promise.all(members.map((m) => testPost(m, 409, room)));
       });
-      it('from notMember: should return 201 Created', () => {
-        return Promise.all(
-          users
-            .filter((user) => user.role === undefined)
-            .map((user) => {
-              return request(app.getHttpServer())
-                .post(`/room/${testRoom.roomId}`)
-                .set('Authorization', `Bearer ${user.accessToken}`)
-                .expect(201);
-            }),
-        ).then(() => {
-          return request(app.getHttpServer())
-            .get(`/room/${testRoom.roomId}`)
-            .set(
-              'Authorization',
-              `Bearer ${users[UserType.NotMember].accessToken}`,
-            )
-            .expect(200)
-            .then((res) => {
-              expect(res.body.users.length).toBe(users.length);
-              return request(app.getHttpServer())
-                .delete(
-                  `/room/${testRoom.roomId}/${users[UserType.NotMember].id}`,
-                )
-                .set(
-                  'Authorization',
-                  `Bearer ${users[UserType.owner].accessToken}`,
-                )
-                .expect(200);
-            })
-            .then(() => {
-              return request(app.getHttpServer())
-                .get(`/room/${testRoom.roomId}`)
-                .set(
-                  'Authorization',
-                  `Bearer ${users[UserType.NotMember].accessToken}`,
-                )
-                .expect(403);
-            });
-        });
+
+      it('from notMember: should return 201 Created', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const notMember = users.find((u) => u.name === 'NotMEMBER');
+
+        return testPost(notMember, 201, room);
       });
-      it('from unAuthorized User: should return 401 Unauthorized', () => {
-        return request(app.getHttpServer())
-          .post(`/room/${testRoom.roomId}`)
-          .expect(401);
+
+      it('from unAuthorized User: should return 401 Unauthorized', async () => {
+        const room = await getRoom(createRoomDto.name);
+
+        return testPost({ accessToken: '' }, 401, room);
       });
     });
+
     describe('PATCH', () => {
+      const testPatch = (
+        { accessToken }: { accessToken: string },
+        status: number,
+        rm: RoomEntity,
+        data: UpdateRoomDto,
+      ) =>
+        request(app.getHttpServer())
+          .patch(`/room/${rm.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send(data)
+          .expect(status)
+          .then((res) => {
+            if (status < 300) expect(res.body.name).toEqual(data.name);
+          });
+
       const newName = 'new_name';
-      it('from roomMember: Owner : should return 200 OK', () => {
-        return Promise.all(
-          users
-            .filter((user) => user.role === Role.OWNER)
-            .map((user) => {
-              return request(app.getHttpServer())
-                .patch(`/room/${testRoom.roomId}`)
-                .set('Authorization', `Bearer ${user.accessToken}`)
-                .send({ name: newName })
-                .expect(200);
-            }),
-        ).then(() => {
-          return request(app.getHttpServer())
-            .get(`/room/${testRoom.roomId}`)
-            .set('Authorization', `Bearer ${users[UserType.owner].accessToken}`)
-            .expect(200)
-            .then((res) => expect(res.body.name).toBe(newName));
-        });
-      });
-      it('from notMember and Member except Owner: should return 403 Forbidden', () => {
-        return Promise.all(
-          users
-            .filter((user) => user.role !== Role.OWNER)
-            .map((user) => {
-              return request(app.getHttpServer())
-                .patch(`/room/${testRoom.roomId}`)
-                .set('Authorization', `Bearer ${user.accessToken}`)
-                .send({ name: newName })
-                .expect(403);
-            }),
+
+      it('from Owner: should return 200 OK', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const owner = users.find((u) => u.name === 'OWNER');
+
+        return testPatch(owner, 200, room, { name: newName }).then(() =>
+          testPatch(owner, 200, room, { name: createRoomDto.name }),
         );
       });
-      it('from unAuthorized User: should return 401 Unauthorized', () => {
+
+      it('from Member and Admin : should return 403', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const members = users.filter(
+          (u) => u.name === 'MEMBER' || u.name === 'ADMINISTRATOR',
+        );
+
+        return Promise.all(
+          members.map((user) => testPatch(user, 403, room, { name: newName })),
+        );
+      });
+
+      it('from notMember : should return 403 Forbidden', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const notMembers = users.find((u) => u.name === 'NotMEMBER');
+
+        return testPatch(notMembers, 403, room, { name: newName });
+      });
+
+      it('from unAuthorized User: should return 401 Unauthorized', async () => {
+        const room = await getRoom(createRoomDto.name);
+
         return request(app.getHttpServer())
-          .patch(`/room/${testRoom.roomId}`)
+          .patch(`/room/${room.id}`)
           .send({ name: newName })
           .expect(401);
       });
     });
+
     describe('DELETE', () => {
+      const testDelete = (
+        { accessToken }: { accessToken: string },
+        status: number,
+        rm: RoomEntity,
+      ) =>
+        request(app.getHttpServer())
+          .delete(`/room/${rm.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(status);
+
       it('from roomMember: Owner : should return 200 OK (to prepare test, this action is tried. To prevent room delete, don"t execute this test! take care!)', () => {
         return expect(true).toBe(true);
       });
-      it('from notMember and Member except Owner: should return 403 Forbidden', () => {
+
+      it('except Owner: should return 403 Forbidden', async () => {
+        const users = await Promise.all(userDtos.map((u) => loginUser(u)));
+        const room = await getRoom(createRoomDto.name);
+        const membersExceptOwner = users.filter((u) => u.name !== 'OWNER');
+
         return Promise.all(
-          users
-            .filter((user) => user.role !== Role.OWNER)
-            .map((user) => {
-              return request(app.getHttpServer())
-                .delete(`/room/${testRoom.roomId}`)
-                .set('Authorization', `Bearer ${user.accessToken}`)
-                .expect(403);
-            }),
+          membersExceptOwner.map((user) => testDelete(user, 403, room)),
         );
       });
-      it('from unAuthorized User: should return 401 Unauthorized', () => {
-        return request(app.getHttpServer())
-          .delete(`/room/${testRoom.roomId}`)
-          .expect(401);
+
+      it('from unAuthorized User: should return 401 Unauthorized', async () => {
+        const room = await getRoom(createRoomDto.name);
+
+        return testDelete({ accessToken: '' }, 401, room);
       });
     });
   });

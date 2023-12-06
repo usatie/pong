@@ -17,11 +17,12 @@ async function main() {
     ),
   }));
   const users = await Promise.all(
-    userData.map(async (data) => {
-      const user = await prisma.user.create({
-        data,
+    userData.map(async (user) => {
+      return await prisma.user.upsert({
+        where: { email: user.email },
+        update: {},
+        create: user,
       });
-      return user;
     }),
   );
 
@@ -33,27 +34,34 @@ async function main() {
 
   console.log({ user1, user2, user3, user4, user5 });
 
-  await prisma.room.create({
-    data: {
-      name: 'Room 1',
-      users: {
-        connect: [
-          { id: user1.id },
-          { id: user2.id },
-          { id: user3.id },
-          { id: user4.id },
-        ],
+  // Difficult to use upsert because of there is no unique key other than autoincrement id
+  if ((await prisma.room.count()) == 0) {
+    await prisma.room.create({
+      data: {
+        name: 'Room 1',
+        users: {
+          create: [
+            { userId: user1.id, role: 'OWNER' },
+            { userId: user2.id, role: 'ADMINISTRATOR' },
+            { userId: user3.id, role: 'MEMBER' },
+            { userId: user4.id, role: 'MEMBER' },
+          ],
+        },
       },
-    },
-  });
-  await prisma.room.create({
-    data: {
-      name: 'Room 2',
-      users: {
-        connect: [{ id: user1.id }, { id: user2.id }, { id: user4.id }],
+    });
+    await prisma.room.create({
+      data: {
+        name: 'Room 2',
+        users: {
+          create: [
+            { userId: user1.id, role: 'MEMBER' },
+            { userId: user2.id, role: 'MEMBER' },
+            { userId: user4.id, role: 'OWNER' },
+          ],
+        },
       },
-    },
-  });
+    });
+  }
 }
 
 main()
