@@ -296,7 +296,7 @@ describe('AppController (e2e)', () => {
         });
 
     const payloadFromJWT = ({ accessToken }: { accessToken: string }) =>
-      atob(accessToken.split('.')[1]);
+      Buffer.from(accessToken.split('.')[1], 'base64').toString('utf-8');
 
     const getUserWithToken = (user: UserEntity): Promise<UserWithToken> => {
       return request(app.getHttpServer())
@@ -364,7 +364,6 @@ describe('AppController (e2e)', () => {
           const expectedProps: UserEntityKeysWithoutPassword[] = Object.keys(
             new UserEntity({ id: 0, name: '', email: '' }),
           ) as UserEntityKeysWithoutPassword[];
-          console.log(expectedProps);
           const isUserEntity = expectedProps.every((prop) => prop in res.body);
           return isUserEntity ? res.body : Promise.reject(res.body);
         });
@@ -440,6 +439,7 @@ describe('AppController (e2e)', () => {
         }
         //return Promise.all(members.map((user) => testGet(user, 200, room)));
       });
+
       it('from notMember: should return 403 Forbidden', async () => {
         const room = await getRoom(createRoomDto.name);
         const notMember = await loginUser(
@@ -447,6 +447,7 @@ describe('AppController (e2e)', () => {
         );
         await testGet(notMember, 403, room);
       });
+
       it('from unAuthorized User: should return 401 Unauthorized', async () => {
         const room = await getRoom(createRoomDto.name);
 
@@ -520,6 +521,7 @@ describe('AppController (e2e)', () => {
           testPatch(owner, 200, room, { name: createRoomDto.name }),
         );
       });
+
       it('from Member and Admin : should return 403', async () => {
         const users = await Promise.all(userDtos.map((u) => loginUser(u)));
         const room = await getRoom(createRoomDto.name);
@@ -531,6 +533,7 @@ describe('AppController (e2e)', () => {
           members.map((user) => testPatch(user, 403, room, { name: newName })),
         );
       });
+
       it('from notMember : should return 403 Forbidden', async () => {
         const users = await Promise.all(userDtos.map((u) => loginUser(u)));
         const room = await getRoom(createRoomDto.name);
@@ -538,6 +541,7 @@ describe('AppController (e2e)', () => {
 
         return testPatch(notMembers, 403, room, { name: newName });
       });
+
       it('from unAuthorized User: should return 401 Unauthorized', async () => {
         const room = await getRoom(createRoomDto.name);
 
@@ -578,31 +582,6 @@ describe('AppController (e2e)', () => {
 
         return testDelete({ accessToken: '' }, 401, room);
       });
-    });
-
-    describe('PATCH /room/:id/:userId', () => {
-      // const getUserIdFromJWT = ({ accessToken }: { accessToken: string }) =>
-      //   JSON.parse(payloadFromJWT({ accessToken })).userId;
-      // const updateUserRole = (
-      //   changer: UserWithToken,
-      //   changed: UserWithToken,
-      //   { role }: { role: Role },
-      //   room: RoomEntity,
-      // ): Promise<Member> =>
-      //   request(app.getHttpServer())
-      //     .patch(`/room/${room.id}/${getUserIdFromJWT(changed)}`)
-      //     .set('Authorization', `Bearer ${changer.accessToken}`)
-      //     .send({ role })
-      //     .then((res) => ({ ...changed, ...res.body }));
-      // const getOneUserOnRoom = (
-      //   room: RoomEntity,
-      //   user: UserWithToken,
-      // ): Promise<UserOnRoomEntity> =>
-      //   request(app.getHttpServer())
-      //     .get(`/room/${room.id}/${JSON.parse(payloadFromJWT(user)).userId}`)
-      //     .set('Authorization', `Bearer ${user.accessToken}`)
-      //     .send()
-      //     .then((res) => res.body);
     });
   });
 });
