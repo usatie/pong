@@ -378,17 +378,22 @@ describe('AppController (e2e)', () => {
       let room;
       for (const dto of userDtos) {
         const user = await createUser(dto);
-        const userWithToken = await getUserWithToken({ ...user, password: dto.password });
+        const userWithToken = await getUserWithToken({
+          ...user,
+          password: dto.password,
+        });
         if (user.name === 'OWNER') {
           room = await createRoom(userWithToken, createRoomDto);
-        } else if (user.name === 'MEMBER' || user.name === "ADMINISTRATOR") {
+        } else if (user.name === 'MEMBER' || user.name === 'ADMINISTRATOR') {
           await enterRoom(userWithToken, room);
         }
       }
     });
 
     afterAll(async () => {
-      const ownerUser = await loginUser(userDtos.find((c) => c.name === 'OWNER'));
+      const ownerUser = await loginUser(
+        userDtos.find((c) => c.name === 'OWNER'),
+      );
       const rooms = await getRooms();
       for (const room of rooms) {
         await deleteRoom(room, ownerUser);
@@ -442,7 +447,9 @@ describe('AppController (e2e)', () => {
       });
       it('from notMember: should return 403 Forbidden', async () => {
         const room = await getRoom(createRoomDto.name);
-        const notMember = await loginUser(userDtos.find((c) => c.name === 'NotMEMBER'));
+        const notMember = await loginUser(
+          userDtos.find((c) => c.name === 'NotMEMBER'),
+        );
         await testGet(notMember, 403, room);
       });
       it('from unAuthorized User: should return 401 Unauthorized', async () => {
