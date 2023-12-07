@@ -4,34 +4,10 @@ import { CreateRoomDto } from 'src/room/dto/create-room.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { RoomEntity } from 'src/room/entities/room.entity';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
-import { initializeApp } from './util';
+import { initializeApp } from './utils/initialize';
 import { LoginDto } from 'src/auth/dto/login.dto';
-
-const constants = {
-  owner: {
-    name: 'OWNER',
-    email: 'owner@example.com',
-    password: 'password-owner',
-  },
-  admin: {
-    name: 'ADMINISTRATOR',
-    email: 'admin@example.com',
-    password: 'password-admin',
-  },
-  member: {
-    name: 'MEMBER',
-    email: 'member@example.com',
-    password: 'password-member',
-  },
-  notMember: {
-    name: 'NotMEMBER',
-    email: 'NotMember@example.com',
-    password: 'password-NotMember',
-  },
-  testRoom: {
-    name: 'test_room',
-  },
-};
+import { expectRoom, expectUserOnRoom } from './utils/matcher';
+import { constants } from './constants';
 
 describe('RoomController (e2e)', () => {
   let app: INestApplication;
@@ -40,18 +16,23 @@ describe('RoomController (e2e)', () => {
   });
 
   const users = [
-    constants.owner,
-    constants.admin,
-    constants.member,
-    constants.notMember,
+    constants.user.owner,
+    constants.user.admin,
+    constants.user.member,
+    constants.user.notMember,
   ];
   const usersExceptOwner = [
-    constants.notMember,
-    constants.admin,
-    constants.member,
+    constants.user.notMember,
+    constants.user.admin,
+    constants.user.member,
   ];
-  const roomMembers = [constants.owner, constants.admin, constants.member];
+  const roomMembers = [
+    constants.user.owner,
+    constants.user.admin,
+    constants.user.member,
+  ];
 
+  /* Room API */
   const createRoom = (accessToken: string, createRoomDto: CreateRoomDto) =>
     request(app.getHttpServer())
       .post('/room')
@@ -62,11 +43,6 @@ describe('RoomController (e2e)', () => {
     request(app.getHttpServer())
       .post(`/room/${room.id}`)
       .set('Authorization', `Bearer ${accessToken}`);
-
-  const login = (dto: LoginDto) =>
-    request(app.getHttpServer()).post('/auth/login').send(dto);
-
-  const getRooms = () => request(app.getHttpServer()).get(`/room`);
 
   const getRoom = (id: number, accessToken: string) =>
     request(app.getHttpServer())
@@ -84,13 +60,18 @@ describe('RoomController (e2e)', () => {
       .delete(`/room/${roomId}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
+  /* User API */
+  const createUser = (dto: CreateUserDto) =>
+    request(app.getHttpServer()).post('/user').send(dto);
+
   const deleteUser = (userId: number, accessToken: string) =>
     request(app.getHttpServer())
       .delete(`/user/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
-  const createUser = (dto: CreateUserDto) =>
-    request(app.getHttpServer()).post('/user').send(dto);
+  /* Auth API */
+  const login = (dto: LoginDto) =>
+    request(app.getHttpServer()).post('/auth/login').send(dto);
 
   /* Utility functions for test */
   const getAccessToken = (dto: LoginDto): Promise<string> =>
@@ -104,53 +85,37 @@ describe('RoomController (e2e)', () => {
     return payload.userId;
   };
 
-  const expectRoom = (room) => {
-    expect(room).toHaveProperty('id');
-    expect(room).toHaveProperty('name');
-    expect(room).toHaveProperty('users');
-  };
-
-  const expectUserOnRoom = (user) => {
-    expect(user).toHaveProperty('id');
-    expect(user).toHaveProperty('role');
-    expect(user).toHaveProperty('roomId');
-    expect(user).toHaveProperty('userId');
-  };
-
   let room: RoomEntity;
   beforeAll(async () => {
     // Owner
     {
-      await createUser(constants.owner);
-      const ownerAccessToken = await getAccessToken(constants.owner);
-      const res = await createRoom(ownerAccessToken, constants.testRoom);
+      await createUser(constants.user.owner);
+      const ownerAccessToken = await getAccessToken(constants.user.owner);
+      const res = await createRoom(ownerAccessToken, constants.room.test);
       room = res.body;
     }
     // Member
     {
-      await createUser(constants.member);
-      const accessToken = await getAccessToken(constants.member);
+      await createUser(constants.user.member);
+      const accessToken = await getAccessToken(constants.user.member);
       await enterRoom(accessToken, room);
     }
     // Admin
     {
-      await createUser(constants.admin);
-      const accessToken = await getAccessToken(constants.admin);
+      await createUser(constants.user.admin);
+      const accessToken = await getAccessToken(constants.user.admin);
       await enterRoom(accessToken, room);
     }
     // Not Member
     {
-      await createUser(constants.notMember);
+      await createUser(constants.user.notMember);
     }
   });
 
   afterAll(async () => {
-    const accessToken = await getAccessToken(constants.owner);
-    const res = await getRooms();
-    const rooms: RoomEntity[] = res.body;
-    for (const room of rooms) {
-      await deleteRoom(room.id, accessToken);
-    }
+    // Delete room created by owner
+    const accessToken = await getAccessToken(constants.user.owner);
+    await deleteRoom(room.id, accessToken);
     for (const dto of users) {
       const accessToken = await getAccessToken(dto);
       const userId = getUserIdFromAccessToken(accessToken);
@@ -173,7 +138,7 @@ describe('RoomController (e2e)', () => {
     });
 
     it('from notMember: should return 403 Forbidden', async () => {
-      const accessToken = await getAccessToken(constants.notMember);
+      const accessToken = await getAccessToken(constants.user.notMember);
       await getRoom(room.id, accessToken).expect(403);
     });
 
@@ -191,7 +156,7 @@ describe('RoomController (e2e)', () => {
     });
 
     it('from notMember: should return 201 Created', async () => {
-      const accessToken = await getAccessToken(constants.notMember);
+      const accessToken = await getAccessToken(constants.user.notMember);
       await enterRoom(accessToken, room).expect(201);
     });
 
@@ -202,7 +167,7 @@ describe('RoomController (e2e)', () => {
 
   describe('PATCH /room/:id (Update Room)', () => {
     it('from Owner: should return 200 OK', async () => {
-      const accessToken = await getAccessToken(constants.owner);
+      const accessToken = await getAccessToken(constants.user.owner);
       const dto: UpdateRoomDto = { name: 'new_name' };
       const expected = { ...room, ...dto };
       await updateRoom(room.id, accessToken, dto).expect(200).expect(expected);
@@ -235,8 +200,24 @@ describe('RoomController (e2e)', () => {
     });
 
     it('from owner: should return 204 No Content', async () => {
-      const accessToken = await getAccessToken(constants.owner);
+      const accessToken = await getAccessToken(constants.user.owner);
       await deleteRoom(room.id, accessToken).expect(204);
     });
+  });
+
+  describe('POST /room (Create Room)', () => {
+    /* TODO */
+  });
+  describe('GET /room (Get All Rooms)', () => {
+    /* TODO */
+  });
+  describe('GET /room/:id/:userId (Get UserOnRoom?)', () => {
+    /* TODO */
+  });
+  describe('DELETE /room/:id/:userId (Delete user in Room)', () => {
+    /* TODO */
+  });
+  describe('PATCH /room/:id/:userId (Modify user role in Room)', () => {
+    /* TODO */
   });
 });

@@ -1,36 +1,16 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { initializeApp } from './util';
+import { initializeApp } from './utils/initialize';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 import { LoginDto } from 'src/auth/dto/login.dto';
-
-const constants = {
-  susami: {
-    name: 'susami',
-    email: 'susami@example.com',
-    password: 'password-susami',
-  },
-  testUser: {
-    name: 'test_user',
-    email: 'test@test.com',
-    password: 'password-test',
-  },
-  testUserLogin: {
-    email: 'test@test.com',
-    password: 'password-test',
-  },
-};
+import { expectUser } from './utils/matcher';
+import { constants } from './constants';
 
 describe('UserController (e2e)', () => {
   let app: INestApplication;
 
-  const expectUser = (user) => {
-    expect(user).toHaveProperty('id');
-    expect(user).toHaveProperty('name');
-    expect(user).toHaveProperty('email');
-    expect(user).not.toHaveProperty('password');
-  };
+  /* User API */
   const getUsers = () => {
     return request(app.getHttpServer()).get('/user');
   };
@@ -51,6 +31,7 @@ describe('UserController (e2e)', () => {
     return request(app.getHttpServer()).post('/user').send(user);
   };
 
+  /* Auth API */
   const login = (login: LoginDto) => {
     return request(app.getHttpServer()).post('/auth/login').send(login);
   };
@@ -84,9 +65,9 @@ describe('UserController (e2e)', () => {
   describe('Invalid Sign up', () => {
     it('POST /user with invalid email should return 400 Bad Request', () => {
       const dto: CreateUserDto = {
-        name: constants.testUser.name,
+        name: constants.user.test.name,
         email: 'invalid',
-        password: constants.testUser.password,
+        password: constants.user.test.password,
       };
       return createUser(dto).expect(400);
     });
@@ -94,16 +75,16 @@ describe('UserController (e2e)', () => {
     it('POST /user with too short name should return 400 Bad Request', () => {
       const dto: CreateUserDto = {
         name: 'a',
-        email: constants.testUser.email,
-        password: constants.testUser.password,
+        email: constants.user.test.email,
+        password: constants.user.test.password,
       };
       return createUser(dto).expect(400);
     });
 
     it('POST /user with too short password should return 400 Bad Request', () => {
       const dto: CreateUserDto = {
-        name: constants.testUser.name,
-        email: constants.testUser.email,
+        name: constants.user.test.name,
+        email: constants.user.test.email,
         password: 'a',
       };
       return createUser(dto).expect(400);
@@ -114,7 +95,7 @@ describe('UserController (e2e)', () => {
     it('POST /auth/login with invalid email should return 400 Bad Request', () => {
       const dto: LoginDto = {
         email: 'invalid',
-        password: constants.testUser.password,
+        password: constants.user.test.password,
       };
       return login(dto).expect(400);
     });
@@ -122,14 +103,14 @@ describe('UserController (e2e)', () => {
     it('POST /auth/login with email not registered should return 404 Not Found', () => {
       const dto: LoginDto = {
         email: 'nosuchuser@example.com',
-        password: constants.testUser.password,
+        password: constants.user.test.password,
       };
       return login(dto).expect(404);
     });
 
     it('POST /auth/login with invalid password should return 401 Unauthorized', () => {
       const dto = {
-        email: constants.susami.email,
+        email: constants.user.susami.email,
         password: 'invalid',
       };
       return login(dto).expect(401);
@@ -141,14 +122,18 @@ describe('UserController (e2e)', () => {
     let accessToken: string;
 
     it('POST /user should return 201 Created', async () => {
-      const res = await createUser(constants.testUser)
+      const res = await createUser(constants.user.test)
         .expect(201)
         .expect((res) => expectUser(res.body));
       userId = res.body.id;
     });
 
     it('POST /auth/login should return 201 Created', async () => {
-      const res = await login(constants.testUserLogin).expect(201);
+      const dto: LoginDto = {
+        email: constants.user.test.email,
+        password: constants.user.test.password,
+      };
+      const res = await login(dto).expect(201);
       accessToken = res.body.accessToken;
     });
 
@@ -165,10 +150,14 @@ describe('UserController (e2e)', () => {
     let accessToken: string;
 
     beforeAll(async () => {
-      let res = await createUser(constants.testUser);
+      let res = await createUser(constants.user.test);
       userId = res.body.id;
 
-      res = await login(constants.testUserLogin);
+      const loginDto: LoginDto = {
+        email: constants.user.test.email,
+        password: constants.user.test.password,
+      };
+      res = await login(loginDto);
       accessToken = res.body.accessToken;
     });
 
@@ -179,8 +168,8 @@ describe('UserController (e2e)', () => {
     it('GET /user/:id should return the user', () => {
       const expected = {
         id: userId,
-        email: constants.testUser.email,
-        name: constants.testUser.name,
+        email: constants.user.test.email,
+        name: constants.user.test.name,
       };
       return getUser(userId)
         .set('Authorization', `Bearer ${accessToken}`)
@@ -194,7 +183,7 @@ describe('UserController (e2e)', () => {
       };
       const expected = {
         id: userId,
-        email: constants.testUser.email,
+        email: constants.user.test.email,
         name: 'new_name',
       };
       return updateUser(userId, dto)
