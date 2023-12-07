@@ -7,6 +7,7 @@ describe('AppController (e2e)', () => {
   beforeAll(async () => {
     app = await initializeApp();
   });
+  afterAll(() => app.close());
 
   describe('/ (GET)', () => {
     it('should return "Hello World!"', () => {

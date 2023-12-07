@@ -39,6 +39,7 @@ describe('UserController (e2e)', () => {
   beforeAll(async () => {
     app = await initializeApp();
   });
+  afterAll(() => app.close());
 
   describe('Without authentiation', () => {
     it('GET /user should return users list', async () => {
