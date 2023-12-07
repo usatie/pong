@@ -14,6 +14,7 @@ describe('RoomController (e2e)', () => {
   beforeAll(async () => {
     app = await initializeApp();
   });
+  afterAll(() => app.close());
 
   const users = [
     constants.user.owner,
