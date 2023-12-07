@@ -8,6 +8,7 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  HttpCode,
   Req,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
@@ -18,6 +19,7 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiBearerAuth,
+  ApiNoContentResponse,
 } from '@nestjs/swagger';
 import { RoomEntity } from './entities/room.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -50,9 +52,9 @@ export class RoomController {
     return this.roomService.findRoom(id, request['user']);
   }
 
+  @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Patch(':id')
   @ApiOkResponse({ type: RoomEntity })
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -62,15 +64,16 @@ export class RoomController {
     return this.roomService.updateRoom(id, updateRoomDto, request['user']);
   }
 
+  @Delete(':id')
+  @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Delete(':id')
-  @ApiOkResponse({ type: RoomEntity })
-  removeRoom(
+  @ApiNoContentResponse()
+  async removeRoom(
     @Param('id', ParseIntPipe) id: number,
     @Req() request: Request,
-  ): Promise<RoomEntity> {
-    return this.roomService.removeRoom(id, request['user']);
+  ) {
+    await this.roomService.removeRoom(id, request['user']);
   }
 
   @Post(':id')
@@ -97,14 +100,15 @@ export class RoomController {
   }
 
   @Delete(':id/:userId')
+  @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOkResponse({ type: UserOnRoomEntity })
-  deleteUserOnRoom(
+  @ApiNoContentResponse()
+  async deleteUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
   ) {
-    return this.roomService.removeUserOnRoom(
+    await this.roomService.removeUserOnRoom(
       id,
       { id: userId, name: 'test' },
       userId,
