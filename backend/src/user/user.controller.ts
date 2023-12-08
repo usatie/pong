@@ -9,6 +9,7 @@ import {
   HttpCode,
   ParseIntPipe,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -23,6 +24,7 @@ import {
 import { UserEntity } from './entities/user.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserGuard } from './user.guard';
+import { User } from '@prisma/client';
 
 @Controller('user')
 @ApiTags('user')
@@ -43,34 +45,90 @@ export class UserController {
     return users.map((user) => new UserEntity(user));
   }
 
-  @Get(':id')
+  @Get(':userId')
   @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserEntity> {
-    return new UserEntity(await this.userService.findOne(id));
+  async findOne(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Promise<UserEntity> {
+    return new UserEntity(await this.userService.findOne(userId));
   }
 
-  @Patch(':id')
+  @Patch(':userId')
   @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) userId: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserEntity> {
-    return new UserEntity(await this.userService.update(id, updateUserDto));
+    return new UserEntity(await this.userService.update(userId, updateUserDto));
   }
 
-  @Delete(':id')
+  @Delete(':userId')
   @HttpCode(204)
   @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    await this.userService.remove(id);
+  async remove(@Param('userId', ParseIntPipe) userId: number): Promise<void> {
+    await this.userService.remove(userId);
+  }
+
+  /* Friend requests */
+  @Get(':userId/friend')
+  @UseGuards(UserGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  findAllFriends(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Req() req: { user: User },
+  ) {
+    return this.userService.findAllFriends(req.user);
+  }
+
+  @Post(':userId/unfriend')
+  @UseGuards(UserGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse()
+  async removeFriend(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body('friendId', ParseIntPipe) friendId: number,
+    @Req() req: { user: User },
+  ): Promise<void> {
+    // TODO: Implement this
+    //await this.userService.removeFriend(friendId, req.user);
+  }
+
+  @Post(':userId/block')
+  @UseGuards(UserGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse()
+  async block(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body('blockedUserId', ParseIntPipe) blockedUserId: number,
+    @Req() req: { user: User },
+  ): Promise<void> {
+    // TODO: Implement this
+    //await this.userService.block(blockedUserId, req.user);
+  }
+
+  @Post(':userId/unblock')
+  @UseGuards(UserGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse()
+  async unblock(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body('blockedUserId', ParseIntPipe) blockedUserId: number,
+    @Req() req: { user: User },
+  ): Promise<void> {
+    // TODO: Implement this
+    //await this.userService.unblock(blockedUserId, req.user);
   }
 }

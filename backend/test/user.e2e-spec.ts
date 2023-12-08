@@ -79,14 +79,11 @@ describe('UserController (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`);
   };
 
-  const deleteFriend = (
-    userId: number,
-    friendId: number,
-    accessToken: string,
-  ) => {
+  const unfriend = (userId: number, friendId: number, accessToken: string) => {
     return request(app.getHttpServer())
-      .delete(`/user/${userId}/friend/${friendId}`)
-      .set('Authorization', `Bearer ${accessToken}`);
+      .post(`/user/${userId}/unfriend`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ friendId });
   };
 
   const blockUser = (
@@ -99,10 +96,12 @@ describe('UserController (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({ blockedUserId });
   };
+
   const unblockUser = (userId: number, blockedUserId, accessToken: string) => {
     return request(app.getHttpServer())
-      .delete(`/user/${userId}/block/${blockedUserId}`)
-      .set('Authorization', `Bearer ${accessToken}`);
+      .post(`/user/${userId}/unblock`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ blockedUserId });
   };
 
   /* Friend API (Public) */
@@ -306,7 +305,6 @@ describe('UserController (e2e)', () => {
       await teardownUser(user2);
     });
 
-    // TODO
     it('Invalid access token should return 401 Unauthorized', async () => {
       await getFriendRequests(user1.id, 'invalid').expect(401);
       await sendFriendRequest(user1.id, user2.id, 'invalid').expect(401);
@@ -378,10 +376,76 @@ describe('UserController (e2e)', () => {
   });
 
   describe('Friend', () => {
-    // TODO
+    let user1;
+    let user2;
+
+    beforeAll(async () => {
+      const setupUser = async (dto) => {
+        let res = await createUser(dto);
+        const user = res.body;
+        const loginDto: LoginDto = {
+          email: dto.email,
+          password: dto.password,
+        };
+        res = await login(loginDto);
+        user.accessToken = res.body.accessToken;
+        return user;
+      };
+      user1 = await setupUser(constants.user.test);
+      user2 = await setupUser(constants.user.test2);
+    });
+
+    afterAll(async () => {
+      const teardownUser = (user) => {
+        return deleteUser(user.id).set(
+          'Authorization',
+          `Bearer ${user.accessToken}`,
+        );
+      };
+      await teardownUser(user1);
+      await teardownUser(user2);
+    });
+
+    it('Invalid access token should return 401 Unauthorized', async () => {
+      await getFriends(user1.id, 'invalid').expect(401);
+      await unfriend(user1.id, user2.id, 'invalid').expect(401);
+    });
   });
 
   describe('Block', () => {
-    // TODO
+    let user1;
+    let user2;
+
+    beforeAll(async () => {
+      const setupUser = async (dto) => {
+        let res = await createUser(dto);
+        const user = res.body;
+        const loginDto: LoginDto = {
+          email: dto.email,
+          password: dto.password,
+        };
+        res = await login(loginDto);
+        user.accessToken = res.body.accessToken;
+        return user;
+      };
+      user1 = await setupUser(constants.user.test);
+      user2 = await setupUser(constants.user.test2);
+    });
+
+    afterAll(async () => {
+      const teardownUser = (user) => {
+        return deleteUser(user.id).set(
+          'Authorization',
+          `Bearer ${user.accessToken}`,
+        );
+      };
+      await teardownUser(user1);
+      await teardownUser(user2);
+    });
+
+    it('Invalid access token should return 401 Unauthorized', async () => {
+      await blockUser(user1.id, user2.id, 'invalid').expect(401);
+      await unblockUser(user1.id, user2.id, 'invalid').expect(401);
+    });
   });
 });

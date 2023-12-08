@@ -44,4 +44,13 @@ export class UserService {
       where: { id: id },
     });
   }
+
+  /* Friend requests */
+  async findAllFriends(user: User) {
+    const res = await this.prisma.user.findFirstOrThrow({
+      where: { id: user.id },
+      include: { friends: true, friendsOf: true },
+    });
+    return [...res.friends, ...res.friendsOf];
+  }
 }
