@@ -69,4 +69,32 @@ export class UserService {
       })
       .then(() => 'Unfriended');
   }
+
+  /* Block requests */
+  async block(blockedUserId: number, user: User) {
+    return this.prisma.user
+      .update({
+        where: { id: user.id },
+        data: {
+          blocking: {
+            connect: { id: blockedUserId },
+          },
+          friends: {
+            disconnect: { id: blockedUserId },
+          },
+          friendsOf: {
+            disconnect: { id: blockedUserId },
+          },
+        },
+      })
+      .then(() => 'Blocked');
+  }
+
+  async findAllBlocked(user: User) {
+    const res = await this.prisma.user.findFirstOrThrow({
+      where: { id: user.id },
+      include: { blocking: true },
+    });
+    return res.blocking;
+  }
 }

@@ -86,6 +86,12 @@ describe('UserController (e2e)', () => {
       .send({ friendId });
   };
 
+  const getBlockingUsers = (userId: number, accessToken: string) => {
+    return request(app.getHttpServer())
+      .get(`/user/${userId}/block`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
   const blockUser = (
     userId: number,
     blockedUserId: number,
@@ -483,6 +489,49 @@ describe('UserController (e2e)', () => {
     it('Invalid access token should return 401 Unauthorized', async () => {
       await blockUser(user1.id, user2.id, 'invalid').expect(401);
       await unblockUser(user1.id, user2.id, 'invalid').expect(401);
+    });
+
+    it('user1 and user2 should become friend', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        200,
+      );
+    });
+
+    it('user1 and user2 should get empty blocking users list', async () => {
+      await getBlockingUsers(user1.id, user1.accessToken)
+        .expect(200)
+        .expect([]);
+      await getBlockingUsers(user2.id, user2.accessToken)
+        .expect(200)
+        .expect([]);
+    });
+
+    it('user1 should block user2', async () => {
+      await blockUser(user1.id, user2.id, user1.accessToken)
+        .expect(200)
+        .expect('Blocked');
+    });
+
+    it('user1 should get updated blocking users list', async () => {
+      const expected = [{ ...user2 }];
+      expected.forEach((user) => delete user.accessToken);
+      await getBlockingUsers(user1.id, user1.accessToken)
+        .expect(200)
+        .expect(expected);
+    });
+
+    it('user2 should get empty blocking users list', async () => {
+      await getBlockingUsers(user2.id, user2.accessToken)
+        .expect(200)
+        .expect([]);
+    });
+
+    it('user1 and user2 should get empty friends list', async () => {
+      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
     });
   });
 });

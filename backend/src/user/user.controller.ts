@@ -91,6 +91,18 @@ export class UserController {
     return friends.map((friend) => new UserEntity(friend));
   }
 
+  @Get(':userId/block')
+  @UseGuards(UserGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async findAllBlocked(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Req() req: { user: User },
+  ) {
+    const blocked = await this.userService.findAllBlocked(req.user);
+    return blocked.map((user) => new UserEntity(user));
+  }
+
   @Post(':userId/unfriend')
   @HttpCode(200)
   @UseGuards(UserGuard)
@@ -106,20 +118,21 @@ export class UserController {
   }
 
   @Post(':userId/block')
+  @HttpCode(200)
   @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse()
-  async block(
+  block(
     @Param('userId', ParseIntPipe) userId: number,
     @Body('blockedUserId', ParseIntPipe) blockedUserId: number,
     @Req() req: { user: User },
-  ): Promise<void> {
-    // TODO: Implement this
-    //await this.userService.block(blockedUserId, req.user);
+  ): Promise<string> {
+    return this.userService.block(blockedUserId, req.user);
   }
 
   @Post(':userId/unblock')
+  @HttpCode(200)
   @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
