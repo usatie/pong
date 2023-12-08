@@ -53,4 +53,20 @@ export class UserService {
     });
     return [...res.friends, ...res.friendsOf];
   }
+
+  async removeFriend(friendId: number, user: User) {
+    return this.prisma.user
+      .update({
+        where: { id: user.id },
+        data: {
+          friends: {
+            disconnect: { id: friendId },
+          },
+          friendsOf: {
+            disconnect: { id: friendId },
+          },
+        },
+      })
+      .then(() => 'Unfriended');
+  }
 }

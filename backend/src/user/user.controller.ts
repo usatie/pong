@@ -83,25 +83,26 @@ export class UserController {
   @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  findAllFriends(
+  async findAllFriends(
     @Param('userId', ParseIntPipe) userId: number,
     @Req() req: { user: User },
   ) {
-    return this.userService.findAllFriends(req.user);
+    const friends = await this.userService.findAllFriends(req.user);
+    return friends.map((friend) => new UserEntity(friend));
   }
 
   @Post(':userId/unfriend')
+  @HttpCode(200)
   @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse()
-  async removeFriend(
+  removeFriend(
     @Param('userId', ParseIntPipe) userId: number,
     @Body('friendId', ParseIntPipe) friendId: number,
     @Req() req: { user: User },
-  ): Promise<void> {
-    // TODO: Implement this
-    //await this.userService.removeFriend(friendId, req.user);
+  ): Promise<string> {
+    return this.userService.removeFriend(friendId, req.user);
   }
 
   @Post(':userId/block')

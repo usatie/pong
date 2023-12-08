@@ -410,6 +410,43 @@ describe('UserController (e2e)', () => {
       await getFriends(user1.id, 'invalid').expect(401);
       await unfriend(user1.id, user2.id, 'invalid').expect(401);
     });
+
+    it('user1 should get empty friends list', async () => {
+      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+    });
+
+    it('user1 and user2 should become friend', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        200,
+      );
+    });
+
+    it('user1 should get user2 in friends list', async () => {
+      const expected = [{ ...user2 }];
+      expected.forEach((user) => delete user.accessToken);
+      await getFriends(user1.id, user1.accessToken)
+        .expect(200)
+        .expect(expected);
+    });
+
+    it('user2 should get user1 in friends list', async () => {
+      const expected = [{ ...user1 }];
+      expected.forEach((user) => delete user.accessToken);
+      await getFriends(user2.id, user2.accessToken)
+        .expect(200)
+        .expect(expected);
+    });
+
+    it('user1 should unfriend user2', async () => {
+      await unfriend(user1.id, user2.id, user1.accessToken)
+        .expect(200)
+        .expect('Unfriended');
+      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
+    });
   });
 
   describe('Block', () => {
