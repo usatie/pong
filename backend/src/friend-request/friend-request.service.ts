@@ -1,14 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
+import { User } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class FriendRequestService {
-  create(createFriendRequestDto: CreateFriendRequestDto) {
-    return 'This action adds a new friendRequest';
+  constructor(private prisma: PrismaService) {}
+  create(createFriendRequestDto: CreateFriendRequestDto, user: User) {
+    return this.prisma.user
+      .update({
+        where: { id: user.id },
+        data: {
+          requesting: {
+            connect: { id: createFriendRequestDto.recipientId },
+          },
+        },
+      })
+      .then(() => 'Friend request sent');
   }
 
-  findAll() {
-    return `This action returns all friendRequest`;
+  findAll(user: User) {
+    return this.prisma.user
+      .findFirstOrThrow({
+        where: { id: user.id },
+      })
+      .requestedBy();
   }
 
   findOne(id: number) {
