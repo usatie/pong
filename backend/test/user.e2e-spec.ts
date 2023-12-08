@@ -533,5 +533,25 @@ describe('UserController (e2e)', () => {
       await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
       await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
     });
+
+    it('user1 should unblock user2', async () => {
+      await unblockUser(user1.id, user2.id, user1.accessToken)
+        .expect(200)
+        .expect('Unblocked');
+    });
+
+    it('user1 and user2 should get empty blocking users list', async () => {
+      await getBlockingUsers(user1.id, user1.accessToken)
+        .expect(200)
+        .expect([]);
+      await getBlockingUsers(user2.id, user2.accessToken)
+        .expect(200)
+        .expect([]);
+    });
+
+    it('user1 and user2 should get empty friends list', async () => {
+      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
+    });
   });
 });

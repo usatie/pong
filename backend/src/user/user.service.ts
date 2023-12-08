@@ -90,6 +90,19 @@ export class UserService {
       .then(() => 'Blocked');
   }
 
+  async unblock(blockedUserId: number, user: User) {
+    return this.prisma.user
+      .update({
+        where: { id: user.id },
+        data: {
+          blocking: {
+            disconnect: { id: blockedUserId },
+          },
+        },
+      })
+      .then(() => 'Unblocked');
+  }
+
   async findAllBlocked(user: User) {
     const res = await this.prisma.user.findFirstOrThrow({
       where: { id: user.id },

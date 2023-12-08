@@ -137,12 +137,11 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse()
-  async unblock(
+  unblock(
     @Param('userId', ParseIntPipe) userId: number,
     @Body('blockedUserId', ParseIntPipe) blockedUserId: number,
     @Req() req: { user: User },
-  ): Promise<void> {
-    // TODO: Implement this
-    //await this.userService.unblock(blockedUserId, req.user);
+  ): Promise<string> {
+    return this.userService.unblock(blockedUserId, req.user);
   }
 }
