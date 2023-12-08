@@ -101,6 +101,6 @@ export class FriendRequestController {
     if (req.user.id !== userId) {
       throw new UnauthorizedException();
     }
-    return this.friendRequestService.remove(recipientId);
+    return this.friendRequestService.remove(recipientId, req.user);
   }
 }

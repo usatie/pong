@@ -336,6 +336,17 @@ describe('UserController (e2e)', () => {
       delete expected.accessToken;
       expect(users).toContainEqual(expected);
     });
+
+    it('user1 should cancel the friend request to user2', async () => {
+      await cancelFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        200,
+      );
+      const users = await getFriendRequests(user2.id, user2.accessToken)
+        .expect(200)
+        .then((res) => res.body);
+      expect(users).toBeInstanceOf(Array);
+      expect(users.length).toBe(0);
+    });
   });
 
   describe('Friend', () => {
