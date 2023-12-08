@@ -31,6 +31,81 @@ describe('UserController (e2e)', () => {
     return request(app.getHttpServer()).post('/user').send(user);
   };
 
+  /* Friend API (Private) */
+  const sendFriendRequest = (
+    userId: number,
+    recipientId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .post(`/user/${userId}/friendrequest`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ recipientId });
+  };
+
+  const cancelFriendRequest = (
+    userId: number,
+    requestId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .delete(`/user/${userId}/friendrequest/${requestId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  const acceptFriendRequest = (
+    userId: number,
+    requestId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .patch(`/user/${userId}/friendrequest/${requestId}/accept`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  const rejectFriendRequest = (
+    userId: number,
+    requestId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .patch(`/user/${userId}/friendrequest/${requestId}/reject`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  const deleteFriend = (
+    userId: number,
+    friendId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .delete(`/user/${userId}/friend/${friendId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  const blockUser = (
+    userId: number,
+    blockedUserId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .post(`/user/${userId}/block`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ blockedUserId });
+  };
+  const unblockUser = (userId: number, blockedUserId, accessToken: string) => {
+    return request(app.getHttpServer())
+      .delete(`/user/${userId}/block/${blockedUserId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  /* Friend API (Public) */
+  const getFriends = (userId: number, accessToken: string) => {
+    return request(app.getHttpServer())
+      .get(`/user/${userId}/friend`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
   /* Auth API */
   const login = (login: LoginDto) => {
     return request(app.getHttpServer()).post('/auth/login').send(login);
@@ -192,5 +267,17 @@ describe('UserController (e2e)', () => {
         .expect(200)
         .expect(expected);
     });
+  });
+
+  describe('Friend Request', () => {
+    // TODO
+  });
+
+  describe('Friend', () => {
+    // TODO
+  });
+
+  describe('Block', () => {
+    // TODO
   });
 });
