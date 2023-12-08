@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
   Req,
   UnauthorizedException,
@@ -61,47 +60,47 @@ export class FriendRequestController {
   }
 
   // Accept a friend request
-  @Patch(':requestId/accept')
+  @Patch(':requesterId/accept')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   accept(
     @Param('userId', ParseIntPipe) userId: number,
-    @Param('requestId', ParseIntPipe) requestId: number,
+    @Param('requesterId', ParseIntPipe) requesterId: number,
     @Req() req: { user: User },
   ) {
     if (req.user.id !== userId) {
       throw new UnauthorizedException();
     }
-    return this.friendRequestService.accept(requestId);
+    return this.friendRequestService.accept(requesterId);
   }
 
   // Reject a friend request
-  @Patch(':requestId/reject')
+  @Patch(':requesterId/reject')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   reject(
     @Param('userId', ParseIntPipe) userId: number,
-    @Param('requestId', ParseIntPipe) requestId: number,
+    @Param('requesterId', ParseIntPipe) requesterId: number,
     @Req() req: { user: User },
   ) {
     if (req.user.id !== userId) {
       throw new UnauthorizedException();
     }
-    return this.friendRequestService.reject(requestId);
+    return this.friendRequestService.reject(requesterId);
   }
 
   // Cancel a friend request
-  @Delete(':requestId')
+  @Patch(':recipientId/cancel')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  remove(
+  cancel(
     @Param('userId', ParseIntPipe) userId: number,
-    @Param('requestId', ParseIntPipe) requestId: number,
+    @Param('recipientId', ParseIntPipe) recipientId: number,
     @Req() req: { user: User },
   ) {
     if (req.user.id !== userId) {
       throw new UnauthorizedException();
     }
-    return this.friendRequestService.remove(requestId);
+    return this.friendRequestService.remove(recipientId);
   }
 }

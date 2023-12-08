@@ -27,16 +27,12 @@ export class FriendRequestService {
       .requestedBy();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} friendRequest`;
-  }
-
   accept(id: number) {
-    return `This action updates a #${id} friendRequest`;
+    return `This action accepts a #${id} friendRequest`;
   }
 
   reject(id: number) {
-    return `This action updates a #${id} friendRequest`;
+    return `This action rejects a #${id} friendRequest`;
   }
 
   remove(id: number) {
