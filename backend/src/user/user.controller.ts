@@ -9,7 +9,6 @@ import {
   HttpCode,
   ParseIntPipe,
   UseGuards,
-  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -24,7 +23,6 @@ import {
 import { UserEntity } from './entities/user.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserGuard } from './user.guard';
-import { User } from '@prisma/client';
 
 @Controller('user')
 @ApiTags('user')
@@ -83,11 +81,8 @@ export class UserController {
   @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  async findAllFriends(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Req() req: { user: User },
-  ) {
-    const friends = await this.userService.findAllFriends(req.user);
+  async findAllFriends(@Param('userId', ParseIntPipe) userId: number) {
+    const friends = await this.userService.findAllFriends(userId);
     return friends.map((friend) => new UserEntity(friend));
   }
 
@@ -95,11 +90,8 @@ export class UserController {
   @UseGuards(UserGuard)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  async findAllBlocked(
-    @Param('userId', ParseIntPipe) userId: number,
-    @Req() req: { user: User },
-  ) {
-    const blocked = await this.userService.findAllBlocked(req.user);
+  async findAllBlocked(@Param('userId', ParseIntPipe) userId: number) {
+    const blocked = await this.userService.findAllBlocked(userId);
     return blocked.map((user) => new UserEntity(user));
   }
 
@@ -112,9 +104,8 @@ export class UserController {
   removeFriend(
     @Param('userId', ParseIntPipe) userId: number,
     @Body('friendId', ParseIntPipe) friendId: number,
-    @Req() req: { user: User },
   ): Promise<string> {
-    return this.userService.removeFriend(friendId, req.user);
+    return this.userService.removeFriend(userId, friendId);
   }
 
   @Post(':userId/block')
@@ -126,9 +117,8 @@ export class UserController {
   block(
     @Param('userId', ParseIntPipe) userId: number,
     @Body('blockedUserId', ParseIntPipe) blockedUserId: number,
-    @Req() req: { user: User },
   ): Promise<string> {
-    return this.userService.block(blockedUserId, req.user);
+    return this.userService.block(userId, blockedUserId);
   }
 
   @Post(':userId/unblock')
@@ -140,8 +130,7 @@ export class UserController {
   unblock(
     @Param('userId', ParseIntPipe) userId: number,
     @Body('blockedUserId', ParseIntPipe) blockedUserId: number,
-    @Req() req: { user: User },
   ): Promise<string> {
-    return this.userService.unblock(blockedUserId, req.user);
+    return this.userService.unblock(userId, blockedUserId);
   }
 }
