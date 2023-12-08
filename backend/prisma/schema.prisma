@@ -18,6 +18,18 @@ model User {
   rooms UserOnRoom[]
   sentMessages DirectMessage[] @relation("SentMessages")
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
+
+  // Friendship
+  friends User[] @relation("Friendship")
+  friendsOf User[] @relation("Friendship")
+
+  // FriendRequest
+  requestedBy User[] @relation("FriendRequest")
+  requesting User[] @relation("FriendRequest")
+
+  // Block
+  blockedBy User[] @relation("BlockUser")
+  blocking User[] @relation("BlockUser")
 }
 
 model Room {
@@ -41,7 +53,6 @@ enum Role {
   ADMINISTRATOR
   MEMBER
 }
-
 
 model DirectMessage {
     id Int @id @default(autoincrement())
