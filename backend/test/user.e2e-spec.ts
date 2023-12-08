@@ -43,6 +43,12 @@ describe('UserController (e2e)', () => {
       .send({ recipientId });
   };
 
+  const getFriendRequests = (userId: number, accessToken: string) => {
+    return request(app.getHttpServer())
+      .get(`/user/${userId}/friendrequest`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
   const cancelFriendRequest = (
     userId: number,
     requestId: number,
