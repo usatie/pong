@@ -71,7 +71,7 @@ export class FriendRequestController {
     if (req.user.id !== userId) {
       throw new UnauthorizedException();
     }
-    return this.friendRequestService.accept(requesterId);
+    return this.friendRequestService.accept(requesterId, req.user);
   }
 
   // Reject a friend request

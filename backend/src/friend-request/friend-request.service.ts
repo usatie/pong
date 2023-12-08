@@ -27,8 +27,18 @@ export class FriendRequestService {
       .requestedBy();
   }
 
-  accept(id: number) {
-    return `This action accepts a #${id} friendRequest`;
+  accept(requesterId: number, user: User) {
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        requestedBy: {
+          disconnect: { id: requesterId },
+        },
+        friends: {
+          connect: { id: requesterId },
+        },
+      },
+    });
   }
 
   reject(id: number) {
