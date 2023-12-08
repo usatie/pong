@@ -7,9 +7,10 @@ export class UserGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const req = context.switchToHttp().getRequest();
     const { params, user } = req;
-    if (params?.id == null) {
-      return true;
+    // This guard is for requests to /user/:userId
+    if (!params?.userId) {
+      throw new Error('UserGuard should only be used on routes with a userId');
     }
-    return user.id === Number(params.id);
+    return user?.id === Number(params.userId);
   }
 }

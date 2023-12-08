@@ -44,4 +44,70 @@ export class UserService {
       where: { id: id },
     });
   }
+
+  /* Friend requests */
+  async findAllFriends(userId: number) {
+    const res = await this.prisma.user.findFirstOrThrow({
+      where: { id: userId },
+      include: { friends: true, friendsOf: true },
+    });
+    return [...res.friends, ...res.friendsOf];
+  }
+
+  async removeFriend(userId: number, friendId: number) {
+    return this.prisma.user
+      .update({
+        where: { id: userId },
+        data: {
+          friends: {
+            disconnect: { id: friendId },
+          },
+          friendsOf: {
+            disconnect: { id: friendId },
+          },
+        },
+      })
+      .then(() => 'Unfriended');
+  }
+
+  /* Block requests */
+  async block(userId: number, blockedUserId: number) {
+    return this.prisma.user
+      .update({
+        where: { id: userId },
+        data: {
+          blocking: {
+            connect: { id: blockedUserId },
+          },
+          friends: {
+            disconnect: { id: blockedUserId },
+          },
+          friendsOf: {
+            disconnect: { id: blockedUserId },
+          },
+        },
+      })
+      .then(() => 'Blocked');
+  }
+
+  async unblock(userId: number, blockedUserId: number) {
+    return this.prisma.user
+      .update({
+        where: { id: userId },
+        data: {
+          blocking: {
+            disconnect: { id: blockedUserId },
+          },
+        },
+      })
+      .then(() => 'Unblocked');
+  }
+
+  async findAllBlocked(userId: number) {
+    const res = await this.prisma.user.findFirstOrThrow({
+      where: { id: userId },
+      include: { blocking: true },
+    });
+    return res.blocking;
+  }
 }

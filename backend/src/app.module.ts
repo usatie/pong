@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { RoomModule } from './room/room.module';
 import { EventsModule } from './events/events.module';
 import { ChatModule } from './chat/chat.module';
+import { FriendRequestModule } from './friend-request/friend-request.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ChatModule } from './chat/chat.module';
     RoomModule,
     EventsModule,
     ChatModule,
+    FriendRequestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

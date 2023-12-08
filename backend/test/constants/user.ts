@@ -33,3 +33,9 @@ export const test = {
   email: 'test@test.com',
   password: 'password-test',
 };
+
+export const test2 = {
+  name: 'test_user2',
+  email: 'test2@test.com',
+  password: 'password-test2',
+};

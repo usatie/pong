@@ -31,6 +31,92 @@ describe('UserController (e2e)', () => {
     return request(app.getHttpServer()).post('/user').send(user);
   };
 
+  /* Friend API (Private) */
+  const sendFriendRequest = (
+    userId: number,
+    recipientId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .post(`/user/${userId}/friendrequest`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ recipientId });
+  };
+
+  const getFriendRequests = (userId: number, accessToken: string) => {
+    return request(app.getHttpServer())
+      .get(`/user/${userId}/friendrequest`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  const cancelFriendRequest = (
+    userId: number,
+    recipientId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .patch(`/user/${userId}/friendrequest/${recipientId}/cancel`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  const acceptFriendRequest = (
+    userId: number,
+    requesterId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .patch(`/user/${userId}/friendrequest/${requesterId}/accept`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  const rejectFriendRequest = (
+    userId: number,
+    requesterId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .patch(`/user/${userId}/friendrequest/${requesterId}/reject`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  const unfriend = (userId: number, friendId: number, accessToken: string) => {
+    return request(app.getHttpServer())
+      .post(`/user/${userId}/unfriend`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ friendId });
+  };
+
+  const getBlockingUsers = (userId: number, accessToken: string) => {
+    return request(app.getHttpServer())
+      .get(`/user/${userId}/block`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
+  const blockUser = (
+    userId: number,
+    blockedUserId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .post(`/user/${userId}/block`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ blockedUserId });
+  };
+
+  const unblockUser = (userId: number, blockedUserId, accessToken: string) => {
+    return request(app.getHttpServer())
+      .post(`/user/${userId}/unblock`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ blockedUserId });
+  };
+
+  /* Friend API (Public) */
+  const getFriends = (userId: number, accessToken: string) => {
+    return request(app.getHttpServer())
+      .get(`/user/${userId}/friend`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
   /* Auth API */
   const login = (login: LoginDto) => {
     return request(app.getHttpServer()).post('/auth/login').send(login);
@@ -191,6 +277,281 @@ describe('UserController (e2e)', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200)
         .expect(expected);
+    });
+  });
+
+  describe('Friend Request', () => {
+    let user1;
+    let user2;
+
+    beforeAll(async () => {
+      const setupUser = async (dto) => {
+        let res = await createUser(dto);
+        const user = res.body;
+        const loginDto: LoginDto = {
+          email: dto.email,
+          password: dto.password,
+        };
+        res = await login(loginDto);
+        user.accessToken = res.body.accessToken;
+        return user;
+      };
+      user1 = await setupUser(constants.user.test);
+      user2 = await setupUser(constants.user.test2);
+    });
+
+    afterAll(async () => {
+      const teardownUser = (user) => {
+        return deleteUser(user.id).set(
+          'Authorization',
+          `Bearer ${user.accessToken}`,
+        );
+      };
+      await teardownUser(user1);
+      await teardownUser(user2);
+    });
+
+    it('Invalid access token should return 401 Unauthorized', async () => {
+      await getFriendRequests(user1.id, 'invalid').expect(401);
+      await sendFriendRequest(user1.id, user2.id, 'invalid').expect(401);
+      await acceptFriendRequest(user1.id, user2.id, 'invalid').expect(401);
+      await rejectFriendRequest(user1.id, user2.id, 'invalid').expect(401);
+      await cancelFriendRequest(user1.id, user2.id, 'invalid').expect(401);
+    });
+
+    it('user2 should get empty friend requests', async () => {
+      const users = await getFriendRequests(user2.id, user2.accessToken)
+        .expect(200)
+        .then((res) => res.body);
+      expect(users).toBeInstanceOf(Array);
+      expect(users.length).toBe(0);
+    });
+
+    it('user1 should send a friend request to user2', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      const users = await getFriendRequests(user2.id, user2.accessToken)
+        .expect(200)
+        .then((res) => res.body);
+      expect(users).toBeInstanceOf(Array);
+      expect(users.length).toBe(1);
+      const expected = { ...user1 };
+      delete expected.accessToken;
+      expect(users).toContainEqual(expected);
+    });
+
+    it('user1 should cancel the friend request to user2', async () => {
+      await cancelFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        200,
+      );
+      const users = await getFriendRequests(user2.id, user2.accessToken)
+        .expect(200)
+        .then((res) => res.body);
+      expect(users).toBeInstanceOf(Array);
+      expect(users.length).toBe(0);
+    });
+
+    it('user2 should reject the friend request from user1', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await rejectFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        200,
+      );
+      const users = await getFriendRequests(user2.id, user2.accessToken)
+        .expect(200)
+        .then((res) => res.body);
+      expect(users).toBeInstanceOf(Array);
+      expect(users.length).toBe(0);
+    });
+
+    it('user2 should accept the friend request from user1', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        200,
+      );
+      const users = await getFriendRequests(user2.id, user2.accessToken)
+        .expect(200)
+        .then((res) => res.body);
+      expect(users).toBeInstanceOf(Array);
+      expect(users.length).toBe(0);
+    });
+  });
+
+  describe('Friend', () => {
+    let user1;
+    let user2;
+
+    beforeAll(async () => {
+      const setupUser = async (dto) => {
+        let res = await createUser(dto);
+        const user = res.body;
+        const loginDto: LoginDto = {
+          email: dto.email,
+          password: dto.password,
+        };
+        res = await login(loginDto);
+        user.accessToken = res.body.accessToken;
+        return user;
+      };
+      user1 = await setupUser(constants.user.test);
+      user2 = await setupUser(constants.user.test2);
+    });
+
+    afterAll(async () => {
+      const teardownUser = (user) => {
+        return deleteUser(user.id).set(
+          'Authorization',
+          `Bearer ${user.accessToken}`,
+        );
+      };
+      await teardownUser(user1);
+      await teardownUser(user2);
+    });
+
+    it('Invalid access token should return 401 Unauthorized', async () => {
+      await getFriends(user1.id, 'invalid').expect(401);
+      await unfriend(user1.id, user2.id, 'invalid').expect(401);
+    });
+
+    it('user1 should get empty friends list', async () => {
+      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+    });
+
+    it('user1 and user2 should become friend', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        200,
+      );
+    });
+
+    it('user1 should get user2 in friends list', async () => {
+      const expected = [{ ...user2 }];
+      expected.forEach((user) => delete user.accessToken);
+      await getFriends(user1.id, user1.accessToken)
+        .expect(200)
+        .expect(expected);
+    });
+
+    it('user2 should get user1 in friends list', async () => {
+      const expected = [{ ...user1 }];
+      expected.forEach((user) => delete user.accessToken);
+      await getFriends(user2.id, user2.accessToken)
+        .expect(200)
+        .expect(expected);
+    });
+
+    it('user1 should unfriend user2', async () => {
+      await unfriend(user1.id, user2.id, user1.accessToken)
+        .expect(200)
+        .expect('Unfriended');
+      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
+    });
+  });
+
+  describe('Block', () => {
+    let user1;
+    let user2;
+
+    beforeAll(async () => {
+      const setupUser = async (dto) => {
+        let res = await createUser(dto);
+        const user = res.body;
+        const loginDto: LoginDto = {
+          email: dto.email,
+          password: dto.password,
+        };
+        res = await login(loginDto);
+        user.accessToken = res.body.accessToken;
+        return user;
+      };
+      user1 = await setupUser(constants.user.test);
+      user2 = await setupUser(constants.user.test2);
+    });
+
+    afterAll(async () => {
+      const teardownUser = (user) => {
+        return deleteUser(user.id).set(
+          'Authorization',
+          `Bearer ${user.accessToken}`,
+        );
+      };
+      await teardownUser(user1);
+      await teardownUser(user2);
+    });
+
+    it('Invalid access token should return 401 Unauthorized', async () => {
+      await blockUser(user1.id, user2.id, 'invalid').expect(401);
+      await unblockUser(user1.id, user2.id, 'invalid').expect(401);
+    });
+
+    it('user1 and user2 should become friend', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        200,
+      );
+    });
+
+    it('user1 and user2 should get empty blocking users list', async () => {
+      await getBlockingUsers(user1.id, user1.accessToken)
+        .expect(200)
+        .expect([]);
+      await getBlockingUsers(user2.id, user2.accessToken)
+        .expect(200)
+        .expect([]);
+    });
+
+    it('user1 should block user2', async () => {
+      await blockUser(user1.id, user2.id, user1.accessToken)
+        .expect(200)
+        .expect('Blocked');
+    });
+
+    it('user1 should get updated blocking users list', async () => {
+      const expected = [{ ...user2 }];
+      expected.forEach((user) => delete user.accessToken);
+      await getBlockingUsers(user1.id, user1.accessToken)
+        .expect(200)
+        .expect(expected);
+    });
+
+    it('user2 should get empty blocking users list', async () => {
+      await getBlockingUsers(user2.id, user2.accessToken)
+        .expect(200)
+        .expect([]);
+    });
+
+    it('user1 and user2 should get empty friends list', async () => {
+      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
+    });
+
+    it('user1 should unblock user2', async () => {
+      await unblockUser(user1.id, user2.id, user1.accessToken)
+        .expect(200)
+        .expect('Unblocked');
+    });
+
+    it('user1 and user2 should get empty blocking users list', async () => {
+      await getBlockingUsers(user1.id, user1.accessToken)
+        .expect(200)
+        .expect([]);
+      await getBlockingUsers(user2.id, user2.accessToken)
+        .expect(200)
+        .expect([]);
+    });
+
+    it('user1 and user2 should get empty friends list', async () => {
+      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
     });
   });
 });
