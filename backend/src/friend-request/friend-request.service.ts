@@ -41,8 +41,15 @@ export class FriendRequestService {
     });
   }
 
-  reject(id: number) {
-    return `This action rejects a #${id} friendRequest`;
+  reject(requesterId: number, user: User) {
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        requestedBy: {
+          disconnect: { id: requesterId },
+        },
+      },
+    });
   }
 
   remove(recipientId: number, user: User) {

@@ -348,6 +348,20 @@ describe('UserController (e2e)', () => {
       expect(users.length).toBe(0);
     });
 
+    it('user2 should reject the friend request from user1', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await rejectFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        200,
+      );
+      const users = await getFriendRequests(user2.id, user2.accessToken)
+        .expect(200)
+        .then((res) => res.body);
+      expect(users).toBeInstanceOf(Array);
+      expect(users.length).toBe(0);
+    });
+
     it('user2 should accept the friend request from user1', async () => {
       await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
         201,
