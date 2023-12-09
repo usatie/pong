@@ -6,7 +6,11 @@ import { RoomEntity } from 'src/room/entities/room.entity';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
 import { initializeApp } from './utils/initialize';
 import { LoginDto } from 'src/auth/dto/login.dto';
-import { expectRoom, expectUserOnRoom } from './utils/matcher';
+import {
+  expectRoom,
+  expectRoomWithUsers,
+  expectUserOnRoom,
+} from './utils/matcher';
 import { constants } from './constants';
 
 describe('RoomController (e2e)', () => {
@@ -49,6 +53,8 @@ describe('RoomController (e2e)', () => {
     request(app.getHttpServer())
       .get(`/room/${id}`)
       .set('Authorization', `Bearer ${accessToken}`);
+
+  const getRooms = () => request(app.getHttpServer()).get(`/room`);
 
   const updateRoom = (id: number, accessToken: string, dto: UpdateRoomDto) =>
     request(app.getHttpServer())
@@ -131,7 +137,7 @@ describe('RoomController (e2e)', () => {
         await getRoom(room.id, accessToken)
           .expect(200)
           .expect((res) => {
-            expectRoom(res.body);
+            expectRoomWithUsers(res.body);
             expect(res.body.users).toHaveLength(3);
             res.body.users.forEach(expectUserOnRoom);
           });
@@ -210,7 +216,14 @@ describe('RoomController (e2e)', () => {
     /* TODO */
   });
   describe('GET /room (Get All Rooms)', () => {
-    /* TODO */
+    it('from Everyone (include Authorized User): should return 200 OK', async () => {
+      await getRooms()
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeInstanceOf(Array);
+          res.body.forEach(expectRoom);
+        });
+    });
   });
   describe('GET /room/:id/:userId (Get UserOnRoom?)', () => {
     /* TODO */
