@@ -87,6 +87,6 @@ export class FriendRequestController {
     @Param('recipientId', ParseIntPipe) recipientId: number,
     @Req() req: { user: User },
   ) {
-    return this.friendRequestService.remove(recipientId, req.user);
+    return this.friendRequestService.cancel(recipientId, req.user);
   }
 }

@@ -558,4 +558,54 @@ describe('UserController (e2e)', () => {
       await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
     });
   });
+
+  describe('Friend Request edge cases', () => {
+    let user1;
+    let user2;
+
+    beforeAll(async () => {
+      const setupUser = async (dto) => {
+        let res = await createUser(dto);
+        const user = res.body;
+        const loginDto: LoginDto = {
+          email: dto.email,
+          password: dto.password,
+        };
+        res = await login(loginDto);
+        user.accessToken = res.body.accessToken;
+        return user;
+      };
+      user1 = await setupUser(constants.user.test);
+      user2 = await setupUser(constants.user.test2);
+    });
+
+    afterAll(async () => {
+      const teardownUser = (user) => {
+        return deleteUser(user.id).set(
+          'Authorization',
+          `Bearer ${user.accessToken}`,
+        );
+      };
+      await teardownUser(user1);
+      await teardownUser(user2);
+    });
+
+    it('Should not accept requests that doesnt exist', async () => {
+      await acceptFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        404,
+      );
+    });
+
+    it('Should not reject requests that doesnt exist', async () => {
+      await rejectFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        404,
+      );
+    });
+
+    it('Should not cancel requests that doesnt exist', async () => {
+      await cancelFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        404,
+      );
+    });
+  });
 });
