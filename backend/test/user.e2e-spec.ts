@@ -103,7 +103,11 @@ describe('UserController (e2e)', () => {
       .send({ blockedUserId });
   };
 
-  const unblockUser = (userId: number, blockedUserId, accessToken: string) => {
+  const unblockUser = (
+    userId: number,
+    blockedUserId: number,
+    accessToken: string,
+  ) => {
     return request(app.getHttpServer())
       .post(`/user/${userId}/unblock`)
       .set('Authorization', `Bearer ${accessToken}`)
@@ -552,6 +556,93 @@ describe('UserController (e2e)', () => {
     it('user1 and user2 should get empty friends list', async () => {
       await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
       await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
+    });
+  });
+
+  describe('Friend Request edge cases', () => {
+    let user1;
+    let user2;
+
+    beforeEach(async () => {
+      const setupUser = async (dto) => {
+        let res = await createUser(dto);
+        const user = res.body;
+        const loginDto: LoginDto = {
+          email: dto.email,
+          password: dto.password,
+        };
+        res = await login(loginDto);
+        user.accessToken = res.body.accessToken;
+        return user;
+      };
+      user1 = await setupUser(constants.user.test);
+      user2 = await setupUser(constants.user.test2);
+    });
+
+    afterEach(async () => {
+      const teardownUser = (user) => {
+        return deleteUser(user.id).set(
+          'Authorization',
+          `Bearer ${user.accessToken}`,
+        );
+      };
+      await teardownUser(user1);
+      await teardownUser(user2);
+    });
+
+    it('Should not accept requests that doesnt exist', async () => {
+      await acceptFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        404,
+      );
+    });
+
+    it('Should not reject requests that doesnt exist', async () => {
+      await rejectFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        404,
+      );
+    });
+
+    it('Should not cancel requests that doesnt exist', async () => {
+      await cancelFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        404,
+      );
+    });
+
+    it('Should not send request twice', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        409,
+      );
+    });
+
+    it('Should not send request to friend', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        200,
+      );
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        409,
+      );
+    });
+
+    it('Should not send request to blocked user', async () => {
+      // user1 blocks user2
+      await blockUser(user1.id, user2.id, user1.accessToken).expect(200);
+
+      // user2 sends request to user1
+      await sendFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        409,
+      );
+    });
+
+    it('Should not send requests to self', async () => {
+      await sendFriendRequest(user1.id, user1.id, user1.accessToken).expect(
+        400,
+      );
     });
   });
 });
