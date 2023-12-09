@@ -18,4 +18,7 @@ export class UserEntity implements User {
 
   @Exclude()
   password: string;
+
+  @ApiProperty()
+  avatarURL: string;
 }
