@@ -12,8 +12,8 @@ export class AvatarService {
     return `This action updates a #${updateAvatarDto} avatar`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} avatar`;
+  findOne(filename: string) {
+    return `This action returns a #${filename} avatar`;
   }
 
   remove(id: number) {
