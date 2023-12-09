@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
@@ -7,24 +7,30 @@ import { User } from '@prisma/client';
 export class ChatService {
   constructor(private prisma: PrismaService) {}
 
-  async createDirectMessage(
-    senderId: number,
-    dto: CreateDirectMessageDto,
-    isBlocked: boolean,
-  ) {
-    console.log('isBlocked: ', isBlocked);
+  async createDirectMessage(senderId: number, dto: CreateDirectMessageDto) {
     return this.prisma.directMessage.create({
       data: {
         senderId,
-        isBlocked,
         ...dto, //TODO receiverIdのvalidationどうする？
       },
     });
   }
 
+  private async expectNotBlockedBy(blockerId: number, userId: number) {
+    const blockedBy = await this.prisma.user
+      .findFirstOrThrow({
+        where: { id: userId },
+      })
+      .blockedBy({
+        where: { id: blockerId },
+      });
+    if (blockedBy.length > 0) {
+      throw new ConflictException('Blocked by user');
+    }
+  }
+
   async findConversation(userId: number, me: User) {
-    console.log(userId);
-    console.log(me);
+    await this.expectNotBlockedBy(me.id, userId);
     return this.prisma.directMessage.findMany({
       where: {
         OR: [
@@ -35,9 +41,6 @@ export class ChatService {
           {
             receiverId: me.id,
             senderId: userId,
-            AND: {
-              isBlocked: false,
-            },
           },
         ],
       },

@@ -79,14 +79,8 @@ export class ChatGateway {
     this.logger.log(data);
 
     const userId = this.getValueToKey(this.userMap, client.id);
-    let isBlock = false;
-    if (this.blockMap.has(parseInt(userId))) {
-      const blockers = this.blockMap.get(parseInt(userId));
-      isBlock = blockers.includes(data.receiverId);
-      console.log(isBlock);
-    }
     const userName = 'hoge'; //TODO mapを増やすか、mapのvalueを増やすか user name取得関数実装
-    this.chatService.createDirectMessage(+userId, data, isBlock); //TODO userIdが見つからなかった場合どうする？
+    this.chatService.createDirectMessage(+userId, data); //TODO userIdが見つからなかった場合どうする？
     this.server
       .except('block' + userId)
       .to(client.id)
@@ -125,7 +119,9 @@ export class ChatGateway {
     const unblockerId = this.getValueToKey(this.userMap, client.id);
     if (this.blockMap.has(parseInt(userId))) {
       this.userService.unblock(parseInt(unblockerId), parseInt(userId));
-      const index = this.blockMap.get(parseInt(userId)).indexOf(unblockerId);
+      const index = this.blockMap
+        .get(parseInt(userId))
+        .indexOf(parseInt(unblockerId));
       if (index !== -1) {
         this.blockMap.get(parseInt(userId)).splice(index, 1);
         this.logger.log(`unblock user: ${userId}(${client.id})`);
@@ -133,6 +129,8 @@ export class ChatGateway {
       } else {
         this.logger.error(`User ${userId} has not been blocked`);
       }
+    } else {
+      this.logger.error(`User ${userId} has not been blocked`);
     }
   }
 
@@ -145,7 +143,6 @@ export class ChatGateway {
     const blockedUsers = await this.userService.findAllBlocked(
       parseInt(userId),
     );
-    console.log('block list', blockedUsers);
     blockedUsers.map((user) => client.join('block' + user.id));
     this.logger.log(`join DM: ${client.id} joined DM user${userId}`);
   }
