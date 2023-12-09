@@ -7,10 +7,16 @@ import { User } from '@prisma/client';
 export class ChatService {
   constructor(private prisma: PrismaService) {}
 
-  async createDirectMessage(senderId: number, dto: CreateDirectMessageDto) {
+  async createDirectMessage(
+    senderId: number,
+    dto: CreateDirectMessageDto,
+    isBlocked: boolean,
+  ) {
+    console.log('isBlocked: ', isBlocked);
     return this.prisma.directMessage.create({
       data: {
         senderId,
+        isBlocked,
         ...dto, //TODO receiverIdのvalidationどうする？
       },
     });
@@ -29,6 +35,9 @@ export class ChatService {
           {
             receiverId: me.id,
             senderId: userId,
+            AND: {
+              isBlocked: false,
+            },
           },
         ],
       },
