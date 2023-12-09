@@ -63,6 +63,7 @@ export class FriendRequestController {
   @Patch(':requesterId/accept')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse()
   accept(
     @Param('userId', ParseIntPipe) userId: number,
     @Param('requesterId', ParseIntPipe) requesterId: number,
@@ -78,6 +79,7 @@ export class FriendRequestController {
   @Patch(':requesterId/reject')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse()
   reject(
     @Param('userId', ParseIntPipe) userId: number,
     @Param('requesterId', ParseIntPipe) requesterId: number,
@@ -93,6 +95,7 @@ export class FriendRequestController {
   @Patch(':recipientId/cancel')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOkResponse()
   cancel(
     @Param('userId', ParseIntPipe) userId: number,
     @Param('recipientId', ParseIntPipe) recipientId: number,

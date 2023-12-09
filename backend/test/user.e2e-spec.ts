@@ -103,7 +103,11 @@ describe('UserController (e2e)', () => {
       .send({ blockedUserId });
   };
 
-  const unblockUser = (userId: number, blockedUserId, accessToken: string) => {
+  const unblockUser = (
+    userId: number,
+    blockedUserId: number,
+    accessToken: string,
+  ) => {
     return request(app.getHttpServer())
       .post(`/user/${userId}/unblock`)
       .set('Authorization', `Bearer ${accessToken}`)

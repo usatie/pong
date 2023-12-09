@@ -11,6 +11,9 @@ export class UserGuard implements CanActivate {
     if (!params?.userId) {
       throw new Error('UserGuard should only be used on routes with a userId');
     }
-    return user?.id === Number(params.userId);
+    if (typeof params.userId !== 'string' || !/^\d+$/.test(params.userId)) {
+      throw new Error('userId parameter must be a valid integer');
+    }
+    return user?.id === parseInt(params.userId, 10);
   }
 }
