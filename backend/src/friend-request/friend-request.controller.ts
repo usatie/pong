@@ -23,15 +23,14 @@ import { UserEntity } from 'src/user/entities/user.entity';
 import { UserGuard } from 'src/user/user.guard';
 
 @Controller('user/:userId/friendrequest')
+@UseGuards(JwtAuthGuard, UserGuard)
+@ApiBearerAuth()
 @ApiTags('friendrequest')
 export class FriendRequestController {
   constructor(private readonly friendRequestService: FriendRequestService) {}
 
   // Send a friend request
   @Post()
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiCreatedResponse()
   create(
     @Body() createFriendRequestDto: CreateFriendRequestDto,
@@ -42,9 +41,6 @@ export class FriendRequestController {
 
   // Get all friend requests for a user
   @Get()
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOkResponse({ type: [UserEntity] })
   async findAll(@Req() req: { user: User }) {
     const users = await this.friendRequestService.findAll(req.user);
@@ -53,9 +49,6 @@ export class FriendRequestController {
 
   // Accept a friend request
   @Patch(':requesterId/accept')
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOkResponse()
   accept(
     @Param('requesterId', ParseIntPipe) requesterId: number,
@@ -66,9 +59,6 @@ export class FriendRequestController {
 
   // Reject a friend request
   @Patch(':requesterId/reject')
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOkResponse()
   reject(
     @Param('requesterId', ParseIntPipe) requesterId: number,
@@ -79,9 +69,6 @@ export class FriendRequestController {
 
   // Cancel a friend request
   @Patch(':recipientId/cancel')
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOkResponse()
   cancel(
     @Param('recipientId', ParseIntPipe) recipientId: number,

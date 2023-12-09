@@ -44,8 +44,7 @@ export class UserController {
   }
 
   @Get(':userId')
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
   async findOne(
@@ -55,8 +54,8 @@ export class UserController {
   }
 
   @Patch(':userId')
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
+  @ApiBearerAuth()
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
   async update(
@@ -68,8 +67,7 @@ export class UserController {
 
   @Delete(':userId')
   @HttpCode(204)
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   async remove(@Param('userId', ParseIntPipe) userId: number): Promise<void> {
@@ -78,8 +76,7 @@ export class UserController {
 
   /* Friend requests */
   @Get(':userId/friend')
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
   async findAllFriends(@Param('userId', ParseIntPipe) userId: number) {
     const friends = await this.userService.findAllFriends(userId);
@@ -87,8 +84,7 @@ export class UserController {
   }
 
   @Get(':userId/block')
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
   async findAllBlocked(@Param('userId', ParseIntPipe) userId: number) {
     const blocked = await this.userService.findAllBlocked(userId);
@@ -97,8 +93,7 @@ export class UserController {
 
   @Post(':userId/unfriend')
   @HttpCode(200)
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
   @ApiOkResponse()
   removeFriend(
@@ -110,8 +105,7 @@ export class UserController {
 
   @Post(':userId/block')
   @HttpCode(200)
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
   @ApiOkResponse()
   block(
@@ -123,8 +117,7 @@ export class UserController {
 
   @Post(':userId/unblock')
   @HttpCode(200)
-  @UseGuards(UserGuard)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
   @ApiOkResponse()
   unblock(
