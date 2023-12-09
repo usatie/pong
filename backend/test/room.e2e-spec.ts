@@ -213,7 +213,26 @@ describe('RoomController (e2e)', () => {
   });
 
   describe('POST /room (Create Room)', () => {
-    /* TODO */
+    let testRoom: RoomEntity;
+    const testOwner = constants.user.notMember;
+
+    it('from Unauthorized User: should return 401 Unauthorized', async () => {
+      await createRoom('invalid_access_token', constants.room.test).expect(401);
+    });
+    it('from Authorized User: should return 201 Created', async () => {
+      const accessToken = await getAccessToken(testOwner);
+      await createRoom(accessToken, constants.room.test)
+        .expect(201)
+        .then((res) => {
+          expectRoom(res.body);
+          testRoom = res.body;
+        });
+    });
+
+    afterAll(async () => {
+      const accessToken = await getAccessToken(testOwner);
+      await deleteRoom(testRoom.id, accessToken);
+    });
   });
   describe('GET /room (Get All Rooms)', () => {
     it('from Everyone (include Authorized User): should return 200 OK', async () => {
