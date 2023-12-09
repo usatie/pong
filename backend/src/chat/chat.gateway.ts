@@ -42,16 +42,16 @@ export class ChatGateway {
 
   private logger: Logger = new Logger('ChatGateway');
 
-  private userMap = new Map<string, string>();
+  private userMap = new Map<number, string>();
   private blockMap = new Map<number, number[]>();
 
-  private getValueToKey = (map, findValue) => {
+  private getValueToKey = (map, findValue): number | undefined => {
     for (const [key, value] of map.entries()) {
       if (value == findValue) {
         return key;
       }
     }
-    return '';
+    return undefined;
   };
 
   @SubscribeMessage('newMessage')
@@ -79,33 +79,37 @@ export class ChatGateway {
     this.logger.log(data);
 
     const userId = this.getValueToKey(this.userMap, client.id);
-    const userName = 'hoge'; //TODO mapを増やすか、mapのvalueを増やすか user name取得関数実装
-    this.chatService.createDirectMessage(+userId, data); //TODO userIdが見つからなかった場合どうする？
-    this.server
-      .except('block' + userId)
-      .to(client.id)
-      .to(this.userMap.get(data.receiverId.toString())) //TODO receiverIdが見つからなかった時のvalidation
-      .emit('sendToUser', { ...data, from: userId, userName }, client.id);
+    if (userId) {
+      const userName = 'hoge'; //TODO mapを増やすか、mapのvalueを増やすか user name取得関数実装
+      this.chatService.createDirectMessage(userId, data);
+      this.server
+        .except('block' + userId)
+        .to(client.id)
+        .to(this.userMap.get(data.receiverId)) //TODO receiverIdが見つからなかった時のvalidation
+        .emit('sendToUser', { ...data, from: userId, userName }, client.id);
+    } else {
+      this.logger.error('No user id was found for socket id');
+    }
   }
 
   @SubscribeMessage('block')
   handleBlockUser(
-    @MessageBody() userId: string,
+    @MessageBody() userId: number,
     @ConnectedSocket() client: Socket,
   ) {
     const blockerId = this.getValueToKey(this.userMap, client.id);
     if (
-      this.blockMap.has(parseInt(userId)) &&
-      this.blockMap.get(parseInt(userId)).includes(parseInt(blockerId))
+      this.blockMap.has(userId) &&
+      this.blockMap.get(userId).includes(blockerId)
     ) {
       this.logger.error('Already blocked');
     } else {
-      this.userService.block(parseInt(blockerId), parseInt(userId));
+      this.userService.block(blockerId, userId);
       this.logger.log(`block user: ${userId}(${client.id})`);
-      if (this.blockMap.has(parseInt(userId))) {
-        this.blockMap.get(parseInt(userId)).push(parseInt(blockerId));
+      if (this.blockMap.has(userId)) {
+        this.blockMap.get(userId).push(blockerId);
       } else {
-        this.blockMap.set(parseInt(userId), [parseInt(blockerId)]);
+        this.blockMap.set(userId, [blockerId]);
       }
       client.join('block' + userId);
     }
@@ -113,17 +117,15 @@ export class ChatGateway {
 
   @SubscribeMessage('unblock')
   handleUnblockUser(
-    @MessageBody() userId: string,
+    @MessageBody() userId: number,
     @ConnectedSocket() client: Socket,
   ) {
     const unblockerId = this.getValueToKey(this.userMap, client.id);
-    if (this.blockMap.has(parseInt(userId))) {
-      this.userService.unblock(parseInt(unblockerId), parseInt(userId));
-      const index = this.blockMap
-        .get(parseInt(userId))
-        .indexOf(parseInt(unblockerId));
+    if (this.blockMap.has(userId)) {
+      this.userService.unblock(unblockerId, userId);
+      const index = this.blockMap.get(userId).indexOf(unblockerId);
       if (index !== -1) {
-        this.blockMap.get(parseInt(userId)).splice(index, 1);
+        this.blockMap.get(userId).splice(index, 1);
         this.logger.log(`unblock user: ${userId}(${client.id})`);
         client.leave('block' + userId);
       } else {
@@ -136,13 +138,11 @@ export class ChatGateway {
 
   @SubscribeMessage('joinDM')
   async handleJoinUser(
-    @MessageBody() userId: string,
+    @MessageBody() userId: number,
     @ConnectedSocket() client: Socket,
   ) {
     this.userMap.set(userId, client.id);
-    const blockedUsers = await this.userService.findAllBlocked(
-      parseInt(userId),
-    );
+    const blockedUsers = await this.userService.findAllBlocked(userId);
     blockedUsers.map((user) => client.join('block' + user.id));
     this.logger.log(`join DM: ${client.id} joined DM user${userId}`);
   }
