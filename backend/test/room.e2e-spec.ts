@@ -49,6 +49,11 @@ describe('RoomController (e2e)', () => {
       .post(`/room/${room.id}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
+  const leaveRoom = (roomId: number, accessToken: string) =>
+    request(app.getHttpServer())
+      .delete(`/room/${roomId}/${getUserIdFromAccessToken(accessToken)}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
   const getRoom = (id: number, accessToken: string) =>
     request(app.getHttpServer())
       .get(`/room/${id}`)
@@ -165,6 +170,7 @@ describe('RoomController (e2e)', () => {
     it('from notMember: should return 201 Created', async () => {
       const accessToken = await getAccessToken(constants.user.notMember);
       await enterRoom(accessToken, room).expect(201);
+      await leaveRoom(room.id, accessToken).expect(204);
     });
 
     it('from Unauthorized User: should return 401 Unauthorized', async () => {
