@@ -279,16 +279,6 @@ describe('RoomController (e2e)', () => {
     });
     it('from member to not member: should return 404 Not Found', async () => {
       const accessToken = await getAccessToken(constants.user.member);
-      console.log(
-        'member check: ',
-        await getRoom(room.id, accessToken)
-          .expect(200)
-          .then((res) => res.body),
-        'users: ',
-        await request(app.getHttpServer())
-          .get(`/user`)
-          .then((res) => res.body),
-      );
       const accessTokenOfNotMember = await getAccessToken(
         constants.user.notMember,
       );
