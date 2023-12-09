@@ -17,6 +17,9 @@ async function getMessages(otherId: number) {
   console.log("conversation: ");
   // TODO: Implement this function
   let conversation = await getConversation(otherId);
+  if (!conversation) {
+    conversation = [];
+  }
   console.log("conversation: ", conversation);
   return conversation;
 }

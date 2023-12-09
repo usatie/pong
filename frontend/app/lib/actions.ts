@@ -199,9 +199,12 @@ export async function getConversation(userId: number) {
   if (res.status === 404) {
     console.error("Not found conversation: ", await res.json());
     return null;
+  } else if (res.status === 409) {
+    console.error("Conflict conversation: ", await res.json());
+    return null;
   } else if (!res.ok) {
     console.error("getConversation error: ", await res.json());
-    throw new Error("createConversation error");
+    throw new Error("getConversation error");
   } else {
     const conversation = await res.json();
     return conversation;
