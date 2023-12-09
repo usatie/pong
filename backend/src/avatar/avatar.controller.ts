@@ -8,14 +8,18 @@ import {
   Put,
   Param,
   Res,
+  UseInterceptors,
+  UploadedFile,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AvatarService } from './avatar.service';
-import { CreateAvatarDto } from './dto/create-avatar.dto';
 import { UpdateAvatarDto } from './dto/update-avatar.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserGuard } from 'src/user/user.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 
 @Controller()
 @ApiTags('avatar')
@@ -29,21 +33,35 @@ export class AvatarController {
   }
 
   // Private
-  @Post('/user/:userId/avatar')
+  @Post('user/:userId/avatar')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: multer.diskStorage({
+        destination: './public/avatar',
+        filename: (req, file, cb) => {
+          const filename = `${Date.now()}-${req.params.userId}`;
+          cb(null, filename);
+        },
+      }),
+    }),
+  )
   @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
-  create(@Body() createAvatarDto: CreateAvatarDto) {
-    return this.avatarService.create(createAvatarDto);
+  create(
+    @Param('userId', ParseIntPipe) userId: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.avatarService.create(userId, file);
   }
 
-  @Put('/user/:userId/avatar')
+  @Put('user/:userId/avatar')
   @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
   update(@Body() updateAvatarDto: UpdateAvatarDto) {
     return this.avatarService.update(updateAvatarDto);
   }
 
-  @Delete('/user/:userId/avatar')
+  @Delete('user/:userId/avatar')
   @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
   remove() {

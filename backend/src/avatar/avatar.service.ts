@@ -1,11 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAvatarDto } from './dto/create-avatar.dto';
 import { UpdateAvatarDto } from './dto/update-avatar.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AvatarService {
-  create(createAvatarDto: CreateAvatarDto) {
-    return `This action adds a new avatar ${createAvatarDto}`;
+  constructor(private prisma: PrismaService) {}
+
+  create(userId: number, file: Express.Multer.File) {
+    //return `This action adds a new avatar ${file}`;
+    const avatarURL = `/avatar/${file.filename}`;
+    return this.prisma.user
+      .update({
+        where: { id: userId },
+        data: { avatarURL },
+      })
+      .then(() => {
+        return { filename: file.filename, url: avatarURL };
+      });
   }
 
   update(updateAvatarDto: UpdateAvatarDto) {
