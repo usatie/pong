@@ -64,4 +64,6 @@ model DirectMessage {
     receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
 
     createdAt DateTime @default(now())
+
+    isBlocked Boolean @default(false)
 }
