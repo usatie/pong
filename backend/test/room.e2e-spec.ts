@@ -97,6 +97,16 @@ describe('RoomController (e2e)', () => {
     return payload.userId;
   };
 
+  const getUserOnRoom = (
+    roomId: number,
+    userId: number,
+    accessToken: string,
+  ) => {
+    return request(app.getHttpServer())
+      .get(`/room/${roomId}/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  };
+
   let room: RoomEntity;
   beforeAll(async () => {
     // Owner
@@ -256,7 +266,43 @@ describe('RoomController (e2e)', () => {
     });
   });
   describe('GET /room/:id/:userId (Get UserOnRoom?)', () => {
-    /* TODO */
+    it('from room member: should return 200 OK', async () => {
+      for (const member of roomMembers) {
+        const accessToken = await getAccessToken(member);
+        const memberId = getUserIdFromAccessToken(accessToken);
+        await getUserOnRoom(room.id, memberId, accessToken)
+          .expect(200)
+          .expect((res) => {
+            expectUserOnRoom(res.body);
+          });
+      }
+    });
+    it('from member to not member: should return 404 Not Found', async () => {
+      const accessToken = await getAccessToken(constants.user.member);
+      console.log(
+        'member check: ',
+        await getRoom(room.id, accessToken)
+          .expect(200)
+          .then((res) => res.body),
+        'users: ',
+        await request(app.getHttpServer())
+          .get(`/user`)
+          .then((res) => res.body),
+      );
+      const accessTokenOfNotMember = await getAccessToken(
+        constants.user.notMember,
+      );
+      const idOfNotMember = getUserIdFromAccessToken(accessTokenOfNotMember);
+      await getUserOnRoom(room.id, idOfNotMember, accessToken).expect(404);
+    });
+    // TODO : add Guard to controller
+    // it('from notMember: should return 403 Forbidden', async () => {
+    //   const accessToken = await getAccessToken(constants.user.notMember);
+    //   await getUserOnRoom(room.id, 1, accessToken).expect(403);
+    // });
+    it('from Unauthorized User: should return 401 Unauthorized', async () => {
+      await getUserOnRoom(room.id, 1, 'invalid_access_token').expect(401);
+    });
   });
   describe('DELETE /room/:id/:userId (Delete user in Room)', () => {
     /* TODO */
