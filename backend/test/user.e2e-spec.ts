@@ -563,7 +563,7 @@ describe('UserController (e2e)', () => {
     let user1;
     let user2;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
       const setupUser = async (dto) => {
         let res = await createUser(dto);
         const user = res.body;
@@ -579,7 +579,7 @@ describe('UserController (e2e)', () => {
       user2 = await setupUser(constants.user.test2);
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
       const teardownUser = (user) => {
         return deleteUser(user.id).set(
           'Authorization',
@@ -605,6 +605,43 @@ describe('UserController (e2e)', () => {
     it('Should not cancel requests that doesnt exist', async () => {
       await cancelFriendRequest(user1.id, user2.id, user1.accessToken).expect(
         404,
+      );
+    });
+
+    it('Should not send request twice', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        409,
+      );
+    });
+
+    it('Should not send request to friend', async () => {
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        201,
+      );
+      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        200,
+      );
+      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
+        409,
+      );
+    });
+
+    it('Should not send request to blocked user', async () => {
+      // user1 blocks user2
+      await blockUser(user1.id, user2.id, user1.accessToken).expect(200);
+
+      // user2 sends request to user1
+      await sendFriendRequest(user2.id, user1.id, user2.accessToken).expect(
+        409,
+      );
+    });
+
+    it('Should not send requests to self', async () => {
+      await sendFriendRequest(user1.id, user1.id, user1.accessToken).expect(
+        400,
       );
     });
   });
