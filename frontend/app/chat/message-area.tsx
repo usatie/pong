@@ -17,6 +17,9 @@ async function getMessages(otherId: number) {
   console.log("conversation: ");
   // TODO: Implement this function
   let conversation = await getConversation(otherId);
+  if (!conversation) {
+    conversation = [];
+  }
   console.log("conversation: ", conversation);
   return conversation;
 }
@@ -50,7 +53,7 @@ function MessageArea({ me, other }: { me: User; other: User }) {
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
-  const myId = me.id.toString();
+  const myId = me.id;
   const otherId = other.id;
 
   // TODO: Messageを取得するsocketのロジック等を実装
@@ -60,7 +63,7 @@ function MessageArea({ me, other }: { me: User; other: User }) {
     socket.emit("joinDM", myId);
 
     const handleMessageReceived = (newMessage: Message) => {
-      if (newMessage.from === otherId.toString() || newMessage.from === myId) {
+      if (newMessage.receiverId === otherId || newMessage.receiverId === myId) {
         console.log("received message: ", newMessage);
         setMessages((oldMessages) => [...oldMessages, newMessage]);
         console.log(newMessage);
