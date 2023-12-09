@@ -11,41 +11,44 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  name     String?
   password String
-  rooms UserOnRoom[]
-  sentMessages DirectMessage[] @relation("SentMessages")
+
+  // Chat
+  rooms            UserOnRoom[]
+  sentMessages     DirectMessage[] @relation("SentMessages")
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
 
   // Friendship
-  friends User[] @relation("Friendship")
+  friends   User[] @relation("Friendship")
   friendsOf User[] @relation("Friendship")
 
   // FriendRequest
   requestedBy User[] @relation("FriendRequest")
-  requesting User[] @relation("FriendRequest")
+  requesting  User[] @relation("FriendRequest")
 
   // Block
   blockedBy User[] @relation("BlockUser")
-  blocking User[] @relation("BlockUser")
+  blocking  User[] @relation("BlockUser")
 }
 
 model Room {
-  id    Int     @id @default(autoincrement())
+  id    Int          @id @default(autoincrement())
   name  String
   users UserOnRoom[]
 }
 
 model UserOnRoom {
-	id				Int @id @default(autoincrement())
-	user			User @relation(fields: [userId], references: [id])
-	userId			Int
-	role			Role @default(MEMBER)
-	room			Room @relation(fields: [roomId], references: [id])
-	roomId			Int
-	@@unique(fields: [userId, roomId], name: "userId_roomId_unique")
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+  role   Role @default(MEMBER)
+  room   Room @relation(fields: [roomId], references: [id])
+  roomId Int
+
+  @@unique(fields: [userId, roomId], name: "userId_roomId_unique")
 }
 
 enum Role {
@@ -55,13 +58,13 @@ enum Role {
 }
 
 model DirectMessage {
-    id Int @id @default(autoincrement())
-    content String
+  id      Int    @id @default(autoincrement())
+  content String
 
-    senderId Int
-    sender User @relation("SentMessages", fields: [senderId], references: [id])
-    receiverId Int
-    receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  senderId   Int
+  sender     User @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId Int
+  receiver   User @relation("ReceivedMessages", fields: [receiverId], references: [id])
 
-    createdAt DateTime @default(now())
+  createdAt DateTime @default(now())
 }
