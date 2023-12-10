@@ -12,6 +12,8 @@ import {
   expectUserOnRoom,
 } from './utils/matcher';
 import { constants } from './constants';
+import { Role } from '@prisma/client';
+import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
 
 describe('RoomController (e2e)', () => {
   let app: INestApplication;
@@ -54,6 +56,11 @@ describe('RoomController (e2e)', () => {
       .delete(`/room/${roomId}/${getUserIdFromAccessToken(accessToken)}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
+  const kickFromRoom = (roomId: number, userId: number, accessToken: string) =>
+    request(app.getHttpServer())
+      .delete(`/room/${roomId}/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
   const getRoom = (id: number, accessToken: string) =>
     request(app.getHttpServer())
       .get(`/room/${id}`)
@@ -80,6 +87,17 @@ describe('RoomController (e2e)', () => {
     request(app.getHttpServer())
       .delete(`/user/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`);
+
+  const updateUserOnRoom = (
+    roomId: number,
+    userId: number,
+    dto: UpdateUserOnRoomDto,
+    accessToken: string,
+  ) =>
+    request(app.getHttpServer())
+      .patch(`/room/${roomId}/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(dto);
 
   /* Auth API */
   const login = (dto: LoginDto) =>
@@ -127,6 +145,12 @@ describe('RoomController (e2e)', () => {
       await createUser(constants.user.admin);
       const accessToken = await getAccessToken(constants.user.admin);
       await enterRoom(accessToken, room);
+      await updateUserOnRoom(
+        room.id,
+        getUserIdFromAccessToken(accessToken),
+        { role: Role.ADMINISTRATOR },
+        await getAccessToken(constants.user.owner),
+      );
     }
     // Not Member
     {
@@ -200,9 +224,7 @@ describe('RoomController (e2e)', () => {
       const dto: UpdateRoomDto = { name: 'new_name' };
       for (const user of usersExceptOwner) {
         const accessToken = await getAccessToken(user);
-        await expect(updateRoom(room.id, accessToken, dto)).not.toBe(200);
-        // TODO : expect 403
-        // TODO : add Guard to controller
+        await updateRoom(room.id, accessToken, dto).expect(403);
       }
     });
 
@@ -286,18 +308,201 @@ describe('RoomController (e2e)', () => {
       await getUserOnRoom(room.id, idOfNotMember, accessToken).expect(404);
     });
     // TODO : add Guard to controller
-    // it('from notMember: should return 403 Forbidden', async () => {
-    //   const accessToken = await getAccessToken(constants.user.notMember);
-    //   await getUserOnRoom(room.id, 1, accessToken).expect(403);
-    // });
+    it('from notMember: should return 403 Forbidden', async () => {
+      const targetId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.member),
+      );
+      const accessToken = await getAccessToken(constants.user.notMember);
+      await getUserOnRoom(room.id, targetId, accessToken).expect(403);
+    });
     it('from Unauthorized User: should return 401 Unauthorized', async () => {
-      await getUserOnRoom(room.id, 1, 'invalid_access_token').expect(401);
+      const targetId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.member),
+      );
+      await getUserOnRoom(room.id, targetId, 'invalid_access_token').expect(
+        401,
+      );
     });
   });
+  const testRoomSetup = async (): Promise<number> => {
+    const ownerToken = await getAccessToken(constants.user.owner);
+    const res = await createRoom(ownerToken, constants.room.test);
+    const roomId = res.body.id;
+    for (const member of usersExceptOwner) {
+      if (member === constants.user.owner) continue;
+      const accessToken = await getAccessToken(member);
+      await enterRoom(accessToken, res.body);
+
+      if (member === constants.user.admin) {
+        await updateUserOnRoom(
+          roomId,
+          getUserIdFromAccessToken(accessToken),
+          { role: Role.ADMINISTRATOR },
+          ownerToken,
+        );
+      }
+    }
+    return roomId;
+  };
+
   describe('DELETE /room/:id/:userId (Delete user in Room)', () => {
-    /* TODO */
+    let testRoomId: number;
+
+    beforeEach(async () => {
+      testRoomId = await testRoomSetup();
+    });
+    afterEach(async () => {
+      const accessToken = await getAccessToken(constants.user.owner);
+      await deleteRoom(testRoomId, accessToken);
+    });
+    const notOwnerFilter = (user: LoginDto) =>
+      user.email !== constants.user.owner.email;
+
+    it('from member: clientRole >= targetRole: should return 204 No Content (owner)', async () => {
+      const accessToken = await getAccessToken(constants.user.owner);
+      for (const member of usersExceptOwner.filter(notOwnerFilter)) {
+        const targetId = getUserIdFromAccessToken(await getAccessToken(member));
+        await kickFromRoom(testRoomId, targetId, accessToken).expect(204);
+      }
+    });
+    it('from member: clientRole >= targetRole: should return 204 No Content (admin)', async () => {
+      const accessToken = await getAccessToken(constants.user.admin);
+      const memberId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.member),
+      );
+      const adminId = getUserIdFromAccessToken(accessToken);
+      await kickFromRoom(testRoomId, memberId, accessToken).expect(204);
+      await kickFromRoom(testRoomId, adminId, accessToken).expect(204);
+    });
+    it('from member: should return 403 Forbidden (member)', async () => {
+      const accessToken = await getAccessToken(constants.user.member);
+      const memberId = getUserIdFromAccessToken(accessToken);
+      await kickFromRoom(testRoomId, memberId, accessToken).expect(204);
+    });
+    it('from member: clientRole < targetRole: should return 403 Forbidden', async () => {
+      const MemberAccessToken = await getAccessToken(constants.user.member);
+      const AdminAccessToken = await getAccessToken(constants.user.admin);
+      const adminId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.admin),
+      );
+      const ownerId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.owner),
+      );
+      await kickFromRoom(testRoomId, ownerId, AdminAccessToken).expect(403);
+      await kickFromRoom(testRoomId, ownerId, MemberAccessToken).expect(403);
+      await kickFromRoom(testRoomId, adminId, MemberAccessToken).expect(403);
+    });
   });
   describe('PATCH /room/:id/:userId (Modify user role in Room)', () => {
-    /* TODO */
+    let testRoomId: number;
+    const toMemberDto: UpdateUserOnRoomDto = { role: Role.MEMBER };
+    const toAdminDto: UpdateUserOnRoomDto = { role: Role.ADMINISTRATOR };
+    const toOwnerDto: UpdateUserOnRoomDto = { role: Role.OWNER };
+
+    beforeEach(async () => {
+      testRoomId = await testRoomSetup();
+    });
+    afterEach(async () => {
+      const accessToken = await getAccessToken(constants.user.owner);
+      await deleteRoom(testRoomId, accessToken);
+    });
+
+    it('from member: should return 204 No Content (owner)', async () => {
+      const accessToken = await getAccessToken(constants.user.owner);
+      const adminId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.admin),
+      );
+      const memberId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.member),
+      );
+      await updateUserOnRoom(
+        testRoomId,
+        memberId,
+        toAdminDto,
+        accessToken,
+      ).expect(200);
+      await updateUserOnRoom(
+        testRoomId,
+        adminId,
+        toMemberDto,
+        accessToken,
+      ).expect(200);
+    });
+    it('from member: clientRole >= targetRole: should return 204 No Content (admin)', async () => {
+      const accessToken = await getAccessToken(constants.user.admin);
+      const memberId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.member),
+      );
+      const adminId = getUserIdFromAccessToken(accessToken);
+      await updateUserOnRoom(
+        testRoomId,
+        memberId,
+        toAdminDto,
+        accessToken,
+      ).expect(200);
+      await updateUserOnRoom(
+        testRoomId,
+        adminId,
+        toMemberDto,
+        accessToken,
+      ).expect(200);
+    });
+    it('from member: should return 403 Forbidden (member)', async () => {
+      const accessToken = await getAccessToken(constants.user.member);
+      const memberId = getUserIdFromAccessToken(accessToken);
+      await updateUserOnRoom(
+        testRoomId,
+        memberId,
+        toMemberDto,
+        accessToken,
+      ).expect(403);
+    });
+    it('from member: clientRole < targetRole: should return 403 Forbidden', async () => {
+      const MemberAccessToken = await getAccessToken(constants.user.member);
+      const AdminAccessToken = await getAccessToken(constants.user.admin);
+      const adminId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.admin),
+      );
+      const ownerId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.owner),
+      );
+      const memberId = getUserIdFromAccessToken(
+        await getAccessToken(constants.user.member),
+      );
+      // from admin to owner
+      await updateUserOnRoom(
+        testRoomId,
+        ownerId,
+        toAdminDto,
+        AdminAccessToken,
+      ).expect(403);
+      await updateUserOnRoom(
+        testRoomId,
+        ownerId,
+        toMemberDto,
+        AdminAccessToken,
+      ).expect(403);
+      // from admin to member
+      await updateUserOnRoom(
+        testRoomId,
+        memberId,
+        toOwnerDto,
+        AdminAccessToken,
+      ).expect(403);
+      // from member to admin
+      await updateUserOnRoom(
+        testRoomId,
+        adminId,
+        toMemberDto,
+        MemberAccessToken,
+      ).expect(403);
+      // from member to owner
+      await updateUserOnRoom(
+        testRoomId,
+        ownerId,
+        toMemberDto,
+        MemberAccessToken,
+      ).expect(403);
+    });
   });
 });
