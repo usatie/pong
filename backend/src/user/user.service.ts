@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
 import { hash } from 'bcrypt';
 import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class UserService {
@@ -47,7 +48,8 @@ export class UserService {
       })
       .then((user) => {
         if (!user.avatarURL) return user;
-        fs.rmSync('./public' + user.avatarURL, { force: true });
+        const filepath = path.join('./public', user.avatarURL);
+        fs.rmSync(filepath, { force: true });
         return user;
       });
   }
