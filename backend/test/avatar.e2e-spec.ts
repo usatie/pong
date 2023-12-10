@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { constants } from './constants';
 import { LoginDto } from 'src/auth/dto/login.dto';
+import { get } from 'http';
 
 export function expectFile(filepath: string) {
   return (res: request.Response) => {
@@ -49,6 +50,12 @@ describe('AvatarController (e2e)', () => {
       .post(`/user/${userId}/avatar`)
       .set('Authorization', `Bearer ${accessToken}`)
       .attach('avatar', filepath);
+  };
+
+  const deleteAvatar = (userId: number, accessToken: string) => {
+    return request(app.getHttpServer())
+      .delete(`/user/${userId}/avatar`)
+      .set('Authorization', `Bearer ${accessToken}`);
   };
 
   /* Utils */
@@ -98,6 +105,7 @@ describe('AvatarController (e2e)', () => {
       await deleteUser(userId).set('Authorization', `Bearer ${accessToken}`);
     });
 
+    let uploadedFileName;
     it('should upload avatar', async () => {
       const expectedFilePath = path.join(
         __dirname,
@@ -111,6 +119,12 @@ describe('AvatarController (e2e)', () => {
         path.join(__dirname, '../public/avatar', res.body.filename),
       );
       expect(uploaded).toEqual(expected);
+      uploadedFileName = res.body.filename;
+    });
+
+    it('should delete old avatar', async () => {
+      await deleteAvatar(userId, accessToken).expect(204);
+      getAvatar(uploadedFileName).expect(404);
     });
   });
 });

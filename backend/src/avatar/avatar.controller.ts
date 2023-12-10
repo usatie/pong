@@ -11,12 +11,17 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseIntPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { AvatarService } from './avatar.service';
-import { UpdateAvatarDto } from './dto/update-avatar.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserGuard } from 'src/user/user.guard';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiNoContentResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
@@ -73,7 +78,9 @@ export class AvatarController {
   }
 
   @Delete('user/:userId/avatar')
+  @HttpCode(204)
   @UseGuards(JwtAuthGuard, UserGuard)
+  @ApiNoContentResponse()
   @ApiBearerAuth()
   remove(@Param('userId', ParseIntPipe) userId: number) {
     return this.avatarService.remove(userId);
