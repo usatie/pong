@@ -123,6 +123,7 @@ describe('AvatarController (e2e)', () => {
     });
 
     it('should delete old avatar', async () => {
+      getAvatar(uploadedFileName).expect(200);
       await deleteAvatar(userId, accessToken).expect(204);
       getAvatar(uploadedFileName).expect(404);
     });
