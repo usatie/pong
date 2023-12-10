@@ -49,8 +49,8 @@ export class RoomController {
   @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  findOne(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
-    return this.roomService.findRoom(id, request['user']);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.roomService.findRoom(id);
   }
 
   @Patch(':id')
@@ -62,7 +62,7 @@ export class RoomController {
     @Body() updateRoomDto: UpdateRoomDto,
     @Req() request: Request,
   ) {
-    return this.roomService.updateRoom(id, updateRoomDto, request['user']);
+    return this.roomService.updateRoom(id, updateRoomDto, request['userRole']);
   }
 
   @Delete(':id')
@@ -70,11 +70,8 @@ export class RoomController {
   @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
-  async removeRoom(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: Request,
-  ) {
-    await this.roomService.removeRoom(id, request['user']);
+  removeRoom(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
+    return this.roomService.removeRoom(id, request['userRole']);
   }
 
   @Post(':id')
@@ -95,9 +92,8 @@ export class RoomController {
   getUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
-    @Req() request: Request,
   ) {
-    return this.roomService.findUserOnRoom(id, request['user'], userId);
+    return this.roomService.findUserOnRoom(id, userId);
   }
 
   @Delete(':id/:userId')
@@ -108,11 +104,13 @@ export class RoomController {
   async deleteUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
+    @Req() request: Request,
   ) {
     await this.roomService.removeUserOnRoom(
       id,
-      { id: userId, name: 'test' },
+      request['userRole'],
       userId,
+      request['user'],
     );
   }
 
@@ -128,7 +126,7 @@ export class RoomController {
   ) {
     return this.roomService.updateUserOnRoom(
       id,
-      request['user'],
+      request['userRole'],
       userId,
       updateUserOnRoomDto,
     );

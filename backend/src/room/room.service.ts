@@ -42,60 +42,35 @@ export class RoomService {
     return this.prisma.room.findMany();
   }
 
-  findRoom(id: number, user: User): Promise<RoomEntity> {
-    return this.prisma.room
-      .findUniqueOrThrow({
-        where: { id },
-        include: {
-          users: true,
-        },
-      })
-      .then((roomEntity) => {
-        const userOnRoomEntity = roomEntity.users.find(
-          (userOnRoomEntity) => userOnRoomEntity.userId === user.id,
-        );
-        if (userOnRoomEntity === undefined) {
-          throw new HttpException('Forbidden', 403);
-        } else {
-          return roomEntity;
-        }
-      });
-  }
-
-  updateRoom(
-    id: number,
-    updateRoomDto: UpdateRoomDto,
-    user: User,
-  ): Promise<RoomEntity> {
-    return this.findUserOnRoom(id, user, user.id).then((userOnRoomEntity) => {
-      if (userOnRoomEntity.role !== Role.OWNER) {
-        throw new HttpException('Forbidden', 403);
-      } else {
-        return this.prisma.room.update({
-          where: { id },
-          data: updateRoomDto,
-        });
-      }
+  findRoom(id: number): Promise<RoomEntity> {
+    return this.prisma.room.findUniqueOrThrow({
+      where: { id },
+      include: {
+        users: true,
+      },
     });
   }
 
-  removeRoom(id: number, user: User): Promise<RoomEntity> {
-    return this.findUserOnRoom(id, user, user.id)
-      .catch(() => {
-        throw new HttpException('Forbidden', 403);
-      })
-      .then((userOnRoomEntity) => {
-        if (userOnRoomEntity.role !== Role.OWNER) {
-          throw new HttpException('Forbidden', 403);
-        } else {
-          return this.removeAllUserOnRoom(id).then(() =>
-            this.prisma.room.delete({
-              where: { id },
-            }),
-          );
-        }
-      });
-  }
+  updateRoom = (
+    id: number,
+    updateRoomDto: UpdateRoomDto,
+    role: Role,
+  ): Promise<RoomEntity> =>
+    role !== Role.OWNER
+      ? Promise.reject(new HttpException('Forbidden', 403))
+      : this.prisma.room.update({
+          where: { id },
+          data: updateRoomDto,
+        });
+
+  removeRoom = (id: number, role: Role): Promise<RoomEntity> =>
+    role !== Role.OWNER
+      ? Promise.reject(new HttpException('Forbidden', 403))
+      : this.removeAllUserOnRoom(id).then(() =>
+          this.prisma.room.delete({
+            where: { id },
+          }),
+        );
 
   // UserOnRoom CRUD
 
@@ -117,7 +92,6 @@ export class RoomService {
 
   findUserOnRoom = (
     roomId: number,
-    client: User,
     userId: number,
   ): Promise<UserOnRoomEntity> => {
     return this.prisma.userOnRoom.findUniqueOrThrow({
@@ -130,51 +104,89 @@ export class RoomService {
     });
   };
 
-  updateUserOnRoom(
+  updateUserOnRoom = (
     roomId: number,
-    client: User,
+    role: Role,
     userId: number,
-    updateUserOnRoom: UpdateUserOnRoomDto,
-  ): Promise<UserOnRoomEntity> {
-    return this.prisma.userOnRoom.update({
-      where: {
-        userId_roomId_unique: {
-          roomId: roomId,
-          userId: userId,
-        },
-      },
-      data: updateUserOnRoom,
-    });
-  }
+    dto: UpdateUserOnRoomDto,
+  ): Promise<UserOnRoomEntity> => {
+    if (role === Role.MEMBER)
+      return Promise.reject(new HttpException('Forbidden', 403));
+    const validateRole =
+      (changerRole: Role) =>
+      (targetRole: Role): boolean =>
+        this.roleToNum(changerRole) >= this.roleToNum(targetRole);
+    const validateRoleBy = validateRole(role);
+
+    if (this.roleToNum(dto.role) !== -1 && validateRoleBy(dto.role) === false)
+      return Promise.reject(new HttpException('Forbidden', 403));
+    else
+      return this.findUserOnRoom(roomId, userId)
+        .then((userOnRoomEntity) =>
+          validateRoleBy(userOnRoomEntity.role) === false
+            ? Promise.reject(new HttpException('Forbidden', 403))
+            : this.prisma.userOnRoom.update({
+                where: {
+                  userId_roomId_unique: {
+                    roomId: roomId,
+                    userId: userId,
+                  },
+                },
+                data: dto,
+              }),
+        )
+        .catch((err) => {
+          throw err;
+        });
+  };
 
   removeUserOnRoom(
     roomId: number,
-    client: User,
+    role: Role,
     userId: number,
+    client: User,
   ): Promise<UserOnRoomEntity> {
-    return this.findUserOnRoom(roomId, client, client.id)
-      .then((userOnRoomEntity) => {
-        if (userOnRoomEntity.role === Role.OWNER || client.id === userId) {
-          return this.prisma.userOnRoom.delete({
-            where: {
-              userId_roomId_unique: {
-                roomId: roomId,
-                userId: userId,
-              },
+    if (client.id != userId && role === Role.MEMBER)
+      return Promise.reject(new HttpException('Forbidden', 403));
+    const validateRole =
+      (changerRole: Role) =>
+      (targetRole: Role): boolean => {
+        return this.roleToNum(changerRole) >= this.roleToNum(targetRole);
+      };
+    const validateRoleBy = validateRole(role);
+
+    return this.findUserOnRoom(roomId, userId).then((userOnRoomEntity) => {
+      if (validateRoleBy(userOnRoomEntity.role)) {
+        return this.prisma.userOnRoom.delete({
+          where: {
+            userId_roomId_unique: {
+              roomId: roomId,
+              userId: userId,
             },
-          });
-        } else {
-          throw 404;
-        }
-      })
-      .catch((err) => {
-        throw err;
-      });
+          },
+        });
+      } else {
+        return Promise.reject(new HttpException('Forbidden', 403));
+      }
+    });
   }
 
   removeAllUserOnRoom(roomId: number): Promise<BatchPayload> {
     return this.prisma.userOnRoom.deleteMany({
       where: { roomId },
     });
+  }
+
+  private roleToNum(role: Role): number {
+    switch (role) {
+      case Role.MEMBER:
+        return 0;
+      case Role.ADMINISTRATOR:
+        return 1;
+      case Role.OWNER:
+        return 2;
+      default:
+        return -1;
+    }
   }
 }
