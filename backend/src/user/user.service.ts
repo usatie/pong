@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
 import { hash } from 'bcrypt';
+import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
@@ -40,9 +41,15 @@ export class UserService {
   }
 
   remove(id: number): Promise<User> {
-    return this.prisma.user.delete({
-      where: { id: id },
-    });
+    return this.prisma.user
+      .delete({
+        where: { id: id },
+      })
+      .then((user) => {
+        if (user.avatarURL === '/avatar/default.png') return user;
+        fs.rmSync(`./public${user.avatarURL}`, { force: true });
+        return user;
+      });
   }
 
   /* Friend requests */
