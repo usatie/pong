@@ -25,7 +25,7 @@ import { RoomEntity } from './entities/room.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
-import { MemberGuard } from './room-member.guard';
+import { MemberGuard } from './member.guard';
 
 @Controller('room')
 @ApiTags('room')

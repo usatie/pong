@@ -34,19 +34,4 @@ export class MemberGuard implements CanActivate {
       .then((userOnRoomEntity) => userOnRoomEntity.role)
       .catch(() => Promise.reject());
   }
-
-  private meetRequirement(need: Role, userRole: Role): boolean {
-    return this.roleToNum(userRole) >= this.roleToNum(need);
-  }
-
-  private roleToNum(role: Role): number {
-    switch (role) {
-      case Role.MEMBER:
-        return 0;
-      case Role.ADMINISTRATOR:
-        return 1;
-      case Role.OWNER:
-        return 2;
-    }
-  }
 }
