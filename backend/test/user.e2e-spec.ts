@@ -261,7 +261,7 @@ describe('UserController (e2e)', () => {
         id: userId,
         email: constants.user.test.email,
         name: constants.user.test.name,
-        avatarURL: '/avatar/default.png',
+        avatarURL: null,
       };
       return getUser(userId)
         .set('Authorization', `Bearer ${accessToken}`)
@@ -277,7 +277,7 @@ describe('UserController (e2e)', () => {
         id: userId,
         email: constants.user.test.email,
         name: 'new_name',
-        avatarURL: '/avatar/default.png',
+        avatarURL: null,
       };
       return updateUser(userId, dto)
         .set('Authorization', `Bearer ${accessToken}`)

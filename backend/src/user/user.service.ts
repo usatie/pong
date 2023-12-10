@@ -46,8 +46,8 @@ export class UserService {
         where: { id: id },
       })
       .then((user) => {
-        if (user.avatarURL === '/avatar/default.png') return user;
-        fs.rmSync(`./public${user.avatarURL}`, { force: true });
+        if (!user.avatarURL) return user;
+        fs.rmSync('./public' + user.avatarURL, { force: true });
         return user;
       });
   }

@@ -15,7 +15,7 @@ model User {
   email     String  @unique
   name      String?
   password  String
-  avatarURL String  @default("/avatar/default.png")
+  avatarURL String?
 
   // Chat
   rooms            UserOnRoom[]
