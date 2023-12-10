@@ -26,6 +26,8 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { RoomRolesGuard } from './room-member.guard';
+import { roleNeed } from './roles.decorators';
+import { Role } from '@prisma/client';
 
 @Controller('room')
 @ApiTags('room')
@@ -54,7 +56,8 @@ export class RoomController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @roleNeed(Role.OWNER)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   update(
@@ -67,7 +70,8 @@ export class RoomController {
 
   @Delete(':id')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard)
+  @roleNeed(Role.OWNER)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   async removeRoom(
@@ -89,8 +93,8 @@ export class RoomController {
   }
 
   @Get(':id/:userId')
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(RoomRolesGuard)
+  @roleNeed(Role.MEMBER)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   getUserOnRoom(
@@ -103,7 +107,8 @@ export class RoomController {
 
   @Delete(':id/:userId')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard)
+  @roleNeed(Role.MEMBER)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   async deleteUserOnRoom(
@@ -118,7 +123,8 @@ export class RoomController {
   }
 
   @Patch(':id/:userId')
-  @UseGuards(JwtAuthGuard)
+  @roleNeed(Role.MEMBER)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   updateUserOnRoom(
