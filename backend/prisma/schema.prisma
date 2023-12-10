@@ -33,6 +33,9 @@ model User {
   // Block
   blockedBy User[] @relation("BlockUser")
   blocking  User[] @relation("BlockUser")
+
+  // Match History
+  history MatchDetail[]
 }
 
 model Room {
@@ -68,4 +71,38 @@ model DirectMessage {
   receiver   User @relation("ReceivedMessages", fields: [receiverId], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+model Match {
+  id Int @id @default(autoincrement())
+
+  players MatchDetail[]
+
+  result    MatchResultType
+  createdAt DateTime        @default(now())
+}
+
+enum MatchResultType {
+  COMPLETE
+  INCOMPLETE
+}
+
+model MatchDetail {
+  id Int @id @default(autoincrement())
+
+  matchId Int
+  match   Match @relation(fields: [matchId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  score  Int
+
+  winLose WinLose
+
+  createdAt DateTime @default(now())
+}
+
+enum WinLose {
+  WIN
+  LOSE
 }
