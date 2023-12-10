@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateAvatarDto } from './dto/update-avatar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as fs from 'fs';
 
 @Injectable()
 export class AvatarService {
   constructor(private prisma: PrismaService) {}
 
-  create(userId: number, file: Express.Multer.File) {
-    //return `This action adds a new avatar ${file}`;
+  async create(userId: number, file: Express.Multer.File) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+    });
     const avatarURL = `/avatar/${file.filename}`;
     return this.prisma.user
       .update({
@@ -15,6 +18,10 @@ export class AvatarService {
         data: { avatarURL },
       })
       .then(() => {
+        // Delete old avatar
+        if (user.avatarURL) {
+          fs.rmSync('./public' + user.avatarURL, { force: true });
+        }
         return { filename: file.filename, url: avatarURL };
       });
   }
