@@ -6,7 +6,6 @@ import * as fs from 'fs';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { constants } from './constants';
 import { LoginDto } from 'src/auth/dto/login.dto';
-import { get } from 'http';
 
 export function expectFile(filepath: string) {
   return (res: request.Response) => {

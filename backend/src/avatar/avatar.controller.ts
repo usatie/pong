@@ -5,7 +5,6 @@ import {
   Body,
   Delete,
   UseGuards,
-  Put,
   Param,
   Res,
   UseInterceptors,
