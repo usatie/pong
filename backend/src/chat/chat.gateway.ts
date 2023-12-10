@@ -13,8 +13,8 @@ import { UserService } from '../user/user.service';
 
 type RoomChat = {
   userName: string;
-  text: string;
-  roomId: string;
+  content: string;
+  roomId: number;
 };
 
 //type PrivateMessage = {
@@ -62,9 +62,15 @@ export class ChatGateway {
     this.logger.log('message received');
     this.logger.log(data);
     if (client.rooms.has('room/' + data.roomId)) {
-      this.server
-        .to('room/' + data.roomId)
-        .emit('sendToClient', data, client.id);
+      const userId = this.getValueToKey(this.userMap, client.id);
+      if (userId) {
+        this.server
+          .except('block' + userId)
+          .to('room/' + data.roomId)
+          .emit('sendToClient', { ...data, senderId: userId }, client.id);
+      } else {
+        this.logger.error('No user id was found for socket id');
+      }
     } else {
       this.logger.error('socket has not joined this room');
     }
@@ -86,7 +92,7 @@ export class ChatGateway {
         .except('block' + userId)
         .to(client.id)
         .to(this.userMap.get(data.receiverId)) //TODO receiverIdが見つからなかった時のvalidation
-        .emit('sendToUser', { ...data, from: userId, userName }, client.id);
+        .emit('sendToUser', { ...data, senderId: userId, userName }, client.id);
     } else {
       this.logger.error('No user id was found for socket id');
     }
@@ -148,12 +154,17 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(
-    @MessageBody() roomId: string,
+  async handleJoinRoom(
+    @MessageBody() { roomId, userId }: { roomId: number; userId: number },
     @ConnectedSocket() client: Socket,
   ) {
+    console.log(roomId);
+    console.log(userId);
     this.logger.log(`join room: ${client.id} joined room ${roomId}`);
     client.join('room/' + roomId);
+    this.userMap.set(userId, client.id);
+    const blockedUsers = await this.userService.findAllBlocked(userId);
+    blockedUsers.map((user) => client.join('block' + user.id));
   }
 
   @SubscribeMessage('leaveRoom')
