@@ -1,6 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { Reflector } from '@nestjs/core';
 import { RoomService } from './room.service';
 import { Role } from '@prisma/client';
 
@@ -10,11 +9,8 @@ interface User {
 }
 
 @Injectable()
-export class RoomRolesGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private roomService: RoomService,
-  ) {}
+export class MemberGuard implements CanActivate {
+  constructor(private roomService: RoomService) {}
 
   canActivate(
     context: ExecutionContext,

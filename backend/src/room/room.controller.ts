@@ -25,7 +25,7 @@ import { RoomEntity } from './entities/room.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
-import { RoomRolesGuard } from './room-member.guard';
+import { MemberGuard } from './room-member.guard';
 
 @Controller('room')
 @ApiTags('room')
@@ -46,7 +46,7 @@ export class RoomController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RoomRolesGuard)
+  @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   findOne(@Param('id', ParseIntPipe) id: number) {
@@ -54,7 +54,7 @@ export class RoomController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RoomRolesGuard)
+  @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   update(
@@ -67,7 +67,7 @@ export class RoomController {
 
   @Delete(':id')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard, RoomRolesGuard)
+  @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   removeRoom(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
@@ -86,7 +86,7 @@ export class RoomController {
   }
 
   @Get(':id/:userId')
-  @UseGuards(JwtAuthGuard, RoomRolesGuard)
+  @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   getUserOnRoom(
@@ -98,7 +98,7 @@ export class RoomController {
 
   @Delete(':id/:userId')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard, RoomRolesGuard)
+  @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   async deleteUserOnRoom(
@@ -115,7 +115,7 @@ export class RoomController {
   }
 
   @Patch(':id/:userId')
-  @UseGuards(JwtAuthGuard, RoomRolesGuard)
+  @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   updateUserOnRoom(
