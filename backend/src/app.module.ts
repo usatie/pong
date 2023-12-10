@@ -8,6 +8,7 @@ import { RoomModule } from './room/room.module';
 import { EventsModule } from './events/events.module';
 import { ChatModule } from './chat/chat.module';
 import { FriendRequestModule } from './friend-request/friend-request.module';
+import { AvatarModule } from './avatar/avatar.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { FriendRequestModule } from './friend-request/friend-request.module';
     EventsModule,
     ChatModule,
     FriendRequestModule,
+    AvatarModule,
   ],
   controllers: [AppController],
   providers: [AppService],

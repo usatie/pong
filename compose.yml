@@ -7,6 +7,8 @@ services:
     depends_on:
       - frontend
       - backend
+    volumes:
+      - avatar-images:/var/www/avatar
   frontend:
     build: frontend
     command: npm run dev
@@ -41,6 +43,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - avatar-images:/app/public/avatar
   db:
     image: postgres
     restart: always
@@ -53,3 +57,5 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+volumes:
+  avatar-images:
