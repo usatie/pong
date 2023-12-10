@@ -25,6 +25,7 @@ import { RoomEntity } from './entities/room.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
+import { RoomRolesGuard } from './room-member.guard';
 
 @Controller('room')
 @ApiTags('room')
@@ -45,15 +46,15 @@ export class RoomController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  findOne(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
-    return this.roomService.findRoom(id, request['user']);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.roomService.findRoom(id);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   update(
@@ -61,19 +62,16 @@ export class RoomController {
     @Body() updateRoomDto: UpdateRoomDto,
     @Req() request: Request,
   ) {
-    return this.roomService.updateRoom(id, updateRoomDto, request['user']);
+    return this.roomService.updateRoom(id, updateRoomDto, request['userRole']);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
-  async removeRoom(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() request: Request,
-  ) {
-    await this.roomService.removeRoom(id, request['user']);
+  removeRoom(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
+    return this.roomService.removeRoom(id, request['userRole']);
   }
 
   @Post(':id')
@@ -88,35 +86,36 @@ export class RoomController {
   }
 
   @Get(':id/:userId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   getUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
-    @Req() request: Request,
   ) {
-    return this.roomService.findUserOnRoom(id, request['user'], userId);
+    return this.roomService.findUserOnRoom(id, userId);
   }
 
   @Delete(':id/:userId')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   async deleteUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
+    @Req() request: Request,
   ) {
     await this.roomService.removeUserOnRoom(
       id,
-      { id: userId, name: 'test' },
+      request['userRole'],
       userId,
+      request['user'],
     );
   }
 
   @Patch(':id/:userId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoomRolesGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   updateUserOnRoom(
@@ -127,7 +126,7 @@ export class RoomController {
   ) {
     return this.roomService.updateUserOnRoom(
       id,
-      request['user'],
+      request['userRole'],
       userId,
       updateUserOnRoomDto,
     );
