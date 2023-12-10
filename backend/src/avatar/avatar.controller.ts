@@ -34,6 +34,13 @@ export class AvatarController {
   // Public
   @Get('avatar/:filename')
   findOne(@Param('filename') filename: string, @Res() res: Response) {
+    // Validate filename
+    // e.g. 1621234567890-1.png
+    // e.g. default.png
+    // e.g. 1621234567890-1.jpeg
+    if (!filename.match(/^(default|(\d+)-\d+)\.(png|jpeg)$/)) {
+      return res.status(404).send('Not found');
+    }
     res.sendFile(filename, { root: 'public/avatar' });
   }
 
