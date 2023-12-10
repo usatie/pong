@@ -16,10 +16,11 @@ import { AvatarService } from './avatar.service';
 import { UpdateAvatarDto } from './dto/update-avatar.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserGuard } from 'src/user/user.guard';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
+import { CreateAvatarDto } from './dto/create-avatar.dto';
 
 @Controller()
 @ApiTags('avatar')
@@ -36,19 +37,36 @@ export class AvatarController {
   @Post('user/:userId/avatar')
   @UseInterceptors(
     FileInterceptor('avatar', {
+      // File size limit
+      limits: {
+        fileSize: 1024 * 1024,
+      },
+      // File type filter
+      fileFilter: (req, file, cb) => {
+        const allowedMimes = ['image/jpeg', 'image/png'];
+        if (allowedMimes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Unsupported file type'), false);
+        }
+      },
+      // Save file to public/avatar
       storage: multer.diskStorage({
         destination: './public/avatar',
         filename: (req, file, cb) => {
-          const filename = `${Date.now()}-${req.params.userId}`;
+          const ext = file.mimetype.split('/')[1];
+          const filename = `${Date.now()}-${req.params.userId}.${ext}`;
           cb(null, filename);
         },
       }),
     }),
   )
   @UseGuards(JwtAuthGuard, UserGuard)
+  @ApiConsumes('multipart/form-data')
   @ApiBearerAuth()
   create(
     @Param('userId', ParseIntPipe) userId: number,
+    @Body() createAvatarDto: CreateAvatarDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.avatarService.create(userId, file);

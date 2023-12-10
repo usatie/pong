@@ -106,9 +106,11 @@ describe('AvatarController (e2e)', () => {
       const res = await uploadAvatar(userId, expectedFilePath, accessToken)
         .expect(201)
         .expect((res) => expect(res.body.filename).toBeDefined());
-      await getAvatar(res.body.filename)
-        .expect(200)
-        .expect(expectFile(expectedFilePath));
+      const expected = fs.readFileSync(expectedFilePath);
+      const uploaded = fs.readFileSync(
+        path.join(__dirname, '../public/avatar', res.body.filename),
+      );
+      expect(uploaded).toEqual(expected);
     });
   });
 });
