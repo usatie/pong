@@ -25,6 +25,7 @@ import { RoomEntity } from './entities/room.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
+import { RoomRolesGuard } from './room-member.guard';
 
 @Controller('room')
 @ApiTags('room')
@@ -89,6 +90,7 @@ export class RoomController {
 
   @Get(':id/:userId')
   @UseGuards(JwtAuthGuard)
+  @UseGuards(RoomRolesGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   getUserOnRoom(
