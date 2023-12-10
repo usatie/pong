@@ -31,15 +31,10 @@ export class RoomRolesGuard implements CanActivate {
         return false;
       });
   }
-  private matchRole(need: Role, userRole: Role): boolean {
-    return userRole !== undefined
-      ? this.meetRequirement(need, userRole)
-      : false;
-  }
 
   private getUserRole(user: User, roomId: string): Promise<Role> {
     return this.roomService
-      .findUserOnRoom(Number(roomId), user, user.id)
+      .findUserOnRoom(Number(roomId), user.id)
       .then((userOnRoomEntity) => userOnRoomEntity.role)
       .catch(() => Promise.reject());
   }
