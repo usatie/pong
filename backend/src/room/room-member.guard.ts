@@ -1,7 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Reflector } from '@nestjs/core';
-import { roleNeed } from './roles.decorators';
 import { RoomService } from './room.service';
 import { Role } from '@prisma/client';
 
@@ -20,16 +19,14 @@ export class RoomRolesGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): Promise<boolean> | boolean | Observable<boolean> {
-    const need = this.reflector.get(roleNeed, context.getHandler());
-    if (!need) {
-      // roleNeed decorator not found
-      return true;
-    }
     const request = context.switchToHttp().getRequest();
     const user = request['user'];
     const roomId = request.params.id;
     return this.getUserRole(user, roomId)
-      .then((userRole) => this.matchRole(need, userRole))
+      .then((userRole) => {
+        request['userRole'] = userRole;
+        return true;
+      })
       .catch(() => {
         return false;
       });
