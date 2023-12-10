@@ -51,8 +51,6 @@ export default async function Page({
     notFound();
   }
   const userOnRoom = roomInfo.users.map((user: UserOnRoom) => user.userId);
-  console.log("roomInfo", roomInfo);
-  console.log("userOnRomm", userOnRoom);
   const currentUserId = await getUserId();
   if (!currentUserId) {
     console.error("getUserId error");
@@ -60,10 +58,8 @@ export default async function Page({
   }
   const allUsers = await getUsers();
   const participate = allUsers.filter((user) => {
-    console.log(user.id);
     return userOnRoom.includes(user.id);
   });
-  console.log(participate);
   const currentUser = await getUser(parseInt(currentUserId));
   return (
     <>

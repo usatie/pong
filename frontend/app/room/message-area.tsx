@@ -79,18 +79,18 @@ function MessageArea({ roomId, me }: { roomId: number; me: User }) {
     };
   }, [roomId, me.id]);
 
-  const didLogRef = useRef(false);
-  useEffect(() => {
-    if (didLogRef.current === false) {
-      didLogRef.current = true;
-      //      const fetchMessages = async () => {
-      //        const conversation = await getMessages(otherId);
-      //        const messages = conversation;
-      //        setMessages(messages);
-      //      };
-      //      fetchMessages();
-    }
-  }, []);
+  //  const didLogRef = useRef(false);
+  //  useEffect(() => {
+  //    if (didLogRef.current === false) {
+  //      didLogRef.current = true;
+  //      const fetchMessages = async () => {
+  //      const conversation = await getMessages(otherId);
+  //      const messages = conversation;
+  //      setMessages(messages);
+  //      };
+  //      fetchMessages();
+  //    }
+  //  }, []);
 
   const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();

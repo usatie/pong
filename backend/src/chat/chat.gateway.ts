@@ -158,9 +158,9 @@ export class ChatGateway {
     @MessageBody() { roomId, userId }: { roomId: number; userId: number },
     @ConnectedSocket() client: Socket,
   ) {
-    console.log(roomId);
-    console.log(userId);
-    this.logger.log(`join room: ${client.id} joined room ${roomId}`);
+    this.logger.log(
+      `join room: ${client.id} joined room ${roomId} userId ${userId}`,
+    );
     client.join('room/' + roomId);
     this.userMap.set(userId, client.id);
     const blockedUsers = await this.userService.findAllBlocked(userId);
@@ -169,7 +169,7 @@ export class ChatGateway {
 
   @SubscribeMessage('leaveRoom')
   handleLeaveRoom(
-    @MessageBody() roomId: string,
+    @MessageBody() roomId: number,
     @ConnectedSocket() client: Socket,
   ) {
     this.logger.log(`leave room: ${client.id} left room ${roomId}`);

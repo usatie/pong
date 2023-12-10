@@ -19,7 +19,7 @@ const constants = {
   roomId,
   message: {
     userName: 'test-user',
-    text: 'hello',
+    content: 'hello',
     senderId: 1,
     roomId: roomId,
   },
@@ -56,8 +56,6 @@ describe('AppController (e2e)', () => {
         .to('room/' + constants.roomId)
         .fetchSockets();
       const ids = sockets.map((socket) => socket.id);
-      console.log(ids);
-      console.log(ws1.id);
       expect(ids).toHaveLength(1);
       expect(ids).toContain(ws1.id);
     });
@@ -76,9 +74,6 @@ describe('AppController (e2e)', () => {
         .to('room/' + constants.roomId)
         .fetchSockets();
       const ids = sockets.map((socket) => socket.id);
-      console.log(ids);
-      console.log(ws1.id);
-      console.log(ws2.id);
       expect(ids).toHaveLength(2);
       expect(ids).toContain(ws1.id);
       expect(ids).toContain(ws2.id);
