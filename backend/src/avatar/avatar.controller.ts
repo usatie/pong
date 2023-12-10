@@ -72,18 +72,10 @@ export class AvatarController {
     return this.avatarService.create(userId, file);
   }
 
-  @Put('user/:userId/avatar')
-  @UseGuards(JwtAuthGuard, UserGuard)
-  @ApiBearerAuth()
-  update(@Body() updateAvatarDto: UpdateAvatarDto) {
-    return this.avatarService.update(updateAvatarDto);
-  }
-
   @Delete('user/:userId/avatar')
   @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
-  remove() {
-    ///
-    return this.avatarService.remove(0);
+  remove(@Param('userId', ParseIntPipe) userId: number) {
+    return this.avatarService.remove(userId);
   }
 }

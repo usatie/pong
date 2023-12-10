@@ -26,10 +26,6 @@ export class AvatarService {
       });
   }
 
-  update(updateAvatarDto: UpdateAvatarDto) {
-    return `This action updates a #${updateAvatarDto} avatar`;
-  }
-
   findOne(filename: string) {
     return `This action returns a #${filename} avatar`;
   }
