@@ -13,13 +13,14 @@ async function createNestApp(): Promise<INestApplication> {
   return app;
 }
 
-const roomId = 'test-room';
+const roomId = 0;
 
 const constants = {
   roomId,
   message: {
     userName: 'test-user',
-    text: 'hello',
+    content: 'hello',
+    senderId: 1,
     roomId: roomId,
   },
 };
@@ -44,10 +45,10 @@ describe('AppController (e2e)', () => {
   describe('[joinRoom]', () => {
     it('one user should join the room', async () => {
       // joinRoom
-      ws1.emit('joinRoom', constants.roomId);
+      ws1.emit('joinRoom', { roomId: constants.roomId, userId: 1 });
 
       // Wait 100ms for server to handle joinRoom
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Check if the client has joined the room
       const chatGateway = app.get(ChatGateway);
@@ -61,8 +62,8 @@ describe('AppController (e2e)', () => {
 
     it('two users should join the room', async () => {
       // joinRoom
-      ws1.emit('joinRoom', constants.roomId);
-      ws2.emit('joinRoom', constants.roomId);
+      ws1.emit('joinRoom', { roomId: constants.roomId, userId: 1 });
+      ws2.emit('joinRoom', { roomId: constants.roomId, userId: 2 });
 
       // Wait 100ms for server to handle joinRoom
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -83,7 +84,7 @@ describe('AppController (e2e)', () => {
   describe('[newMessage]', () => {
     it('A user should receive a message sent themself', async () => {
       // joinRoom
-      ws1.emit('joinRoom', constants.roomId);
+      ws1.emit('joinRoom', { roomId: constants.roomId, userId: 1 });
 
       // newMessage
       ws1.emit('newMessage', constants.message);
@@ -99,8 +100,8 @@ describe('AppController (e2e)', () => {
 
     it('A user should receive a message sent by another user', async () => {
       // joinRoom
-      ws1.emit('joinRoom', constants.roomId);
-      ws2.emit('joinRoom', constants.roomId);
+      ws1.emit('joinRoom', { roomId: constants.roomId, userId: 1 });
+      ws2.emit('joinRoom', { roomId: constants.roomId, userId: 2 });
 
       // newMessage
       ws1.emit('newMessage', constants.message);

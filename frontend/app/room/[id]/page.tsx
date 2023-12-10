@@ -27,8 +27,19 @@
 
 import ChatRoomCard from "@/app/ui/room/chat-room";
 import { getUserId } from "@/app/lib/session";
-import { getRoom, getUser } from "@/app/lib/actions";
+import { getRoom, getUser, getUsers } from "@/app/lib/actions";
 import { notFound } from "next/navigation";
+import { Separator } from "@/components/ui/separator";
+import { Sidebar } from "@/app/chat/sidebar";
+import MessageArea from "../message-area";
+import type { User } from "@/app/ui/user/card";
+
+type UserOnRoom = {
+  id: number;
+  userId: number;
+  role: string;
+  roomId: number;
+};
 
 export default async function Page({
   params: { id },
@@ -39,11 +50,24 @@ export default async function Page({
   if (!roomInfo) {
     notFound();
   }
+  const userOnRoom = roomInfo.users.map((user: UserOnRoom) => user.userId);
   const currentUserId = await getUserId();
   if (!currentUserId) {
     console.error("getUserId error");
     throw new Error("getUserId error");
   }
+  const allUsers = await getUsers();
+  const participate = allUsers.filter((user) => {
+    return userOnRoom.includes(user.id);
+  });
   const currentUser = await getUser(parseInt(currentUserId));
-  return <ChatRoomCard id={id} user={currentUser} roomName={roomInfo.name} />;
+  return (
+    <>
+      <div className="overflow-auto flex-grow flex gap-4 pb-4">
+        <Sidebar users={participate} />
+        <Separator orientation="vertical" />
+        <MessageArea roomId={id} me={currentUser} />
+      </div>
+    </>
+  );
 }
