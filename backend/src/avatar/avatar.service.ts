@@ -25,10 +25,6 @@ export class AvatarService {
       });
   }
 
-  findOne(filename: string) {
-    return `This action returns a #${filename} avatar`;
-  }
-
   async remove(userId: number) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
