@@ -44,10 +44,7 @@ export function SidebarButton({
     user.role === "OWNER" || user.role === "ADMINISTRATOR",
   );
   const [myRole, setMyRole] = useState(myInfo.role);
-  const isMeOwner = myRole === "OWNER";
-  const isMeAdmin = myRole === "OWNER" || myRole === "ADMINISTRATOR";
-  const isOwner = user.role === "OWNER";
-  let isAdmin = user.role === "OWNER" || user.role === "ADMINISTRATOR";
+  const [userRole, setUserRole] = useState(user.role);
 
   const handleOnClick = () => {
     router.push(`/room/${roomId}`);
@@ -91,10 +88,15 @@ export function SidebarButton({
       }
     };
 
-    const handleUpdateRole = (role: string) => {
+    const handleUpdateRole = (role: string, userId: number) => {
       if (role === "MEMBER" || role === "ADMINISTRATOR") {
         console.log("role", role);
-        setMyRole(role);
+        if (userId === myInfo.userId) {
+          setMyRole(role);
+        }
+        if (userId === user.id) {
+          setUserRole(role);
+        }
       } else {
         console.error("invalid role");
       }
@@ -106,7 +108,7 @@ export function SidebarButton({
       socket.off("kick", handleKick);
       socket.off("updateRole", handleUpdateRole);
     };
-  }, [myInfo.userId, router]);
+  }, [myInfo.userId, user.id, router]);
 
   return (
     <>
@@ -119,8 +121,8 @@ export function SidebarButton({
             <SmallAvatarSkeleton />
             <span className="text-muted-foreground text-sm whitespace-nowrap group-hover:text-primary">
               {truncateString(user.name, 15)}
-              {user.role === "OWNER" && "👑"}
-              {user.role === "ADMINISTRATOR" && "🛡"}
+              {userRole === "OWNER" && "👑"}
+              {userRole === "ADMINISTRATOR" && "🛡"}
             </span>
           </button>
         </ContextMenuTrigger>
@@ -141,12 +143,12 @@ export function SidebarButton({
           </ContextMenuItem>
           {(myRole === "ADMINISTRATOR" || myRole === "OWNER") &&
             myInfo.userId !== user.id && (
-              <ContextMenuItem inset disabled={isOwner}>
+              <ContextMenuItem inset disabled={userRole === "OWNER"}>
                 <button onClick={() => kickUser(roomId, user)}>Kick</button>
               </ContextMenuItem>
             )}
           {myRole === "OWNER" && myInfo.userId !== user.id && (
-            <ContextMenuItem inset disabled={isOwner}>
+            <ContextMenuItem inset disabled={userRole === "OWNER"}>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="terms"
