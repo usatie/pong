@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { HistoryService } from './history.service';
 import { CreateHistoryDto } from './dto/create-history.dto';
-import { UpdateHistoryDto } from './dto/update-history.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserGuard } from 'src/user/user.guard';
