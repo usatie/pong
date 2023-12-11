@@ -176,6 +176,35 @@ export class ChatGateway {
     client.leave('room/' + roomId);
   }
 
+  @SubscribeMessage('kick')
+  handleKick(
+    @MessageBody() { roomId, userId }: { roomId: number; userId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`kick user: ${userId} left room ${roomId}`);
+    if (client.rooms.has('room/' + roomId)) {
+      this.server.to('room/' + roomId).emit('kick', userId, client.id);
+    } else {
+      this.logger.error('socket has not joined this room');
+    }
+  }
+
+  @SubscribeMessage('updateRole')
+  handleUpdataRole(
+    @MessageBody()
+    { roomId, userId, role }: { roomId: number; userId: number; role: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`update role user: ${userId} room ${roomId} role ${role}`);
+    if (client.rooms.has('room/' + roomId)) {
+      this.server
+        .to(this.userMap.get(userId))
+        .emit('updateRole', role, client.id);
+    } else {
+      this.logger.error('socket has not joined this room');
+    }
+  }
+
   handleConnection(@ConnectedSocket() client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
   }
