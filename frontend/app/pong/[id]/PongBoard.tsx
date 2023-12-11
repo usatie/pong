@@ -65,7 +65,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     return gameRef.current;
   }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position]);
 
-  const start = () => {
+  const start = useCallback(() => {
     const game = getGame();
 
     setStartDisabled(true);
@@ -74,7 +74,7 @@ function PongBoard({ id: id }: PongBoardProps) {
       vx: -game.ball.vx,
       vy: -game.ball.vy,
     });
-  };
+  }, [getGame]);
 
   useEffect(() => {
     // TODO: Use --foreground color from CSS
@@ -155,7 +155,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     const handleCollide = () => {
       game.ball.reset();
       game.score.player1++;
-      setStartDisabled(false);
+      setTimeout(start, 1000);
     };
 
     const handleJoin = () => {
@@ -195,7 +195,7 @@ function PongBoard({ id: id }: PongBoardProps) {
       socket.off("log", handleLog);
       socket.disconnect();
     };
-  }, [id, getGame, setLogs]);
+  }, [id, getGame, setLogs, start]);
 
   return (
     <div className="overflow-hidden flex-grow flex gap-8 pb-8">
@@ -203,8 +203,7 @@ function PongBoard({ id: id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"
-      ></canvas>
+        className="border flex-grow"></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
@@ -212,14 +211,12 @@ function PongBoard({ id: id }: PongBoardProps) {
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_battle_mode()}
-            disabled={battleDisabled}
-          >
+            disabled={battleDisabled}>
             Battle
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_practice_mode()}
-            disabled={practiceDisabled}
-          >
+            disabled={practiceDisabled}>
             Practice
           </Button>
         </div>
