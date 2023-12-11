@@ -26,6 +26,9 @@ function useStateCallback<T>(
 interface PongBoardProps {
   id: string;
 }
+
+const POINT_TO_WIN = 3;
+
 function PongBoard({ id: id }: PongBoardProps) {
   const [fps, setFps] = useStateCallback<number>(0);
   const [speed, setSpeed] = useStateCallback<number>(0);
@@ -65,7 +68,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     return gameRef.current;
   }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position]);
 
-  const start = () => {
+  const start = useCallback(() => {
     const game = getGame();
 
     setStartDisabled(true);
@@ -74,7 +77,7 @@ function PongBoard({ id: id }: PongBoardProps) {
       vx: -game.ball.vx,
       vy: -game.ball.vy,
     });
-  };
+  }, [getGame]);
 
   useEffect(() => {
     // TODO: Use --foreground color from CSS
@@ -155,7 +158,11 @@ function PongBoard({ id: id }: PongBoardProps) {
     const handleCollide = () => {
       game.ball.reset();
       game.score.player1++;
-      setStartDisabled(false);
+      game.draw_canvas();
+      console.log(game.score.player1);
+      if (game.score.player1 != POINT_TO_WIN) {
+        setTimeout(() => start(), 1000);
+      }
     };
 
     const handleJoin = () => {
@@ -173,6 +180,11 @@ function PongBoard({ id: id }: PongBoardProps) {
       setPracticeDisabled(false);
     };
 
+    const handleFinish = () => {
+      const game = getGame();
+      game.stop();
+    };
+
     socket.on("connect", handleConnect);
     socket.on("start", handleStart);
     socket.on("right", handleRight);
@@ -182,6 +194,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     socket.on("join", handleJoin);
     socket.on("leave", handleLeave);
     socket.on("log", handleLog);
+    socket.on("finish", handleFinish);
 
     return () => {
       socket.off("connect", handleConnect);
@@ -193,9 +206,10 @@ function PongBoard({ id: id }: PongBoardProps) {
       socket.off("join", handleJoin);
       socket.off("leave", handleLeave);
       socket.off("log", handleLog);
+      socket.off("finish", handleFinish);
       socket.disconnect();
     };
-  }, [id, getGame, setLogs]);
+  }, [id, getGame, setLogs, start]);
 
   return (
     <div className="overflow-hidden flex-grow flex gap-8 pb-8">
