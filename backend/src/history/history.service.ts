@@ -29,10 +29,21 @@ export class HistoryService {
   }
 
   findAll(userId: number) {
-    return this.prisma.user
-      .findFirstOrThrow({
-        where: { id: userId },
-      })
-      .history();
+    return this.prisma.match.findMany({
+      where: {
+        players: {
+          some: {
+            userId,
+          },
+        },
+      },
+      include: {
+        players: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
   }
 }
