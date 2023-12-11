@@ -26,6 +26,9 @@ function useStateCallback<T>(
 interface PongBoardProps {
   id: string;
 }
+
+const POINT_TO_WIN = 3;
+
 function PongBoard({ id: id }: PongBoardProps) {
   const [fps, setFps] = useStateCallback<number>(0);
   const [speed, setSpeed] = useStateCallback<number>(0);
@@ -155,7 +158,11 @@ function PongBoard({ id: id }: PongBoardProps) {
     const handleCollide = () => {
       game.ball.reset();
       game.score.player1++;
-      setTimeout(start, 1000);
+      game.draw_canvas();
+      console.log(game.score.player1);
+      if (game.score.player1 != POINT_TO_WIN) {
+        setTimeout(() => start(), 1000);
+      }
     };
 
     const handleJoin = () => {
@@ -173,6 +180,11 @@ function PongBoard({ id: id }: PongBoardProps) {
       setPracticeDisabled(false);
     };
 
+    const handleFinish = () => {
+      const game = getGame();
+      game.stop();
+    };
+
     socket.on("connect", handleConnect);
     socket.on("start", handleStart);
     socket.on("right", handleRight);
@@ -182,6 +194,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     socket.on("join", handleJoin);
     socket.on("leave", handleLeave);
     socket.on("log", handleLog);
+    socket.on("finish", handleFinish);
 
     return () => {
       socket.off("connect", handleConnect);
@@ -193,6 +206,7 @@ function PongBoard({ id: id }: PongBoardProps) {
       socket.off("join", handleJoin);
       socket.off("leave", handleLeave);
       socket.off("log", handleLog);
+      socket.off("finish", handleFinish);
       socket.disconnect();
     };
   }, [id, getGame, setLogs, start]);
@@ -203,7 +217,8 @@ function PongBoard({ id: id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"></canvas>
+        className="border flex-grow"
+      ></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
@@ -211,12 +226,14 @@ function PongBoard({ id: id }: PongBoardProps) {
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_battle_mode()}
-            disabled={battleDisabled}>
+            disabled={battleDisabled}
+          >
             Battle
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_practice_mode()}
-            disabled={practiceDisabled}>
+            disabled={practiceDisabled}
+          >
             Practice
           </Button>
         </div>

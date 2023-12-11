@@ -9,6 +9,12 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 
+const POINT_TO_WIN = 3;
+
+type Scores = {
+  [key: string]: number;
+};
+
 @WebSocketGateway({
   namespace: '/pong',
 })
@@ -16,6 +22,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   private server: Namespace;
   private logger: Logger = new Logger('EventsGateway');
+  private lostPoints: Scores = {};
 
   handleConnection(client: Socket) {
     this.logger.log(`connect: ${client.id} `);
@@ -33,6 +40,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     if (connectClients && connectClients.size == 2) {
       client.emit('log', 'Your friend is already here. You can start.');
     }
+    this.lostPoints[client.id] = 0;
   }
 
   handleDisconnect(client: Socket) {
@@ -40,6 +48,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     const roomId = client.handshake.query['game_id'] as string;
     this.broadcastToRoom(client, roomId, 'leave');
     client.leave(roomId);
+    delete this.lostPoints[client.id];
   }
 
   @SubscribeMessage('start')
@@ -89,6 +98,13 @@ export class EventsGateway implements OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
     this.broadcastToRooms(client, 'collide');
+    this.lostPoints[client.id]++;
+    if (this.lostPoints[client.id] == POINT_TO_WIN) {
+      this.broadcastToRooms(client, 'finish');
+      this.broadcastToRooms(client, 'log', 'You won the game.');
+      client.emit('finish');
+      client.emit('log', 'You lost the game.');
+    }
     return;
   }
 
