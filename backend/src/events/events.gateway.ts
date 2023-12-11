@@ -10,9 +10,6 @@ import {
 import { Namespace, Socket } from 'socket.io';
 
 @WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
   namespace: '/pong',
 })
 export class EventsGateway implements OnGatewayDisconnect {
