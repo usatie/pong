@@ -9,6 +9,7 @@ import { EventsModule } from './events/events.module';
 import { ChatModule } from './chat/chat.module';
 import { FriendRequestModule } from './friend-request/friend-request.module';
 import { AvatarModule } from './avatar/avatar.module';
+import { HistoryModule } from './history/history.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AvatarModule } from './avatar/avatar.module';
     ChatModule,
     FriendRequestModule,
     AvatarModule,
+    HistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
