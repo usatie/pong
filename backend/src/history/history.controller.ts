@@ -28,7 +28,6 @@ export class HistoryController {
   @Post('history')
   @ApiCreatedResponse()
   create(@Body() createHistoryDto: CreateHistoryDto) {
-    console.log('createHistoryDto: ', createHistoryDto);
     return this.historyService.create(createHistoryDto);
   }
 
