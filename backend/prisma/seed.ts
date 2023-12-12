@@ -30,9 +30,6 @@ async function main() {
   const user2 = users[1];
   const user3 = users[2];
   const user4 = users[3];
-  const user5 = users[4];
-
-  console.log({ user1, user2, user3, user4, user5 });
 
   // Difficult to use upsert because of there is no unique key other than autoincrement id
   if ((await prisma.room.count()) == 0) {
