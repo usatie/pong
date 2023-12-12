@@ -38,6 +38,9 @@ export class AuthService {
   }
 
   async generateTwoFactorAuthenticationSecret(user: User) {
+    if (user.twoFactorSecret) {
+      throw new UnauthorizedException('2FA secret is already generated');
+    }
     const secret = authenticator.generateSecret();
     const otpAuthUrl = authenticator.keyuri(
       user.email,
@@ -63,9 +66,12 @@ export class AuthService {
     dto: TwoFactorAuthenticationEnableDto,
     user: User,
   ) {
+    if (user.twoFactorEnabled) {
+      throw new UnauthorizedException('2FA is already enabled');
+    }
     const isCodeValid = this.isTwoFactorAuthenticationCodeValid(dto.code, user);
     if (!isCodeValid) {
-      throw new UnauthorizedException('Invalid two-factor authentication code');
+      throw new UnauthorizedException('Invalid 2FA code');
     }
     return this.prisma.user.update({
       where: { id: user.id },
