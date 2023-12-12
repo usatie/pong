@@ -5,7 +5,7 @@ import { constants } from './constants';
 import { LoginDto } from 'src/auth/dto/login.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
-describe('RoomController (e2e)', () => {
+describe('HistoryController (e2e)', () => {
   let app: INestApplication;
   beforeAll(async () => {
     app = await initializeApp();
@@ -101,7 +101,7 @@ describe('RoomController (e2e)', () => {
     res.body.forEach(expectHistoryObject);
   };
 
-  describe('Match API', () => {
+  describe('History API', () => {
     let userId: number;
     let accessToken: string;
 
