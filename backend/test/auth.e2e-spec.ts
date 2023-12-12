@@ -53,7 +53,7 @@ describe('AuthController (e2e)', () => {
     expect(true).toBeTruthy();
   });
 
-  describe('POST /auth/2fa/generate', () => {
+  describe('2FA', () => {
     let userId: number;
     let accessToken: string;
 
@@ -76,7 +76,7 @@ describe('AuthController (e2e)', () => {
     });
 
     let secret;
-    it('should generate 2FA secret', async () => {
+    it('[POST /auth/2fa/generate] should generate 2FA secret', async () => {
       const res = await generateTwoFactorAuthenticationSecret(accessToken);
       expect(res.status).toBe(201);
       const expected = {
@@ -88,18 +88,18 @@ describe('AuthController (e2e)', () => {
       secret = res.body.secret;
     });
 
-    it('should not generate 2FA secret if 2FA is already enabled', async () => {
-      await generateTwoFactorAuthenticationSecret(accessToken).expect(401);
+    it('[POST /auth/2fa/generate] should not generate 2FA secret if 2FA is already enabled', async () => {
+      await generateTwoFactorAuthenticationSecret(accessToken).expect(409);
     });
 
-    it('should enable 2FA', async () => {
+    it('[POST /auth/2fa/enable] should enable 2FA', async () => {
       const code = authenticator.generate(secret);
       await enableTwoFactorAuthentication(accessToken, code).expect(200);
     });
 
-    it('should not enable 2FA if 2FA is already enabled', async () => {
+    it('[POST /auth/2fa/enable] should not enable 2FA if 2FA is already enabled', async () => {
       const code = authenticator.generate(secret);
-      await enableTwoFactorAuthentication(accessToken, code).expect(401);
+      await enableTwoFactorAuthentication(accessToken, code).expect(409);
     });
   });
 });

@@ -34,10 +34,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse()
-  async register(@Req() request: { user: User }) {
+  async generate2FASecret(@Req() request: { user: User }) {
     const { secret, otpAuthUrl } =
       await this.authService.generateTwoFactorAuthenticationSecret(
-        request.user,
+        request.user.id,
       );
     return {
       secret,
@@ -54,6 +54,6 @@ export class AuthController {
     @Body() dto: TwoFactorAuthenticationEnableDto,
     @Req() request: { user: User },
   ) {
-    return this.authService.enableTwoFactorAuthentication(dto, request.user);
+    return this.authService.enableTwoFactorAuthentication(dto, request.user.id);
   }
 }

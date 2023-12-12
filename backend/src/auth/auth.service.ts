@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -37,21 +38,24 @@ export class AuthService {
     };
   }
 
-  async generateTwoFactorAuthenticationSecret(user: User) {
-    if (user.twoFactorSecret) {
-      throw new UnauthorizedException('2FA secret is already generated');
-    }
-    const secret = authenticator.generateSecret();
-    const otpAuthUrl = authenticator.keyuri(
-      user.email,
-      process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME,
-      secret,
-    );
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { twoFactorSecret: secret },
+  async generateTwoFactorAuthenticationSecret(userId: number) {
+    return this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user.twoFactorSecret) {
+        throw new ConflictException('2FA secret is already generated');
+      }
+      const secret = authenticator.generateSecret();
+      const otpAuthUrl = authenticator.keyuri(
+        user.email,
+        process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME,
+        secret,
+      );
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { twoFactorSecret: secret },
+      });
+      return { secret, otpAuthUrl };
     });
-    return { secret, otpAuthUrl };
   }
 
   async pipeQrCodeStream(stream: Response, otpAuthUrl: string) {
@@ -64,18 +68,24 @@ export class AuthService {
 
   enableTwoFactorAuthentication(
     dto: TwoFactorAuthenticationEnableDto,
-    user: User,
+    userId: number,
   ) {
-    if (user.twoFactorEnabled) {
-      throw new UnauthorizedException('2FA is already enabled');
-    }
-    const isCodeValid = this.isTwoFactorAuthenticationCodeValid(dto.code, user);
-    if (!isCodeValid) {
-      throw new UnauthorizedException('Invalid 2FA code');
-    }
-    return this.prisma.user.update({
-      where: { id: user.id },
-      data: { twoFactorEnabled: true },
+    return this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user.twoFactorEnabled) {
+        throw new ConflictException('2FA secret is already generated');
+      }
+      const isCodeValid = this.isTwoFactorAuthenticationCodeValid(
+        dto.code,
+        user,
+      );
+      if (!isCodeValid) {
+        throw new UnauthorizedException('Invalid 2FA code');
+      }
+      return this.prisma.user.update({
+        where: { id: user.id },
+        data: { twoFactorEnabled: true },
+      });
     });
   }
 }

@@ -262,7 +262,6 @@ describe('UserController (e2e)', () => {
         email: constants.user.test.email,
         name: constants.user.test.name,
         avatarURL: null,
-        twoFactorSecret: null,
         twoFactorEnabled: false,
       };
       return getUser(userId)
@@ -280,7 +279,6 @@ describe('UserController (e2e)', () => {
         email: constants.user.test.email,
         name: 'new_name',
         avatarURL: null,
-        twoFactorSecret: null,
         twoFactorEnabled: false,
       };
       return updateUser(userId, dto)
