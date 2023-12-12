@@ -30,6 +30,28 @@ export class HistoryService {
 
   // TODO: Remove password from response
   findAll(userId: number) {
+    const SelectUser = {
+      select: {
+        id: true,
+        name: true,
+        avatarURL: true,
+      },
+    };
+    const SelectPlayer = {
+      select: {
+        score: true,
+        winLose: true,
+        user: SelectUser,
+      },
+    };
+    const SelectHistory = {
+      select: {
+        id: true,
+        players: SelectPlayer,
+        result: true,
+        createdAt: true,
+      },
+    };
     return this.prisma.match.findMany({
       where: {
         players: {
@@ -38,13 +60,7 @@ export class HistoryService {
           },
         },
       },
-      include: {
-        players: {
-          include: {
-            user: true,
-          },
-        },
-      },
+      ...SelectHistory,
     });
   }
 }

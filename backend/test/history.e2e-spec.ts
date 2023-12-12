@@ -66,13 +66,9 @@ describe('RoomController (e2e)', () => {
     const expectUser = (user: any) => {
       const expected = {
         id: expect.any(Number),
-        email: expect.any(String),
         name: expect.any(String),
         avatarURL: expect.any(String),
-        password: expect.any(String),
       };
-      // TODO: Remove password and email from response
-      // TODO: Force avatarURL to be not null
       // TODO: Remove this try-catch
       try {
         expect(user).toEqual(expected);
@@ -84,17 +80,10 @@ describe('RoomController (e2e)', () => {
     };
     const expectPlayerObject = (player: any) => {
       const expected = {
-        id: expect.any(Number),
         score: expect.any(Number),
         winLose: expect.any(String),
         user: expect.any(Object),
-        matchId: expect.any(Number),
-        createdAt: expect.any(String),
-        userId: expect.any(Number),
       };
-      // TODO: Remove createdAt from response
-      // TODO: Remove userId from response
-      // TODO: Remove matchId from response
       expect(player).toEqual(expected);
       expectUser(player.user);
     };
