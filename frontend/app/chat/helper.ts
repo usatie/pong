@@ -28,7 +28,7 @@ export function groupMessagesByUser(messages: Message[]): Message[][] {
 
 export function useScrollToBottom(
   ref: React.RefObject<HTMLDivElement>,
-  messages: Message[],
+  messages: Message[]
 ) {
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
 
@@ -39,7 +39,7 @@ export function useScrollToBottom(
       ref.current.scrollTop = ref.current.scrollHeight;
       setIsScrolledToBottom(true);
     }
-  }, []); // 空の依存配列で初回マウント時のみ実行
+  }, [ref]); // 空の依存配列で初回マウント時のみ実行
 
   // メッセージが更新された時に実行
   useEffect(() => {
@@ -47,7 +47,7 @@ export function useScrollToBottom(
     if (ref.current) {
       ref.current.scrollTop = ref.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, ref]);
 
   return isScrolledToBottom;
 }
