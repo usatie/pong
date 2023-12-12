@@ -15,9 +15,10 @@ import {
 } from '@nestjs/swagger';
 import { AuthEntity } from './entity/auth.entity';
 import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtGuardWithout2FA } from './jwt-auth.guard';
 import { User } from '@prisma/client';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
+import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -31,7 +32,7 @@ export class AuthController {
   }
 
   @Post('2fa/generate')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuardWithout2FA)
   @ApiBearerAuth()
   @ApiCreatedResponse()
   async generate2FASecret(@Req() request: { user: User }) {
@@ -47,7 +48,7 @@ export class AuthController {
 
   @Post('2fa/enable')
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuardWithout2FA)
   @ApiBearerAuth()
   @ApiOkResponse()
   async enable2FA(
@@ -55,5 +56,17 @@ export class AuthController {
     @Req() request: { user: User },
   ) {
     return this.authService.enableTwoFactorAuthentication(dto, request.user.id);
+  }
+
+  @Post('2fa/authenticate')
+  @HttpCode(200)
+  @UseGuards(JwtGuardWithout2FA)
+  @ApiBearerAuth()
+  @ApiOkResponse()
+  async twoFactorAuthenticate(
+    @Body() dto: TwoFactorAuthenticationDto,
+    @Req() request: { user: User },
+  ) {
+    return this.authService.twoFactorAuthenticate(dto, request.user.id);
   }
 }

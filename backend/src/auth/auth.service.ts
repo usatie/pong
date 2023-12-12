@@ -12,6 +12,7 @@ import { User } from '@prisma/client';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
+import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +35,10 @@ export class AuthService {
     }
 
     return {
-      accessToken: this.jwtService.sign({ userId: user.id }),
+      accessToken: this.jwtService.sign({
+        userId: user.id,
+        isTwoFactorAuthenticated: false,
+      }),
     };
   }
 
@@ -73,7 +77,7 @@ export class AuthService {
     return this.prisma.$transaction(async (prisma) => {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (user.twoFactorEnabled) {
-        throw new ConflictException('2FA secret is already generated');
+        throw new ConflictException('2FA secret is already enabled');
       }
       const isCodeValid = this.isTwoFactorAuthenticationCodeValid(
         dto.code,
@@ -87,5 +91,22 @@ export class AuthService {
         data: { twoFactorEnabled: true },
       });
     });
+  }
+
+  async twoFactorAuthenticate(dto: TwoFactorAuthenticationDto, userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user.twoFactorEnabled) {
+      throw new ConflictException('2FA secret is not enabled');
+    }
+    const isCodeValid = this.isTwoFactorAuthenticationCodeValid(dto.code, user);
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Invalid 2FA code');
+    }
+    return {
+      accessToken: this.jwtService.sign({
+        userId: user.id,
+        isTwoFactorAuthenticated: true,
+      }),
+    };
   }
 }

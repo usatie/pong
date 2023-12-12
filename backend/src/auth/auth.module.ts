@@ -5,7 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { UserModule } from 'src/user/user.module';
-import { JwtStrategy } from './jwt.strategy';
+import { JwtStrategy, JwtWithout2FAStrategy } from './jwt.strategy';
 
 export const jwtConstants = {
   publicKey: process.env.JWT_PUBLIC_KEY,
@@ -29,6 +29,6 @@ export const jwtConstants = {
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, JwtWithout2FAStrategy],
 })
 export class AuthModule {}
