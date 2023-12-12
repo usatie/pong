@@ -210,3 +210,42 @@ export async function getConversation(userId: number) {
     return conversation;
   }
 }
+
+export async function updateRoomUser(
+  role: string,
+  roomId: number,
+  userId: number,
+) {
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}/${userId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + getAccessToken(),
+    },
+    body: JSON.stringify({ role }),
+  });
+  console.log(res.status);
+  if (!res.ok) {
+    console.error("updateRoomUser error: ", await res.json());
+    throw new Error("updateRoomUser error");
+  } else {
+    const update = await res.json();
+    console.log(update);
+    return "Success";
+  }
+}
+
+export async function deleteRoomUser(roomId: number, userId: number) {
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}/${userId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("deleteRoomUser error: ", await res.json());
+    throw new Error("deleteRoomUser error");
+  } else {
+    return "Success";
+  }
+}
