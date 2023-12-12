@@ -28,6 +28,7 @@ export class HistoryService {
     });
   }
 
+  // TODO: Remove password from response
   findAll(userId: number) {
     return this.prisma.match.findMany({
       where: {
