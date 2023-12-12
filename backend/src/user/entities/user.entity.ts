@@ -24,4 +24,7 @@ export class UserEntity implements User {
 
   @ApiProperty({ required: false, nullable: true })
   twoFactorSecret: string | null;
+
+  @ApiProperty()
+  twoFactorEnabled: boolean;
 }

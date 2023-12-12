@@ -263,6 +263,7 @@ describe('UserController (e2e)', () => {
         name: constants.user.test.name,
         avatarURL: null,
         twoFactorSecret: null,
+        twoFactorEnabled: false,
       };
       return getUser(userId)
         .set('Authorization', `Bearer ${accessToken}`)
@@ -280,6 +281,7 @@ describe('UserController (e2e)', () => {
         name: 'new_name',
         avatarURL: null,
         twoFactorSecret: null,
+        twoFactorEnabled: false,
       };
       return updateUser(userId, dto)
         .set('Authorization', `Bearer ${accessToken}`)

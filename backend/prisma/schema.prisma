@@ -38,7 +38,8 @@ model User {
   history MatchDetail[]
 
   // 2FA
-  twoFactorSecret String?
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean @default(false)
 }
 
 model Room {

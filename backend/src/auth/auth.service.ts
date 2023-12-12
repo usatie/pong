@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
+import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 
 @Injectable()
 export class AuthService {
@@ -52,5 +53,23 @@ export class AuthService {
 
   async pipeQrCodeStream(stream: Response, otpAuthUrl: string) {
     return toFileStream(stream, otpAuthUrl);
+  }
+
+  isTwoFactorAuthenticationCodeValid(code: string, user: User) {
+    return authenticator.verify({ token: code, secret: user.twoFactorSecret });
+  }
+
+  enableTwoFactorAuthentication(
+    dto: TwoFactorAuthenticationEnableDto,
+    user: User,
+  ) {
+    const isCodeValid = this.isTwoFactorAuthenticationCodeValid(dto.code, user);
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Invalid two-factor authentication code');
+    }
+    return this.prisma.user.update({
+      where: { id: user.id },
+      data: { twoFactorEnabled: true },
+    });
   }
 }
