@@ -7,6 +7,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { AuthEntity } from './entity/auth.entity';
 import * as bcrypt from 'bcrypt';
+import { User } from '@prisma/client';
+import { authenticator } from 'otplib';
+import { toFileStream } from 'qrcode';
 
 @Injectable()
 export class AuthService {
@@ -31,5 +34,23 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign({ userId: user.id }),
     };
+  }
+
+  async generateTwoFactorAuthenticationSecret(user: User) {
+    const secret = authenticator.generateSecret();
+    const otpAuthUrl = authenticator.keyuri(
+      user.email,
+      process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME,
+      secret,
+    );
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { twoFactorSecret: secret },
+    });
+    return { secret, otpAuthUrl };
+  }
+
+  async pipeQrCodeStream(stream: Response, otpAuthUrl: string) {
+    return toFileStream(stream, otpAuthUrl);
   }
 }

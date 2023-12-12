@@ -36,6 +36,9 @@ model User {
 
   // Match History
   history MatchDetail[]
+
+  // 2FA
+  twoFactorSecret String?
 }
 
 model Room {
