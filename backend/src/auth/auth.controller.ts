@@ -1,11 +1,9 @@
 import {
   Body,
   Controller,
-  Header,
+  HttpCode,
   Post,
   Req,
-  Res,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -33,19 +31,22 @@ export class AuthController {
   }
 
   @Post('2fa/generate')
-  @Header('Content-Type', 'image/png')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse()
-  async register(@Res() response: Response, @Req() request: { user: User }) {
-    const { otpAuthUrl } =
+  async register(@Req() request: { user: User }) {
+    const { secret, otpAuthUrl } =
       await this.authService.generateTwoFactorAuthenticationSecret(
         request.user,
       );
-    return this.authService.pipeQrCodeStream(response, otpAuthUrl);
+    return {
+      secret,
+      otpAuthUrl,
+    };
   }
 
   @Post('2fa/enable')
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse()
@@ -53,6 +54,6 @@ export class AuthController {
     @Body() dto: TwoFactorAuthenticationEnableDto,
     @Req() request: { user: User },
   ) {
-    this.authService.enableTwoFactorAuthentication(dto, request.user);
+    return this.authService.enableTwoFactorAuthentication(dto, request.user);
   }
 }
