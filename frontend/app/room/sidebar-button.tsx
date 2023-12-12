@@ -82,12 +82,6 @@ export function SidebarButton({
   };
 
   useEffect(() => {
-    const handleKick = (kickId: number) => {
-      if (kickId === myInfo.userId) {
-        router.push("/room");
-      }
-    };
-
     const handleUpdateRole = (role: string, userId: number) => {
       if (role === "MEMBER" || role === "ADMINISTRATOR") {
         console.log("role", role);
@@ -101,14 +95,12 @@ export function SidebarButton({
         console.error("invalid role");
       }
     };
-    socket.on("kick", handleKick);
     socket.on("updateRole", handleUpdateRole);
 
     return () => {
-      socket.off("kick", handleKick);
       socket.off("updateRole", handleUpdateRole);
     };
-  }, [myInfo.userId, user.id, router]);
+  }, [myInfo.userId, user.id]);
 
   return (
     <>

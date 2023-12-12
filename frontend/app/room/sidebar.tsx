@@ -1,6 +1,12 @@
+"use client";
+
+import { toast } from "@/components/ui/use-toast";
 import { Stack } from "@/app/ui/layout/stack";
 import type { User } from "@/app/ui/user/card";
 import { SidebarButton } from "./sidebar-button";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { chatSocket as socket } from "@/socket";
 
 export type UserOnRoom = {
   id: number;
@@ -13,7 +19,7 @@ export type UserWithRole<T> = T & {
   role: "MEMBER" | "ADMINISTRATOR" | "OWNER";
 };
 
-export async function Sidebar({
+export function Sidebar({
   roomId,
   myInfo,
   users,
@@ -22,7 +28,30 @@ export async function Sidebar({
   myInfo: UserOnRoom;
   users: UserWithRole<User>[];
 }) {
-  if (users.length === 0) {
+  const router = useRouter();
+  const [currentUsers, setCurrentUsers] = useState(users);
+
+  useEffect(() => {
+    const handleKick = (kickId: number) => {
+      if (kickId === myInfo.userId) {
+        router.push("/room");
+      } else {
+        toast({
+          title: "User kicked successfully",
+          description: "User " + kickId + " has been kicked",
+        });
+        setCurrentUsers((prevUsers) =>
+          prevUsers.filter((user) => user.id !== kickId),
+        );
+      }
+    };
+    socket.on("kick", handleKick);
+    return () => {
+      socket.off("kick", handleKick);
+    };
+  }, [myInfo.userId, router]);
+
+  if (currentUsers.length === 0) {
     return (
       <div className="overflow-y-auto shrink-0 basis-36 pb-4">
         <span className="text-muted-foreground text-sm whitespace-nowrap">
@@ -34,7 +63,7 @@ export async function Sidebar({
   return (
     <div className="overflow-y-auto shrink-0 basis-36 pb-4">
       <Stack spacing={2}>
-        {users.map((user, index) => (
+        {currentUsers.map((user, index) => (
           <SidebarButton
             roomId={roomId}
             user={user}
