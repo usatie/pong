@@ -21,4 +21,10 @@ export class UserEntity implements User {
 
   @ApiProperty({ required: false, nullable: true })
   avatarURL: string | null;
+
+  @Exclude()
+  twoFactorSecret: string | null;
+
+  @ApiProperty()
+  twoFactorEnabled: boolean;
 }
