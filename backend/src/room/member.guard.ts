@@ -22,7 +22,7 @@ export class MemberGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();
     const { params, user } = req;
-    const { id: roomId } = params;
+    const { roomId } = params;
     if (!roomId) {
       console.log('MemberGuard should only be used on routes with a roomId');
       throw new Error(

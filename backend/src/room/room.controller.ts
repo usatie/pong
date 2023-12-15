@@ -45,9 +45,9 @@ export class RoomController {
     @Body() createRoomDto: CreateRoomDto,
     @CurrentUser() user: User,
   ) {
-    const res = await this.roomService.create(createRoomDto, user);
-    this.chatService.addUserToRoom(res.id, user);
-    return res;
+    const room = await this.roomService.create(createRoomDto, user);
+    this.chatService.addUserToRoom(room.id, user);
+    return room;
   }
 
   @Get()
@@ -56,85 +56,88 @@ export class RoomController {
     return this.roomService.findAllRoom();
   }
 
-  @Get(':id')
+  @Get(':roomId')
   @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.roomService.findRoom(id);
+  findOne(@Param('roomId', ParseIntPipe) roomId: number) {
+    return this.roomService.findRoom(roomId);
   }
 
-  @Patch(':id')
+  @Patch(':roomId')
   @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('roomId', ParseIntPipe) roomId: number,
     @Body() updateRoomDto: UpdateRoomDto,
     @CurrentRole() role: Role,
   ) {
-    return this.roomService.updateRoom(id, updateRoomDto, role);
+    return this.roomService.updateRoom(roomId, updateRoomDto, role);
   }
 
-  @Delete(':id')
+  @Delete(':roomId')
   @HttpCode(204)
   @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
-  removeRoom(@Param('id', ParseIntPipe) id: number, @CurrentRole() role: Role) {
-    return this.roomService.removeRoom(id, role);
+  removeRoom(
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @CurrentRole() role: Role,
+  ) {
+    return this.roomService.removeRoom(roomId, role);
   }
 
-  @Post(':id')
+  @Post(':roomId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   async createUserOnRoom(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('roomId', ParseIntPipe) roomId: number,
     @CurrentUser() user: User,
   ) {
-    const res = await this.roomService.createUserOnRoom(id, user);
-    this.chatService.addUserToRoom(id, user);
+    const res = await this.roomService.createUserOnRoom(roomId, user);
+    this.chatService.addUserToRoom(roomId, user);
     return res;
   }
 
-  @Get(':id/:userId')
+  @Get(':roomId/:userId')
   @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   getUserOnRoom(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('roomId', ParseIntPipe) roomId: number,
     @Param('userId', ParseIntPipe) userId: number,
   ) {
-    return this.roomService.findUserOnRoom(id, userId);
+    return this.roomService.findUserOnRoom(roomId, userId);
   }
 
-  @Delete(':id/:userId')
+  @Delete(':roomId/:userId')
   @HttpCode(204)
   @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   async deleteUserOnRoom(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('roomId', ParseIntPipe) roomId: number,
     @Param('userId', ParseIntPipe) userId: number,
     @CurrentUser() user: User,
     @CurrentRole() role: Role,
   ) {
-    await this.roomService.removeUserOnRoom(id, role, userId, user);
+    await this.roomService.removeUserOnRoom(roomId, role, userId, user);
   }
 
-  @Patch(':id/:userId')
+  @Patch(':roomId/:userId')
   @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   updateUserOnRoom(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('roomId', ParseIntPipe) roomId: number,
     @Param('userId', ParseIntPipe) userId: number,
     @Body() updateUserOnRoomDto: UpdateUserOnRoomDto,
     @CurrentRole() role: Role,
   ) {
     return this.roomService.updateUserOnRoom(
-      id,
+      roomId,
       role,
       userId,
       updateUserOnRoomDto,
