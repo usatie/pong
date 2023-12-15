@@ -39,10 +39,9 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: CreateRoomDto })
-  async create(@Body() createRoomDto: CreateRoomDto, @Req() request: Request) {
-    const res = await this.roomService.create(createRoomDto, request['user']);
-    // TODO: Add user to room
-    this.chatService.addUserToRoom(res.id, request['user']);
+  async create(@Body() createRoomDto: CreateRoomDto, @Req() req: { user }) {
+    const res = await this.roomService.create(createRoomDto, req.user);
+    this.chatService.addUserToRoom(res.id, req.user);
     return res;
   }
 
