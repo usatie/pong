@@ -40,7 +40,7 @@ export class RoomController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiCreatedResponse({ type: CreateRoomDto })
+  @ApiCreatedResponse({ type: RoomEntity })
   async create(
     @Body() createRoomDto: CreateRoomDto,
     @CurrentUser() user: User,

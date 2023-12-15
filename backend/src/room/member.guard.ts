@@ -16,13 +16,9 @@ export class MemberGuard implements CanActivate {
     const { params, user } = req;
     const { roomId } = params;
     if (!roomId) {
-      console.log('MemberGuard should only be used on routes with a roomId');
-      throw new Error(
-        'MemberGuard should only be used on routes with a roomId',
-      );
+      throw new Error('MemberGuard should only be used with :roomId');
     }
     if (typeof roomId !== 'string' || !/^\d+$/.test(roomId)) {
-      console.log('roomId is not a valid integer');
       throw new BadRequestException('roomId parameter must be a valid integer');
     }
     try {
