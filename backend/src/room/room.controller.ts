@@ -27,8 +27,8 @@ import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { MemberGuard } from './member.guard';
 import { ChatService } from 'src/chat/chat.service';
 import { CurrentUser } from 'src/common/current-user.decorator';
-import { Role, User } from '@prisma/client';
-import { CurrentRole } from './current-role.decorator';
+import { User } from '@prisma/client';
+import { Member } from './member.decorator';
 
 @Controller('room')
 @ApiTags('room')
@@ -60,8 +60,8 @@ export class RoomController {
   @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  findOne(@Param('roomId', ParseIntPipe) roomId: number) {
-    return this.roomService.findRoom(roomId);
+  findOne(@Member() member: UserOnRoomEntity) {
+    return this.roomService.findRoom(member.roomId);
   }
 
   @Patch(':roomId')
@@ -69,11 +69,14 @@ export class RoomController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   update(
-    @Param('roomId', ParseIntPipe) roomId: number,
     @Body() updateRoomDto: UpdateRoomDto,
-    @CurrentRole() role: Role,
+    @Member() member: UserOnRoomEntity,
   ) {
-    return this.roomService.updateRoom(roomId, updateRoomDto, role);
+    return this.roomService.updateRoom(
+      member.roomId,
+      updateRoomDto,
+      member.role,
+    );
   }
 
   @Delete(':roomId')
@@ -83,9 +86,9 @@ export class RoomController {
   @ApiNoContentResponse()
   removeRoom(
     @Param('roomId', ParseIntPipe) roomId: number,
-    @CurrentRole() role: Role,
+    @Member() member: UserOnRoomEntity,
   ) {
-    return this.roomService.removeRoom(roomId, role);
+    return this.roomService.removeRoom(member.roomId, member.role);
   }
 
   @Post(':roomId')
@@ -106,10 +109,10 @@ export class RoomController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   getUserOnRoom(
-    @Param('roomId', ParseIntPipe) roomId: number,
     @Param('userId', ParseIntPipe) userId: number,
+    @Member() member: UserOnRoomEntity,
   ) {
-    return this.roomService.findUserOnRoom(roomId, userId);
+    return this.roomService.findUserOnRoom(member.roomId, userId);
   }
 
   @Delete(':roomId/:userId')
@@ -118,12 +121,16 @@ export class RoomController {
   @ApiBearerAuth()
   @ApiNoContentResponse()
   async deleteUserOnRoom(
-    @Param('roomId', ParseIntPipe) roomId: number,
     @Param('userId', ParseIntPipe) userId: number,
     @CurrentUser() user: User,
-    @CurrentRole() role: Role,
+    @Member() member: UserOnRoomEntity,
   ) {
-    await this.roomService.removeUserOnRoom(roomId, role, userId, user);
+    await this.roomService.removeUserOnRoom(
+      member.roomId,
+      member.role,
+      userId,
+      user,
+    );
   }
 
   @Patch(':roomId/:userId')
@@ -131,14 +138,13 @@ export class RoomController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   updateUserOnRoom(
-    @Param('roomId', ParseIntPipe) roomId: number,
     @Param('userId', ParseIntPipe) userId: number,
     @Body() updateUserOnRoomDto: UpdateUserOnRoomDto,
-    @CurrentRole() role: Role,
+    @Member() member: UserOnRoomEntity,
   ) {
     return this.roomService.updateUserOnRoom(
-      roomId,
-      role,
+      member.roomId,
+      member.role,
       userId,
       updateUserOnRoomDto,
     );

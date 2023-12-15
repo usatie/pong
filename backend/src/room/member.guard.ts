@@ -3,17 +3,9 @@ import {
   CanActivate,
   ExecutionContext,
   BadRequestException,
-  UnauthorizedException,
   ForbiddenException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import { RoomService } from './room.service';
-import { Role } from '@prisma/client';
-
-interface User {
-  id: number;
-  name: string;
-}
 
 @Injectable()
 export class MemberGuard implements CanActivate {
@@ -38,7 +30,7 @@ export class MemberGuard implements CanActivate {
         Number(roomId),
         user.id,
       );
-      req.role = userOnRoom.role;
+      req.member = userOnRoom;
     } catch (e) {
       throw new ForbiddenException('You are not a member of this room');
     }
