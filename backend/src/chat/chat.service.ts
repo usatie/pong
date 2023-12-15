@@ -58,6 +58,8 @@ export class ChatService {
   }
 
   createMessage(data) {
+    // TODO: create message
+    data;
     /*
     return this.prisma.message.create({
       data: {
@@ -70,11 +72,15 @@ export class ChatService {
   }
 
   deleteRoom(roomId: number) {
+    roomId;
     // TODO: delete room
     // this.server.socketsLeave(roomId.toString());
   }
 
   sendToRoom(roomId: number, event: string, data: any) {
+    roomId;
+    event;
+    data;
     // TOOD: send to room
     // this.server.to(roomId.toString()).emit(event, data);
   }
