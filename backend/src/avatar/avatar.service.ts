@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class AvatarService {
@@ -27,20 +28,20 @@ export class AvatarService {
 
   async remove(userId: number) {
     // To remove avatar file, we need to know the original avatarURL
-    const avatarURL = await this.prisma.user
-      .findUniqueOrThrow({
-        where: { id: userId },
-      })
-      .then((user) => user.avatarURL);
-    return this.prisma.user
-      .update({
-        where: { id: userId },
-        data: { avatarURL: null },
-      })
-      .then((user) => {
-        if (!avatarURL) return user;
-        fs.rmSync('./public' + avatarURL, { force: true });
-        return user;
-      });
+    let user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+    });
+    const avatarURL = user.avatarURL;
+    user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarURL: null },
+    });
+    if (!avatarURL) return user;
+    try {
+      fs.rmSync(path.join('./public', avatarURL), { force: true });
+    } catch (error) {
+      console.error(error);
+    }
+    return user;
   }
 }

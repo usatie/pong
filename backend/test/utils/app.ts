@@ -135,7 +135,7 @@ export class TestApp {
   getMessagesInRoom = (roomId: number, accessToken: string) =>
     request(this.app.getHttpServer())
       .get(`/room/${roomId}/messages`)
-      .set('Authorization', 'Bearer ' + accessToken);
+      .set('Authorization', `Bearer ${accessToken}`);
 
   /* Match API */
   createMatch = (
