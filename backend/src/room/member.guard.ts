@@ -38,9 +38,8 @@ export class MemberGuard implements CanActivate {
         Number(roomId),
         user.id,
       );
-      req.userRole = userOnRoom.role;
+      req.role = userOnRoom.role;
     } catch (e) {
-      console.log(e);
       throw new ForbiddenException('You are not a member of this room');
     }
     return true;

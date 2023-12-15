@@ -9,7 +9,6 @@ import {
   ParseIntPipe,
   UseGuards,
   HttpCode,
-  Req,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -28,7 +27,8 @@ import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { MemberGuard } from './member.guard';
 import { ChatService } from 'src/chat/chat.service';
 import { CurrentUser } from 'src/common/current-user.decorator';
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
+import { CurrentRole } from './current-role.decorator';
 
 @Controller('room')
 @ApiTags('room')
@@ -71,9 +71,9 @@ export class RoomController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRoomDto: UpdateRoomDto,
-    @Req() request: Request,
+    @CurrentRole() role: Role,
   ) {
-    return this.roomService.updateRoom(id, updateRoomDto, request['userRole']);
+    return this.roomService.updateRoom(id, updateRoomDto, role);
   }
 
   @Delete(':id')
@@ -81,8 +81,8 @@ export class RoomController {
   @UseGuards(JwtAuthGuard, MemberGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
-  removeRoom(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
-    return this.roomService.removeRoom(id, request['userRole']);
+  removeRoom(@Param('id', ParseIntPipe) id: number, @CurrentRole() role: Role) {
+    return this.roomService.removeRoom(id, role);
   }
 
   @Post(':id')
@@ -118,14 +118,9 @@ export class RoomController {
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
     @CurrentUser() user: User,
-    @Req() request: Request,
+    @CurrentRole() role: Role,
   ) {
-    await this.roomService.removeUserOnRoom(
-      id,
-      request['userRole'],
-      userId,
-      user,
-    );
+    await this.roomService.removeUserOnRoom(id, role, userId, user);
   }
 
   @Patch(':id/:userId')
@@ -136,11 +131,11 @@ export class RoomController {
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
     @Body() updateUserOnRoomDto: UpdateUserOnRoomDto,
-    @Req() request: Request,
+    @CurrentRole() role: Role,
   ) {
     return this.roomService.updateUserOnRoom(
       id,
-      request['userRole'],
+      role,
       userId,
       updateUserOnRoomDto,
     );
