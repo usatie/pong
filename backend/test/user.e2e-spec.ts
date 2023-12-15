@@ -1,139 +1,22 @@
-import * as request from 'supertest';
-import { INestApplication } from '@nestjs/common';
 import { initializeApp } from './utils/initialize';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 import { LoginDto } from 'src/auth/dto/login.dto';
 import { expectUser } from './utils/matcher';
 import { constants } from './constants';
+import { TestApp } from './utils/app';
 
 describe('UserController (e2e)', () => {
-  let app: INestApplication;
-
-  /* User API */
-  const getUsers = () => {
-    return request(app.getHttpServer()).get('/user');
-  };
-
-  const getUser = (id: number) => {
-    return request(app.getHttpServer()).get(`/user/${id}`);
-  };
-
-  const updateUser = (id: number, user: UpdateUserDto) => {
-    return request(app.getHttpServer()).patch(`/user/${id}`).send(user);
-  };
-
-  const deleteUser = (id: number) => {
-    return request(app.getHttpServer()).delete(`/user/${id}`);
-  };
-
-  const createUser = (user: CreateUserDto) => {
-    return request(app.getHttpServer()).post('/user').send(user);
-  };
-
-  /* Friend API (Private) */
-  const sendFriendRequest = (
-    userId: number,
-    recipientId: number,
-    accessToken: string,
-  ) => {
-    return request(app.getHttpServer())
-      .post(`/user/${userId}/friendrequest`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ recipientId });
-  };
-
-  const getFriendRequests = (userId: number, accessToken: string) => {
-    return request(app.getHttpServer())
-      .get(`/user/${userId}/friendrequest`)
-      .set('Authorization', `Bearer ${accessToken}`);
-  };
-
-  const cancelFriendRequest = (
-    userId: number,
-    recipientId: number,
-    accessToken: string,
-  ) => {
-    return request(app.getHttpServer())
-      .patch(`/user/${userId}/friendrequest/${recipientId}/cancel`)
-      .set('Authorization', `Bearer ${accessToken}`);
-  };
-
-  const acceptFriendRequest = (
-    userId: number,
-    requesterId: number,
-    accessToken: string,
-  ) => {
-    return request(app.getHttpServer())
-      .patch(`/user/${userId}/friendrequest/${requesterId}/accept`)
-      .set('Authorization', `Bearer ${accessToken}`);
-  };
-
-  const rejectFriendRequest = (
-    userId: number,
-    requesterId: number,
-    accessToken: string,
-  ) => {
-    return request(app.getHttpServer())
-      .patch(`/user/${userId}/friendrequest/${requesterId}/reject`)
-      .set('Authorization', `Bearer ${accessToken}`);
-  };
-
-  const unfriend = (userId: number, friendId: number, accessToken: string) => {
-    return request(app.getHttpServer())
-      .post(`/user/${userId}/unfriend`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ friendId });
-  };
-
-  const getBlockingUsers = (userId: number, accessToken: string) => {
-    return request(app.getHttpServer())
-      .get(`/user/${userId}/block`)
-      .set('Authorization', `Bearer ${accessToken}`);
-  };
-
-  const blockUser = (
-    userId: number,
-    blockedUserId: number,
-    accessToken: string,
-  ) => {
-    return request(app.getHttpServer())
-      .post(`/user/${userId}/block`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ blockedUserId });
-  };
-
-  const unblockUser = (
-    userId: number,
-    blockedUserId: number,
-    accessToken: string,
-  ) => {
-    return request(app.getHttpServer())
-      .post(`/user/${userId}/unblock`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ blockedUserId });
-  };
-
-  /* Friend API (Public) */
-  const getFriends = (userId: number, accessToken: string) => {
-    return request(app.getHttpServer())
-      .get(`/user/${userId}/friend`)
-      .set('Authorization', `Bearer ${accessToken}`);
-  };
-
-  /* Auth API */
-  const login = (login: LoginDto) => {
-    return request(app.getHttpServer()).post('/auth/login').send(login);
-  };
+  let app: TestApp;
 
   beforeAll(async () => {
-    app = await initializeApp();
+    app = new TestApp(await initializeApp());
   });
   afterAll(() => app.close());
 
   describe('Without authentiation', () => {
     it('GET /user should return users list', async () => {
-      const res = await getUsers().expect(200);
+      const res = await app.getUsers().expect(200);
       const users = res.body;
       expect(users).toBeInstanceOf(Array);
       expect(users.length).toBeGreaterThan(0);
@@ -141,15 +24,15 @@ describe('UserController (e2e)', () => {
     });
 
     it('GET /user/:id should return 401 Unauthorized', () => {
-      return getUser(1).expect(401);
+      return app.getUser(1, 'invalid_token').expect(401);
     });
 
     it('PATCH /user/:id should return 401 Unauthorized', () => {
-      return updateUser(1, {}).expect(401);
+      return app.updateUser(1, {}, 'invalid_token').expect(401);
     });
 
     it('DELETE /user/:id should return 401 Unauthorized', () => {
-      return deleteUser(1).expect(401);
+      return app.deleteUser(1, 'invalid_token').expect(401);
     });
   });
 
@@ -160,7 +43,7 @@ describe('UserController (e2e)', () => {
         email: 'invalid',
         password: constants.user.test.password,
       };
-      return createUser(dto).expect(400);
+      return app.createUser(dto).expect(400);
     });
 
     it('POST /user with too short name should return 400 Bad Request', () => {
@@ -169,7 +52,7 @@ describe('UserController (e2e)', () => {
         email: constants.user.test.email,
         password: constants.user.test.password,
       };
-      return createUser(dto).expect(400);
+      return app.createUser(dto).expect(400);
     });
 
     it('POST /user with too short password should return 400 Bad Request', () => {
@@ -178,7 +61,7 @@ describe('UserController (e2e)', () => {
         email: constants.user.test.email,
         password: 'a',
       };
-      return createUser(dto).expect(400);
+      return app.createUser(dto).expect(400);
     });
   });
 
@@ -188,7 +71,7 @@ describe('UserController (e2e)', () => {
         email: 'invalid',
         password: constants.user.test.password,
       };
-      return login(dto).expect(400);
+      return app.login(dto).expect(400);
     });
 
     it('POST /auth/login with email not registered should return 404 Not Found', () => {
@@ -196,7 +79,7 @@ describe('UserController (e2e)', () => {
         email: 'nosuchuser@example.com',
         password: constants.user.test.password,
       };
-      return login(dto).expect(404);
+      return app.login(dto).expect(404);
     });
 
     it('POST /auth/login with invalid password should return 401 Unauthorized', () => {
@@ -204,19 +87,19 @@ describe('UserController (e2e)', () => {
         email: constants.user.susami.email,
         password: 'invalid',
       };
-      return login(dto).expect(401);
+      return app.login(dto).expect(401);
     });
   });
 
   describe('[Sign up] => [Log in] => [Delete]', () => {
-    let userId: number;
-    let accessToken: string;
+    let user;
 
     it('POST /user should return 201 Created', async () => {
-      const res = await createUser(constants.user.test)
+      const res = await app
+        .createUser(constants.user.test)
         .expect(201)
         .expect((res) => expectUser(res.body));
-      userId = res.body.id;
+      user = res.body;
     });
 
     it('POST /auth/login should return 201 Created', async () => {
@@ -224,48 +107,37 @@ describe('UserController (e2e)', () => {
         email: constants.user.test.email,
         password: constants.user.test.password,
       };
-      const res = await login(dto).expect(201);
-      accessToken = res.body.accessToken;
+      const res = await app.login(dto).expect(201);
+      expect(res.body.accessToken).toBeDefined();
+      user.accessToken = res.body.accessToken;
     });
 
     it('DELETE /user/:id should return 204 No Content', async () => {
-      return deleteUser(userId)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(204)
-        .expect({});
+      return app.deleteUser(user.id, user.accessToken).expect(204).expect({});
     });
   });
 
   describe('With authentication', () => {
-    let userId: number;
-    let accessToken: string;
+    let user;
 
     beforeAll(async () => {
-      let res = await createUser(constants.user.test);
-      userId = res.body.id;
-
-      const loginDto: LoginDto = {
-        email: constants.user.test.email,
-        password: constants.user.test.password,
-      };
-      res = await login(loginDto);
-      accessToken = res.body.accessToken;
+      user = await app.createAndLoginUser(constants.user.test);
     });
 
     afterAll(async () => {
-      await deleteUser(userId).set('Authorization', `Bearer ${accessToken}`);
+      await app.deleteUser(user.id, user.accessToken);
     });
 
     it('GET /user/:id should return the user', () => {
       const expected = {
-        id: userId,
+        id: user.id,
         email: constants.user.test.email,
         name: constants.user.test.name,
         avatarURL: null,
         twoFactorEnabled: false,
       };
-      return getUser(userId)
-        .set('Authorization', `Bearer ${accessToken}`)
+      return app
+        .getUser(user.id, user.accessToken)
         .expect(200)
         .expect(expected);
     });
@@ -275,14 +147,14 @@ describe('UserController (e2e)', () => {
         name: 'new_name',
       };
       const expected = {
-        id: userId,
+        id: user.id,
         email: constants.user.test.email,
         name: 'new_name',
         avatarURL: null,
         twoFactorEnabled: false,
       };
-      return updateUser(userId, dto)
-        .set('Authorization', `Bearer ${accessToken}`)
+      return app
+        .updateUser(user.id, dto, user.accessToken)
         .expect(200)
         .expect(expected);
     });
@@ -294,13 +166,13 @@ describe('UserController (e2e)', () => {
 
     beforeAll(async () => {
       const setupUser = async (dto) => {
-        let res = await createUser(dto);
+        let res = await app.createUser(dto);
         const user = res.body;
         const loginDto: LoginDto = {
           email: dto.email,
           password: dto.password,
         };
-        res = await login(loginDto);
+        res = await app.login(loginDto);
         user.accessToken = res.body.accessToken;
         return user;
       };
@@ -309,26 +181,21 @@ describe('UserController (e2e)', () => {
     });
 
     afterAll(async () => {
-      const teardownUser = (user) => {
-        return deleteUser(user.id).set(
-          'Authorization',
-          `Bearer ${user.accessToken}`,
-        );
-      };
-      await teardownUser(user1);
-      await teardownUser(user2);
+      await app.deleteUser(user1.id, user1.accessToken);
+      await app.deleteUser(user2.id, user2.accessToken);
     });
 
     it('Invalid access token should return 401 Unauthorized', async () => {
-      await getFriendRequests(user1.id, 'invalid').expect(401);
-      await sendFriendRequest(user1.id, user2.id, 'invalid').expect(401);
-      await acceptFriendRequest(user1.id, user2.id, 'invalid').expect(401);
-      await rejectFriendRequest(user1.id, user2.id, 'invalid').expect(401);
-      await cancelFriendRequest(user1.id, user2.id, 'invalid').expect(401);
+      await app.getFriendRequests(user1.id, 'invalid').expect(401);
+      await app.sendFriendRequest(user1.id, user2.id, 'invalid').expect(401);
+      await app.acceptFriendRequest(user1.id, user2.id, 'invalid').expect(401);
+      await app.rejectFriendRequest(user1.id, user2.id, 'invalid').expect(401);
+      await app.cancelFriendRequest(user1.id, user2.id, 'invalid').expect(401);
     });
 
     it('user2 should get empty friend requests', async () => {
-      const users = await getFriendRequests(user2.id, user2.accessToken)
+      const users = await app
+        .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
         .then((res) => res.body);
       expect(users).toBeInstanceOf(Array);
@@ -336,10 +203,11 @@ describe('UserController (e2e)', () => {
     });
 
     it('user1 should send a friend request to user2', async () => {
-      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        201,
-      );
-      const users = await getFriendRequests(user2.id, user2.accessToken)
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(201);
+      const users = await app
+        .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
         .then((res) => res.body);
       expect(users).toBeInstanceOf(Array);
@@ -350,10 +218,11 @@ describe('UserController (e2e)', () => {
     });
 
     it('user1 should cancel the friend request to user2', async () => {
-      await cancelFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        200,
-      );
-      const users = await getFriendRequests(user2.id, user2.accessToken)
+      await app
+        .cancelFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(200);
+      const users = await app
+        .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
         .then((res) => res.body);
       expect(users).toBeInstanceOf(Array);
@@ -361,13 +230,14 @@ describe('UserController (e2e)', () => {
     });
 
     it('user2 should reject the friend request from user1', async () => {
-      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        201,
-      );
-      await rejectFriendRequest(user2.id, user1.id, user2.accessToken).expect(
-        200,
-      );
-      const users = await getFriendRequests(user2.id, user2.accessToken)
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(201);
+      await app
+        .rejectFriendRequest(user2.id, user1.id, user2.accessToken)
+        .expect(200);
+      const users = await app
+        .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
         .then((res) => res.body);
       expect(users).toBeInstanceOf(Array);
@@ -375,13 +245,14 @@ describe('UserController (e2e)', () => {
     });
 
     it('user2 should accept the friend request from user1', async () => {
-      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        201,
-      );
-      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
-        200,
-      );
-      const users = await getFriendRequests(user2.id, user2.accessToken)
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(201);
+      await app
+        .acceptFriendRequest(user2.id, user1.id, user2.accessToken)
+        .expect(200);
+      const users = await app
+        .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
         .then((res) => res.body);
       expect(users).toBeInstanceOf(Array);
@@ -395,13 +266,13 @@ describe('UserController (e2e)', () => {
 
     beforeAll(async () => {
       const setupUser = async (dto) => {
-        let res = await createUser(dto);
+        let res = await app.createUser(dto);
         const user = res.body;
         const loginDto: LoginDto = {
           email: dto.email,
           password: dto.password,
         };
-        res = await login(loginDto);
+        res = await app.login(loginDto);
         user.accessToken = res.body.accessToken;
         return user;
       };
@@ -410,38 +281,33 @@ describe('UserController (e2e)', () => {
     });
 
     afterAll(async () => {
-      const teardownUser = (user) => {
-        return deleteUser(user.id).set(
-          'Authorization',
-          `Bearer ${user.accessToken}`,
-        );
-      };
-      await teardownUser(user1);
-      await teardownUser(user2);
+      await app.deleteUser(user1.id, user1.accessToken);
+      await app.deleteUser(user2.id, user2.accessToken);
     });
 
     it('Invalid access token should return 401 Unauthorized', async () => {
-      await getFriends(user1.id, 'invalid').expect(401);
-      await unfriend(user1.id, user2.id, 'invalid').expect(401);
+      await app.getFriends(user1.id, 'invalid').expect(401);
+      await app.unfriend(user1.id, user2.id, 'invalid').expect(401);
     });
 
     it('user1 should get empty friends list', async () => {
-      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await app.getFriends(user1.id, user1.accessToken).expect(200).expect([]);
     });
 
     it('user1 and user2 should become friend', async () => {
-      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        201,
-      );
-      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
-        200,
-      );
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(201);
+      await app
+        .acceptFriendRequest(user2.id, user1.id, user2.accessToken)
+        .expect(200);
     });
 
     it('user1 should get user2 in friends list', async () => {
       const expected = [{ ...user2 }];
       expected.forEach((user) => delete user.accessToken);
-      await getFriends(user1.id, user1.accessToken)
+      await app
+        .getFriends(user1.id, user1.accessToken)
         .expect(200)
         .expect(expected);
     });
@@ -449,17 +315,19 @@ describe('UserController (e2e)', () => {
     it('user2 should get user1 in friends list', async () => {
       const expected = [{ ...user1 }];
       expected.forEach((user) => delete user.accessToken);
-      await getFriends(user2.id, user2.accessToken)
+      await app
+        .getFriends(user2.id, user2.accessToken)
         .expect(200)
         .expect(expected);
     });
 
     it('user1 should unfriend user2', async () => {
-      await unfriend(user1.id, user2.id, user1.accessToken)
+      await app
+        .unfriend(user1.id, user2.id, user1.accessToken)
         .expect(200)
         .expect('Unfriended');
-      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
-      await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
+      await app.getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await app.getFriends(user2.id, user2.accessToken).expect(200).expect([]);
     });
   });
 
@@ -469,13 +337,13 @@ describe('UserController (e2e)', () => {
 
     beforeAll(async () => {
       const setupUser = async (dto) => {
-        let res = await createUser(dto);
+        let res = await app.createUser(dto);
         const user = res.body;
         const loginDto: LoginDto = {
           email: dto.email,
           password: dto.password,
         };
-        res = await login(loginDto);
+        res = await app.login(loginDto);
         user.accessToken = res.body.accessToken;
         return user;
       };
@@ -484,41 +352,38 @@ describe('UserController (e2e)', () => {
     });
 
     afterAll(async () => {
-      const teardownUser = (user) => {
-        return deleteUser(user.id).set(
-          'Authorization',
-          `Bearer ${user.accessToken}`,
-        );
-      };
-      await teardownUser(user1);
-      await teardownUser(user2);
+      await app.deleteUser(user1.id, user1.accessToken);
+      await app.deleteUser(user2.id, user2.accessToken);
     });
 
     it('Invalid access token should return 401 Unauthorized', async () => {
-      await blockUser(user1.id, user2.id, 'invalid').expect(401);
-      await unblockUser(user1.id, user2.id, 'invalid').expect(401);
+      await app.blockUser(user1.id, user2.id, 'invalid').expect(401);
+      await app.unblockUser(user1.id, user2.id, 'invalid').expect(401);
     });
 
     it('user1 and user2 should become friend', async () => {
-      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        201,
-      );
-      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
-        200,
-      );
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(201);
+      await app
+        .acceptFriendRequest(user2.id, user1.id, user2.accessToken)
+        .expect(200);
     });
 
     it('user1 and user2 should get empty blocking users list', async () => {
-      await getBlockingUsers(user1.id, user1.accessToken)
+      await app
+        .getBlockingUsers(user1.id, user1.accessToken)
         .expect(200)
         .expect([]);
-      await getBlockingUsers(user2.id, user2.accessToken)
+      await app
+        .getBlockingUsers(user2.id, user2.accessToken)
         .expect(200)
         .expect([]);
     });
 
     it('user1 should block user2', async () => {
-      await blockUser(user1.id, user2.id, user1.accessToken)
+      await app
+        .blockUser(user1.id, user2.id, user1.accessToken)
         .expect(200)
         .expect('Blocked');
     });
@@ -526,40 +391,45 @@ describe('UserController (e2e)', () => {
     it('user1 should get updated blocking users list', async () => {
       const expected = [{ ...user2 }];
       expected.forEach((user) => delete user.accessToken);
-      await getBlockingUsers(user1.id, user1.accessToken)
+      await app
+        .getBlockingUsers(user1.id, user1.accessToken)
         .expect(200)
         .expect(expected);
     });
 
     it('user2 should get empty blocking users list', async () => {
-      await getBlockingUsers(user2.id, user2.accessToken)
+      await app
+        .getBlockingUsers(user2.id, user2.accessToken)
         .expect(200)
         .expect([]);
     });
 
     it('user1 and user2 should get empty friends list', async () => {
-      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
-      await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
+      await app.getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await app.getFriends(user2.id, user2.accessToken).expect(200).expect([]);
     });
 
     it('user1 should unblock user2', async () => {
-      await unblockUser(user1.id, user2.id, user1.accessToken)
+      await app
+        .unblockUser(user1.id, user2.id, user1.accessToken)
         .expect(200)
         .expect('Unblocked');
     });
 
     it('user1 and user2 should get empty blocking users list', async () => {
-      await getBlockingUsers(user1.id, user1.accessToken)
+      await app
+        .getBlockingUsers(user1.id, user1.accessToken)
         .expect(200)
         .expect([]);
-      await getBlockingUsers(user2.id, user2.accessToken)
+      await app
+        .getBlockingUsers(user2.id, user2.accessToken)
         .expect(200)
         .expect([]);
     });
 
     it('user1 and user2 should get empty friends list', async () => {
-      await getFriends(user1.id, user1.accessToken).expect(200).expect([]);
-      await getFriends(user2.id, user2.accessToken).expect(200).expect([]);
+      await app.getFriends(user1.id, user1.accessToken).expect(200).expect([]);
+      await app.getFriends(user2.id, user2.accessToken).expect(200).expect([]);
     });
   });
 
@@ -569,13 +439,13 @@ describe('UserController (e2e)', () => {
 
     beforeEach(async () => {
       const setupUser = async (dto) => {
-        let res = await createUser(dto);
+        let res = await app.createUser(dto);
         const user = res.body;
         const loginDto: LoginDto = {
           email: dto.email,
           password: dto.password,
         };
-        res = await login(loginDto);
+        res = await app.login(loginDto);
         user.accessToken = res.body.accessToken;
         return user;
       };
@@ -584,69 +454,63 @@ describe('UserController (e2e)', () => {
     });
 
     afterEach(async () => {
-      const teardownUser = (user) => {
-        return deleteUser(user.id).set(
-          'Authorization',
-          `Bearer ${user.accessToken}`,
-        );
-      };
-      await teardownUser(user1);
-      await teardownUser(user2);
+      await app.deleteUser(user1.id, user1.accessToken);
+      await app.deleteUser(user2.id, user2.accessToken);
     });
 
     it('Should not accept requests that doesnt exist', async () => {
-      await acceptFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        404,
-      );
+      await app
+        .acceptFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(404);
     });
 
     it('Should not reject requests that doesnt exist', async () => {
-      await rejectFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        404,
-      );
+      await app
+        .rejectFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(404);
     });
 
     it('Should not cancel requests that doesnt exist', async () => {
-      await cancelFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        404,
-      );
+      await app
+        .cancelFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(404);
     });
 
     it('Should not send request twice', async () => {
-      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        201,
-      );
-      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        409,
-      );
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(201);
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(409);
     });
 
     it('Should not send request to friend', async () => {
-      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        201,
-      );
-      await acceptFriendRequest(user2.id, user1.id, user2.accessToken).expect(
-        200,
-      );
-      await sendFriendRequest(user1.id, user2.id, user1.accessToken).expect(
-        409,
-      );
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(201);
+      await app
+        .acceptFriendRequest(user2.id, user1.id, user2.accessToken)
+        .expect(200);
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(409);
     });
 
     it('Should not send request to blocked user', async () => {
       // user1 blocks user2
-      await blockUser(user1.id, user2.id, user1.accessToken).expect(200);
+      await app.blockUser(user1.id, user2.id, user1.accessToken).expect(200);
 
       // user2 sends request to user1
-      await sendFriendRequest(user2.id, user1.id, user2.accessToken).expect(
-        409,
-      );
+      await app
+        .sendFriendRequest(user2.id, user1.id, user2.accessToken)
+        .expect(409);
     });
 
     it('Should not send requests to self', async () => {
-      await sendFriendRequest(user1.id, user1.id, user1.accessToken).expect(
-        400,
-      );
+      await app
+        .sendFriendRequest(user1.id, user1.id, user1.accessToken)
+        .expect(400);
     });
   });
 });

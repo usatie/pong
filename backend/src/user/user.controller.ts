@@ -56,7 +56,6 @@ export class UserController {
   @Patch(':userId')
   @UseGuards(JwtAuthGuard, UserGuard)
   @ApiBearerAuth()
-  @ApiBearerAuth()
   @ApiOkResponse({ type: UserEntity })
   async update(
     @Param('userId', ParseIntPipe) userId: number,
