@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   UseGuards,
-  Req,
   ParseIntPipe,
 } from '@nestjs/common';
 import { FriendRequestService } from './friend-request.service';
@@ -21,6 +20,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { User } from '@prisma/client';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { UserGuard } from 'src/user/user.guard';
+import { CurrentUser } from 'src/common/current-user.decorator';
 
 @Controller('user/:userId/friendrequest')
 @UseGuards(JwtAuthGuard, UserGuard)
@@ -34,16 +34,16 @@ export class FriendRequestController {
   @ApiCreatedResponse()
   create(
     @Body() createFriendRequestDto: CreateFriendRequestDto,
-    @Req() req: { user: User },
+    @CurrentUser() user: User,
   ) {
-    return this.friendRequestService.create(createFriendRequestDto, req.user);
+    return this.friendRequestService.create(createFriendRequestDto, user);
   }
 
   // Get all friend requests for a user
   @Get()
   @ApiOkResponse({ type: [UserEntity] })
-  async findAll(@Req() req: { user: User }) {
-    const users = await this.friendRequestService.findAll(req.user);
+  async findAll(@CurrentUser() user: User) {
+    const users = await this.friendRequestService.findAll(user);
     return users.map((user) => new UserEntity(user));
   }
 
@@ -52,9 +52,9 @@ export class FriendRequestController {
   @ApiOkResponse()
   accept(
     @Param('requesterId', ParseIntPipe) requesterId: number,
-    @Req() req: { user: User },
+    @CurrentUser() user: User,
   ) {
-    return this.friendRequestService.accept(requesterId, req.user);
+    return this.friendRequestService.accept(requesterId, user);
   }
 
   // Reject a friend request
@@ -62,9 +62,9 @@ export class FriendRequestController {
   @ApiOkResponse()
   reject(
     @Param('requesterId', ParseIntPipe) requesterId: number,
-    @Req() req: { user: User },
+    @CurrentUser() user: User,
   ) {
-    return this.friendRequestService.reject(requesterId, req.user);
+    return this.friendRequestService.reject(requesterId, user);
   }
 
   // Cancel a friend request
@@ -72,8 +72,8 @@ export class FriendRequestController {
   @ApiOkResponse()
   cancel(
     @Param('recipientId', ParseIntPipe) recipientId: number,
-    @Req() req: { user: User },
+    @CurrentUser() user: User,
   ) {
-    return this.friendRequestService.cancel(recipientId, req.user);
+    return this.friendRequestService.cancel(recipientId, user);
   }
 }
