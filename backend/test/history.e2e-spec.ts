@@ -1,135 +1,34 @@
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
 import { initializeApp } from './utils/initialize';
 import { constants } from './constants';
-import { LoginDto } from 'src/auth/dto/login.dto';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { TestApp } from './utils/app';
+import { expectHistoryResponse } from './utils/matcher';
 
 describe('HistoryController (e2e)', () => {
-  let app: INestApplication;
+  let app: TestApp;
   beforeAll(async () => {
-    app = await initializeApp();
+    app = new TestApp(await initializeApp());
   });
   afterAll(() => app.close());
 
-  /* User API */
-  const deleteUser = (id: number) => {
-    return request(app.getHttpServer()).delete(`/user/${id}`);
-  };
-
-  const createUser = (user: CreateUserDto) => {
-    return request(app.getHttpServer()).post('/user').send(user);
-  };
-
-  /* Auth API */
-  const login = (login: LoginDto) => {
-    return request(app.getHttpServer()).post('/auth/login').send(login);
-  };
-
-  /* Match API */
-  const createMatch = (
-    winnerId: number,
-    winnerScore: number,
-    loserId: number,
-    loserScore: number,
-  ) => {
-    return request(app.getHttpServer())
-      .post('/history')
-      .send({
-        winner: {
-          userId: winnerId,
-          score: winnerScore,
-        },
-        loser: {
-          userId: loserId,
-          score: loserScore,
-        },
-      });
-  };
-
-  /* Utils */
-  const getUserIdFromAccessToken = (accessToken: string) => {
-    const payloadBase64 = accessToken.split('.')[1];
-    const payloadBuf = Buffer.from(payloadBase64, 'base64');
-    const payloadString = payloadBuf.toString('utf-8');
-    const payload = JSON.parse(payloadString);
-    return payload.userId;
-  };
-
-  const getHistory = (userId: number, accessToken: string) => {
-    return request(app.getHttpServer())
-      .get(`/user/${userId}/history`)
-      .set('Authorization', `Bearer ${accessToken}`);
-  };
-
-  const expectHistoryResponse = (res: request.Response) => {
-    const expectUser = (user: any) => {
-      const expected = {
-        id: expect.any(Number),
-        name: expect.any(String),
-        avatarURL: expect.any(String),
-      };
-      // TODO: Remove this try-catch
-      try {
-        expect(user).toEqual(expected);
-      } catch {
-        // Remove password from expected object
-        expected.avatarURL = null;
-        expect(user).toEqual(expected);
-      }
-    };
-    const expectPlayerObject = (player: any) => {
-      const expected = {
-        score: expect.any(Number),
-        winLose: expect.any(String),
-        user: expect.any(Object),
-      };
-      expect(player).toEqual(expected);
-      expectUser(player.user);
-    };
-    const expectHistoryObject = (history: any) => {
-      const expected = {
-        id: expect.any(Number),
-        players: expect.any(Array),
-        result: expect.any(String),
-        createdAt: expect.any(String),
-      };
-      expect(history).toEqual(expected);
-      history.players.forEach(expectPlayerObject);
-    };
-    expect(res.body).toBeInstanceOf(Array);
-    res.body.forEach(expectHistoryObject);
-  };
-
   describe('History API', () => {
-    let userId: number;
-    let accessToken: string;
+    let user;
 
     beforeAll(async () => {
-      // Create user
-      let res = await createUser(constants.user.test);
-
-      // Login
-      const loginDto: LoginDto = {
-        email: constants.user.test.email,
-        password: constants.user.test.password,
-      };
-      res = await login(loginDto).expect(201);
-      accessToken = res.body.accessToken;
-      userId = getUserIdFromAccessToken(accessToken);
+      user = await app.createAndLoginUser(constants.user.test);
     });
 
     afterAll(async () => {
-      await deleteUser(userId).set('Authorization', `Bearer ${accessToken}`);
+      await app.deleteUser(user.id, user.accessToken).expect(204);
     });
 
     it('should create a match', async () => {
-      await createMatch(userId, 10, 1, 5).expect(201);
-      await createMatch(userId, 8, 2, 10).expect(201);
+      await app.createMatch(user.id, 10, 1, 5).expect(201);
+      await app.createMatch(user.id, 8, 2, 10).expect(201);
     });
 
     it('should return 200 OK', async () => {
-      await getHistory(userId, accessToken)
+      await app
+        .getHistory(user.id, user.accessToken)
         .expect(200)
         .expect(expectHistoryResponse);
     });

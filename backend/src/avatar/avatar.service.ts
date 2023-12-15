@@ -26,16 +26,20 @@ export class AvatarService {
   }
 
   async remove(userId: number) {
-    const user = await this.prisma.user.findUniqueOrThrow({
-      where: { id: userId },
-    });
-    return this.prisma.user
-      .delete({
+    // To remove avatar file, we need to know the original avatarURL
+    const avatarURL = await this.prisma.user
+      .findUniqueOrThrow({
         where: { id: userId },
       })
-      .then(() => {
-        if (!user.avatarURL) return user;
-        fs.rmSync('./public' + user.avatarURL, { force: true });
+      .then((user) => user.avatarURL);
+    return this.prisma.user
+      .update({
+        where: { id: userId },
+        data: { avatarURL: null },
+      })
+      .then((user) => {
+        if (!avatarURL) return user;
+        fs.rmSync('./public' + avatarURL, { force: true });
         return user;
       });
   }

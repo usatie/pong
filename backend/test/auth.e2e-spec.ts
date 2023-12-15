@@ -1,83 +1,34 @@
-import * as request from 'supertest';
-import { INestApplication } from '@nestjs/common';
 import { initializeApp } from './utils/initialize';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { constants } from './constants';
-import { LoginDto } from 'src/auth/dto/login.dto';
 import { authenticator } from 'otplib';
+import { TestApp } from './utils/app';
 
 describe('AuthController (e2e)', () => {
-  let app: INestApplication;
+  let app: TestApp;
   beforeAll(async () => {
-    app = await initializeApp();
+    app = new TestApp(await initializeApp());
   });
   afterAll(() => app.close());
-
-  /* User API */
-  const deleteUser = (id: number) => {
-    return request(app.getHttpServer()).delete(`/user/${id}`);
-  };
-
-  const createUser = (user: CreateUserDto) => {
-    return request(app.getHttpServer()).post('/user').send(user);
-  };
-
-  /* Auth API */
-  const login = (login: LoginDto) => {
-    return request(app.getHttpServer()).post('/auth/login').send(login);
-  };
-
-  const generateTwoFactorAuthenticationSecret = (accessToken: string) => {
-    return request(app.getHttpServer())
-      .post('/auth/2fa/generate')
-      .set('Authorization', `Bearer ${accessToken}`);
-  };
-
-  const enableTwoFactorAuthentication = (accessToken: string, code: string) => {
-    return request(app.getHttpServer())
-      .post('/auth/2fa/enable')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ code });
-  };
-
-  /* Utils */
-  const getUserIdFromAccessToken = (accessToken: string) => {
-    const payloadBase64 = accessToken.split('.')[1];
-    const payloadBuf = Buffer.from(payloadBase64, 'base64');
-    const payloadString = payloadBuf.toString('utf-8');
-    const payload = JSON.parse(payloadString);
-    return payload.userId;
-  };
 
   it('should be defined', () => {
     expect(true).toBeTruthy();
   });
 
   describe('2FA', () => {
-    let userId: number;
-    let accessToken: string;
-
+    let user;
     beforeAll(async () => {
-      // Create user
-      let res = await createUser(constants.user.test);
-
-      // Login
-      const loginDto: LoginDto = {
-        email: constants.user.test.email,
-        password: constants.user.test.password,
-      };
-      res = await login(loginDto).expect(201);
-      accessToken = res.body.accessToken;
-      userId = getUserIdFromAccessToken(accessToken);
+      user = await app.createAndLoginUser(constants.user.test);
     });
 
     afterAll(async () => {
-      await deleteUser(userId).set('Authorization', `Bearer ${accessToken}`);
+      await app.deleteUser(user.id, user.accessToken).expect(204);
     });
 
     let secret;
     it('[POST /auth/2fa/generate] should generate 2FA secret', async () => {
-      const res = await generateTwoFactorAuthenticationSecret(accessToken);
+      const res = await app.generateTwoFactorAuthenticationSecret(
+        user.accessToken,
+      );
       expect(res.status).toBe(201);
       const expected = {
         secret: expect.any(String),
@@ -89,17 +40,31 @@ describe('AuthController (e2e)', () => {
     });
 
     it('[POST /auth/2fa/generate] should not generate 2FA secret if 2FA is already enabled', async () => {
-      await generateTwoFactorAuthenticationSecret(accessToken).expect(409);
+      await app
+        .generateTwoFactorAuthenticationSecret(user.accessToken)
+        .expect(409);
     });
 
     it('[POST /auth/2fa/enable] should enable 2FA', async () => {
       const code = authenticator.generate(secret);
-      await enableTwoFactorAuthentication(accessToken, code).expect(200);
+      await app
+        .enableTwoFactorAuthentication(code, user.accessToken)
+        .expect(200);
     });
 
-    it('[POST /auth/2fa/enable] should not enable 2FA if 2FA is already enabled', async () => {
+    it('[POST /auth/2fa/enable] should not enable if 2FA is already enabled', async () => {
       const code = authenticator.generate(secret);
-      await enableTwoFactorAuthentication(accessToken, code).expect(409);
+      await app
+        .enableTwoFactorAuthentication(code, user.accessToken)
+        .expect(409);
+    });
+
+    it('[POST /auth/2fa/authenticate] should authenticate 2FA', async () => {
+      const code = authenticator.generate(secret);
+      const res = await app
+        .twoFactorAuthenticate(code, user.accessToken)
+        .expect(200);
+      user.accessToken = res.body.accessToken;
     });
   });
 });
