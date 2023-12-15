@@ -11,6 +11,12 @@ import { ChatService } from './chat.service';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { UserService } from '../user/user.service';
 
+class CreateMessageDto {
+  content: string;
+  roomId: number;
+  userId: number;
+}
+
 type RoomChat = {
   userName: string;
   content: string;
@@ -216,11 +222,40 @@ export class ChatGateway {
     //    }
   }
 
+  @SubscribeMessage('message')
+  async handleMessage(
+    @MessageBody() data: CreateMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`message: ${data}`);
+    // Check if a user is in the room
+    if (!client.rooms.has(data.roomId.toString())) {
+      this.logger.error('socket has not joined this room');
+      return;
+    }
+
+    // Check if the userId is valid
+    if (this.chatService.getUserId(client) !== data.userId) {
+      this.logger.error('invalid userId');
+      return;
+    }
+
+    // Save message to the database
+    await this.chatService.createMessage(data);
+
+    // Send message to the room
+    const room = this.server.to(data.roomId.toString());
+    room.emit('message', data);
+  }
+
   handleConnection(@ConnectedSocket() client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
+
+    this.chatService.handleConnection(client);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+    this.chatService.handleDisconnect(client);
   }
 }

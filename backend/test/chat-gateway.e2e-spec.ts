@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Socket, io } from 'socket.io-client';
 import { AppModule } from 'src/app.module';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { TestApp } from './utils/app';
 
 async function createNestApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -13,35 +13,167 @@ async function createNestApp(): Promise<INestApplication> {
   return app;
 }
 
-const roomId = 0;
-
-const constants = {
-  roomId,
-  message: {
-    userName: 'test-user',
-    content: 'hello',
-    senderId: 1,
-    roomId: roomId,
-  },
-};
-
-describe('AppController (e2e)', () => {
-  let app: INestApplication; // Server
+describe('ChatGateway and ChatController (e2e)', () => {
+  let app: TestApp;
   let ws1: Socket; // Client socket 1
   let ws2: Socket; // Client socket 2
+  let user1, user2;
 
-  beforeEach(async () => {
-    app = await createNestApp();
-    await app.listen(3000);
-    ws1 = io('ws://localhost:3000/chat');
-    ws2 = io('ws://localhost:3000/chat');
+  beforeAll(async () => {
+    //app = await initializeApp();
+    const _app = await createNestApp();
+    await _app.listen(3000);
+    app = new TestApp(_app);
+    const dto1 = {
+      name: 'test-user1',
+      email: 'test1@test.com',
+      password: 'test-password',
+    };
+    const dto2 = {
+      name: 'test-user2',
+      email: 'test2@test.com',
+      password: 'test-password',
+    };
+    user1 = await app.createAndLoginUser(dto1);
+    user2 = await app.createAndLoginUser(dto2);
   });
-  afterEach(async () => {
+
+  afterAll(async () => {
+    await app.deleteUser(user1.id, user1.accessToken).expect(204);
+    await app.deleteUser(user2.id, user2.accessToken).expect(204);
     await app.close();
     ws1.close();
     ws2.close();
   });
 
+  // 1.
+  // RoomController
+  // POST /room/ -> create room -> ChatGateway.joinRoom(roomId, userId)
+  // POST /room/:roomId -> enter room -> ChatGateway.joinRoom(roomId, userId)
+  // DELETE /room/:roomId/:userId -> leave room -> ChatGateway.leaveRoom(roomId, userId)
+  // DELETE /room/:roomId -> delete room -> ChatGateway.deleteRoom(roomId)
+
+  // ChatController
+  // POST /room/:roomId -> save message to db -> ChatGateway.newMessage(message)
+
+  // ChatGateway
+  // handleConnection: accessToken -> map[userId] = socket.id -> joinRoom
+  // handleDisconnect: accessToken
+  // on 'message' -> to(roomId).emit('message')
+
+  // 2.
+  // ChatGateway
+  // handleConnection: accessToken -> map[userId] = socket.id -> joinRoom
+  // handleDisconnect: accessToken
+  // on 'join' -> prisma.room.update -> joinRoom
+  // on 'leave' ->
+  // on 'send' -> to(roomId).send('recv')
+
+  // 3.
+  describe('Chat Usage', () => {
+    afterAll(async () => {
+      await app.deleteRoom(room.id, user1.accessToken).expect(204);
+    });
+    // Chat
+    it('Connect to chat server', async () => {
+      ws1 = io('ws://localhost:3000/chat', {
+        auth: { token: user1.accessToken },
+      });
+      ws2 = io('ws://localhost:3000/chat', {
+        auth: { token: user2.accessToken },
+      });
+      expect(ws1).toBeDefined();
+      expect(ws2).toBeDefined();
+    });
+
+    // // Enter room by API call
+    let room;
+    it('Create and enter a room', async () => {
+      const res = await app
+        .createRoom({ name: 'test-room' }, user1.accessToken)
+        .expect(201);
+      room = res.body;
+      expect(room.id).toBeDefined();
+      // user2 (ws2) enters the room
+      await app.enterRoom(room.id, user2.accessToken).expect(201);
+    });
+
+    // Setup promises to recv messages
+    let ctx1, ctx2: Promise<void>;
+    it('Setup promises to recv messages', () => {
+      ctx1 = new Promise<void>((resolve) => {
+        ws2.on('message', (data) => {
+          const expected = {
+            userId: user1.id,
+            roomId: room.id,
+            content: 'hello',
+          };
+          expect(data).toEqual(expected);
+          const ack = {
+            userId: user2.id,
+            roomId: room.id,
+            content: 'ACK: ' + data.content,
+          };
+          ws2.emit('message', ack);
+          ws2.off('message');
+          resolve();
+        });
+      });
+      ctx2 = new Promise<void>((resolve) => {
+        ws1.on('message', (data) => {
+          if (data.userId === user1.id) return;
+          const expected = {
+            userId: user2.id,
+            roomId: room.id,
+            content: 'ACK: hello',
+          };
+          expect(data).toEqual(expected);
+          ws1.off('message');
+          resolve();
+        });
+      });
+    });
+
+    // Send messages
+    it('user1 sends messages', async () => {
+      const helloMessage = {
+        userId: user1.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws1.emit('message', helloMessage);
+    });
+
+    it('user2 receives messages and send ACK', async () => {
+      await ctx1;
+    });
+
+    it('user1 receives ACK', async () => {
+      await ctx2;
+    });
+
+    // it('user1 should get all messages in the room', async () => {
+    //   const res = await getMessagesInRoom(room.id, user1.accessToken).expect(
+    //     200,
+    //   );
+    //   const messages = res.body;
+    //   expect(messages).toHaveLength(2);
+    //   expect(messages).toEqual([
+    //     {
+    //       userId: user1.id,
+    //       roomId: room.id,
+    //       content: 'hello',
+    //     },
+    //     {
+    //       userId: user2.id,
+    //       roomId: room.id,
+    //       content: 'ACK: hello',
+    //     },
+    //   ]);
+    // });
+  });
+
+  /*
   describe('[joinRoom]', () => {
     it('one user should join the room', async () => {
       // joinRoom
@@ -86,16 +218,17 @@ describe('AppController (e2e)', () => {
       // joinRoom
       ws1.emit('joinRoom', { roomId: constants.roomId, userId: 1 });
 
-      // newMessage
-      ws1.emit('newMessage', constants.message);
-
       // client receives the message
-      await new Promise<void>((resolve) => {
+      const done = new Promise<void>((resolve) => {
         ws1.on('sendToClient', (data) => {
           expect(data).toEqual(constants.message);
           resolve();
         });
       });
+
+      // newMessage
+      ws1.emit('newMessage', constants.message);
+      await done;
     });
 
     it('A user should receive a message sent by another user', async () => {
@@ -113,12 +246,16 @@ describe('AppController (e2e)', () => {
   describe('[privateMessage]', () => {
     // TODO
   });
+  */
+
+  /*
   describe('[block]', () => {
     // TODO
   });
   describe('[unblock]', () => {
     // TODO
   });
+  */
   describe('[leaveRoom]', () => {
     // TODO
   });
