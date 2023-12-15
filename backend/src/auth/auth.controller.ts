@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiBearerAuth,
@@ -16,9 +9,10 @@ import {
 import { AuthEntity } from './entity/auth.entity';
 import { LoginDto } from './dto/login.dto';
 import { JwtGuardWithout2FA } from './jwt-auth.guard';
-import { User } from '@prisma/client';
+import type { User } from '@prisma/client';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
+import { CurrentUser } from 'src/common/current-user.decorator';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -35,11 +29,9 @@ export class AuthController {
   @UseGuards(JwtGuardWithout2FA)
   @ApiBearerAuth()
   @ApiCreatedResponse()
-  async generate2FASecret(@Req() request: { user: User }) {
+  async generate2FASecret(@CurrentUser() user: User) {
     const { secret, otpAuthUrl } =
-      await this.authService.generateTwoFactorAuthenticationSecret(
-        request.user.id,
-      );
+      await this.authService.generateTwoFactorAuthenticationSecret(user.id);
     return {
       secret,
       otpAuthUrl,
@@ -53,9 +45,9 @@ export class AuthController {
   @ApiOkResponse()
   async enable2FA(
     @Body() dto: TwoFactorAuthenticationEnableDto,
-    @Req() request: { user: User },
+    @CurrentUser() user: User,
   ) {
-    return this.authService.enableTwoFactorAuthentication(dto, request.user.id);
+    return this.authService.enableTwoFactorAuthentication(dto, user.id);
   }
 
   @Post('2fa/authenticate')
@@ -65,8 +57,8 @@ export class AuthController {
   @ApiOkResponse()
   async twoFactorAuthenticate(
     @Body() dto: TwoFactorAuthenticationDto,
-    @Req() request: { user: User },
+    @CurrentUser() user: User,
   ) {
-    return this.authService.twoFactorAuthenticate(dto, request.user.id);
+    return this.authService.twoFactorAuthenticate(dto, user.id);
   }
 }

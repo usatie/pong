@@ -27,6 +27,8 @@ import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { MemberGuard } from './member.guard';
 import { ChatService } from 'src/chat/chat.service';
+import { CurrentUser } from 'src/common/current-user.decorator';
+import { User } from '@prisma/client';
 
 @Controller('room')
 @ApiTags('room')
@@ -39,9 +41,12 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: CreateRoomDto })
-  async create(@Body() createRoomDto: CreateRoomDto, @Req() req: { user }) {
-    const res = await this.roomService.create(createRoomDto, req.user);
-    this.chatService.addUserToRoom(res.id, req.user);
+  async create(
+    @Body() createRoomDto: CreateRoomDto,
+    @CurrentUser() user: User,
+  ) {
+    const res = await this.roomService.create(createRoomDto, user);
+    this.chatService.addUserToRoom(res.id, user);
     return res;
   }
 
@@ -86,10 +91,10 @@ export class RoomController {
   @ApiOkResponse({ type: RoomEntity })
   async createUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
-    @Req() request: Request,
+    @CurrentUser() user: User,
   ) {
-    const res = await this.roomService.createUserOnRoom(id, request['user']);
-    this.chatService.addUserToRoom(id, request['user']);
+    const res = await this.roomService.createUserOnRoom(id, user);
+    this.chatService.addUserToRoom(id, user);
     return res;
   }
 
@@ -112,13 +117,14 @@ export class RoomController {
   async deleteUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Param('userId', ParseIntPipe) userId: number,
+    @CurrentUser() user: User,
     @Req() request: Request,
   ) {
     await this.roomService.removeUserOnRoom(
       id,
       request['userRole'],
       userId,
-      request['user'],
+      user,
     );
   }
 
