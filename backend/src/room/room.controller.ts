@@ -26,17 +26,23 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { MemberGuard } from './member.guard';
+import { ChatService } from 'src/chat/chat.service';
 
 @Controller('room')
 @ApiTags('room')
 export class RoomController {
-  constructor(private readonly roomService: RoomService) {}
+  constructor(
+    private readonly roomService: RoomService,
+    private chatService: ChatService,
+  ) {}
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: CreateRoomDto })
-  create(@Body() createRoomDto: CreateRoomDto, @Req() request: Request) {
-    return this.roomService.create(createRoomDto, request['user']);
+  async create(@Body() createRoomDto: CreateRoomDto, @Req() req: { user }) {
+    const res = await this.roomService.create(createRoomDto, req.user);
+    this.chatService.addUserToRoom(res.id, req.user);
+    return res;
   }
 
   @Get()
@@ -78,11 +84,13 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  createUserOnRoom(
+  async createUserOnRoom(
     @Param('id', ParseIntPipe) id: number,
     @Req() request: Request,
   ) {
-    return this.roomService.createUserOnRoom(id, request['user']);
+    const res = await this.roomService.createUserOnRoom(id, request['user']);
+    this.chatService.addUserToRoom(id, request['user']);
+    return res;
   }
 
   @Get(':id/:userId')

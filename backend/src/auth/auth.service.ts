@@ -13,6 +13,7 @@ import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
+import { jwtConstants } from './auth.module';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +41,19 @@ export class AuthService {
         isTwoFactorAuthenticated: false,
       }),
     };
+  }
+
+  async verifyAccessToken(accessToken: string) {
+    const payload = this.jwtService.verify(accessToken, {
+      publicKey: jwtConstants.publicKey,
+    });
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.userId },
+    });
+    if (!user) {
+      throw new NotFoundException(`No user found for id: ${payload.userId}`);
+    }
+    return user;
   }
 
   async generateTwoFactorAuthenticationSecret(userId: number) {

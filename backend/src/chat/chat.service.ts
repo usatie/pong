@@ -1,11 +1,117 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
+import { Socket } from 'socket.io';
+import { WebSocketGateway } from '@nestjs/websockets';
+import { AuthService } from 'src/auth/auth.service';
+import { CreateMessageDto } from './dto/craete-message.dto';
 
 @Injectable()
+@WebSocketGateway()
 export class ChatService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private authService: AuthService,
+  ) {}
+
+  // Map<User.id, Socket>
+  private clients = new Map<User['id'], Socket>();
+  private users = new Map<Socket['id'], User>();
+
+  getUserId(client: Socket) {
+    const user = this.users.get(client.id);
+    if (user) {
+      return user.id;
+    }
+    return undefined;
+  }
+
+  addClient(user: User, client: Socket) {
+    this.clients.set(user.id, client);
+    this.users.set(client.id, user);
+  }
+
+  removeClient(client: Socket) {
+    const user = this.users.get(client.id);
+    if (user) {
+      this.clients.delete(user.id);
+      this.users.delete(client.id);
+    }
+  }
+
+  addUserToRoom(roomId: number, user: User) {
+    const client = this.clients.get(user.id);
+    if (client) {
+      client.join(roomId.toString());
+    }
+  }
+
+  removeUserFromRoom(roomId: number, user: User) {
+    const client = this.clients.get(user.id);
+    if (client) {
+      client.leave(roomId.toString());
+    }
+  }
+
+  createMessage(data: CreateMessageDto) {
+    // TODO: create message
+    data;
+    /*
+    return this.prisma.message.create({
+      data: {
+        content,
+        room: { connect: { id: roomId } },
+        user: { connect: { id: userId } },
+      },
+    });
+    */
+  }
+
+  deleteRoom(roomId: number) {
+    roomId;
+    // TODO: delete room
+    // this.server.socketsLeave(roomId.toString());
+  }
+
+  sendToRoom(roomId: number, event: string, data: any) {
+    roomId;
+    event;
+    data;
+    // TOOD: send to room
+    // this.server.to(roomId.toString()).emit(event, data);
+  }
+
+  async handleConnection(client: Socket) {
+    const token = client.handshake.auth.token;
+    if (!token) {
+      throw new UnauthorizedException('No token provided');
+    }
+    try {
+      const user = await this.authService.verifyAccessToken(token);
+      this.addClient(user, client);
+      const rooms = await this.prisma.room.findMany({
+        where: {
+          users: {
+            some: {
+              userId: user.id,
+            },
+          },
+        },
+      });
+      rooms.forEach((room) => this.addUserToRoom(room.id, user));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  handleDisconnect(client: Socket) {
+    this.removeClient(client);
+  }
 
   async createDirectMessage(senderId: number, dto: CreateDirectMessageDto) {
     return this.prisma.directMessage.create({
