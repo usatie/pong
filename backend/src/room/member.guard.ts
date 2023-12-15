@@ -26,9 +26,17 @@ export class MemberGuard implements CanActivate {
         Number(roomId),
         user.id,
       );
+      // If userOnRoom is found, add it to the request object
+      // so that it can be accessed in the controller
       req.member = userOnRoom;
     } catch (e) {
-      throw new ForbiddenException('You are not a member of this room');
+      if (e.code === 'P2025') {
+        // If userOnRoom is not found, throw a ForbiddenException
+        throw new ForbiddenException('You are not a member of this room');
+      } else {
+        // Otherwise, throw the error
+        throw e;
+      }
     }
     return true;
   }
