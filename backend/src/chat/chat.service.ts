@@ -9,6 +9,7 @@ import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { WebSocketGateway } from '@nestjs/websockets';
 import { AuthService } from 'src/auth/auth.service';
+import { CreateMessageDto } from './dto/craete-message.dto';
 
 @Injectable()
 @WebSocketGateway()
@@ -57,7 +58,7 @@ export class ChatService {
     }
   }
 
-  createMessage(data) {
+  createMessage(data: CreateMessageDto) {
     // TODO: create message
     data;
     /*

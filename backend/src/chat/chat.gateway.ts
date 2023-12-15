@@ -10,12 +10,7 @@ import { Logger } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { UserService } from '../user/user.service';
-
-class CreateMessageDto {
-  content: string;
-  roomId: number;
-  userId: number;
-}
+import { CreateMessageDto } from './dto/craete-message.dto';
 
 type RoomChat = {
   userName: string;
