@@ -29,35 +29,27 @@ export const expectUserOnRoom = (userOnRoom) => {
 };
 
 export const expectUser = (user: any) => {
+  const { avatarURL, ...rest } = user;
+  expect([null, expect.any(String)]).toContain(avatarURL);
   const expected = {
     id: expect.any(Number),
     email: expect.any(String),
     name: expect.any(String),
     twoFactorEnabled: expect.any(Boolean),
-    avatarURL: expect.any(String),
+    // avatarURL: expect., // string | null
   };
-  // TODO: Remove this try-catch
-  // How can I set avatarURL "any string or null"?
-  try {
-    expect(user).toEqual(expected);
-  } catch {
-    expected.avatarURL = null;
-    expect(user).toEqual(expected);
-  }
+  expect(rest).toEqual(expected);
 };
 
 export const expectPublicUser = (user: any) => {
+  const { avatarURL, ...rest } = user;
+  expect([null, expect.any(String)]).toContain(avatarURL);
   const expected = {
     id: expect.any(Number),
     name: expect.any(String),
-    avatarURL: expect.any(String),
+    // avatarURL: expect.anything(), // string | null
   };
-  try {
-    expect(user).toEqual(expected);
-  } catch {
-    expected.avatarURL = null;
-    expect(user).toEqual(expected);
-  }
+  expect(rest).toEqual(expected);
 };
 
 export const expectPlayerObject = (player: any) => {

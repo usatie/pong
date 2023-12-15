@@ -177,8 +177,8 @@ export class TestApp {
   updateUser = (id: number, user: UpdateUserDto, accessToken: string) =>
     request(this.app.getHttpServer())
       .patch(`/user/${id}`)
-      .send(user)
-      .set('Authorization', `Bearer ${accessToken}`);
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(user);
 
   deleteUser = (id: number, accessToken: string) =>
     request(this.app.getHttpServer())
