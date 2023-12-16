@@ -20,7 +20,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { User } from '@prisma/client';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { UserGuard } from 'src/user/user.guard';
-import { CurrentUser } from 'src/common/current-user.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('user/:userId/friendrequest')
 @UseGuards(JwtAuthGuard, UserGuard)

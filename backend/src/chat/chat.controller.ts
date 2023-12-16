@@ -8,7 +8,7 @@ import {
 import { ChatService } from './chat.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { CurrentUser } from 'src/common/current-user.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from '@prisma/client';
 
 @Controller('chat')

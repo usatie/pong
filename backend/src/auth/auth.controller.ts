@@ -12,7 +12,7 @@ import { JwtGuardWithout2FA } from './jwt-auth.guard';
 import type { User } from '@prisma/client';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
-import { CurrentUser } from 'src/common/current-user.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('auth')
 @ApiTags('auth')
