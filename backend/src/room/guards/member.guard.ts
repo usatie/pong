@@ -5,7 +5,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { RoomService } from './room.service';
+import { RoomService } from '../room.service';
 
 @Injectable()
 export class MemberGuard implements CanActivate {

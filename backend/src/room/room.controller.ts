@@ -24,11 +24,11 @@ import { RoomEntity } from './entities/room.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
-import { MemberGuard } from './member.guard';
+import { MemberGuard } from './guards/member.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from '@prisma/client';
-import { Member } from './member.decorator';
-import { KickGuard } from './kick.guard';
+import { Member } from './decorators/member.decorator';
+import { KickGuard } from './guards/kick.guard';
 
 @Controller('room')
 @ApiTags('room')
