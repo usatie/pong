@@ -6,6 +6,7 @@ import { Role } from '@prisma/client';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 interface User {
   id: number;
@@ -18,12 +19,15 @@ type BatchPayload = {
 
 @Injectable()
 export class RoomService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   // room CRUD
 
-  create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
-    return this.prisma.room.create({
+  async create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
+    const room = await this.prisma.room.create({
       data: {
         name: createRoomDto.name,
         users: {
@@ -36,6 +40,11 @@ export class RoomService {
         },
       },
     });
+    this.eventEmitter.emit('room.created', {
+      room: room,
+      owner: user,
+    });
+    return room;
   }
 
   findAllRoom(): Promise<RoomEntity[]> {

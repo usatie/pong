@@ -5,11 +5,12 @@ import {
 } from '@nestjs/common';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from '@prisma/client';
+import { Room, User } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { WebSocketGateway } from '@nestjs/websockets';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateMessageDto } from './dto/craete-message.dto';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 @WebSocketGateway()
@@ -49,6 +50,11 @@ export class ChatService {
     if (client) {
       client.join(roomId.toString());
     }
+  }
+
+  @OnEvent('room.created', { async: true })
+  async handleRoomCreatedEvent({ room, owner }: { room: Room; owner: User }) {
+    await this.addUserToRoom(room.id, owner);
   }
 
   removeUserFromRoom(roomId: number, user: User) {

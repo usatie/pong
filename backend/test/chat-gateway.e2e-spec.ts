@@ -46,6 +46,14 @@ describe('ChatGateway and ChatController (e2e)', () => {
     ws2.close();
   });
 
+  const connect = (ws: Socket) => {
+    return new Promise<void>((resolve) => {
+      ws.on('connect', () => {
+        resolve();
+      });
+    });
+  };
+
   // 1.
   // RoomController
   // POST /room/ -> create room -> ChatGateway.joinRoom(roomId, userId)
@@ -84,6 +92,10 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
       expect(ws1).toBeDefined();
       expect(ws2).toBeDefined();
+
+      // Wait for connection
+      await connect(ws1);
+      await connect(ws2);
     });
 
     // // Enter room by API call
