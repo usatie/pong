@@ -29,17 +29,19 @@ export class ChangeRoleGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();
     const { params, member } = req;
-    const { roomId, userId: targetUserId } = params;
+    if (!member) {
+      throw new ForbiddenException('require member');
+    }
     // Validate roomId and targetUserId(userId)
-    this.expectNumberParam(roomId, 'roomId');
-    this.expectNumberParam(targetUserId, 'userId');
+    const roomId = this.expectNumberParam(params.roomId, 'roomId');
+    const targetUserId = this.expectNumberParam(params.userId, 'userId');
 
     // Check if targetUser is a member of the room
     const userOnRoom = await this.prisma.userOnRoom.findUniqueOrThrow({
       where: {
         userId_roomId_unique: {
-          userId: Number(targetUserId),
-          roomId: Number(roomId),
+          userId: targetUserId,
+          roomId: roomId,
         },
       },
     });

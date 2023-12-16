@@ -28,24 +28,28 @@ export class KickGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();
     const { params, user, member } = req;
-    const { roomId, userId: targetUserId } = params;
+    if (!user || !member) {
+      throw new ForbiddenException('require login and member');
+    }
     // Validate roomId and targetUserId(userId)
-    this.expectNumberParam(roomId, 'roomId');
-    this.expectNumberParam(targetUserId, 'userId');
+    const roomId = this.expectNumberParam(params.roomId, 'roomId');
+    const targetUserId = this.expectNumberParam(params.userId, 'userId');
 
     // Check if targetUser is a member of the room
+    // If target user is not found, it's okay to return NotFoundException,
+    // So I don't want to implement any try/catch here.
     const userOnRoom = await this.prisma.userOnRoom.findUniqueOrThrow({
       where: {
         userId_roomId_unique: {
-          userId: Number(targetUserId),
-          roomId: Number(roomId),
+          userId: targetUserId,
+          roomId: roomId,
         },
       },
     });
     const targetRole = userOnRoom.role;
 
     // If anyone is trying to kick themself, that's ok
-    if (Number(targetUserId) === user.id) {
+    if (targetUserId === user.id) {
       return true;
     }
 

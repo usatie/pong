@@ -28,9 +28,11 @@ export class OwnerGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();
     const { params, user } = req;
-    const { roomId } = params;
     // Validate roomId and targetUserId(userId)
-    this.expectNumberParam(roomId, 'roomId');
+    const roomId = this.expectNumberParam(params.roomId, 'roomId');
+    if (!user) {
+      throw new ForbiddenException('require login');
+    }
 
     // Check if targetUser is a member of the room
     let userOnRoom;
@@ -39,12 +41,16 @@ export class OwnerGuard implements CanActivate {
         where: {
           userId_roomId_unique: {
             userId: user.id,
-            roomId: Number(roomId),
+            roomId: roomId,
           },
         },
       });
     } catch (e) {
-      throw new ForbiddenException('Only owner can do this');
+      if (e.code === 'P2025') {
+        throw new ForbiddenException('User not found in the room');
+      } else {
+        throw e;
+      }
     }
 
     // Check if user is the owner
