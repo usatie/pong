@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Room, User, UserOnRoom } from '@prisma/client';
+import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { WebSocketGateway } from '@nestjs/websockets';
 import { AuthService } from 'src/auth/auth.service';
