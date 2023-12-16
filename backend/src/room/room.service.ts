@@ -74,14 +74,11 @@ export class RoomService {
     });
   }
 
-  removeRoom = (id: number, role: Role): Promise<RoomEntity> =>
-    role !== Role.OWNER
-      ? Promise.reject(new HttpException('Forbidden', 403))
-      : this.removeAllUserOnRoom(id).then(() =>
-          this.prisma.room.delete({
-            where: { id },
-          }),
-        );
+  removeRoom(roomId: number): Promise<RoomEntity> {
+    return this.prisma.room.delete({
+      where: { id: roomId },
+    });
+  }
 
   // UserOnRoom CRUD
 
@@ -153,11 +150,5 @@ export class RoomService {
     };
     this.eventEmitter.emit('room.leave', event);
     return deletedUserOnRoom;
-  }
-
-  removeAllUserOnRoom(roomId: number): Promise<BatchPayload> {
-    return this.prisma.userOnRoom.deleteMany({
-      where: { roomId },
-    });
   }
 }

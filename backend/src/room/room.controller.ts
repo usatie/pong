@@ -71,14 +71,14 @@ export class RoomController {
 
   @Delete(':roomId')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard, MemberGuard)
+  @UseGuards(JwtAuthGuard, OwnerGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   removeRoom(
     @Param('roomId', ParseIntPipe) roomId: number,
     @Member() member: UserOnRoomEntity,
   ) {
-    return this.roomService.removeRoom(member.roomId, member.role);
+    return this.roomService.removeRoom(member.roomId);
   }
 
   @Post(':roomId')
