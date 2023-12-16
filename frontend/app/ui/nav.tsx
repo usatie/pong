@@ -1,9 +1,9 @@
+"use client";
 import { ModeToggle } from "@/components/toggle-mode";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { signIn, signOut } from "@/app/lib/actions";
-import { isLoggedIn } from "@/app/lib/session";
-import { redirect } from "next/navigation";
+import { signInAsTestUser, signOut } from "@/app/lib/actions";
+import { useIsLoggedIn } from "@/app/lib/auth";
 
 function AuthorizedMenu() {
   return (
@@ -18,14 +18,6 @@ function AuthorizedMenu() {
       <ModeToggle></ModeToggle>
     </li>
   );
-}
-
-async function signInAsTestUser() {
-  "use server";
-  const email = "test@example.com";
-  const password = "password-test";
-  await signIn({ email, password });
-  redirect("/");
 }
 
 function UnauthorizedMenu() {
@@ -43,8 +35,8 @@ function UnauthorizedMenu() {
   );
 }
 
-export default async function Nav() {
-  const isAuthorized = await isLoggedIn();
+export default function Nav() {
+  const isAuthorized = useIsLoggedIn();
   return (
     <nav className="py-4">
       <ul className="flex items-center justify-between">

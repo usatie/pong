@@ -249,3 +249,10 @@ export async function deleteRoomUser(roomId: number, userId: number) {
     return "Success";
   }
 }
+
+export async function signInAsTestUser() {
+  const email = "test@example.com";
+  const password = "password-test";
+  await signIn({ email, password });
+  redirect("/");
+}
