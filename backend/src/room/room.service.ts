@@ -1,8 +1,8 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Role } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
@@ -10,15 +10,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 import { RoomLeftEvent } from 'src/common/events/room-left.event';
-
-interface User {
-  id: number;
-  name: string;
-}
-
-type BatchPayload = {
-  count: number;
-};
 
 @Injectable()
 export class RoomService {
