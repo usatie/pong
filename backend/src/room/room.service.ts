@@ -7,6 +7,7 @@ import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 
 interface User {
   id: number;
@@ -40,10 +41,11 @@ export class RoomService {
         },
       },
     });
-    this.eventEmitter.emit('room.created', {
-      room: room,
-      owner: user,
-    });
+    const event: RoomCreatedEvent = {
+      roomId: room.id,
+      userId: user.id,
+    };
+    this.eventEmitter.emit('room.created', event);
     return room;
   }
 

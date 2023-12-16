@@ -11,6 +11,7 @@ import { WebSocketGateway } from '@nestjs/websockets';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateMessageDto } from './dto/craete-message.dto';
 import { OnEvent } from '@nestjs/event-emitter';
+import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 
 @Injectable()
 @WebSocketGateway()
@@ -45,16 +46,16 @@ export class ChatService {
     }
   }
 
-  addUserToRoom(roomId: number, user: User) {
-    const client = this.clients.get(user.id);
+  addUserToRoom(roomId: number, userId: number) {
+    const client = this.clients.get(userId);
     if (client) {
       client.join(roomId.toString());
     }
   }
 
   @OnEvent('room.created', { async: true })
-  async handleRoomCreatedEvent({ room, owner }: { room: Room; owner: User }) {
-    await this.addUserToRoom(room.id, owner);
+  async handleRoomCreatedEvent(event: RoomCreatedEvent) {
+    await this.addUserToRoom(event.roomId, event.userId);
   }
 
   @OnEvent('room.enter', { async: true })
@@ -65,7 +66,7 @@ export class ChatService {
     userOnRoom: UserOnRoom;
     user: User;
   }) {
-    await this.addUserToRoom(userOnRoom.roomId, user);
+    await this.addUserToRoom(userOnRoom.roomId, user.id);
   }
 
   removeUserFromRoom(roomId: number, user: User) {
@@ -120,7 +121,7 @@ export class ChatService {
           },
         },
       });
-      rooms.forEach((room) => this.addUserToRoom(room.id, user));
+      rooms.forEach((room) => this.addUserToRoom(room.id, user.id));
     } catch (error) {
       console.log(error);
     }
