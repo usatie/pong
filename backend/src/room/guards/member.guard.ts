@@ -5,7 +5,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { RoomService } from './room.service';
+import { RoomService } from '../room.service';
 
 @Injectable()
 export class MemberGuard implements CanActivate {
@@ -14,6 +14,9 @@ export class MemberGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();
     const { params, user } = req;
+    if (!user) {
+      throw new ForbiddenException('require login');
+    }
     const { roomId } = params;
     if (!roomId) {
       throw new Error('MemberGuard should only be used with :roomId');
