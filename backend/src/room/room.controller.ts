@@ -90,13 +90,11 @@ export class RoomController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  async createUserOnRoom(
+  createUserOnRoom(
     @Param('roomId', ParseIntPipe) roomId: number,
     @CurrentUser() user: User,
   ) {
-    const res = await this.roomService.createUserOnRoom(roomId, user);
-    this.chatService.addUserToRoom(roomId, user);
-    return res;
+    return this.roomService.createUserOnRoom(roomId, user);
   }
 
   @Get(':roomId/:userId')

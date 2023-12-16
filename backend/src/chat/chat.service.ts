@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Room, User } from '@prisma/client';
+import { Room, User, UserOnRoom } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { WebSocketGateway } from '@nestjs/websockets';
 import { AuthService } from 'src/auth/auth.service';
@@ -55,6 +55,17 @@ export class ChatService {
   @OnEvent('room.created', { async: true })
   async handleRoomCreatedEvent({ room, owner }: { room: Room; owner: User }) {
     await this.addUserToRoom(room.id, owner);
+  }
+
+  @OnEvent('room.enter', { async: true })
+  async handleUserOnRoomCreatedEvent({
+    userOnRoom,
+    user,
+  }: {
+    userOnRoom: UserOnRoom;
+    user: User;
+  }) {
+    await this.addUserToRoom(userOnRoom.roomId, user);
   }
 
   removeUserFromRoom(roomId: number, user: User) {
