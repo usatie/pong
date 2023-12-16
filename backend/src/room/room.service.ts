@@ -8,6 +8,7 @@ import { RoomEntity } from './entities/room.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
+import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 
 interface User {
   id: number;
@@ -93,10 +94,11 @@ export class RoomService {
         role: Role.MEMBER,
       },
     });
-    this.eventEmitter.emit('room.enter', {
-      userOnRoom: userOnRoom,
-      user: user,
-    });
+    const event: RoomEnteredEvent = {
+      roomId: id,
+      userId: user.id,
+    };
+    this.eventEmitter.emit('room.enter', event);
     return userOnRoom;
   }
 

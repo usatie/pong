@@ -12,6 +12,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { CreateMessageDto } from './dto/craete-message.dto';
 import { OnEvent } from '@nestjs/event-emitter';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
+import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 
 @Injectable()
 @WebSocketGateway()
@@ -59,14 +60,8 @@ export class ChatService {
   }
 
   @OnEvent('room.enter', { async: true })
-  async handleUserOnRoomCreatedEvent({
-    userOnRoom,
-    user,
-  }: {
-    userOnRoom: UserOnRoom;
-    user: User;
-  }) {
-    await this.addUserToRoom(userOnRoom.roomId, user.id);
+  async handleUserOnRoomCreatedEvent(event: RoomEnteredEvent) {
+    await this.addUserToRoom(event.roomId, event.userId);
   }
 
   removeUserFromRoom(roomId: number, user: User) {
