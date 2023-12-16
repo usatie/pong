@@ -10,6 +10,7 @@ import { ChatModule } from './chat/chat.module';
 import { FriendRequestModule } from './friend-request/friend-request.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { HistoryModule } from './history/history.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { HistoryModule } from './history/history.module';
     FriendRequestModule,
     AvatarModule,
     HistoryModule,
+    EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

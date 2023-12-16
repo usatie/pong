@@ -6,6 +6,9 @@ import { Role } from '@prisma/client';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { RoomCreatedEvent } from 'src/common/events/room-created.event';
+import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 
 interface User {
   id: number;
@@ -18,12 +21,15 @@ type BatchPayload = {
 
 @Injectable()
 export class RoomService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   // room CRUD
 
-  create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
-    return this.prisma.room.create({
+  async create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
+    const room = await this.prisma.room.create({
       data: {
         name: createRoomDto.name,
         users: {
@@ -36,6 +42,12 @@ export class RoomService {
         },
       },
     });
+    const event: RoomCreatedEvent = {
+      roomId: room.id,
+      userId: user.id,
+    };
+    this.eventEmitter.emit('room.created', event);
+    return room;
   }
 
   findAllRoom(): Promise<RoomEntity[]> {
@@ -74,14 +86,20 @@ export class RoomService {
 
   // UserOnRoom CRUD
 
-  createUserOnRoom(id: number, user: User): Promise<UserOnRoomEntity> {
-    return this.prisma.userOnRoom.create({
+  async createUserOnRoom(id: number, user: User): Promise<UserOnRoomEntity> {
+    const userOnRoom = await this.prisma.userOnRoom.create({
       data: {
         roomId: id,
         userId: user.id,
         role: Role.MEMBER,
       },
     });
+    const event: RoomEnteredEvent = {
+      roomId: id,
+      userId: user.id,
+    };
+    this.eventEmitter.emit('room.enter', event);
+    return userOnRoom;
   }
 
   findAllUserOnRoom(id: number): Promise<UserOnRoomEntity[]> {

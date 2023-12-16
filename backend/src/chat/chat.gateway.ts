@@ -243,14 +243,13 @@ export class ChatGateway {
     room.emit('message', data);
   }
 
-  handleConnection(@ConnectedSocket() client: Socket) {
+  async handleConnection(@ConnectedSocket() client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
-
-    this.chatService.handleConnection(client);
+    await this.chatService.handleConnection(client);
   }
 
-  handleDisconnect(@ConnectedSocket() client: Socket) {
+  async handleDisconnect(@ConnectedSocket() client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
-    this.chatService.handleDisconnect(client);
+    await this.chatService.handleDisconnect(client);
   }
 }
