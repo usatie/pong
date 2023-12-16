@@ -30,6 +30,7 @@ import { User } from '@prisma/client';
 import { Member } from './decorators/member.decorator';
 import { KickGuard } from './guards/kick.guard';
 import { ChangeRoleGuard } from './guards/change-role.guard';
+import { OwnerGuard } from './guards/owner.guard';
 
 @Controller('room')
 @ApiTags('room')
@@ -58,18 +59,14 @@ export class RoomController {
   }
 
   @Patch(':roomId')
-  @UseGuards(JwtAuthGuard, MemberGuard)
+  @UseGuards(JwtAuthGuard, OwnerGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   update(
     @Body() updateRoomDto: UpdateRoomDto,
     @Member() member: UserOnRoomEntity,
   ) {
-    return this.roomService.updateRoom(
-      member.roomId,
-      updateRoomDto,
-      member.role,
-    );
+    return this.roomService.updateRoom(member.roomId, updateRoomDto);
   }
 
   @Delete(':roomId')

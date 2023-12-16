@@ -64,17 +64,15 @@ export class RoomService {
     });
   }
 
-  updateRoom = (
-    id: number,
+  updateRoom(
+    roomId: number,
     updateRoomDto: UpdateRoomDto,
-    role: Role,
-  ): Promise<RoomEntity> =>
-    role !== Role.OWNER
-      ? Promise.reject(new HttpException('Forbidden', 403))
-      : this.prisma.room.update({
-          where: { id },
-          data: updateRoomDto,
-        });
+  ): Promise<RoomEntity> {
+    return this.prisma.room.update({
+      where: { id: roomId },
+      data: updateRoomDto,
+    });
+  }
 
   removeRoom = (id: number, role: Role): Promise<RoomEntity> =>
     role !== Role.OWNER
