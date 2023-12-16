@@ -125,38 +125,18 @@ export class RoomService {
 
   updateUserOnRoom = (
     roomId: number,
-    role: Role,
     userId: number,
     dto: UpdateUserOnRoomDto,
   ): Promise<UserOnRoomEntity> => {
-    if (role === Role.MEMBER)
-      return Promise.reject(new HttpException('Forbidden', 403));
-    const validateRole =
-      (changerRole: Role) =>
-      (targetRole: Role): boolean =>
-        this.roleToNum(changerRole) >= this.roleToNum(targetRole);
-    const validateRoleBy = validateRole(role);
-
-    if (this.roleToNum(dto.role) !== -1 && validateRoleBy(dto.role) === false)
-      return Promise.reject(new HttpException('Forbidden', 403));
-    else
-      return this.findUserOnRoom(roomId, userId)
-        .then((userOnRoomEntity) =>
-          validateRoleBy(userOnRoomEntity.role) === false
-            ? Promise.reject(new HttpException('Forbidden', 403))
-            : this.prisma.userOnRoom.update({
-                where: {
-                  userId_roomId_unique: {
-                    roomId: roomId,
-                    userId: userId,
-                  },
-                },
-                data: dto,
-              }),
-        )
-        .catch((err) => {
-          throw err;
-        });
+    return this.prisma.userOnRoom.update({
+      where: {
+        userId_roomId_unique: {
+          roomId: roomId,
+          userId: userId,
+        },
+      },
+      data: dto,
+    });
   };
 
   async kickUser(roomId: number, userId: number): Promise<UserOnRoomEntity> {
@@ -181,18 +161,5 @@ export class RoomService {
     return this.prisma.userOnRoom.deleteMany({
       where: { roomId },
     });
-  }
-
-  private roleToNum(role: Role): number {
-    switch (role) {
-      case Role.MEMBER:
-        return 0;
-      case Role.ADMINISTRATOR:
-        return 1;
-      case Role.OWNER:
-        return 2;
-      default:
-        return -1;
-    }
   }
 }
