@@ -25,7 +25,6 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { MemberGuard } from './member.guard';
-import { ChatService } from 'src/chat/chat.service';
 import { CurrentUser } from 'src/common/current-user.decorator';
 import { User } from '@prisma/client';
 import { Member } from './member.decorator';
@@ -33,10 +32,7 @@ import { Member } from './member.decorator';
 @Controller('room')
 @ApiTags('room')
 export class RoomController {
-  constructor(
-    private readonly roomService: RoomService,
-    private chatService: ChatService,
-  ) {}
+  constructor(private readonly roomService: RoomService) {}
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
