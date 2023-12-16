@@ -9,6 +9,7 @@ import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
+import { RoomLeftEvent } from 'src/common/events/room-left.event';
 
 interface User {
   id: number;
@@ -158,35 +159,22 @@ export class RoomService {
         });
   };
 
-  removeUserOnRoom(
-    roomId: number,
-    role: Role,
-    userId: number,
-    client: User,
-  ): Promise<UserOnRoomEntity> {
-    if (client.id != userId && role === Role.MEMBER)
-      return Promise.reject(new HttpException('Forbidden', 403));
-    const validateRole =
-      (changerRole: Role) =>
-      (targetRole: Role): boolean => {
-        return this.roleToNum(changerRole) >= this.roleToNum(targetRole);
-      };
-    const validateRoleBy = validateRole(role);
-
-    return this.findUserOnRoom(roomId, userId).then((userOnRoomEntity) => {
-      if (validateRoleBy(userOnRoomEntity.role)) {
-        return this.prisma.userOnRoom.delete({
-          where: {
-            userId_roomId_unique: {
-              roomId: roomId,
-              userId: userId,
-            },
-          },
-        });
-      } else {
-        return Promise.reject(new HttpException('Forbidden', 403));
-      }
+  async kickUser(roomId: number, userId: number): Promise<UserOnRoomEntity> {
+    const deletedUserOnRoom = await this.prisma.userOnRoom.delete({
+      where: {
+        userId_roomId_unique: {
+          roomId: roomId,
+          userId: userId,
+        },
+      },
     });
+    // TODO: If owner leaves the room, the room should be deleted or a new owner should be assigned
+    const event: RoomLeftEvent = {
+      roomId: roomId,
+      userId: userId,
+    };
+    this.eventEmitter.emit('room.leave', event);
+    return deletedUserOnRoom;
   }
 
   removeAllUserOnRoom(roomId: number): Promise<BatchPayload> {

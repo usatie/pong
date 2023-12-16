@@ -28,6 +28,7 @@ import { MemberGuard } from './member.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from '@prisma/client';
 import { Member } from './member.decorator';
+import { KickGuard } from './kick.guard';
 
 @Controller('room')
 @ApiTags('room')
@@ -106,20 +107,14 @@ export class RoomController {
 
   @Delete(':roomId/:userId')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard, MemberGuard)
+  @UseGuards(JwtAuthGuard, MemberGuard, KickGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
-  async deleteUserOnRoom(
+  deleteUserOnRoom(
     @Param('userId', ParseIntPipe) userId: number,
-    @CurrentUser() user: User,
     @Member() member: UserOnRoomEntity,
   ) {
-    await this.roomService.removeUserOnRoom(
-      member.roomId,
-      member.role,
-      userId,
-      user,
-    );
+    return this.roomService.kickUser(member.roomId, userId);
   }
 
   @Patch(':roomId/:userId')
