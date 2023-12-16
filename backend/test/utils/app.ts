@@ -50,7 +50,10 @@ export class TestApp {
       .set('Authorization', `Bearer ${accessToken}`);
 
   /* Room API (Public) */
-  getRooms = () => request(this.app.getHttpServer()).get(`/room`);
+  getRooms = (accessToken: string) =>
+    request(this.app.getHttpServer())
+      .get(`/room`)
+      .set('Authorization', `Bearer ${accessToken}`);
 
   /* Room API (Private) */
   createRoom = (createRoomDto: CreateRoomDto, accessToken: string) =>

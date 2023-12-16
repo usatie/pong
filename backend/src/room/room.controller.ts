@@ -33,11 +33,11 @@ import { ChangeRoleGuard } from './guards/change-role.guard';
 import { OwnerGuard } from './guards/owner.guard';
 
 @Controller('room')
+@UseGuards(JwtAuthGuard)
 @ApiTags('room')
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
   @Post()
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: RoomEntity })
   create(@Body() createRoomDto: CreateRoomDto, @CurrentUser() user: User) {
@@ -51,7 +51,7 @@ export class RoomController {
   }
 
   @Get(':roomId')
-  @UseGuards(JwtAuthGuard, MemberGuard)
+  @UseGuards(MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   findOne(@Member() member: UserOnRoomEntity) {
@@ -59,7 +59,7 @@ export class RoomController {
   }
 
   @Patch(':roomId')
-  @UseGuards(JwtAuthGuard, OwnerGuard)
+  @UseGuards(OwnerGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   update(
@@ -71,7 +71,7 @@ export class RoomController {
 
   @Delete(':roomId')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard, OwnerGuard)
+  @UseGuards(OwnerGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   removeRoom(
@@ -82,7 +82,6 @@ export class RoomController {
   }
 
   @Post(':roomId')
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   createUserOnRoom(
@@ -93,7 +92,7 @@ export class RoomController {
   }
 
   @Get(':roomId/:userId')
-  @UseGuards(JwtAuthGuard, MemberGuard)
+  @UseGuards(MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   getUserOnRoom(
@@ -105,7 +104,7 @@ export class RoomController {
 
   @Delete(':roomId/:userId')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard, MemberGuard, KickGuard)
+  @UseGuards(MemberGuard, KickGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
   deleteUserOnRoom(
@@ -116,7 +115,7 @@ export class RoomController {
   }
 
   @Patch(':roomId/:userId')
-  @UseGuards(JwtAuthGuard, MemberGuard, ChangeRoleGuard)
+  @UseGuards(MemberGuard, ChangeRoleGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   updateUserOnRoom(

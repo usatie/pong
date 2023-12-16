@@ -75,7 +75,7 @@ describe('RoomController (e2e)', () => {
     await app
       .createRoom(constants.room.test, 'invalid_access_token')
       .expect(401);
-    // TODO: get all rooms
+    await app.getRooms('invalid_access_token').expect(401);
     await app.enterRoom(room.id, 'invalid_access_token').expect(401);
   });
 
@@ -215,14 +215,16 @@ describe('RoomController (e2e)', () => {
   });
 
   describe('GET /room (Get All Rooms)', () => {
-    it('should get all rooms (200 OK)', async () => {
-      await app
-        .getRooms()
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toBeInstanceOf(Array);
-          res.body.forEach(expectRoom);
-        });
+    it('anyone should get all rooms (200 OK)', async () => {
+      for (const user of [owner, admin, member, notMember]) {
+        await app
+          .getRooms(user.accessToken)
+          .expect(200)
+          .then((res) => {
+            expect(res.body).toBeInstanceOf(Array);
+            res.body.forEach(expectRoom);
+          });
+      }
     });
 
     it('should not get private rooms which a user is not in (200 OK)', async () => {});
