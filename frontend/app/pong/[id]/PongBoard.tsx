@@ -8,6 +8,7 @@ import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import PongInformationBoard from "./PongInformationBoard";
 import { useTheme } from "next-themes";
+import { useSearchParams } from "next/navigation";
 
 type setState<T> = T | ((prevState: T) => T);
 
@@ -25,6 +26,10 @@ function useStateCallback<T>(
 
 interface PongBoardProps {
   id: string;
+}
+
+interface HandleActionProps {
+  playerNumber: number;
 }
 
 const POINT_TO_WIN = 3;
@@ -45,6 +50,8 @@ function PongBoard({ id: id }: PongBoardProps) {
   const { resolvedTheme } = useTheme();
   const paddleColor = useRef("hsl(0, 0%, 0%)");
   const ballColor = useRef("hsl(0, 0%, 0%)");
+  const searchParams = useSearchParams();
+  const isPlayer = searchParams.get("mode") == "player";
 
   const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
@@ -61,14 +68,16 @@ function PongBoard({ id: id }: PongBoardProps) {
         setPlayer2Position,
         paddleColor,
         ballColor,
+        isPlayer,
       );
       gameRef.current = game;
       return game;
     }
     return gameRef.current;
-  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position]);
+  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position, isPlayer]);
 
   const start = useCallback(() => {
+    if (!isPlayer) return;
     const game = getGame();
 
     setStartDisabled(true);
@@ -77,7 +86,7 @@ function PongBoard({ id: id }: PongBoardProps) {
       vx: -game.ball.vx,
       vy: -game.ball.vy,
     });
-  }, [getGame]);
+  }, [getGame, isPlayer]);
 
   useEffect(() => {
     // TODO: Use --foreground color from CSS
@@ -120,7 +129,7 @@ function PongBoard({ id: id }: PongBoardProps) {
   }, [getGame]);
 
   useEffect(() => {
-    const socket = io("/pong", { query: { game_id: id } });
+    const socket = io("/pong", { query: { game_id: id, is_player: isPlayer } });
     socketRef.current = socket;
     const game = getGame();
 
@@ -139,35 +148,65 @@ function PongBoard({ id: id }: PongBoardProps) {
       setStartDisabled(true);
     };
 
-    const handleRight = () => {
-      game.player2.clear(game.ctx);
-      game.player2.move_left();
-      game.player2.draw(game.ctx);
-    };
-
-    const handleLeft = () => {
-      game.player2.clear(game.ctx);
-      game.player2.move_right();
-      game.player2.draw(game.ctx);
-    };
-
-    const handleBounce = () => {
-      game.ball.bounce_off_paddle(game.player2);
-    };
-
-    const handleCollide = () => {
-      game.ball.reset();
-      game.score.player1++;
-      game.draw_canvas();
-      console.log(game.score.player1);
-      if (game.score.player1 != POINT_TO_WIN) {
-        setTimeout(() => start(), 1000);
+    const handleRight = ({ playerNumber }: HandleActionProps) => {
+      if (!isPlayer && playerNumber == 1) {
+        game.player1.clear(game.ctx);
+        game.player1.move_right();
+        game.player1.draw(game.ctx);
+      } else {
+        game.player2.clear(game.ctx);
+        game.player2.move_left();
+        game.player2.draw(game.ctx);
       }
+    };
+
+    const handleLeft = ({ playerNumber }: HandleActionProps) => {
+      if (!isPlayer && playerNumber == 1) {
+        game.player1.clear(game.ctx);
+        game.player1.move_left();
+        game.player1.draw(game.ctx);
+      } else {
+        game.player2.clear(game.ctx);
+        game.player2.move_right();
+        game.player2.draw(game.ctx);
+      }
+    };
+
+    const handleBounce = ({ playerNumber }: HandleActionProps) => {
+      if (!isPlayer && playerNumber == 1) {
+        game.ball.bounce_off_paddle(game.player1);
+      } else {
+        game.ball.bounce_off_paddle(game.player2);
+      }
+    };
+
+    const handleCollide = (msg: HandleActionProps) => {
+      const { playerNumber } = msg;
+      console.log(msg);
+      if (isPlayer) {
+        console.log("isPlayer");
+        game.score.player1++;
+        if (game.score.player1 != POINT_TO_WIN) {
+          setTimeout(() => start(), 1000);
+        }
+      } else {
+        console.log(playerNumber);
+        if (playerNumber == 1) {
+          console.log("player1");
+          game.score.player2++;
+        } else {
+          console.log("player2");
+          game.score.player1++;
+        }
+      }
+      game.ball.reset();
+      game.draw_canvas();
     };
 
     const handleJoin = () => {
       const log = `Your friend has joined the game`;
       setLogs((logs) => [...logs, log]);
+      // TODO : does not able for viewer
       setStartDisabled(false);
       setPracticeDisabled(true);
       game.resetPlayerPosition();
@@ -209,7 +248,7 @@ function PongBoard({ id: id }: PongBoardProps) {
       socket.off("finish", handleFinish);
       socket.disconnect();
     };
-  }, [id, getGame, setLogs, start]);
+  }, [id, getGame, setLogs, start, isPlayer]);
 
   return (
     <div className="overflow-hidden flex-grow flex gap-8 pb-8">
@@ -243,6 +282,7 @@ function PongBoard({ id: id }: PongBoardProps) {
           player1Position={player1Position}
           player2Position={player2Position}
           logs={logs}
+          isPlayer={isPlayer}
         />
       </div>
     </div>

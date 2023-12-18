@@ -34,6 +34,7 @@ export class PongGame {
   socketRef: RefObject<Socket | null>;
   paddleColor: RefObject<string>;
   ballColor: RefObject<string>;
+  isPlayer: boolean;
 
   constructor(
     socketRef: RefObject<Socket | null>,
@@ -44,6 +45,7 @@ export class PongGame {
     setPlayer2Position: setFunction<number>,
     paddleColor: RefObject<string>,
     ballColor: RefObject<string>,
+    isPlayer: boolean,
   ) {
     this.ctx = ctx;
     this.ctx.textAlign = "center";
@@ -79,6 +81,7 @@ export class PongGame {
     this.setSpeed = setSpeed;
     this.setPlayer1Position = setPlayer1Position;
     this.setPlayer2Position = setPlayer2Position;
+    this.isPlayer = isPlayer;
   }
 
   update_fps = () => {
@@ -113,13 +116,16 @@ export class PongGame {
     // Draw objects
     this.ball.move(this.elapsed);
     if (this.player1.collide_with(this.ball)) {
-      this.ball.bounce_off_paddle(this.player1);
-      this.socketRef.current?.emit("bounce");
+      if (this.isPlayer) {
+        this.ball.bounce_off_paddle(this.player1);
+        this.socketRef.current?.emit("bounce");
+      }
     } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
-      console.log("collide with bottom");
-      this.ball.reset();
-      this.score.player2++;
-      this.socketRef.current?.emit("collide");
+      if (this.isPlayer) {
+        this.ball.reset();
+        this.score.player2++;
+        this.socketRef.current?.emit("collide");
+      }
     } else if (this.ball.collide_with_side()) {
       this.ball.bounce_off_side();
     }
@@ -145,16 +151,18 @@ export class PongGame {
     this.update_fps();
     this.update_speed(this.ball.speed());
     this.update_players();
-    if (this.keypress["ArrowLeft"]) {
-      this.player1.clear(this.ctx);
-      this.player1.move_left();
-      this.player1.draw(this.ctx);
-      this.socketRef.current?.emit("left");
-    } else if (this.keypress["ArrowRight"]) {
-      this.player1.clear(this.ctx);
-      this.player1.move_right();
-      this.player1.draw(this.ctx);
-      this.socketRef.current?.emit("right");
+    if (this.isPlayer) {
+      if (this.keypress["ArrowLeft"]) {
+        this.player1.clear(this.ctx);
+        this.player1.move_left();
+        this.player1.draw(this.ctx);
+        this.socketRef.current?.emit("left");
+      } else if (this.keypress["ArrowRight"]) {
+        this.player1.clear(this.ctx);
+        this.player1.move_right();
+        this.player1.draw(this.ctx);
+        this.socketRef.current?.emit("right");
+      }
     }
     if (this.is_playing) {
       this.draw_canvas();
