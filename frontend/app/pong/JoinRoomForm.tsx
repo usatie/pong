@@ -19,7 +19,7 @@ export default function JoinRoomForm() {
   const [inputValue, setInputValue] = useState("");
   const handleSubmit = (event: React.SyntheticEvent) => {
     event.preventDefault();
-    router.push(`/pong/${inputValue}`);
+    router.push(`/pong/${inputValue}?mode=player`);
   };
 
   return (

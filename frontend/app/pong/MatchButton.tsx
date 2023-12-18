@@ -17,7 +17,7 @@ export default function MatchButton() {
     };
     const handleMatched = (roomId: string) => {
       setMessage("Matched!");
-      router.push(`/pong/${roomId}`);
+      router.push(`/pong/${roomId}?mode=player`);
     };
 
     socket.on("connect", handleConnect);

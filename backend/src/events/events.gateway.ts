@@ -15,6 +15,36 @@ type Scores = {
   [key: string]: number;
 };
 
+type PlayersInRoom = {
+  [socketId: string]: number;
+};
+
+type Players = {
+  [roomId: string]: PlayersInRoom;
+};
+
+const addPlayer = (players: Players, roomId: string, socketId: string) => {
+  if (roomId in players) {
+    if (players[roomId].length == 0) {
+      players[roomId][socketId] = 1;
+    } else {
+      // Get the first player's number and assign the other number to the new player
+      players[roomId][socketId] =
+        Object.values(players[roomId])[0] == 1 ? 2 : 1;
+    }
+  } else {
+    players[roomId] = { [socketId]: 0 };
+  }
+};
+
+const removePlayer = (players: Players, roomId: string, socketId: string) => {
+  delete players[roomId][socketId];
+};
+
+const isPlayer = (players: Players, roomId: string, socketId: string) => {
+  return roomId in players && socketId in players[roomId];
+};
+
 @WebSocketGateway({
   namespace: '/pong',
 })
@@ -23,32 +53,47 @@ export class EventsGateway implements OnGatewayDisconnect {
   private server: Namespace;
   private logger: Logger = new Logger('EventsGateway');
   private lostPoints: Scores = {};
+  private players: Players = {};
 
   handleConnection(client: Socket) {
     this.logger.log(`connect: ${client.id} `);
+
     const gameId = client.handshake.query['game_id'] as string;
-    const connectClients = this.server.adapter.rooms.get(gameId);
-    if (connectClients && connectClients.size > 1) {
-      this.logger.log(`full: ${gameId} ${client.id}`);
-      client.emit('log', 'The game is full.');
+    const isPlayer = client.handshake.query['is_player'] == 'true';
+
+    // Both of viewers and players join the Socket.io room
+    client.join(gameId);
+
+    if (!isPlayer) {
       return;
     }
-    this.logger.log(`join: ${gameId} ${client.id}`);
-    client.join(gameId);
+
+    if (this.players[gameId] && Object.keys(this.players[gameId]).length == 2) {
+      this.logger.log(`full: ${gameId} ${client.id}`);
+      client.emit('log', 'The game is full. You joined as a viewer.');
+      return;
+    }
+    addPlayer(this.players, gameId, client.id);
     this.broadcastToRooms(client, 'join');
-    client.emit('log', 'You joined the game.');
-    if (connectClients && connectClients.size == 2) {
+    client.emit('log', 'You joined as a player.');
+    if (Object.keys(this.players[gameId]).length == 2) {
+      console.log('here');
       client.emit('log', 'Your friend is already here. You can start.');
     }
     this.lostPoints[client.id] = 0;
+    return;
   }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`disconnect: ${client.id} `);
     const roomId = client.handshake.query['game_id'] as string;
-    this.broadcastToRoom(client, roomId, 'leave');
     client.leave(roomId);
-    delete this.lostPoints[client.id];
+
+    if (isPlayer(this.players, roomId, client.id)) {
+      this.broadcastToRoom(client, roomId, 'leave');
+      removePlayer(this.players, roomId, client.id);
+      delete this.lostPoints[client.id];
+    }
   }
 
   @SubscribeMessage('start')
@@ -56,6 +101,9 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: { vx: number; vy: number },
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
+    const roomId = client.handshake.query['game_id'] as string;
+    if (!isPlayer(this.players, roomId, client.id)) return;
+
     this.logger.log(`start: ${JSON.stringify(data)} ${client.id}`);
     this.broadcastToRooms(client, 'start', data);
     return;
@@ -66,11 +114,14 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
+    const roomId = client.handshake.query['game_id'] as string;
+    if (!isPlayer(this.players, roomId, client.id)) return;
+
     this.logger.log(`left: ${client.id}`);
-    this.logger.log(client.rooms);
-    this.logger.log(this.server.adapter.rooms);
-    this.logger.log('---');
-    this.broadcastToRooms(client, 'left');
+
+    this.broadcastToRooms(client, 'left', {
+      playerNumber: this.players[roomId][client.id],
+    });
     return;
   }
 
@@ -79,7 +130,12 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    this.broadcastToRooms(client, 'right');
+    const roomId = client.handshake.query['game_id'] as string;
+    if (!isPlayer(this.players, roomId, client.id)) return;
+
+    this.broadcastToRooms(client, 'right', {
+      playerNumber: this.players[roomId][client.id],
+    });
     return;
   }
 
@@ -88,7 +144,12 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    this.broadcastToRooms(client, 'bounce');
+    const roomId = client.handshake.query['game_id'] as string;
+    if (!isPlayer(this.players, roomId, client.id)) return;
+
+    this.broadcastToRooms(client, 'bounce', {
+      playerNumber: this.players[roomId][client.id],
+    });
     return;
   }
 
@@ -97,7 +158,12 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    this.broadcastToRooms(client, 'collide');
+    const roomId = client.handshake.query['game_id'] as string;
+    if (!isPlayer(this.players, roomId, client.id)) return;
+
+    this.broadcastToRooms(client, 'collide', {
+      playerNumber: this.players[roomId][client.id],
+    });
     this.lostPoints[client.id]++;
     if (this.lostPoints[client.id] == POINT_TO_WIN) {
       this.broadcastToRooms(client, 'finish');
