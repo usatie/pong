@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import * as jose from "jose";
 import { getUser } from "./actions";
+import { redirect } from "next/navigation";
 
 // TODO: add types
 export type Session = {};
@@ -38,13 +39,13 @@ export async function getCurrentUser(): Promise<any> {
 export async function getCurrentUserId(): Promise<number> {
   const payload = await getAccessTokenPayload({ ignoreExpiration: true });
   const userId = payload?.userId?.toString();
-  // If userId is not set, then return null
+  // If userId is not set, then redirect to login page
   if (!userId) {
-    throw new Error("userId is not set");
+    redirect("/login");
   }
-  // If invalid userId, then return null
+  // If invalid userId, then redirect to login page
   if (!userId.match(/^[0-9]+$/)) {
-    throw new Error("invalid userId");
+    redirect("/login");
   }
   return parseInt(userId);
 }
