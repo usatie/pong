@@ -15,9 +15,9 @@ import { Ref, RefObject } from "react";
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 
 export class PongGame {
-  ctx: CanvasRenderingContext2D;
-  player1: Paddle;
-  player2: Paddle;
+  private ctx: CanvasRenderingContext2D;
+  private player1: Paddle;
+  private player2: Paddle;
   private ball: Ball;
   score: { player1: number; player2: number };
   private updated_at: number;
@@ -254,6 +254,30 @@ export class PongGame {
 
   bounceOffPaddlePlayer2 = () => {
     return this.ball.bounce_off_paddle(this.player2);
+  };
+
+  movePlayer1Left = () => {
+    this.player1.clear(this.ctx);
+    this.player1.move_left();
+    this.player1.draw(this.ctx);
+  };
+
+  movePlayer1Right = () => {
+    this.player1.clear(this.ctx);
+    this.player1.move_right();
+    this.player1.draw(this.ctx);
+  };
+
+  movePlayer2Left = () => {
+    this.player2.clear(this.ctx);
+    this.player2.move_left();
+    this.player2.draw(this.ctx);
+  };
+
+  movePlayer2Right = () => {
+    this.player2.clear(this.ctx);
+    this.player2.move_right();
+    this.player2.draw(this.ctx);
   };
 
   endRound = () => {
