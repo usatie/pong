@@ -81,10 +81,11 @@ function PongBoard({ id: id }: PongBoardProps) {
     const game = getGame();
 
     setStartDisabled(true);
-    game.start({ vx: undefined, vy: undefined });
+
+    const { vx, vy } = game.start({ vx: undefined, vy: undefined });
     socketRef.current?.emit("start", {
-      vx: -game.ball.vx,
-      vy: -game.ball.vy,
+      vx: -vx,
+      vy: -vy,
     });
   }, [getGame, isPlayer]);
 
@@ -174,9 +175,9 @@ function PongBoard({ id: id }: PongBoardProps) {
 
     const handleBounce = ({ playerNumber }: HandleActionProps) => {
       if (!isPlayer && playerNumber == 1) {
-        game.ball.bounce_off_paddle(game.player1);
+        game.bounceOffPaddlePlayer1();
       } else {
-        game.ball.bounce_off_paddle(game.player2);
+        game.bounceOffPaddlePlayer2();
       }
     };
 
@@ -199,8 +200,7 @@ function PongBoard({ id: id }: PongBoardProps) {
           game.score.player1++;
         }
       }
-      game.ball.reset();
-      game.draw_canvas();
+      game.endRound();
     };
 
     const handleJoin = () => {

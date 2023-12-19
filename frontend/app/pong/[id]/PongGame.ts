@@ -18,7 +18,7 @@ export class PongGame {
   ctx: CanvasRenderingContext2D;
   player1: Paddle;
   player2: Paddle;
-  ball: Ball;
+  private ball: Ball;
   score: { player1: number; player2: number };
   private updated_at: number;
   private fps_updated_at: number;
@@ -174,7 +174,7 @@ export class PongGame {
     if (vx && vy) {
       this.ball.vx = vx;
       this.ball.vy = vy;
-      return;
+      return { vx, vy };
     }
     // Initialize initial velocity of the ball
     while (true) {
@@ -188,6 +188,7 @@ export class PongGame {
         break;
       }
     }
+    return { vx: this.ball.vx, vy: this.ball.vy };
   };
 
   stop = () => {
@@ -246,4 +247,17 @@ export class PongGame {
       PADDLE_HEIGHT,
       this.paddleColor,
     );
+
+  bounceOffPaddlePlayer1 = () => {
+    return this.ball.bounce_off_paddle(this.player1);
+  };
+
+  bounceOffPaddlePlayer2 = () => {
+    return this.ball.bounce_off_paddle(this.player2);
+  };
+
+  endRound = () => {
+    this.ball.reset();
+    this.draw_canvas();
+  };
 }
