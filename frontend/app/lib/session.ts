@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import * as jose from "jose";
+import { getUser } from "./actions";
 
 // TODO: add types
 export type Session = {};
@@ -22,10 +23,30 @@ export async function isLoggedIn() {
   return true;
 }
 
-export async function getUserId(): Promise<string | null> {
+export async function getCurrentUser(): Promise<any> {
+  try {
+    const userId = await getCurrentUserId();
+    const user = getUser(userId);
+    return user;
+  } catch (e) {
+    console.log("getCurrentUser: ", e);
+    return null;
+  }
+}
+
+// Only use this function if you are sure that the user is logged in
+export async function getCurrentUserId(): Promise<number> {
   const payload = await getAccessTokenPayload({ ignoreExpiration: true });
-  if (!payload) return null;
-  return payload.userId as string;
+  const userId = payload?.userId?.toString();
+  // If userId is not set, then return null
+  if (!userId) {
+    throw new Error("userId is not set");
+  }
+  // If invalid userId, then return null
+  if (!userId.match(/^[0-9]+$/)) {
+    throw new Error("invalid userId");
+  }
+  return parseInt(userId);
 }
 
 async function getAccessTokenPayload(options: any) {

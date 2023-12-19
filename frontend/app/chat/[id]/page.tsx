@@ -1,28 +1,20 @@
 import { Separator } from "@/components/ui/separator";
-import { testData } from "../test-data";
 import { Sidebar } from "../sidebar";
 import MessageArea from "../message-area";
-import { getUserId } from "@/app/lib/session";
+import { getCurrentUserId } from "@/app/lib/session";
 import { getUser, getUsers } from "@/app/lib/actions";
-
-//async function getUsers() {
-//  return testData.users;
-//}
 
 export default async function ChatPage({
   params: { id },
 }: {
   params: { id: string };
 }) {
-  const [tmpUsers, currentUserId] = await Promise.all([
+  const [allUsers, currentUserId] = await Promise.all([
     getUsers(),
-    getUserId(),
+    getCurrentUserId(),
   ]);
-  if (!currentUserId) {
-    throw new Error("getUserId error");
-  }
-  const currentUser = await getUser(parseInt(currentUserId));
-  const users = tmpUsers.filter((user) => user.id !== parseInt(currentUserId));
+  const currentUser = await getUser(currentUserId);
+  const users = allUsers.filter((user) => user.id !== currentUserId);
   if (users.length === 0) {
     console.error("No other users exist");
     throw new Error("No other users exist");

@@ -1,9 +1,8 @@
 import { ModeToggle } from "@/components/toggle-mode";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { signIn, signOut } from "@/app/lib/actions";
+import { signInAsTestUser, signOut } from "@/app/lib/actions";
 import { isLoggedIn } from "@/app/lib/session";
-import { redirect } from "next/navigation";
 
 function AuthorizedMenu() {
   return (
@@ -18,14 +17,6 @@ function AuthorizedMenu() {
       <ModeToggle></ModeToggle>
     </li>
   );
-}
-
-async function signInAsTestUser() {
-  "use server";
-  const email = "test@example.com";
-  const password = "password-test";
-  await signIn({ email, password });
-  redirect("/");
 }
 
 function UnauthorizedMenu() {

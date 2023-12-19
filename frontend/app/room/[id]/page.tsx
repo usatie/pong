@@ -25,7 +25,7 @@
 //  );
 //}
 
-import { getUserId } from "@/app/lib/session";
+import { getCurrentUserId } from "@/app/lib/session";
 import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "../sidebar";
 import { getRoom, getUsers, getUser } from "@/app/lib/actions";
@@ -44,11 +44,7 @@ export default async function Page({
 }: {
   params: { id: number };
 }) {
-  const currentUserId = await getUserId();
-  if (!currentUserId) {
-    console.error("getUserId error");
-    throw new Error("getUserId error");
-  }
+  const currentUserId = await getCurrentUserId();
   const roomInfo = await getRoom(id);
   if (!roomInfo) {
     notFound();
@@ -60,10 +56,9 @@ export default async function Page({
     .sort((a: UserRole, b: UserRole) => a.id - b.id);
 
   const myInfo = roomInfo.users.find((user: UserOnRoom) => {
-    return user.userId === parseInt(currentUserId);
+    return user.userId === currentUserId;
   });
   if (!myInfo) {
-    console.error("Not participating in room");
     throw new Error("Not participating in room");
   }
   const allUsers = await getUsers();
@@ -76,7 +71,7 @@ export default async function Page({
       role: usersRole[i].role,
     }),
   );
-  const currentUser = await getUser(parseInt(currentUserId));
+  const currentUser = await getUser(currentUserId);
   return (
     <>
       <div className="overflow-auto flex-grow flex gap-4 pb-4">
