@@ -1,4 +1,3 @@
-import { Socket } from "socket.io-client";
 import { Ball } from "./Ball";
 import { Paddle } from "./Paddle";
 import {
@@ -10,7 +9,6 @@ import {
   PADDLE_WIDTH,
   TARGET_FRAME_MS,
 } from "./const";
-import { Ref, RefObject } from "react";
 
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 type movingDirectionType = "none" | "left" | "right";

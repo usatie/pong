@@ -1,6 +1,5 @@
 import { clamp } from "@/lib/utils";
 import { Paddle } from "./Paddle";
-import { RefObject } from "react";
 
 export class Ball {
   canvasHeight: number;
