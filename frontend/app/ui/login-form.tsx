@@ -4,14 +4,9 @@ import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { authenticate } from "@/app/lib/actions";
+import { useAuthContext } from "../lib/client-auth";
 
 export default function LoginForm() {
   return (
@@ -29,6 +24,7 @@ export default function LoginForm() {
 }
 
 function Form() {
+  const { currentUser } = useAuthContext();
   const [code, action] = useFormState(authenticate, undefined);
   return (
     <>
@@ -41,6 +37,7 @@ function Form() {
               type="email"
               name="email"
               placeholder="Enter your email address"
+              defaultValue={currentUser?.email}
             />
           </div>
           <div className="flex flex-col space-y-1.5">
