@@ -1,15 +1,11 @@
-import {
-  Injectable,
-  ConflictException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
-import { WebSocketGateway } from '@nestjs/websockets';
+import { WebSocketGateway, WsException } from '@nestjs/websockets';
 import { AuthService } from 'src/auth/auth.service';
-import { CreateMessageDto } from './dto/craete-message.dto';
+import { CreateMessageDto } from './dto/create-message.dto';
 import { OnEvent } from '@nestjs/event-emitter';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
@@ -102,7 +98,9 @@ export class ChatService {
   async handleConnection(client: Socket) {
     const token = client.handshake.auth.token;
     if (!token) {
-      throw new UnauthorizedException('No token provided');
+      console.error('No token provided');
+      client.disconnect();
+      return;
     }
     try {
       const user = await this.authService.verifyAccessToken(token);
@@ -144,7 +142,7 @@ export class ChatService {
         where: { id: blockerId },
       });
     if (blockedBy.length > 0) {
-      throw new ConflictException('Blocked by user');
+      throw new WsException('Blocked by user');
     }
   }
 
