@@ -48,8 +48,7 @@ function PongBoard({ id: id }: PongBoardProps) {
   const [practiceDisabled, setPracticeDisabled] = useState(true);
   const [battleDisabled] = useState(true);
   const { resolvedTheme } = useTheme();
-  const paddleColor = useRef("hsl(0, 0%, 0%)");
-  const ballColor = useRef("hsl(0, 0%, 0%)");
+  const defaultColor = "hsl(0, 0%, 0%)";
   const searchParams = useSearchParams();
   const isPlayer = searchParams.get("mode") == "player";
 
@@ -60,14 +59,13 @@ function PongBoard({ id: id }: PongBoardProps) {
     }
     if (!gameRef.current) {
       const game = new PongGame(
-        socketRef,
         ctx,
         setFps,
         setSpeed,
         setPlayer1Position,
         setPlayer2Position,
-        paddleColor,
-        ballColor,
+        defaultColor,
+        defaultColor,
         isPlayer,
       );
       gameRef.current = game;
@@ -81,24 +79,21 @@ function PongBoard({ id: id }: PongBoardProps) {
     const game = getGame();
 
     setStartDisabled(true);
-    game.start({ vx: undefined, vy: undefined });
+
+    const { vx, vy } = game.start({ vx: undefined, vy: undefined });
     socketRef.current?.emit("start", {
-      vx: -game.ball.vx,
-      vy: -game.ball.vy,
+      vx: -vx,
+      vy: -vy,
     });
   }, [getGame, isPlayer]);
 
   useEffect(() => {
     // TODO: Use --foreground color from CSS
     // Somehow it didn't work (theme is changed but not yet committed to CSS/DOM?)
-    if (resolvedTheme === "dark") {
-      paddleColor.current = "hsl(0, 0%, 100%)";
-      ballColor.current = "hsl(0, 0%, 100%)";
-    } else {
-      paddleColor.current = "hsl(0, 0%, 0%)";
-      ballColor.current = "hsl(0, 0%, 0%)";
-    }
     const game = getGame();
+    const color =
+      resolvedTheme === "dark" ? "hsl(0, 0%, 100%)" : "hsl(0, 0%, 0%)";
+    game.setColor(color);
     game.draw_canvas();
   }, [resolvedTheme, getGame]);
 
@@ -114,10 +109,16 @@ function PongBoard({ id: id }: PongBoardProps) {
     const game = getGame();
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      game.keypress[event.key] = false;
+      if (event.key == "ArrowRight" || event.key == "ArrowLeft") {
+        game.setMovingDirection("none");
+      }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      game.keypress[event.key] = true;
+      if (event.key == "ArrowRight") {
+        game.setMovingDirection("right");
+      } else if (event.key == "ArrowLeft") {
+        game.setMovingDirection("left");
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -131,7 +132,11 @@ function PongBoard({ id: id }: PongBoardProps) {
   useEffect(() => {
     const socket = io("/pong", { query: { game_id: id, is_player: isPlayer } });
     socketRef.current = socket;
+
     const game = getGame();
+    game.onAction = (action: string) => {
+      socket.emit(action);
+    };
 
     const handleLog = (log: string) => {
       setLogs((logs) => [...logs, log]);
@@ -150,33 +155,25 @@ function PongBoard({ id: id }: PongBoardProps) {
 
     const handleRight = ({ playerNumber }: HandleActionProps) => {
       if (!isPlayer && playerNumber == 1) {
-        game.player1.clear(game.ctx);
-        game.player1.move_right();
-        game.player1.draw(game.ctx);
+        game.movePlayer1Left();
       } else {
-        game.player2.clear(game.ctx);
-        game.player2.move_left();
-        game.player2.draw(game.ctx);
+        game.movePlayer2Left();
       }
     };
 
     const handleLeft = ({ playerNumber }: HandleActionProps) => {
       if (!isPlayer && playerNumber == 1) {
-        game.player1.clear(game.ctx);
-        game.player1.move_left();
-        game.player1.draw(game.ctx);
+        game.movePlayer1Right();
       } else {
-        game.player2.clear(game.ctx);
-        game.player2.move_right();
-        game.player2.draw(game.ctx);
+        game.movePlayer2Right();
       }
     };
 
     const handleBounce = ({ playerNumber }: HandleActionProps) => {
       if (!isPlayer && playerNumber == 1) {
-        game.ball.bounce_off_paddle(game.player1);
+        game.bounceOffPaddlePlayer1();
       } else {
-        game.ball.bounce_off_paddle(game.player2);
+        game.bounceOffPaddlePlayer2();
       }
     };
 
@@ -184,23 +181,19 @@ function PongBoard({ id: id }: PongBoardProps) {
       const { playerNumber } = msg;
       console.log(msg);
       if (isPlayer) {
-        console.log("isPlayer");
-        game.score.player1++;
-        if (game.score.player1 != POINT_TO_WIN) {
+        const score = game.increaseScorePlayer1();
+        if (score != POINT_TO_WIN) {
           setTimeout(() => start(), 1000);
         }
       } else {
         console.log(playerNumber);
         if (playerNumber == 1) {
-          console.log("player1");
-          game.score.player2++;
+          game.increaseScorePlayer2();
         } else {
-          console.log("player2");
-          game.score.player1++;
+          game.increaseScorePlayer1();
         }
       }
-      game.ball.reset();
-      game.draw_canvas();
+      game.endRound();
     };
 
     const handleJoin = () => {

@@ -1,4 +1,3 @@
-import { Socket } from "socket.io-client";
 import { Ball } from "./Ball";
 import { Paddle } from "./Paddle";
 import {
@@ -10,41 +9,41 @@ import {
   PADDLE_WIDTH,
   TARGET_FRAME_MS,
 } from "./const";
-import { Ref, RefObject } from "react";
 
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
+type movingDirectionType = "none" | "left" | "right";
+type onActionType = (action: string) => void;
 
 export class PongGame {
-  ctx: CanvasRenderingContext2D;
-  player1: Paddle;
-  player2: Paddle;
-  ball: Ball;
-  score: { player1: number; player2: number };
-  updated_at: number;
-  fps_updated_at: number;
-  elapsed: number;
-  frame_count: number;
-  is_playing: boolean;
-  keypress: { [key: string]: boolean };
+  private ctx: CanvasRenderingContext2D;
+  private player1: Paddle;
+  private player2: Paddle;
+  private ball: Ball;
+  private score: { player1: number; player2: number };
+  private updated_at: number;
+  private fps_updated_at: number;
+  private elapsed: number;
+  private frame_count: number;
+  private is_playing: boolean;
+  private movingDirection: movingDirectionType = "none";
 
   setFps: setFunction<number>;
   setSpeed: setFunction<number>;
   setPlayer1Position: setFunction<number>;
   setPlayer2Position: setFunction<number>;
-  socketRef: RefObject<Socket | null>;
-  paddleColor: RefObject<string>;
-  ballColor: RefObject<string>;
-  isPlayer: boolean;
+  onAction: onActionType | undefined;
+  private paddleColor: string;
+  private ballColor: string;
+  private isPlayer: boolean;
 
   constructor(
-    socketRef: RefObject<Socket | null>,
     ctx: CanvasRenderingContext2D,
     setFps: setFunction<number>,
     setSpeed: setFunction<number>,
     setPlayer1Position: setFunction<number>,
     setPlayer2Position: setFunction<number>,
-    paddleColor: RefObject<string>,
-    ballColor: RefObject<string>,
+    paddleColor: string,
+    ballColor: string,
     isPlayer: boolean,
   ) {
     this.ctx = ctx;
@@ -75,8 +74,6 @@ export class PongGame {
     this.elapsed = 0;
     this.frame_count = 0;
     this.is_playing = false;
-    this.keypress = {};
-    this.socketRef = socketRef;
     this.setFps = setFps;
     this.setSpeed = setSpeed;
     this.setPlayer1Position = setPlayer1Position;
@@ -118,13 +115,13 @@ export class PongGame {
     if (this.player1.collide_with(this.ball)) {
       if (this.isPlayer) {
         this.ball.bounce_off_paddle(this.player1);
-        this.socketRef.current?.emit("bounce");
+        this.onAction && this.onAction("bounce");
       }
     } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
       if (this.isPlayer) {
         this.ball.reset();
         this.score.player2++;
-        this.socketRef.current?.emit("collide");
+        this.onAction && this.onAction("collide");
       }
     } else if (this.ball.collide_with_side()) {
       this.ball.bounce_off_side();
@@ -152,16 +149,16 @@ export class PongGame {
     this.update_speed(this.ball.speed());
     this.update_players();
     if (this.isPlayer) {
-      if (this.keypress["ArrowLeft"]) {
+      if (this.movingDirection === "left") {
         this.player1.clear(this.ctx);
         this.player1.move_left();
         this.player1.draw(this.ctx);
-        this.socketRef.current?.emit("left");
-      } else if (this.keypress["ArrowRight"]) {
+        this.onAction && this.onAction("left");
+      } else if (this.movingDirection === "right") {
         this.player1.clear(this.ctx);
         this.player1.move_right();
         this.player1.draw(this.ctx);
-        this.socketRef.current?.emit("right");
+        this.onAction && this.onAction("right");
       }
     }
     if (this.is_playing) {
@@ -174,7 +171,7 @@ export class PongGame {
     if (vx && vy) {
       this.ball.vx = vx;
       this.ball.vy = vy;
-      return;
+      return { vx, vy };
     }
     // Initialize initial velocity of the ball
     while (true) {
@@ -188,6 +185,7 @@ export class PongGame {
         break;
       }
     }
+    return { vx: this.ball.vx, vy: this.ball.vy };
   };
 
   stop = () => {
@@ -246,4 +244,60 @@ export class PongGame {
       PADDLE_HEIGHT,
       this.paddleColor,
     );
+
+  bounceOffPaddlePlayer1 = () => {
+    return this.ball.bounce_off_paddle(this.player1);
+  };
+
+  bounceOffPaddlePlayer2 = () => {
+    return this.ball.bounce_off_paddle(this.player2);
+  };
+
+  movePlayer1Left = () => {
+    this.player1.clear(this.ctx);
+    this.player1.move_left();
+    this.player1.draw(this.ctx);
+  };
+
+  movePlayer1Right = () => {
+    this.player1.clear(this.ctx);
+    this.player1.move_right();
+    this.player1.draw(this.ctx);
+  };
+
+  movePlayer2Left = () => {
+    this.player2.clear(this.ctx);
+    this.player2.move_left();
+    this.player2.draw(this.ctx);
+  };
+
+  movePlayer2Right = () => {
+    this.player2.clear(this.ctx);
+    this.player2.move_right();
+    this.player2.draw(this.ctx);
+  };
+
+  increaseScorePlayer1 = () => {
+    return ++this.score.player1;
+  };
+
+  increaseScorePlayer2 = () => {
+    return ++this.score.player2;
+  };
+
+  endRound = () => {
+    this.ball.reset();
+    this.draw_canvas();
+  };
+
+  setMovingDirection = (direction: movingDirectionType) => {
+    this.movingDirection = direction;
+  };
+
+  setColor(color: string) {
+    this.paddleColor = color;
+    this.ballColor = color;
+    this.player1.color = color;
+    this.player2.color = color;
+  }
 }

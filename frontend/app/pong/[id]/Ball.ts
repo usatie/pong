@@ -1,6 +1,5 @@
 import { clamp } from "@/lib/utils";
 import { Paddle } from "./Paddle";
-import { RefObject } from "react";
 
 export class Ball {
   canvasHeight: number;
@@ -11,7 +10,7 @@ export class Ball {
   vx: number;
   vy: number;
   radius: number;
-  color: RefObject<string>;
+  color: string;
 
   constructor(
     canvasHeight: number,
@@ -22,7 +21,7 @@ export class Ball {
     vx: number,
     vy: number,
     radius: number,
-    color: RefObject<string>,
+    color: string,
   ) {
     this.canvasHeight = canvasHeight;
     this.canvasWidth = canvasWidth;
@@ -40,7 +39,7 @@ export class Ball {
   };
 
   draw = (ctx: CanvasRenderingContext2D) => {
-    ctx.fillStyle = this.color.current ?? "black";
+    ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.fillRect(this.x, this.y, this.radius * 2, this.radius * 2);
   };

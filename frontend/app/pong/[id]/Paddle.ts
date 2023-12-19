@@ -1,21 +1,20 @@
 import { clamp } from "@/lib/utils";
 import { Ball } from "./Ball";
 import { CANVAS_WIDTH } from "./const";
-import { RefObject } from "react";
 
 export class Paddle {
   x: number;
   y: number;
   width: number;
   height: number;
-  color: RefObject<string>;
+  color: string;
 
   constructor(
     x: number,
     y: number,
     width: number,
     height: number,
-    color: RefObject<string>,
+    color: string,
   ) {
     this.x = x;
     this.y = y;
@@ -29,7 +28,7 @@ export class Paddle {
   };
 
   draw = (ctx: CanvasRenderingContext2D) => {
-    ctx.fillStyle = this.color.current ?? "black";
+    ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.fillRect(this.x, this.y, this.width, this.height);
   };
