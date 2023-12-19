@@ -11,19 +11,11 @@ type User = {
 
 type AuthContextType = {
   currentUser?: User;
+  isLoggedIn: boolean;
 };
 
-const AuthContext = createContext<AuthContextType>({});
+export const AuthContext = createContext<AuthContextType>({
+  isLoggedIn: false,
+});
 
 export const useAuthContext = () => useContext(AuthContext);
-export const useIsLoggedInContext = () => useAuthContext().currentUser != null;
-
-export type AuthProviderProps = {
-  user?: User;
-  children: React.ReactNode;
-};
-
-export default function AuthProvider({ children, user }: AuthProviderProps) {
-  const auth = { currentUser: user };
-  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
-}

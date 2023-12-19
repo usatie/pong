@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-import AuthProvider from "@/app/lib/client-auth";
-import { getUserId } from "@/app/lib/session";
-import { getUser } from "@/app/lib/actions";
+import AuthProvider from "./client-auth-provider";
+import { getCurrentUser, isLoggedIn } from "@/app/lib/session";
 
 // components
 import { ThemeProvider } from "@/components/theme-provider";
@@ -25,8 +24,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const userId = await getUserId();
-  const user = userId ? await getUser(Number(userId)) : null;
+  const isAuthorized = await isLoggedIn(); // Not allow expired tokens
+  const user = await getCurrentUser(); // Allows expired tokens
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -37,7 +36,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider user={user}>
+          <AuthProvider user={user} isLoggedIn={isAuthorized}>
             <div className="flex flex-col px-16 h-[100vh]">
               <Nav />
               {children}

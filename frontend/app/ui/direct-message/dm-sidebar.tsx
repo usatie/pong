@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { getUsers } from "@/app/lib/actions";
-import { getUserId } from "@/app/lib/session";
+import { getCurrentUserId } from "@/app/lib/session";
 import { UserButton } from "@/app/ui/direct-message/user-button";
 
 const DirectMessageSidebar = async () => {
@@ -11,12 +11,8 @@ const DirectMessageSidebar = async () => {
     console.error("getUsers Error");
     return null;
   }
-  const currentUserId = await getUserId();
-  if (!currentUserId) {
-    console.error("getUserId Error");
-    return null;
-  }
-  const users = tmpUsers.filter((user) => parseInt(currentUserId) !== user.id);
+  const currentUserId = await getCurrentUserId();
+  const users = tmpUsers.filter((user) => currentUserId !== user.id);
   return (
     <div>
       <Card className="flex flex-col h-full text-primary w-full dark:bg-[#1E1F22] bg-[#F2F3F5]">
