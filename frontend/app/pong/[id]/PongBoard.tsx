@@ -48,8 +48,7 @@ function PongBoard({ id: id }: PongBoardProps) {
   const [practiceDisabled, setPracticeDisabled] = useState(true);
   const [battleDisabled] = useState(true);
   const { resolvedTheme } = useTheme();
-  const paddleColor = useRef("hsl(0, 0%, 0%)");
-  const ballColor = useRef("hsl(0, 0%, 0%)");
+  const defaultColor = "hsl(0, 0%, 0%)";
   const searchParams = useSearchParams();
   const isPlayer = searchParams.get("mode") == "player";
 
@@ -65,8 +64,8 @@ function PongBoard({ id: id }: PongBoardProps) {
         setSpeed,
         setPlayer1Position,
         setPlayer2Position,
-        paddleColor,
-        ballColor,
+        defaultColor,
+        defaultColor,
         isPlayer,
       );
       gameRef.current = game;
@@ -91,14 +90,10 @@ function PongBoard({ id: id }: PongBoardProps) {
   useEffect(() => {
     // TODO: Use --foreground color from CSS
     // Somehow it didn't work (theme is changed but not yet committed to CSS/DOM?)
-    if (resolvedTheme === "dark") {
-      paddleColor.current = "hsl(0, 0%, 100%)";
-      ballColor.current = "hsl(0, 0%, 100%)";
-    } else {
-      paddleColor.current = "hsl(0, 0%, 0%)";
-      ballColor.current = "hsl(0, 0%, 0%)";
-    }
     const game = getGame();
+    const color =
+      resolvedTheme === "dark" ? "hsl(0, 0%, 100%)" : "hsl(0, 0%, 0%)";
+    game.setColor(color);
     game.draw_canvas();
   }, [resolvedTheme, getGame]);
 

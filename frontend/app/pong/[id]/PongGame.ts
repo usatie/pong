@@ -34,8 +34,8 @@ export class PongGame {
   setPlayer1Position: setFunction<number>;
   setPlayer2Position: setFunction<number>;
   onAction: onActionType | undefined;
-  private paddleColor: RefObject<string>;
-  private ballColor: RefObject<string>;
+  private paddleColor: string;
+  private ballColor: string;
   private isPlayer: boolean;
 
   constructor(
@@ -44,8 +44,8 @@ export class PongGame {
     setSpeed: setFunction<number>,
     setPlayer1Position: setFunction<number>,
     setPlayer2Position: setFunction<number>,
-    paddleColor: RefObject<string>,
-    ballColor: RefObject<string>,
+    paddleColor: string,
+    ballColor: string,
     isPlayer: boolean,
   ) {
     this.ctx = ctx;
@@ -295,4 +295,11 @@ export class PongGame {
   setMovingDirection = (direction: movingDirectionType) => {
     this.movingDirection = direction;
   };
+
+  setColor(color: string) {
+    this.paddleColor = color;
+    this.ballColor = color;
+    this.player1.color = color;
+    this.player2.color = color;
+  }
 }
