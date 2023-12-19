@@ -20,7 +20,7 @@ export class PongGame {
   private player1: Paddle;
   private player2: Paddle;
   private ball: Ball;
-  score: { player1: number; player2: number };
+  private score: { player1: number; player2: number };
   private updated_at: number;
   private fps_updated_at: number;
   private elapsed: number;
@@ -278,6 +278,14 @@ export class PongGame {
     this.player2.clear(this.ctx);
     this.player2.move_right();
     this.player2.draw(this.ctx);
+  };
+
+  increaseScorePlayer1 = () => {
+    return ++this.score.player1;
+  };
+
+  increaseScorePlayer2 = () => {
+    return ++this.score.player2;
   };
 
   endRound = () => {

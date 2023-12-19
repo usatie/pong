@@ -183,19 +183,16 @@ function PongBoard({ id: id }: PongBoardProps) {
       const { playerNumber } = msg;
       console.log(msg);
       if (isPlayer) {
-        console.log("isPlayer");
-        game.score.player1++;
-        if (game.score.player1 != POINT_TO_WIN) {
+        const score = game.increaseScorePlayer1();
+        if (score != POINT_TO_WIN) {
           setTimeout(() => start(), 1000);
         }
       } else {
         console.log(playerNumber);
         if (playerNumber == 1) {
-          console.log("player1");
-          game.score.player2++;
+          game.increaseScorePlayer2();
         } else {
-          console.log("player2");
-          game.score.player1++;
+          game.increaseScorePlayer1();
         }
       }
       game.endRound();
