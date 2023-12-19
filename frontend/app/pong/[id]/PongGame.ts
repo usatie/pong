@@ -13,6 +13,7 @@ import {
 import { Ref, RefObject } from "react";
 
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
+type movingDirectionType = "none" | "left" | "right";
 
 export class PongGame {
   private ctx: CanvasRenderingContext2D;
@@ -25,7 +26,7 @@ export class PongGame {
   private elapsed: number;
   private frame_count: number;
   private is_playing: boolean;
-  keypress: { [key: string]: boolean };
+  private movingDirection: movingDirectionType = "none";
 
   setFps: setFunction<number>;
   setSpeed: setFunction<number>;
@@ -75,7 +76,6 @@ export class PongGame {
     this.elapsed = 0;
     this.frame_count = 0;
     this.is_playing = false;
-    this.keypress = {};
     this.socketRef = socketRef;
     this.setFps = setFps;
     this.setSpeed = setSpeed;
@@ -152,12 +152,12 @@ export class PongGame {
     this.update_speed(this.ball.speed());
     this.update_players();
     if (this.isPlayer) {
-      if (this.keypress["ArrowLeft"]) {
+      if (this.movingDirection === "left") {
         this.player1.clear(this.ctx);
         this.player1.move_left();
         this.player1.draw(this.ctx);
         this.socketRef.current?.emit("left");
-      } else if (this.keypress["ArrowRight"]) {
+      } else if (this.movingDirection === "right") {
         this.player1.clear(this.ctx);
         this.player1.move_right();
         this.player1.draw(this.ctx);
@@ -283,5 +283,9 @@ export class PongGame {
   endRound = () => {
     this.ball.reset();
     this.draw_canvas();
+  };
+
+  setMovingDirection = (direction: movingDirectionType) => {
+    this.movingDirection = direction;
   };
 }
