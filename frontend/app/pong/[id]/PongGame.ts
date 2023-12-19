@@ -14,6 +14,7 @@ import { Ref, RefObject } from "react";
 
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 type movingDirectionType = "none" | "left" | "right";
+type onActionType = (action: string) => void;
 
 export class PongGame {
   private ctx: CanvasRenderingContext2D;
@@ -32,13 +33,12 @@ export class PongGame {
   setSpeed: setFunction<number>;
   setPlayer1Position: setFunction<number>;
   setPlayer2Position: setFunction<number>;
-  private socketRef: RefObject<Socket | null>;
+  onAction: onActionType | undefined;
   private paddleColor: RefObject<string>;
   private ballColor: RefObject<string>;
   private isPlayer: boolean;
 
   constructor(
-    socketRef: RefObject<Socket | null>,
     ctx: CanvasRenderingContext2D,
     setFps: setFunction<number>,
     setSpeed: setFunction<number>,
@@ -76,7 +76,6 @@ export class PongGame {
     this.elapsed = 0;
     this.frame_count = 0;
     this.is_playing = false;
-    this.socketRef = socketRef;
     this.setFps = setFps;
     this.setSpeed = setSpeed;
     this.setPlayer1Position = setPlayer1Position;
@@ -118,13 +117,13 @@ export class PongGame {
     if (this.player1.collide_with(this.ball)) {
       if (this.isPlayer) {
         this.ball.bounce_off_paddle(this.player1);
-        this.socketRef.current?.emit("bounce");
+        this.onAction && this.onAction("bounce");
       }
     } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
       if (this.isPlayer) {
         this.ball.reset();
         this.score.player2++;
-        this.socketRef.current?.emit("collide");
+        this.onAction && this.onAction("collide");
       }
     } else if (this.ball.collide_with_side()) {
       this.ball.bounce_off_side();
@@ -156,12 +155,12 @@ export class PongGame {
         this.player1.clear(this.ctx);
         this.player1.move_left();
         this.player1.draw(this.ctx);
-        this.socketRef.current?.emit("left");
+        this.onAction && this.onAction("left");
       } else if (this.movingDirection === "right") {
         this.player1.clear(this.ctx);
         this.player1.move_right();
         this.player1.draw(this.ctx);
-        this.socketRef.current?.emit("right");
+        this.onAction && this.onAction("right");
       }
     }
     if (this.is_playing) {

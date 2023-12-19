@@ -60,7 +60,6 @@ function PongBoard({ id: id }: PongBoardProps) {
     }
     if (!gameRef.current) {
       const game = new PongGame(
-        socketRef,
         ctx,
         setFps,
         setSpeed,
@@ -138,7 +137,11 @@ function PongBoard({ id: id }: PongBoardProps) {
   useEffect(() => {
     const socket = io("/pong", { query: { game_id: id, is_player: isPlayer } });
     socketRef.current = socket;
+
     const game = getGame();
+    game.onAction = (action: string) => {
+      socket.emit(action);
+    };
 
     const handleLog = (log: string) => {
       setLogs((logs) => [...logs, log]);
