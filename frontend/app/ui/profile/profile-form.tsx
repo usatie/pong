@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Stack } from "@/app/ui/layout/stack";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/app/lib/auth";
+import { useAuthContext } from "@/app/lib/client-auth";
 
 function AvatarSkeleton() {
   return <Skeleton className="rounded-full h-20 w-20" />;
@@ -29,7 +29,7 @@ export type ProfileItemProps = {
 };
 
 export default function ProfileForm() {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuthContext();
   // Menu: min 100px
   // Profile : the rest
   return (

@@ -1,6 +1,5 @@
 "use client";
-import { useContext } from "react";
-import { createContext } from "react";
+import { createContext, useContext } from "react";
 
 type User = {
   id: number;
@@ -9,14 +8,15 @@ type User = {
   avatarURL?: string;
   createdAt: string;
 };
+
 type AuthContextType = {
   currentUser?: User;
 };
 
-export const AuthContext = createContext<AuthContextType>({});
+const AuthContext = createContext<AuthContextType>({});
 
-export const useAuth = () => useContext(AuthContext);
-export const useIsLoggedIn = () => useAuth().currentUser != null;
+export const useAuthContext = () => useContext(AuthContext);
+export const useIsLoggedInContext = () => useAuthContext().currentUser != null;
 
 export type AuthProviderProps = {
   user?: User;

@@ -1,9 +1,8 @@
-"use client";
 import { ModeToggle } from "@/components/toggle-mode";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { signInAsTestUser, signOut } from "@/app/lib/actions";
-import { useIsLoggedIn } from "@/app/lib/auth";
+import { isLoggedIn } from "@/app/lib/session";
 
 function AuthorizedMenu() {
   return (
@@ -35,8 +34,8 @@ function UnauthorizedMenu() {
   );
 }
 
-export default function Nav() {
-  const isAuthorized = useIsLoggedIn();
+export default async function Nav() {
+  const isAuthorized = await isLoggedIn();
   return (
     <nav className="py-4">
       <ul className="flex items-center justify-between">

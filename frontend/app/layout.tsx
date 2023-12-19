@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-import AuthProvider from "@/app/lib/auth";
+import AuthProvider from "@/app/lib/client-auth";
 import { getUserId } from "@/app/lib/session";
 import { getUser } from "@/app/lib/actions";
 
