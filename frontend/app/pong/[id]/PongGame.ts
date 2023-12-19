@@ -13,6 +13,7 @@ import {
 type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 type movingDirectionType = "none" | "left" | "right";
 type onActionType = (action: string) => void;
+type userModeType = "player" | "viewer";
 
 export class PongGame {
   private ctx: CanvasRenderingContext2D;
@@ -34,7 +35,7 @@ export class PongGame {
   onAction: onActionType | undefined;
   private paddleColor: string;
   private ballColor: string;
-  private isPlayer: boolean;
+  private userMode: userModeType;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -44,7 +45,7 @@ export class PongGame {
     setPlayer2Position: setFunction<number>,
     paddleColor: string,
     ballColor: string,
-    isPlayer: boolean,
+    userMode: userModeType,
   ) {
     this.ctx = ctx;
     this.ctx.textAlign = "center";
@@ -78,7 +79,7 @@ export class PongGame {
     this.setSpeed = setSpeed;
     this.setPlayer1Position = setPlayer1Position;
     this.setPlayer2Position = setPlayer2Position;
-    this.isPlayer = isPlayer;
+    this.userMode = userMode;
   }
 
   update_fps = () => {
@@ -113,12 +114,12 @@ export class PongGame {
     // Draw objects
     this.ball.move(this.elapsed);
     if (this.player1.collide_with(this.ball)) {
-      if (this.isPlayer) {
+      if (this.userMode === "player") {
         this.ball.bounce_off_paddle(this.player1);
         this.onAction && this.onAction("bounce");
       }
     } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
-      if (this.isPlayer) {
+      if (this.userMode === "player") {
         this.ball.reset();
         this.score.player2++;
         this.onAction && this.onAction("collide");
@@ -148,7 +149,7 @@ export class PongGame {
     this.update_fps();
     this.update_speed(this.ball.speed());
     this.update_players();
-    if (this.isPlayer) {
+    if (this.userMode === "player") {
       if (this.movingDirection === "left") {
         this.player1.clear(this.ctx);
         this.player1.move_left();
@@ -299,5 +300,9 @@ export class PongGame {
     this.ballColor = color;
     this.player1.color = color;
     this.player2.color = color;
+  }
+
+  setUserMode(userMode: userModeType) {
+    this.userMode = userMode;
   }
 }

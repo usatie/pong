@@ -8,7 +8,7 @@ import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import PongInformationBoard from "./PongInformationBoard";
 import { useTheme } from "next-themes";
-import { useSearchParams } from "next/navigation";
+import { useUserMode } from "@/app/lib/hooks/useUserMode";
 
 type setState<T> = T | ((prevState: T) => T);
 
@@ -34,12 +34,13 @@ interface HandleActionProps {
 
 const POINT_TO_WIN = 3;
 
-function PongBoard({ id: id }: PongBoardProps) {
+function PongBoard({ id }: PongBoardProps) {
   const [fps, setFps] = useStateCallback<number>(0);
   const [speed, setSpeed] = useStateCallback<number>(0);
   const [player1Position, setPlayer1Position] = useStateCallback<number>(0);
   const [player2Position, setPlayer2Position] = useStateCallback<number>(0);
   const [logs, setLogs] = useStateCallback<string[]>([]);
+  const [userMode, setUserMode] = useUserMode();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // only initialized once
   const gameRef = useRef<PongGame | null>(null); // only initialized once
@@ -49,8 +50,6 @@ function PongBoard({ id: id }: PongBoardProps) {
   const [battleDisabled] = useState(true);
   const { resolvedTheme } = useTheme();
   const defaultColor = "hsl(0, 0%, 0%)";
-  const searchParams = useSearchParams();
-  const isPlayer = searchParams.get("mode") == "player";
 
   const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
@@ -66,16 +65,16 @@ function PongBoard({ id: id }: PongBoardProps) {
         setPlayer2Position,
         defaultColor,
         defaultColor,
-        isPlayer,
+        userMode,
       );
       gameRef.current = game;
       return game;
     }
     return gameRef.current;
-  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position, isPlayer]);
+  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position, userMode]);
 
   const start = useCallback(() => {
-    if (!isPlayer) return;
+    if (!userMode) return;
     const game = getGame();
 
     setStartDisabled(true);
@@ -85,7 +84,12 @@ function PongBoard({ id: id }: PongBoardProps) {
       vx: -vx,
       vy: -vy,
     });
-  }, [getGame, isPlayer]);
+  }, [getGame, userMode]);
+
+  useEffect(() => {
+    const game = getGame();
+    game.setUserMode(userMode);
+  }, [getGame, userMode]);
 
   useEffect(() => {
     // TODO: Use --foreground color from CSS
@@ -130,7 +134,9 @@ function PongBoard({ id: id }: PongBoardProps) {
   }, [getGame]);
 
   useEffect(() => {
-    const socket = io("/pong", { query: { game_id: id, is_player: isPlayer } });
+    const socket = io("/pong", {
+      query: { game_id: id, is_player: userMode === "player" },
+    });
     socketRef.current = socket;
 
     const game = getGame();
@@ -139,6 +145,10 @@ function PongBoard({ id: id }: PongBoardProps) {
     };
 
     const handleLog = (log: string) => {
+      // TODO
+      if (log == "The game is full. You joined as a viewer.") {
+        setUserMode("viewer");
+      }
       setLogs((logs) => [...logs, log]);
     };
     const handleConnect = () => {
@@ -154,7 +164,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     };
 
     const handleRight = ({ playerNumber }: HandleActionProps) => {
-      if (!isPlayer && playerNumber == 1) {
+      if (userMode !== "player" && playerNumber == 1) {
         game.movePlayer1Left();
       } else {
         game.movePlayer2Left();
@@ -162,7 +172,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     };
 
     const handleLeft = ({ playerNumber }: HandleActionProps) => {
-      if (!isPlayer && playerNumber == 1) {
+      if (userMode !== "player" && playerNumber == 1) {
         game.movePlayer1Right();
       } else {
         game.movePlayer2Right();
@@ -170,7 +180,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     };
 
     const handleBounce = ({ playerNumber }: HandleActionProps) => {
-      if (!isPlayer && playerNumber == 1) {
+      if (userMode !== "player" && playerNumber == 1) {
         game.bounceOffPaddlePlayer1();
       } else {
         game.bounceOffPaddlePlayer2();
@@ -180,7 +190,7 @@ function PongBoard({ id: id }: PongBoardProps) {
     const handleCollide = (msg: HandleActionProps) => {
       const { playerNumber } = msg;
       console.log(msg);
-      if (isPlayer) {
+      if (userMode === "player") {
         const score = game.increaseScorePlayer1();
         if (score != POINT_TO_WIN) {
           setTimeout(() => start(), 1000);
@@ -241,7 +251,7 @@ function PongBoard({ id: id }: PongBoardProps) {
       socket.off("finish", handleFinish);
       socket.disconnect();
     };
-  }, [id, getGame, setLogs, start, isPlayer]);
+  }, [id, getGame, setLogs, start, userMode, setUserMode]);
 
   return (
     <div className="overflow-hidden flex-grow flex gap-8 pb-8">
@@ -275,7 +285,7 @@ function PongBoard({ id: id }: PongBoardProps) {
           player1Position={player1Position}
           player2Position={player2Position}
           logs={logs}
-          isPlayer={isPlayer}
+          userMode={userMode}
         />
       </div>
     </div>

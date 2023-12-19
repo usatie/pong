@@ -6,7 +6,7 @@ interface PongInformationBoardProps {
   player1Position: number;
   player2Position: number;
   logs: string[];
-  isPlayer: boolean;
+  userMode: "viewer" | "player";
 }
 
 export default function PongInformationBoard({
@@ -15,11 +15,11 @@ export default function PongInformationBoard({
   player1Position,
   player2Position,
   logs,
-  isPlayer,
+  userMode,
 }: PongInformationBoardProps) {
   return (
     <div className="overflow-hidden flex-grow flex flex-col gap-1">
-      <div>You are a {isPlayer ? "player" : "viewer"}</div>
+      <div>You are a {userMode}</div>
       <div id="fps">FPS: {fps}</div>
       <div id="speed">Speed: {speed}</div>
       <div>
