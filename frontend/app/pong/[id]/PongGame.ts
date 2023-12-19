@@ -20,21 +20,21 @@ export class PongGame {
   player2: Paddle;
   ball: Ball;
   score: { player1: number; player2: number };
-  updated_at: number;
-  fps_updated_at: number;
-  elapsed: number;
-  frame_count: number;
-  is_playing: boolean;
+  private updated_at: number;
+  private fps_updated_at: number;
+  private elapsed: number;
+  private frame_count: number;
+  private is_playing: boolean;
   keypress: { [key: string]: boolean };
 
   setFps: setFunction<number>;
   setSpeed: setFunction<number>;
   setPlayer1Position: setFunction<number>;
   setPlayer2Position: setFunction<number>;
-  socketRef: RefObject<Socket | null>;
-  paddleColor: RefObject<string>;
-  ballColor: RefObject<string>;
-  isPlayer: boolean;
+  private socketRef: RefObject<Socket | null>;
+  private paddleColor: RefObject<string>;
+  private ballColor: RefObject<string>;
+  private isPlayer: boolean;
 
   constructor(
     socketRef: RefObject<Socket | null>,
