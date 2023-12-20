@@ -1,6 +1,6 @@
 "use client";
 
-import { SmallAvatarSkeleton } from "@/app/chat/skeleton";
+import { SmallAvatarSkeleton } from "@/app/ui/room/skeleton";
 import {
   ContextMenu,
   ContextMenuContent,

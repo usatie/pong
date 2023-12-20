@@ -33,6 +33,7 @@ import MessageArea from "../message-area";
 import { notFound } from "next/navigation";
 import type { User } from "@/app/ui/user/card";
 import type { UserOnRoom, UserWithRole } from "../sidebar";
+import { getMessages } from "@/app/lib/actions";
 
 type UserRole = {
   id: number;
@@ -42,10 +43,11 @@ type UserRole = {
 export default async function Page({
   params: { id },
 }: {
-  params: { id: number };
+  params: { id: string };
 }) {
+  const roomId = Number(id);
   const currentUserId = await getCurrentUserId();
-  const roomInfo = await getRoom(id);
+  const roomInfo = await getRoom(roomId);
   if (!roomInfo) {
     notFound();
   }
@@ -72,12 +74,13 @@ export default async function Page({
     }),
   );
   const currentUser = await getUser(currentUserId);
+  const messages = await getMessages(roomId);
   return (
     <>
       <div className="overflow-auto flex-grow flex gap-4 pb-4">
-        <Sidebar roomId={id} myInfo={myInfo} users={participateWithRole} />
+        <Sidebar roomId={roomId} myInfo={myInfo} users={participateWithRole} />
         <Separator orientation="vertical" />
-        <MessageArea roomId={id} me={currentUser} />
+        <MessageArea roomId={roomId} me={currentUser} messages={messages} />
       </div>
     </>
   );

@@ -1,36 +1,22 @@
 "use client";
 import { Stack } from "@/app/ui/layout/stack";
 import { useEffect, useRef, useState } from "react";
-import { MessageGroup } from "@/app/chat/message-group";
+import { MessageGroup } from "@/app/ui/room/message-group";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { User } from "@/app/ui/user/card";
-import { MessageSkeleton } from "@/app/chat/skeleton";
-import { groupMessagesByUser, useScrollToBottom } from "@/app/chat/helper";
+import { MessageSkeleton } from "@/app/ui/room/skeleton";
+import { groupMessagesByUser, useScrollToBottom } from "@/app/ui/room/helper";
 import { chatSocket as socket } from "@/socket";
-import { getConversation } from "@/app/lib/actions";
 import * as z from "zod";
-
-//async function getMessages(otherId: number) {
-//  console.log("conversation: ");
-//  let conversation = await getConversation(otherId);
-//  console.log("conversation: ", conversation);
-//  return conversation;
-//}
-
-type Message = {
-  userName: string;
-  senderId: number;
-  receiverId: number;
-  content: string;
-  roomId: number;
-};
+import { Message } from "../ui/room/test-data";
 
 type TextInputProps = {
   sendMessage: (e: React.SyntheticEvent) => void;
   setMessage: (message: string) => void;
   message: string;
 };
+
 function TextInput({ sendMessage, setMessage, message }: TextInputProps) {
   return (
     <form className="flex gap-4" id="chat-content" onSubmit={sendMessage}>
@@ -48,9 +34,17 @@ function TextInput({ sendMessage, setMessage, message }: TextInputProps) {
 
 const formSchema = z.string().min(1);
 
-function MessageArea({ roomId, me }: { roomId: number; me: User }) {
+function MessageArea({
+  roomId,
+  me,
+  messages: existingMessages,
+}: {
+  roomId: number;
+  me: User;
+  messages: Message[];
+}) {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(existingMessages);
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
@@ -60,20 +54,17 @@ function MessageArea({ roomId, me }: { roomId: number; me: User }) {
   // メッセージを取得
   useEffect(() => {
     socket.connect();
-    socket.emit("joinRoom", { roomId, userId: me.id });
-    console.log("emit joinRoom");
 
-    const handleMessageReceived = (newMessage: Message) => {
-      console.log("received message: ", newMessage);
-      setMessages((oldMessages) => [...oldMessages, newMessage]);
-      console.log(newMessage);
+    const handleMessage = (message: Message) => {
+      console.log("received message: ", message);
+      setMessages((oldMessages) => [...oldMessages, message]);
+      console.log(message);
     };
 
-    socket.on("sendToClient", handleMessageReceived);
+    socket.on("message", handleMessage);
     return () => {
       console.log(`return from useEffect`);
-      socket.off("sendToClient", handleMessageReceived);
-      socket.emit("leaveRoom", roomId);
+      socket.off("message", handleMessage);
       console.log("disconnect");
       socket.disconnect();
     };
@@ -97,8 +88,8 @@ function MessageArea({ roomId, me }: { roomId: number; me: User }) {
     console.log("sendMessage");
     const result = formSchema.safeParse(message);
     if (result.success) {
-      socket.emit("newMessage", {
-        userName: me.name,
+      socket.emit("message", {
+        userId: me.id,
         content: message,
         roomId,
       });

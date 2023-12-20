@@ -65,6 +65,24 @@ export class RoomService {
     });
   }
 
+  findAllMessages(roomId: number) {
+    return this.prisma.message.findMany({
+      where: { roomId: roomId },
+      select: {
+        content: true,
+        roomId: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarURL: true,
+          },
+        },
+      },
+    });
+  }
+
   removeRoom(roomId: number): Promise<RoomEntity> {
     return this.prisma.room.delete({
       where: { id: roomId },

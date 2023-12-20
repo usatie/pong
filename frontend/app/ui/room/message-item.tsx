@@ -24,7 +24,7 @@ export function MessageItem({
       <Stack>
         {withAvatar && (
           <HStack spacing={2}>
-            <div className="text-xs">{message.userName}</div>
+            <div className="text-xs">{message.user.name}</div>
             <div className="text-xs text-muted-foreground">
               {/* message.created_at */}
             </div>

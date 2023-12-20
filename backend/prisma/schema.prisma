@@ -39,13 +39,15 @@ model User {
 
   // 2FA
   twoFactorSecret  String?
-  twoFactorEnabled Boolean @default(false)
+  twoFactorEnabled Boolean   @default(false)
+  Message          Message[]
 }
 
 model Room {
-  id    Int          @id @default(autoincrement())
-  name  String
-  users UserOnRoom[]
+  id      Int          @id @default(autoincrement())
+  name    String
+  users   UserOnRoom[]
+  Message Message[]
 }
 
 model UserOnRoom {
@@ -63,6 +65,19 @@ enum Role {
   OWNER
   ADMINISTRATOR
   MEMBER
+}
+
+model Message {
+  id      Int    @id @default(autoincrement())
+  content String
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roomId Int
+  room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }
 
 model DirectMessage {

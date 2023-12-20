@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Socket, io } from 'socket.io-client';
 import { AppModule } from 'src/app.module';
 import { TestApp } from './utils/app';
+import { MessageEntity } from 'src/chat/entities/message.entity';
 
 async function createNestApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -115,8 +116,12 @@ describe('ChatGateway and ChatController (e2e)', () => {
     it('Setup promises to recv messages', () => {
       ctx1 = new Promise<void>((resolve) => {
         ws2.on('message', (data) => {
-          const expected = {
-            userId: user1.id,
+          const expected: MessageEntity = {
+            user: {
+              id: user1.id,
+              name: user1.name,
+              avatarURL: user1.avatarURL,
+            },
             roomId: room.id,
             content: 'hello',
           };
@@ -133,9 +138,13 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
       ctx2 = new Promise<void>((resolve) => {
         ws1.on('message', (data) => {
-          if (data.userId === user1.id) return;
-          const expected = {
-            userId: user2.id,
+          if (data.user.id === user1.id) return;
+          const expected: MessageEntity = {
+            user: {
+              id: user2.id,
+              name: user2.name,
+              avatarURL: user2.avatarURL,
+            },
             roomId: room.id,
             content: 'ACK: hello',
           };
@@ -164,25 +173,35 @@ describe('ChatGateway and ChatController (e2e)', () => {
       await ctx2;
     });
 
-    // it('user1 should get all messages in the room', async () => {
-    //   const res = await getMessagesInRoom(room.id, user1.accessToken).expect(
-    //     200,
-    //   );
-    //   const messages = res.body;
-    //   expect(messages).toHaveLength(2);
-    //   expect(messages).toEqual([
-    //     {
-    //       userId: user1.id,
-    //       roomId: room.id,
-    //       content: 'hello',
-    //     },
-    //     {
-    //       userId: user2.id,
-    //       roomId: room.id,
-    //       content: 'ACK: hello',
-    //     },
-    //   ]);
-    // });
+    it('user1 should get all messages in the room', async () => {
+      const res = await app
+        .getMessagesInRoom(room.id, user1.accessToken)
+        .expect(200);
+      const messages = res.body;
+      expect(messages).toHaveLength(2);
+      expect(messages).toEqual([
+        {
+          user: {
+            id: user1.id,
+            name: user1.name,
+            avatarURL: user1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: user2.id,
+            name: user2.name,
+            avatarURL: user2.avatarURL,
+          },
+          roomId: room.id,
+          content: 'ACK: hello',
+          createdAt: expect.any(String),
+        },
+      ]);
+    });
   });
 
   /*

@@ -22,6 +22,10 @@ export class ChatService {
   private clients = new Map<User['id'], Socket>();
   private users = new Map<Socket['id'], User>();
 
+  getUser(client: Socket) {
+    return this.users.get(client.id);
+  }
+
   getUserId(client: Socket) {
     const user = this.users.get(client.id);
     if (user) {
@@ -68,17 +72,13 @@ export class ChatService {
   }
 
   createMessage(data: CreateMessageDto) {
-    // TODO: create message
-    data;
-    /*
     return this.prisma.message.create({
       data: {
-        content,
-        room: { connect: { id: roomId } },
-        user: { connect: { id: userId } },
+        content: data.content,
+        room: { connect: { id: data.roomId } },
+        user: { connect: { id: data.userId } },
       },
     });
-    */
   }
 
   deleteRoom(roomId: number) {
