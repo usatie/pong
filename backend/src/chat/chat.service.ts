@@ -72,17 +72,13 @@ export class ChatService {
   }
 
   createMessage(data: CreateMessageDto) {
-    // TODO: create message
-    data;
-    /*
     return this.prisma.message.create({
       data: {
-        content,
-        room: { connect: { id: roomId } },
-        user: { connect: { id: userId } },
+        content: data.content,
+        room: { connect: { id: data.roomId } },
+        user: { connect: { id: data.userId } },
       },
     });
-    */
   }
 
   deleteRoom(roomId: number) {
