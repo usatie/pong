@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { destroySession, getCurrentUserId } from "./session";
+import { destroySession, getCurrentUser, getCurrentUserId } from "./session";
 import type { User } from "@/app/ui/user/card";
 import { Room } from "../ui/room/card";
 
@@ -277,4 +277,51 @@ export async function getMessages(roomId: number) {
   });
   const messages = await res.json();
   return messages;
+}
+
+export async function updatePassword(
+  prevState: string | undefined,
+  formData: FormData,
+) {
+  console.log("updatePassword");
+  // Check if new password and confirm password match
+  const newPassword = formData.get("new-password");
+  const confirmPassword = formData.get("confirm-password");
+  if (newPassword !== confirmPassword) {
+    return "PasswordMismatch";
+  }
+  const currentPassword = formData.get("current-password");
+  const user = await getCurrentUser();
+
+  // Check if current password is correct
+  const res1 = await fetch(`${process.env.API_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email: user.email, password: currentPassword }),
+  });
+  if (res1.status === 401) {
+    return "Wrong password";
+  }
+  const data = await res1.json();
+  if (!res1.ok) {
+    return data.message;
+  }
+
+  // Update password
+  const res = await fetch(`${process.env.API_URL}/user/${user.id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + data.accessToken,
+    },
+    body: JSON.stringify({ password: newPassword }),
+  });
+  if (!res.ok) {
+    console.error("updatePassword error: ", await res.json());
+    return "Error";
+  } else {
+    return "Success";
+  }
 }
