@@ -5,6 +5,7 @@ import { redirect, RedirectType } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { destroySession, getCurrentUserId } from "./session";
 import type { User } from "@/app/ui/user/card";
+import { Room } from "../ui/room/card";
 
 export async function signOut() {
   cookies()?.delete("token");
@@ -131,6 +132,17 @@ export async function deleteUser(
     revalidatePath(`/user/${user_id}`);
     return "Success";
   }
+}
+
+export async function getRooms(): Promise<Room[]> {
+  const res = await fetch(`${process.env.API_URL}/room`, {
+    cache: "no-cache",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  const rooms = await res.json();
+  return rooms;
 }
 
 export async function getRoom(roomId: number) {

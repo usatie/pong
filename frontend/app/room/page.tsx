@@ -1,13 +1,6 @@
 import RoomCard from "@/app/ui/room/card";
 import type { Room } from "@/app/ui/room/card";
-
-async function getRooms(): Promise<Room[]> {
-  const res = await fetch(`${process.env.API_URL}/room`, {
-    cache: "no-cache",
-  });
-  const rooms = await res.json();
-  return rooms;
-}
+import { getRooms } from "@/app/lib/actions";
 
 export default async function RoomListPage() {
   const rooms = await getRooms();
