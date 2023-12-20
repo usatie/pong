@@ -85,10 +85,10 @@ describe('ChatGateway and ChatController (e2e)', () => {
     // Chat
     it('Connect to chat server', async () => {
       ws1 = io('ws://localhost:3000/chat', {
-        auth: { token: user1.accessToken },
+        extraHeaders: { cookie: 'token=' + user1.accessToken },
       });
       ws2 = io('ws://localhost:3000/chat', {
-        auth: { token: user2.accessToken },
+        extraHeaders: { cookie: 'token=' + user2.accessToken },
       });
       expect(ws1).toBeDefined();
       expect(ws2).toBeDefined();
