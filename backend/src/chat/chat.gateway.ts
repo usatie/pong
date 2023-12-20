@@ -31,6 +31,7 @@ type RoomChat = {
     origin: '*',
   },
   namespace: 'chat',
+  cookie: true,
 })
 export class ChatGateway {
   constructor(

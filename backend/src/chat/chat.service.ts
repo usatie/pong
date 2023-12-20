@@ -96,7 +96,12 @@ export class ChatService {
   }
 
   async handleConnection(client: Socket) {
-    const token = client.handshake.auth.token;
+    const token = client.handshake.headers.cookie
+      .split('; ')
+      .find((c) => c.startsWith('token='))
+      ?.split('=')[1];
+    console.log('handle connection!', token);
+
     if (!token) {
       console.error('No token provided');
       client.disconnect();
