@@ -22,6 +22,10 @@ export class ChatService {
   private clients = new Map<User['id'], Socket>();
   private users = new Map<Socket['id'], User>();
 
+  getUser(client: Socket) {
+    return this.users.get(client.id);
+  }
+
   getUserId(client: Socket) {
     const user = this.users.get(client.id);
     if (user) {

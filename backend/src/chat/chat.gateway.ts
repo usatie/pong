@@ -11,6 +11,7 @@ import { ChatService } from './chat.service';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { UserService } from '../user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { MessageEntity } from './entities/message.entity';
 
 //type PrivateMessage = {
 //  conversationId: string;
@@ -192,7 +193,10 @@ export class ChatGateway {
 
     // Send message to the room
     const room = this.server.to(data.roomId.toString());
-    room.emit('message', data);
+    room.emit(
+      'message',
+      new MessageEntity(data, this.chatService.getUser(client)),
+    );
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
