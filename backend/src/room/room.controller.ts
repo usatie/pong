@@ -91,6 +91,14 @@ export class RoomController {
     return this.roomService.createUserOnRoom(roomId, user);
   }
 
+  @Get(':roomId/messages')
+  @UseGuards(MemberGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse()
+  getMessages(@Member() member: UserOnRoomEntity) {
+    return this.roomService.findAllMessages(member.roomId);
+  }
+
   @Get(':roomId/:userId')
   @UseGuards(MemberGuard)
   @ApiBearerAuth()
