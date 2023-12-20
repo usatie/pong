@@ -8,29 +8,15 @@ import type { User } from "@/app/ui/user/card";
 import { MessageSkeleton } from "@/app/chat/skeleton";
 import { groupMessagesByUser, useScrollToBottom } from "@/app/chat/helper";
 import { chatSocket as socket } from "@/socket";
-import { getConversation } from "@/app/lib/actions";
 import * as z from "zod";
-
-//async function getMessages(otherId: number) {
-//  console.log("conversation: ");
-//  let conversation = await getConversation(otherId);
-//  console.log("conversation: ", conversation);
-//  return conversation;
-//}
-
-type Message = {
-  userName: string;
-  senderId: number;
-  receiverId: number;
-  content: string;
-  roomId: number;
-};
+import { Message } from "../chat/test-data";
 
 type TextInputProps = {
   sendMessage: (e: React.SyntheticEvent) => void;
   setMessage: (message: string) => void;
   message: string;
 };
+
 function TextInput({ sendMessage, setMessage, message }: TextInputProps) {
   return (
     <form className="flex gap-4" id="chat-content" onSubmit={sendMessage}>
