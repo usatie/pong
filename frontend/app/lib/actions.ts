@@ -133,6 +133,18 @@ export async function deleteUser(
   }
 }
 
+export async function getRooms(): Promise<Room[]> {
+  const res = await fetch(`${process.env.API_URL}/room`, {
+    cache: "no-cache",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  const rooms = await res.json();
+  console.log("rooms", rooms);
+  return rooms;
+}
+
 export async function getRoom(roomId: number) {
   const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
     cache: "no-cache",
