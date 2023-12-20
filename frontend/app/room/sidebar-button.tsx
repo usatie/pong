@@ -1,6 +1,6 @@
 "use client";
 
-import { SmallAvatarSkeleton } from "@/app/chat/skeleton";
+import { SmallAvatarSkeleton } from "@/app/ui/room/skeleton";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -41,7 +41,7 @@ export function SidebarButton({
   const router = useRouter();
   const [isBlocked, setIsBlocked] = useState(false);
   const [isChecked, setChecked] = useState(
-    user.role === "OWNER" || user.role === "ADMINISTRATOR",
+    user.role === "OWNER" || user.role === "ADMINISTRATOR"
   );
   const [myRole, setMyRole] = useState(myInfo.role);
   const [userRole, setUserRole] = useState(user.role);

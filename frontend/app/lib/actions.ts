@@ -201,28 +201,6 @@ export async function joinRoom(
   }
 }
 
-export async function getConversation(userId: number) {
-  const res = await fetch(`${process.env.API_URL}/chat/${userId}`, {
-    cache: "no-cache",
-    headers: {
-      Authorization: "Bearer " + getAccessToken(),
-    },
-  });
-  if (res.status === 404) {
-    console.error("Not found conversation: ", await res.json());
-    return null;
-  } else if (res.status === 409) {
-    console.error("Conflict conversation: ", await res.json());
-    return null;
-  } else if (!res.ok) {
-    console.error("getConversation error: ", await res.json());
-    throw new Error("getConversation error");
-  } else {
-    const conversation = await res.json();
-    return conversation;
-  }
-}
-
 export async function updateRoomUser(
   role: string,
   roomId: number,
