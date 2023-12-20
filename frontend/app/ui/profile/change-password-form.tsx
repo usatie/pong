@@ -65,7 +65,7 @@ function PasswordItem({
   );
 }
 
-export default function ChangePasswordCard() {
+export default function ChangePasswordForm() {
   const [code, action] = useFormState(updatePassword, undefined);
   const { pending } = useFormStatus();
   const [newPassword, setNewPassword] = useState("");
