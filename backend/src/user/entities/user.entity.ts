@@ -13,8 +13,8 @@ export class UserEntity implements User {
   @ApiProperty()
   email: string;
 
-  @ApiProperty({ required: false, nullable: true })
-  name: string | null;
+  @ApiProperty()
+  name: string;
 
   @Exclude()
   password: string;
