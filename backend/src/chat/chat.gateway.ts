@@ -12,12 +12,6 @@ import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { UserService } from '../user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 
-type RoomChat = {
-  userName: string;
-  content: string;
-  roomId: number;
-};
-
 //type PrivateMessage = {
 //  conversationId: string;
 //  from: string;
@@ -55,28 +49,6 @@ export class ChatGateway {
     }
     return undefined;
   };
-
-  @SubscribeMessage('newMessage')
-  chatMessageToRoom(
-    @MessageBody() data: RoomChat,
-    @ConnectedSocket() client: Socket,
-  ): void {
-    this.logger.log('message received');
-    this.logger.log(data);
-    if (client.rooms.has('room/' + data.roomId)) {
-      const userId = this.getValueToKey(this.userMap, client.id);
-      if (userId) {
-        this.server
-          .except('block' + userId)
-          .to('room/' + data.roomId)
-          .emit('sendToClient', { ...data, senderId: userId }, client.id);
-      } else {
-        this.logger.error('No user id was found for socket id');
-      }
-    } else {
-      this.logger.error('socket has not joined this room');
-    }
-  }
 
   @SubscribeMessage('privateMessage')
   privateMessageToUser(
@@ -155,29 +127,6 @@ export class ChatGateway {
     this.logger.log(`join DM: ${client.id} joined DM user${userId}`);
   }
 
-  @SubscribeMessage('joinRoom')
-  async handleJoinRoom(
-    @MessageBody() { roomId, userId }: { roomId: number; userId: number },
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.logger.log(
-      `join room: ${client.id} joined room ${roomId} userId ${userId}`,
-    );
-    client.join('room/' + roomId);
-    this.userMap.set(userId, client.id);
-    const blockedUsers = await this.userService.findAllBlocked(userId);
-    blockedUsers.map((user) => client.join('block' + user.id));
-  }
-
-  @SubscribeMessage('leaveRoom')
-  handleLeaveRoom(
-    @MessageBody() roomId: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.logger.log(`leave room: ${client.id} left room ${roomId}`);
-    client.leave('room/' + roomId);
-  }
-
   @SubscribeMessage('kick')
   handleKick(
     @MessageBody() { roomId, userId }: { roomId: number; userId: number },
@@ -238,6 +187,8 @@ export class ChatGateway {
 
     // Save message to the database
     await this.chatService.createMessage(data);
+
+    // TODO: exclude blocked users
 
     // Send message to the room
     const room = this.server.to(data.roomId.toString());

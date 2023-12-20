@@ -60,20 +60,17 @@ function MessageArea({ roomId, me }: { roomId: number; me: User }) {
   // メッセージを取得
   useEffect(() => {
     socket.connect();
-    socket.emit("joinRoom", { roomId, userId: me.id });
-    console.log("emit joinRoom");
 
-    const handleMessageReceived = (newMessage: Message) => {
-      console.log("received message: ", newMessage);
-      setMessages((oldMessages) => [...oldMessages, newMessage]);
-      console.log(newMessage);
+    const handleMessage = (message: Message) => {
+      console.log("received message: ", message);
+      setMessages((oldMessages) => [...oldMessages, message]);
+      console.log(message);
     };
 
-    socket.on("sendToClient", handleMessageReceived);
+    socket.on("message", handleMessage);
     return () => {
       console.log(`return from useEffect`);
-      socket.off("sendToClient", handleMessageReceived);
-      socket.emit("leaveRoom", roomId);
+      socket.off("message", handleMessage);
       console.log("disconnect");
       socket.disconnect();
     };
@@ -97,8 +94,8 @@ function MessageArea({ roomId, me }: { roomId: number; me: User }) {
     console.log("sendMessage");
     const result = formSchema.safeParse(message);
     if (result.success) {
-      socket.emit("newMessage", {
-        userName: me.name,
+      socket.emit("message", {
+        userId: me.id,
         content: message,
         roomId,
       });
