@@ -142,7 +142,6 @@ export async function getRooms(): Promise<Room[]> {
     },
   });
   const rooms = await res.json();
-  console.log("rooms", rooms);
   return rooms;
 }
 
