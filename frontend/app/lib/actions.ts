@@ -259,16 +259,18 @@ export async function signInAsTestUser() {
 
 export async function uploadAvatar(formData: FormData) {
   const userId = await getCurrentUserId();
+  const payload = new FormData();
+  payload.append("avatar", formData.get("avatar") as Blob);
   const res = await fetch(`${process.env.API_URL}/user/${userId}/avatar`, {
     method: "POST",
     headers: {
       Authorization: "Bearer " + getAccessToken(),
-      ContentType: "multipart/form-data",
     },
-    body: formData,
+    body: payload,
   });
   const data = await res.json();
   if (!res.ok) {
+    console.error("uploadAvatar error: ", data);
     return "Error";
   } else {
     revalidatePath("/profile");
