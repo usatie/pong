@@ -8,9 +8,10 @@ function AuthorizedMenu() {
   return (
     <li className="flex gap-8 items-center">
       <Link href="/user">User List</Link>
-      <Link href="/direct-message">DMs</Link>
-      <Link href="/room">ChatRoom List</Link>
+      <Link href="/chat">Chat</Link>
+      <Link href="/room">Group Chat</Link>
       <Link href="/pong">Game</Link>
+      <Link href="/profile">Profile</Link>
       <form action={signOut}>
         <Button type="submit">Sign Out</Button>
       </form>
