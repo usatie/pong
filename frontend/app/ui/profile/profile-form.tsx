@@ -54,6 +54,7 @@ function AvatarForm({ avatarURL }: { avatarURL?: string }) {
       <input
         ref={inputRef}
         accept="image/*"
+        aria-label="Change Avatar"
         name="avatar"
         hidden
         type="file"
