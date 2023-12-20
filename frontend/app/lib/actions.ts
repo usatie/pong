@@ -5,6 +5,7 @@ import { redirect, RedirectType } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { destroySession, getCurrentUserId } from "./session";
 import type { User } from "@/app/ui/user/card";
+import { Room } from "../ui/room/card";
 
 export async function signOut() {
   cookies()?.delete("token");
