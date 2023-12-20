@@ -27,7 +27,7 @@ export function groupMessagesByUser(messages: Message[]): Message[][] {
 
 export function useScrollToBottom(
   ref: React.RefObject<HTMLDivElement>,
-  messages: Message[]
+  messages: Message[],
 ) {
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
 
