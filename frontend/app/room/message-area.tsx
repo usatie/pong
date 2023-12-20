@@ -34,9 +34,17 @@ function TextInput({ sendMessage, setMessage, message }: TextInputProps) {
 
 const formSchema = z.string().min(1);
 
-function MessageArea({ roomId, me }: { roomId: number; me: User }) {
+function MessageArea({
+  roomId,
+  me,
+  messages: existingMessages,
+}: {
+  roomId: number;
+  me: User;
+  messages: Message[];
+}) {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(existingMessages);
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);

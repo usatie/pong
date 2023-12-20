@@ -289,3 +289,14 @@ export async function uploadAvatar(formData: FormData) {
     return "Success";
   }
 }
+
+export async function getMessages(roomId: number) {
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}/messages`, {
+    cache: "no-cache",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  const messages = await res.json();
+  return messages;
+}
