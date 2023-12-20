@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { destroySession } from "./session";
+import { destroySession, getCurrentUserId } from "./session";
 import type { User } from "@/app/ui/user/card";
 
 export async function signOut() {
@@ -255,4 +255,25 @@ export async function signInAsTestUser() {
   const password = "password-test";
   await signIn({ email, password });
   redirect("/");
+}
+
+export async function uploadAvatar(formData: FormData) {
+  const userId = await getCurrentUserId();
+  const payload = new FormData();
+  payload.append("avatar", formData.get("avatar") as Blob);
+  const res = await fetch(`${process.env.API_URL}/user/${userId}/avatar`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+    body: payload,
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    console.error("uploadAvatar error: ", data);
+    return "Error";
+  } else {
+    revalidatePath("/profile");
+    return "Success";
+  }
 }
