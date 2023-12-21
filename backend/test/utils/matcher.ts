@@ -20,7 +20,6 @@ export const expectRoom = (room) => {
 
 export const expectUserOnRoom = (userOnRoom) => {
   const expected = {
-    id: expect.any(Number),
     role: expect.any(String),
     roomId: expect.any(Number),
     userId: expect.any(Number),
@@ -28,9 +27,24 @@ export const expectUserOnRoom = (userOnRoom) => {
   expect(userOnRoom).toEqual(expected);
 };
 
+export const expectUserOnRoomWithUser = (userOnRoom) => {
+  const expected = {
+    role: expect.any(String),
+    roomId: expect.any(Number),
+    userId: expect.any(Number),
+    user: expect.any(Object),
+  };
+  expect(userOnRoom).toEqual(expected);
+  expectPublicUser(userOnRoom.user);
+};
+
 export const expectUser = (user: any) => {
   const { avatarURL, ...rest } = user;
-  expect([null, expect.any(String)]).toContain(avatarURL);
+  try {
+    expect(avatarURL).toBeNull();
+  } catch {
+    expect(avatarURL).toEqual(expect.any(String));
+  }
   const expected = {
     id: expect.any(Number),
     email: expect.any(String),
@@ -43,7 +57,11 @@ export const expectUser = (user: any) => {
 
 export const expectPublicUser = (user: any) => {
   const { avatarURL, ...rest } = user;
-  expect([null, expect.any(String)]).toContain(avatarURL);
+  try {
+    expect(avatarURL).toBeNull();
+  } catch {
+    expect(avatarURL).toEqual(expect.any(String));
+  }
   const expected = {
     id: expect.any(Number),
     name: expect.any(String),

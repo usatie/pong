@@ -8,7 +8,7 @@ import { initializeApp } from './utils/initialize';
 import {
   expectRoom,
   expectRoomWithUsers,
-  expectUserOnRoom,
+  expectUserOnRoomWithUser,
 } from './utils/matcher';
 
 describe('RoomController (e2e)', () => {
@@ -112,7 +112,7 @@ describe('RoomController (e2e)', () => {
           .expect((res) => {
             expectRoomWithUsers(res.body);
             expect(res.body.users).toHaveLength(3);
-            res.body.users.forEach(expectUserOnRoom);
+            res.body.users.forEach(expectUserOnRoomWithUser);
           });
       }
     });

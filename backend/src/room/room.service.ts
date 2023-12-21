@@ -46,11 +46,21 @@ export class RoomService {
     return this.prisma.room.findMany();
   }
 
-  findRoom(id: number): Promise<RoomEntity> {
+  findRoom(id: number) {
     return this.prisma.room.findUniqueOrThrow({
       where: { id },
       include: {
-        users: true,
+        users: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatarURL: true,
+              },
+            },
+          },
+        },
       },
     });
   }

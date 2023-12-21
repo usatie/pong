@@ -1,15 +1,15 @@
 "use client";
+import { useAuthContext } from "@/app/lib/client-auth";
 import { Stack } from "@/app/ui/layout/stack";
 import { groupMessagesByUser, useScrollToBottom } from "@/app/ui/room/helper";
 import { MessageGroup } from "@/app/ui/room/message-group";
 import { MessageSkeleton } from "@/app/ui/room/skeleton";
-import type { User } from "@/app/ui/user/card";
+import { Message } from "@/app/ui/room/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { chatSocket as socket } from "@/socket";
 import { useEffect, useRef, useState } from "react";
 import * as z from "zod";
-import { Message } from "../ui/room/test-data";
 
 type TextInputProps = {
   sendMessage: (e: React.SyntheticEvent) => void;
@@ -36,11 +36,9 @@ const formSchema = z.string().min(1);
 
 function MessageArea({
   roomId,
-  me,
   messages: existingMessages,
 }: {
   roomId: number;
-  me: User;
   messages: Message[];
 }) {
   const [message, setMessage] = useState("");
@@ -48,48 +46,30 @@ function MessageArea({
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
-  //  const myId = me.id.toString();
+  const { currentUser } = useAuthContext();
+  if (!currentUser) throw new Error("currentUser is not defined");
 
-  // TODO: Messageを取得するsocketのロジック等を実装
   // メッセージを取得
   useEffect(() => {
     socket.connect();
 
     const handleMessage = (message: Message) => {
-      console.log("received message: ", message);
-      setMessages((oldMessages) => [...oldMessages, message]);
-      console.log(message);
+      setMessages((messages) => [...messages, message]);
     };
 
     socket.on("message", handleMessage);
     return () => {
-      console.log(`return from useEffect`);
       socket.off("message", handleMessage);
-      console.log("disconnect");
       socket.disconnect();
     };
-  }, [roomId, me.id]);
-
-  //  const didLogRef = useRef(false);
-  //  useEffect(() => {
-  //    if (didLogRef.current === false) {
-  //      didLogRef.current = true;
-  //      const fetchMessages = async () => {
-  //      const conversation = await getMessages(otherId);
-  //      const messages = conversation;
-  //      setMessages(messages);
-  //      };
-  //      fetchMessages();
-  //    }
-  //  }, []);
+  }, [roomId]);
 
   const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    console.log("sendMessage");
     const result = formSchema.safeParse(message);
     if (result.success) {
       socket.emit("message", {
-        userId: me.id,
+        userId: currentUser.id,
         content: message,
         roomId,
       });

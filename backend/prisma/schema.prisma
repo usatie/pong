@@ -51,12 +51,13 @@ model Room {
 }
 
 model UserOnRoom {
-  id     Int  @id @default(autoincrement())
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
-  role   Role @default(MEMBER)
+
   room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId Int
+
+  role Role @default(MEMBER)
 
   @@unique(fields: [userId, roomId], name: "userId_roomId_unique")
 }
