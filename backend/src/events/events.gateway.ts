@@ -1,11 +1,11 @@
 import { Logger } from '@nestjs/common';
 import {
+  ConnectedSocket,
   MessageBody,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  ConnectedSocket,
-  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 

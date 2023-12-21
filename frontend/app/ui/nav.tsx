@@ -1,8 +1,8 @@
+import { signInAsTestUser, signOut } from "@/app/lib/actions";
+import { isLoggedIn } from "@/app/lib/session";
 import { ModeToggle } from "@/components/toggle-mode";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { signInAsTestUser, signOut } from "@/app/lib/actions";
-import { isLoggedIn } from "@/app/lib/session";
 
 function AuthorizedMenu() {
   return (

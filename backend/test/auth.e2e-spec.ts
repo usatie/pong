@@ -1,7 +1,7 @@
-import { initializeApp } from './utils/initialize';
-import { constants } from './constants';
 import { authenticator } from 'otplib';
+import { constants } from './constants';
 import { TestApp } from './utils/app';
+import { initializeApp } from './utils/initialize';
 
 describe('AuthController (e2e)', () => {
   let app: TestApp;

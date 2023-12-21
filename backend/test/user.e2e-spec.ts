@@ -1,10 +1,10 @@
-import { initializeApp } from './utils/initialize';
+import { LoginDto } from 'src/auth/dto/login.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/user/dto/update-user.dto';
-import { LoginDto } from 'src/auth/dto/login.dto';
-import { expectUser } from './utils/matcher';
 import { constants } from './constants';
 import { TestApp } from './utils/app';
+import { initializeApp } from './utils/initialize';
+import { expectUser } from './utils/matcher';
 
 describe('UserController (e2e)', () => {
   let app: TestApp;

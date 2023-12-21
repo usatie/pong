@@ -1,6 +1,6 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaClient } from '@prisma/client';
 import { RoomService } from './room.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('RoomService', () => {
   it('should be defined', () => {

@@ -1,6 +1,9 @@
 "use client";
 
+import { deleteRoomUser, updateRoomUser } from "@/app/lib/actions";
 import { SmallAvatarSkeleton } from "@/app/ui/room/skeleton";
+import type { User } from "@/app/ui/user/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -8,15 +11,10 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Stack } from "@/app/ui/layout/stack";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 import { chatSocket as socket } from "@/socket";
-import type { User } from "@/app/ui/user/card";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import type { UserOnRoom, UserWithRole } from "./sidebar";
-import { updateRoomUser, deleteRoomUser } from "@/app/lib/actions";
-import { redirect, RedirectType } from "next/navigation";
 
 function truncateString(str: string | undefined, num: number): string {
   if (!str) {

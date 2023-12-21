@@ -1,7 +1,7 @@
-import { cookies } from "next/headers";
 import * as jose from "jose";
-import { getUser } from "./actions";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getUser } from "./actions";
 
 // TODO: add types
 export type Session = {};

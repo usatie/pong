@@ -1,5 +1,5 @@
-import { Room } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
+import { Room } from '@prisma/client';
 
 export class RoomEntity implements Room {
   constructor(partial: Partial<RoomEntity>) {

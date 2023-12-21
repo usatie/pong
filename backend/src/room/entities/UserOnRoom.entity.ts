@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserOnRoom, Role } from '@prisma/client';
+import { Role, UserOnRoom } from '@prisma/client';
 
 export class UserOnRoomEntity implements UserOnRoom {
   constructor(partial: Partial<UserOnRoomEntity>) {

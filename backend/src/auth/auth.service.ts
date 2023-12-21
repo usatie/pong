@@ -4,16 +4,16 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthEntity } from './entity/auth.entity';
-import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
-import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
-import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { jwtConstants } from './auth.module';
+import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
+import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
+import { AuthEntity } from './entity/auth.entity';
 
 @Injectable()
 export class AuthService {

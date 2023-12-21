@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { isLoggedIn } from "@/app/lib/session";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 function isPathProtected(path: string) {
   if (path == "/user/signup") return false;

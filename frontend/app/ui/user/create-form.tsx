@@ -3,9 +3,9 @@
 import { createUser } from "@/app/lib/client-actions";
 
 // components
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 
 export default function UserCreateForm() {
   return (

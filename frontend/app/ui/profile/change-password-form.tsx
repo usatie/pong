@@ -4,10 +4,10 @@ import { updatePassword } from "@/app/lib/actions";
 import { Stack } from "@/app/ui/layout/stack";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Label } from "@/components/ui/label";
 
 function ErrorText({ text }: { text: string }) {
   return (

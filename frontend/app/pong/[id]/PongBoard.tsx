@@ -1,14 +1,14 @@
 "use client";
 
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { PongGame } from "./PongGame";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
-import { Button } from "@/components/ui/button";
-import { io } from "socket.io-client";
-import type { Socket } from "socket.io-client";
-import PongInformationBoard from "./PongInformationBoard";
-import { useTheme } from "next-themes";
 import { useUserMode } from "@/app/lib/hooks/useUserMode";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import type { Socket } from "socket.io-client";
+import { io } from "socket.io-client";
+import { PongGame } from "./PongGame";
+import PongInformationBoard from "./PongInformationBoard";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
 
 type setState<T> = T | ((prevState: T) => T);
 

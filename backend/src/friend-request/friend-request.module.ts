@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { FriendRequestService } from './friend-request.service';
-import { FriendRequestController } from './friend-request.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { FriendRequestController } from './friend-request.controller';
+import { FriendRequestService } from './friend-request.service';
 
 @Module({
   controllers: [FriendRequestController],

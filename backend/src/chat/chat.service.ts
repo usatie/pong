@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { OnEvent } from '@nestjs/event-emitter';
+import { WebSocketGateway, WsException } from '@nestjs/websockets';
 import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
-import { WebSocketGateway, WsException } from '@nestjs/websockets';
 import { AuthService } from 'src/auth/auth.service';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { OnEvent } from '@nestjs/event-emitter';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
+import { CreateMessageDto } from './dto/create-message.dto';
 
 @Injectable()
 @WebSocketGateway()

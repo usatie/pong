@@ -3,8 +3,8 @@ import {
   IsEmail,
   IsNotEmpty,
   IsString,
-  MinLength,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export class CreateUserDto {

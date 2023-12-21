@@ -1,9 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { io } from "socket.io-client";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 export default function MatchButton() {
   const router = useRouter();

@@ -1,9 +1,9 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Stack } from "@/app/ui/layout/stack";
 import { useAuthContext } from "@/app/lib/client-auth";
-import { ProfileItem } from "./profile-item-form";
+import { Stack } from "@/app/ui/layout/stack";
+import { Button } from "@/components/ui/button";
 import AvatarForm from "./avatar-form";
+import { ProfileItem } from "./profile-item-form";
 
 export default function ProfileForm() {
   const { currentUser } = useAuthContext();

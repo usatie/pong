@@ -1,36 +1,36 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ParseIntPipe,
-  UseGuards,
+  Get,
   HttpCode,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { RoomService } from './room.service';
-import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
 import {
-  ApiTags,
-  ApiCreatedResponse,
-  ApiOkResponse,
   ApiBearerAuth,
+  ApiCreatedResponse,
   ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { RoomEntity } from './entities/room.entity';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
-import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
-import { MemberGuard } from './guards/member.guard';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Member } from './decorators/member.decorator';
-import { KickGuard } from './guards/kick.guard';
+import { CreateRoomDto } from './dto/create-room.dto';
+import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
+import { UpdateRoomDto } from './dto/update-room.dto';
+import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
+import { RoomEntity } from './entities/room.entity';
 import { ChangeRoleGuard } from './guards/change-role.guard';
+import { KickGuard } from './guards/kick.guard';
+import { MemberGuard } from './guards/member.guard';
 import { OwnerGuard } from './guards/owner.guard';
+import { RoomService } from './room.service';
 
 @Controller('room')
 @UseGuards(JwtAuthGuard)

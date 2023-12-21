@@ -1,11 +1,11 @@
 "use server";
 
+import type { User } from "@/app/ui/user/card";
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
-import { revalidatePath } from "next/cache";
-import { destroySession, getCurrentUser, getCurrentUserId } from "./session";
-import type { User } from "@/app/ui/user/card";
 import { Room } from "../ui/room/card";
+import { destroySession, getCurrentUser, getCurrentUserId } from "./session";
 
 export async function signOut() {
   cookies()?.delete("token");

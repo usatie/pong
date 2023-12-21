@@ -1,20 +1,18 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
+  Controller,
   Delete,
-  UseGuards,
-  Param,
-  Res,
-  UseInterceptors,
-  UploadedFile,
-  ParseIntPipe,
+  Get,
   HttpCode,
+  Param,
+  ParseIntPipe,
+  Post,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { AvatarService } from './avatar.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { UserGuard } from 'src/user/user.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiConsumes,
@@ -22,8 +20,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
-import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { UserGuard } from 'src/user/user.guard';
+import { AvatarService } from './avatar.service';
 import { CreateAvatarDto } from './dto/create-avatar.dto';
 
 @Controller()

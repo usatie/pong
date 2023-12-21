@@ -1,12 +1,12 @@
 "use client";
 
-import { toast } from "@/components/ui/use-toast";
 import { Stack } from "@/app/ui/layout/stack";
 import type { User } from "@/app/ui/user/card";
-import { SidebarButton } from "./sidebar-button";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/use-toast";
 import { chatSocket as socket } from "@/socket";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { SidebarButton } from "./sidebar-button";
 
 export type UserOnRoom = {
   id: number;

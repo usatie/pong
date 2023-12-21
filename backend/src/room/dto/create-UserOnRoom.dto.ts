@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
 import { Role } from '@prisma/client';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateUserOnRoomDto {
   @IsString()

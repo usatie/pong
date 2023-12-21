@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HistoryService } from './history.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { HistoryService } from './history.service';
 
 describe('HistoryService', () => {
   let service: HistoryService;

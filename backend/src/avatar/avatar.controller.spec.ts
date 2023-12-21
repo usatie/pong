@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { AvatarController } from './avatar.controller';
 import { AvatarService } from './avatar.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 
 describe('AvatarController', () => {
   let controller: AvatarController;

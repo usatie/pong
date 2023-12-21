@@ -1,9 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import { AppModule } from '../../src/app.module';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import { PrismaClientExceptionFilter } from 'nestjs-prisma';
+import {
+  ClassSerializerInterceptor,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { HttpAdapterHost, Reflector } from '@nestjs/core';
+import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaClientExceptionFilter } from 'nestjs-prisma';
+import { AppModule } from '../../src/app.module';
 
 export async function initializeApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
