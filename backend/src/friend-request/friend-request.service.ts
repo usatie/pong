@@ -32,12 +32,20 @@ export class FriendRequestService {
     });
   }
 
-  findAll(user: User) {
-    return this.prisma.user
-      .findFirstOrThrow({
-        where: { id: user.id },
-      })
-      .requestedBy();
+  async findAll(user: User) {
+    const u = this.prisma.user.findFirstOrThrow({
+      where: {
+        id: user.id,
+      },
+    });
+    const requestedBy = u.requestedBy();
+    const requesting = u.requesting();
+    return Promise.all([requestedBy, requesting]).then(([a, b]) => {
+      return {
+        requestedBy: a,
+        requesting: b,
+      };
+    });
   }
 
   private async expectRequestedBy(requesterId: number, user: User, tx) {

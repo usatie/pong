@@ -16,8 +16,9 @@ import {
 import { User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { UserEntity } from 'src/user/entities/user.entity';
+import { PublicUserEntity } from 'src/user/entities/public-user.entity';
 import { UserGuard } from 'src/user/user.guard';
+import { FriendRequestsEntity } from './entities/friend-requests.entity';
 import { FriendRequestService } from './friend-request.service';
 
 @Controller('user/:userId/friend-request')
@@ -39,10 +40,10 @@ export class FriendRequestController {
 
   // Get all friend requests for a user
   @Get()
-  @ApiOkResponse({ type: [UserEntity] })
+  @ApiOkResponse({ type: PublicUserEntity })
   async findAll(@CurrentUser() user: User) {
-    const users = await this.friendRequestService.findAll(user);
-    return users.map((user) => new UserEntity(user));
+    const res = await this.friendRequestService.findAll(user);
+    return new FriendRequestsEntity(res);
   }
 
   // Accept a friend request

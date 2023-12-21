@@ -102,3 +102,13 @@ export function expectFile(filepath: string) {
     expect(res.body).toEqual(expected);
   };
 }
+
+export function expectGetFriendRequestsResponse(res: request.Response) {
+  const expected = {
+    requestedBy: expect.any(Array),
+    requesting: expect.any(Array),
+  };
+  expect(res.body).toEqual(expected);
+  res.body.requestedBy.forEach(expectPublicUser);
+  res.body.requesting.forEach(expectPublicUser);
+}
