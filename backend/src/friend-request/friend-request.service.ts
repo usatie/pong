@@ -6,14 +6,12 @@ import {
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
 
 @Injectable()
 export class FriendRequestService {
   constructor(private prisma: PrismaService) {}
 
-  create(createFriendRequestDto: CreateFriendRequestDto, user: User) {
-    const { recipientId } = createFriendRequestDto;
+  create(recipientId: number, user: User) {
     if (recipientId === user.id) {
       throw new BadRequestException('Cannot send friend request to self');
     }
@@ -26,7 +24,7 @@ export class FriendRequestService {
           where: { id: user.id },
           data: {
             requesting: {
-              connect: { id: createFriendRequestDto.recipientId },
+              connect: { id: recipientId },
             },
           },
         })
@@ -34,12 +32,20 @@ export class FriendRequestService {
     });
   }
 
-  findAll(user: User) {
-    return this.prisma.user
-      .findFirstOrThrow({
-        where: { id: user.id },
-      })
-      .requestedBy();
+  async findAll(user: User) {
+    const u = this.prisma.user.findFirstOrThrow({
+      where: {
+        id: user.id,
+      },
+    });
+    const requestedBy = u.requestedBy();
+    const requesting = u.requesting();
+    return Promise.all([requestedBy, requesting]).then(([a, b]) => {
+      return {
+        requestedBy: a,
+        requesting: b,
+      };
+    });
   }
 
   private async expectRequestedBy(requesterId: number, user: User, tx) {

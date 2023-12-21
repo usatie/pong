@@ -4,10 +4,19 @@ import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 import { constants } from './constants';
 import { TestApp } from './utils/app';
 import { initializeApp } from './utils/initialize';
-import { expectPublicUser, expectUser } from './utils/matcher';
+import {
+  expectGetFriendRequestsResponse,
+  expectPublicUser,
+  expectUser,
+} from './utils/matcher';
 
 describe('UserController (e2e)', () => {
   let app: TestApp;
+  const extractPublicUser = ({ id, name, avatarURL }) => ({
+    id,
+    name,
+    avatarURL,
+  });
 
   beforeAll(async () => {
     app = new TestApp(await initializeApp());
@@ -192,39 +201,38 @@ describe('UserController (e2e)', () => {
     });
 
     it('user2 should get empty friend requests', async () => {
-      const users = await app
+      const res = await app
         .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
-        .then((res) => res.body);
-      expect(users).toBeInstanceOf(Array);
-      expect(users.length).toBe(0);
+        .expect(expectGetFriendRequestsResponse);
+      expect(res.body.requestedBy.length).toBe(0);
+      expect(res.body.requesting.length).toBe(0);
     });
 
     it('user1 should send a friend request to user2', async () => {
       await app
         .sendFriendRequest(user1.id, user2.id, user1.accessToken)
         .expect(201);
-      const users = await app
+      const res = await app
         .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
-        .then((res) => res.body);
-      expect(users).toBeInstanceOf(Array);
-      expect(users.length).toBe(1);
-      const expected = { ...user1 };
-      delete expected.accessToken;
-      expect(users).toContainEqual(expected);
+        .expect(expectGetFriendRequestsResponse);
+      expect(res.body.requestedBy.length).toBe(1);
+      expect(res.body.requesting.length).toBe(0);
+      const expected = extractPublicUser(user1);
+      expect(res.body.requestedBy).toContainEqual(expected);
     });
 
     it('user1 should cancel the friend request to user2', async () => {
       await app
         .cancelFriendRequest(user1.id, user2.id, user1.accessToken)
         .expect(200);
-      const users = await app
+      const res = await app
         .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
-        .then((res) => res.body);
-      expect(users).toBeInstanceOf(Array);
-      expect(users.length).toBe(0);
+        .expect(expectGetFriendRequestsResponse);
+      expect(res.body.requestedBy.length).toBe(0);
+      expect(res.body.requesting.length).toBe(0);
     });
 
     it('user2 should reject the friend request from user1', async () => {
@@ -234,12 +242,12 @@ describe('UserController (e2e)', () => {
       await app
         .rejectFriendRequest(user2.id, user1.id, user2.accessToken)
         .expect(200);
-      const users = await app
+      const res = await app
         .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
-        .then((res) => res.body);
-      expect(users).toBeInstanceOf(Array);
-      expect(users.length).toBe(0);
+        .expect(expectGetFriendRequestsResponse);
+      expect(res.body.requestedBy.length).toBe(0);
+      expect(res.body.requesting.length).toBe(0);
     });
 
     it('user2 should accept the friend request from user1', async () => {
@@ -249,12 +257,12 @@ describe('UserController (e2e)', () => {
       await app
         .acceptFriendRequest(user2.id, user1.id, user2.accessToken)
         .expect(200);
-      const users = await app
+      const res = await app
         .getFriendRequests(user2.id, user2.accessToken)
         .expect(200)
-        .then((res) => res.body);
-      expect(users).toBeInstanceOf(Array);
-      expect(users.length).toBe(0);
+        .expect(expectGetFriendRequestsResponse);
+      expect(res.body.requestedBy.length).toBe(0);
+      expect(res.body.requesting.length).toBe(0);
     });
   });
 

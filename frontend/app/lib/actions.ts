@@ -378,7 +378,7 @@ export async function unblockUser(blockedUserId: number) {
   }
 }
 
-export async function getFriends() {
+export async function getFriends(): Promise<PublicUserEntity[]> {
   const userId = await getCurrentUserId();
   const res = await fetch(`${process.env.API_URL}/user/${userId}/friend`, {
     headers: {
@@ -394,23 +394,131 @@ export async function getFriends() {
   }
 }
 
-export async function addFriend(userId: number) {
-  const currentUserId = await getCurrentUserId();
+export async function addFriend(recipientId: number) {
+  const requesterId = await getCurrentUserId();
   const res = await fetch(
-    `${process.env.API_URL}/user/${currentUserId}/friendrequest`,
+    `${process.env.API_URL}/user/${requesterId}/friend-request/${recipientId}`,
     {
       method: "POST",
       headers: {
         Authorization: "Bearer " + getAccessToken(),
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ recipientId: userId }),
     },
   );
   if (!res.ok) {
     console.error("addFriend error: ", await res.json());
     return "Error";
   } else {
+    revalidatePath(`/user/${recipientId}`);
+    return "Success";
+  }
+}
+
+type PublicUserEntity = {
+  id: number;
+  name: string;
+  avatarURL?: string;
+};
+
+type FriendRequestsEntity = {
+  requestedBy: PublicUserEntity[];
+  requesting: PublicUserEntity[];
+};
+
+export async function getFriendRequests(): Promise<FriendRequestsEntity> {
+  const userId = await getCurrentUserId();
+  const res = await fetch(
+    `${process.env.API_URL}/user/${userId}/friend-request`,
+    {
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+      },
+    },
+  );
+  if (!res.ok) {
+    console.error("getFriendRequests error: ", await res.json());
+    throw new Error("getFriendRequests error");
+  } else {
+    const friendRequests = await res.json();
+    return friendRequests;
+  }
+}
+
+export async function acceptFriendRequest(requesterId: number) {
+  const userId = await getCurrentUserId();
+  const res = await fetch(
+    `${process.env.API_URL}/user/${userId}/friend-request/${requesterId}/accept`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+      },
+    },
+  );
+  if (!res.ok) {
+    console.error("acceptFriendRequest error: ", await res.json());
+    return "Error";
+  } else {
+    revalidatePath(`/user/${requesterId}`);
+    return "Success";
+  }
+}
+
+export async function rejectFriendRequest(requesterId: number) {
+  const userId = await getCurrentUserId();
+  const res = await fetch(
+    `${process.env.API_URL}/user/${userId}/friend-request/${requesterId}/reject`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+      },
+    },
+  );
+  if (!res.ok) {
+    console.error("rejectFriendRequest error: ", await res.json());
+    return "Error";
+  } else {
+    revalidatePath(`/user/${requesterId}`);
+    return "Success";
+  }
+}
+
+export async function cancelFriendRequest(recipientId: number) {
+  const userId = await getCurrentUserId();
+  const res = await fetch(
+    `${process.env.API_URL}/user/${userId}/friend-request/${recipientId}/cancel`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+      },
+    },
+  );
+  if (!res.ok) {
+    console.error("cancelFriendRequest error: ", await res.json());
+    return "Error";
+  } else {
+    revalidatePath(`/user/${recipientId}`);
+    return "Success";
+  }
+}
+
+export async function unfriend(friendId: number) {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`${process.env.API_URL}/user/${userId}/unfriend/`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ friendId }),
+  });
+  if (!res.ok) {
+    console.error("removeFriend error: ", await res.json());
+    return "Error";
+  } else {
+    revalidatePath(`/user/${friendId}`);
     return "Success";
   }
 }

@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   Param,
@@ -17,12 +16,12 @@ import {
 import { User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { UserEntity } from 'src/user/entities/user.entity';
+import { PublicUserEntity } from 'src/user/entities/public-user.entity';
 import { UserGuard } from 'src/user/user.guard';
-import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
+import { FriendRequestsEntity } from './entities/friend-requests.entity';
 import { FriendRequestService } from './friend-request.service';
 
-@Controller('user/:userId/friendrequest')
+@Controller('user/:userId/friend-request')
 @UseGuards(JwtAuthGuard, UserGuard)
 @ApiBearerAuth()
 @ApiTags('friendrequest')
@@ -30,21 +29,21 @@ export class FriendRequestController {
   constructor(private readonly friendRequestService: FriendRequestService) {}
 
   // Send a friend request
-  @Post()
+  @Post(':recipientId')
   @ApiCreatedResponse()
   create(
-    @Body() createFriendRequestDto: CreateFriendRequestDto,
+    @Param('recipientId', ParseIntPipe) recipientId: number,
     @CurrentUser() user: User,
   ) {
-    return this.friendRequestService.create(createFriendRequestDto, user);
+    return this.friendRequestService.create(recipientId, user);
   }
 
   // Get all friend requests for a user
   @Get()
-  @ApiOkResponse({ type: [UserEntity] })
+  @ApiOkResponse({ type: PublicUserEntity })
   async findAll(@CurrentUser() user: User) {
-    const users = await this.friendRequestService.findAll(user);
-    return users.map((user) => new UserEntity(user));
+    const res = await this.friendRequestService.findAll(user);
+    return new FriendRequestsEntity(res);
   }
 
   // Accept a friend request
