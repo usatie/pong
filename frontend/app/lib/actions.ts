@@ -396,7 +396,6 @@ export async function getFriends() {
 
 export async function addFriend(userId: number) {
   const currentUserId = await getCurrentUserId();
-  console.log(userId, typeof userId);
   const res = await fetch(
     `${process.env.API_URL}/user/${currentUserId}/friendrequest`,
     {

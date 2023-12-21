@@ -8,7 +8,7 @@ export default async function FindUser({
 }: {
   params: { id: string };
 }) {
-  const userId = parseInt(id);
+  const userId = parseInt(id, 10);
   const user = await getUser(userId);
   // TODO: Implement this
   const isFriend = false; //currentUser.friends.includes(user.id);
