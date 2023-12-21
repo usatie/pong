@@ -1,7 +1,7 @@
-import { getFriends, getUser } from "@/app/lib/actions";
-import { getCurrentUser } from "@/app/lib/session";
-import { Avatar } from "@/app/ui/room/skeleton";
+import { getUser } from "@/app/lib/actions";
 import AddFriendButton from "@/app/ui/user/add-friend-button";
+import { Avatar } from "@/app/ui/user/avatar";
+import MatchRequestButton from "@/app/ui/user/match-request-button";
 
 export default async function FindUser({
   params: { id },
@@ -10,9 +10,7 @@ export default async function FindUser({
 }) {
   const userId = parseInt(id);
   const user = await getUser(userId);
-  const currentUser = await getCurrentUser();
-  const friends = await getFriends();
-  console.log(friends);
+  // TODO: Implement this
   const isFriend = false; //currentUser.friends.includes(user.id);
   // TODO: Must consider these situations
   // 1. Already friends
@@ -22,14 +20,14 @@ export default async function FindUser({
   // 5. You
   // 6. Blocked
   // 7. Blocking
-  console.log(user);
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <Avatar avatarURL={user.avatarURL} />
+        <Avatar avatarURL={user.avatarURL} size="large" />
       </div>
-      <div className="flex items-center justify-between">
-        <div className="text-xl font-bold">{user.name}</div>
+      <div className="text-xl font-bold">{user.name}</div>
+      <div className="flex gap-4">
+        <MatchRequestButton id={userId} />
         <AddFriendButton id={userId} />
       </div>
       <div className="bg-secondary">Match History</div>
