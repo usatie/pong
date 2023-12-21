@@ -4,7 +4,7 @@ import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 import { constants } from './constants';
 import { TestApp } from './utils/app';
 import { initializeApp } from './utils/initialize';
-import { expectUser } from './utils/matcher';
+import { expectPublicUser, expectUser } from './utils/matcher';
 
 describe('UserController (e2e)', () => {
   let app: TestApp;
@@ -20,7 +20,7 @@ describe('UserController (e2e)', () => {
       const users = res.body;
       expect(users).toBeInstanceOf(Array);
       expect(users.length).toBeGreaterThan(0);
-      users.forEach(expectUser);
+      users.forEach(expectPublicUser);
     });
 
     it('GET /user/:id should return 401 Unauthorized', () => {
@@ -131,10 +131,8 @@ describe('UserController (e2e)', () => {
     it('GET /user/:id should return the user', () => {
       const expected = {
         id: user.id,
-        email: constants.user.test.email,
         name: constants.user.test.name,
         avatarURL: null,
-        twoFactorEnabled: false,
       };
       return app
         .getUser(user.id, user.accessToken)
