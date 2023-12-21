@@ -39,12 +39,12 @@ export default function SidebarItem({
   const isUserOwner = user.role === "OWNER";
   const isMeAdminOrOwner = me.role === "ADMINISTRATOR" || me.role === "OWNER";
   const isBlocked = false; // TODO: user.blockedBy.contains((u) => u.id === me.userId);
-  const block = () => blockUser(user.id);
-  const unblock = () => unblockUser(user.id);
-  const kick = () => deleteUserOnRoom(roomId, user.id);
+  const block = () => blockUser(user.userId);
+  const unblock = () => unblockUser(user.userId);
+  const kick = () => deleteUserOnRoom(roomId, user.userId);
   const updateUserRole = isUserAdmin
-    ? () => updateRoomUser("MEMBER", roomId, user.id)
-    : () => updateRoomUser("ADMINISTRATOR", roomId, user.id);
+    ? () => updateRoomUser("MEMBER", roomId, user.userId)
+    : () => updateRoomUser("ADMINISTRATOR", roomId, user.userId);
   return (
     <>
       <ContextMenu>
@@ -58,7 +58,7 @@ export default function SidebarItem({
         </ContextMenuTrigger>
         <ContextMenuContent className="w-56">
           <ContextMenuItem>Go profile</ContextMenuItem>
-          {user.id !== me.userId && (
+          {user.userId !== me.userId && (
             <>
               <ContextMenuSeparator />
               <ContextMenuItem disabled={isBlocked} onSelect={block}>

@@ -150,8 +150,8 @@ export type GetRoomResponse = {
   name: string;
   users: UserOnRoom[];
 };
+
 export type UserOnRoom = {
-  id: number;
   userId: number;
   role: string;
   roomId: number;

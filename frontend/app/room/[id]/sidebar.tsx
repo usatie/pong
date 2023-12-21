@@ -11,7 +11,7 @@ export async function Sidebar({
   users: UserOnRoom[];
 }) {
   const currentUserId = await getCurrentUserId();
-  const me = users.find((u) => u.id === currentUserId);
+  const me = users.find((u) => u.userId === currentUserId);
   if (!me) {
     throw new Error("User not found");
   }
@@ -19,7 +19,7 @@ export async function Sidebar({
     <div className="overflow-y-auto shrink-0 basis-36 pb-4">
       <Stack spacing={2}>
         {users.map((user) => (
-          <SidebarItem roomId={roomId} user={user} me={me} key={user.id} />
+          <SidebarItem roomId={roomId} user={user} me={me} key={user.userId} />
         ))}
       </Stack>
     </div>
