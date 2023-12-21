@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   Param,
@@ -19,10 +18,9 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { UserGuard } from 'src/user/user.guard';
-import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
 import { FriendRequestService } from './friend-request.service';
 
-@Controller('user/:userId/friendrequest')
+@Controller('user/:userId/friend-request')
 @UseGuards(JwtAuthGuard, UserGuard)
 @ApiBearerAuth()
 @ApiTags('friendrequest')
@@ -30,13 +28,13 @@ export class FriendRequestController {
   constructor(private readonly friendRequestService: FriendRequestService) {}
 
   // Send a friend request
-  @Post()
+  @Post(':recipientId')
   @ApiCreatedResponse()
   create(
-    @Body() createFriendRequestDto: CreateFriendRequestDto,
+    @Param('recipientId', ParseIntPipe) recipientId: number,
     @CurrentUser() user: User,
   ) {
-    return this.friendRequestService.create(createFriendRequestDto, user);
+    return this.friendRequestService.create(recipientId, user);
   }
 
   // Get all friend requests for a user

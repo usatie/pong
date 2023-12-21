@@ -394,17 +394,15 @@ export async function getFriends() {
   }
 }
 
-export async function addFriend(userId: number) {
-  const currentUserId = await getCurrentUserId();
+export async function addFriend(recipientId: number) {
+  const requesterId = await getCurrentUserId();
   const res = await fetch(
-    `${process.env.API_URL}/user/${currentUserId}/friendrequest`,
+    `${process.env.API_URL}/user/${requesterId}/friend-request/${recipientId}`,
     {
       method: "POST",
       headers: {
         Authorization: "Bearer " + getAccessToken(),
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ recipientId: userId }),
     },
   );
   if (!res.ok) {

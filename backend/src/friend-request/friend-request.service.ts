@@ -6,14 +6,12 @@ import {
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
 
 @Injectable()
 export class FriendRequestService {
   constructor(private prisma: PrismaService) {}
 
-  create(createFriendRequestDto: CreateFriendRequestDto, user: User) {
-    const { recipientId } = createFriendRequestDto;
+  create(recipientId: number, user: User) {
     if (recipientId === user.id) {
       throw new BadRequestException('Cannot send friend request to self');
     }
@@ -26,7 +24,7 @@ export class FriendRequestService {
           where: { id: user.id },
           data: {
             requesting: {
-              connect: { id: createFriendRequestDto.recipientId },
+              connect: { id: recipientId },
             },
           },
         })

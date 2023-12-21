@@ -195,13 +195,12 @@ export class TestApp {
     accessToken: string,
   ) =>
     request(this.app.getHttpServer())
-      .post(`/user/${userId}/friendrequest`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ recipientId });
+      .post(`/user/${userId}/friend-request/${recipientId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
 
   getFriendRequests = (userId: number, accessToken: string) =>
     request(this.app.getHttpServer())
-      .get(`/user/${userId}/friendrequest`)
+      .get(`/user/${userId}/friend-request`)
       .set('Authorization', `Bearer ${accessToken}`);
 
   cancelFriendRequest = (
@@ -210,7 +209,7 @@ export class TestApp {
     accessToken: string,
   ) =>
     request(this.app.getHttpServer())
-      .patch(`/user/${userId}/friendrequest/${recipientId}/cancel`)
+      .patch(`/user/${userId}/friend-request/${recipientId}/cancel`)
       .set('Authorization', `Bearer ${accessToken}`);
 
   acceptFriendRequest = (
@@ -219,7 +218,7 @@ export class TestApp {
     accessToken: string,
   ) =>
     request(this.app.getHttpServer())
-      .patch(`/user/${userId}/friendrequest/${requesterId}/accept`)
+      .patch(`/user/${userId}/friend-request/${requesterId}/accept`)
       .set('Authorization', `Bearer ${accessToken}`);
 
   rejectFriendRequest = (
@@ -228,7 +227,7 @@ export class TestApp {
     accessToken: string,
   ) =>
     request(this.app.getHttpServer())
-      .patch(`/user/${userId}/friendrequest/${requesterId}/reject`)
+      .patch(`/user/${userId}/friend-request/${requesterId}/reject`)
       .set('Authorization', `Bearer ${accessToken}`);
 
   unfriend = (userId: number, friendId: number, accessToken: string) =>
