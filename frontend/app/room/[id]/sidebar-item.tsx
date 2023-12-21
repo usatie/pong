@@ -27,7 +27,6 @@ function truncateString(str: string | undefined, num: number): string {
 }
 
 function Avatar({ avatarURL }: { avatarURL?: string }) {
-  console.log("avatarURL: ", avatarURL);
   if (!avatarURL) {
     return <SmallAvatarSkeleton />;
   }
@@ -53,7 +52,6 @@ export default function SidebarItem({
   const updateUserRole = isUserAdmin
     ? () => updateRoomUser("MEMBER", roomId, user.userId)
     : () => updateRoomUser("ADMINISTRATOR", roomId, user.userId);
-  console.log("user.user", user.user);
   return (
     <>
       <ContextMenu>

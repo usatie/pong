@@ -55,36 +55,18 @@ function MessageArea({
     socket.connect();
 
     const handleMessage = (message: Message) => {
-      console.log("received message: ", message);
-      setMessages((oldMessages) => [...oldMessages, message]);
-      console.log(message);
+      setMessages((messages) => [...messages, message]);
     };
 
     socket.on("message", handleMessage);
     return () => {
-      console.log(`return from useEffect`);
       socket.off("message", handleMessage);
-      console.log("disconnect");
       socket.disconnect();
     };
   }, [roomId]);
 
-  //  const didLogRef = useRef(false);
-  //  useEffect(() => {
-  //    if (didLogRef.current === false) {
-  //      didLogRef.current = true;
-  //      const fetchMessages = async () => {
-  //      const conversation = await getMessages(otherId);
-  //      const messages = conversation;
-  //      setMessages(messages);
-  //      };
-  //      fetchMessages();
-  //    }
-  //  }, []);
-
   const sendMessage = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    console.log("sendMessage");
     const result = formSchema.safeParse(message);
     if (result.success) {
       socket.emit("message", {
