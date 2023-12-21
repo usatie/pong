@@ -20,6 +20,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PublicUserEntity } from './entities/public-user.entity';
 import { UserEntity } from './entities/user.entity';
 import { UserGuard } from './user.guard';
 import { UserService } from './user.service';
@@ -37,20 +38,20 @@ export class UserController {
   }
 
   @Get()
-  @ApiOkResponse({ type: [UserEntity] })
-  async findAll(): Promise<UserEntity[]> {
+  @ApiOkResponse({ type: [PublicUserEntity] })
+  async findAll(): Promise<PublicUserEntity[]> {
     const users = await this.userService.findAll();
-    return users.map((user) => new UserEntity(user));
+    return users.map((user) => new PublicUserEntity(user));
   }
 
   @Get(':userId')
-  @UseGuards(JwtAuthGuard, UserGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOkResponse({ type: UserEntity })
+  @ApiOkResponse({ type: PublicUserEntity })
   async findOne(
     @Param('userId', ParseIntPipe) userId: number,
-  ): Promise<UserEntity> {
-    return new UserEntity(await this.userService.findOne(userId));
+  ): Promise<PublicUserEntity> {
+    return new PublicUserEntity(await this.userService.findOne(userId));
   }
 
   @Patch(':userId')

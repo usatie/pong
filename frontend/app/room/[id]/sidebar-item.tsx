@@ -15,6 +15,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { useRouter } from "next/navigation";
 
 function truncateString(str: string | undefined, num: number): string {
   if (!str) {
@@ -46,6 +47,14 @@ export default function SidebarItem({
   const isUserOwner = user.role === "OWNER";
   const isMeAdminOrOwner = me.role === "ADMINISTRATOR" || me.role === "OWNER";
   const isBlocked = false; // TODO: user.blockedBy.contains((u) => u.id === me.userId);
+  const router = useRouter();
+  const openProfile = () => {
+    if (user.userId === me.userId) {
+      router.push("/profile");
+    } else {
+      router.push(`/user/${user.userId}`);
+    }
+  };
   const block = () => blockUser(user.userId);
   const unblock = () => unblockUser(user.userId);
   const kick = () => deleteUserOnRoom(roomId, user.userId);
@@ -64,7 +73,7 @@ export default function SidebarItem({
           </span>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-56">
-          <ContextMenuItem>Go profile</ContextMenuItem>
+          <ContextMenuItem onSelect={openProfile}>Go profile</ContextMenuItem>
           {user.userId !== me.userId && (
             <>
               <ContextMenuSeparator />

@@ -377,3 +377,40 @@ export async function unblockUser(blockedUserId: number) {
     return "Success";
   }
 }
+
+export async function getFriends() {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`${process.env.API_URL}/user/${userId}/friend`, {
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("getFriends error: ", await res.json());
+    return [];
+  } else {
+    const friends = await res.json();
+    return friends;
+  }
+}
+
+export async function addFriend(userId: number) {
+  const currentUserId = await getCurrentUserId();
+  const res = await fetch(
+    `${process.env.API_URL}/user/${currentUserId}/friendrequest`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ recipientId: userId }),
+    },
+  );
+  if (!res.ok) {
+    console.error("addFriend error: ", await res.json());
+    return "Error";
+  } else {
+    return "Success";
+  }
+}
