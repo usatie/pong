@@ -30,7 +30,7 @@ function Avatar({ avatarURL }: { avatarURL?: string }) {
   if (!avatarURL) {
     return <SmallAvatarSkeleton />;
   }
-  return <img className="rounded-full w-6 h-6" src={avatarURL} />;
+  return <img className="rounded-full w-6 h-6 object-cover" src={avatarURL} />;
 }
 
 export default function SidebarItem({
