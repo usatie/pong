@@ -28,6 +28,20 @@ export const expectUserOnRoom = (userOnRoom) => {
   expect(userOnRoom).toEqual(expected);
 };
 
+export const expectUserOnRoomWithUserProps = (userOnRoom) => {
+  const { avatarURL, ...rest } = userOnRoom;
+  expect([null, expect.any(String)]).toContain(avatarURL);
+  const expected = {
+    id: expect.any(Number),
+    role: expect.any(String),
+    roomId: expect.any(Number),
+    userId: expect.any(Number),
+    name: expect.any(String),
+    //avatarURL: expect.any(String), // string | null
+  };
+  expect(rest).toEqual(expected);
+};
+
 export const expectUser = (user: any) => {
   const { avatarURL, ...rest } = user;
   expect([null, expect.any(String)]).toContain(avatarURL);

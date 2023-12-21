@@ -3,12 +3,12 @@ import { Stack } from "@/app/ui/layout/stack";
 import { groupMessagesByUser, useScrollToBottom } from "@/app/ui/room/helper";
 import { MessageGroup } from "@/app/ui/room/message-group";
 import { MessageSkeleton } from "@/app/ui/room/skeleton";
-import type { User } from "@/app/ui/user/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { chatSocket as socket } from "@/socket";
 import { useEffect, useRef, useState } from "react";
 import * as z from "zod";
+import { useAuthContext } from "../lib/client-auth";
 import { Message } from "../ui/room/test-data";
 
 type TextInputProps = {
@@ -36,11 +36,9 @@ const formSchema = z.string().min(1);
 
 function MessageArea({
   roomId,
-  me,
   messages: existingMessages,
 }: {
   roomId: number;
-  me: User;
   messages: Message[];
 }) {
   const [message, setMessage] = useState("");
@@ -48,6 +46,7 @@ function MessageArea({
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
+  const { currentUser } = useAuthContext();
   //  const myId = me.id.toString();
 
   // TODO: Messageを取得するsocketのロジック等を実装
@@ -68,7 +67,7 @@ function MessageArea({
       console.log("disconnect");
       socket.disconnect();
     };
-  }, [roomId, me.id]);
+  }, [roomId]);
 
   //  const didLogRef = useRef(false);
   //  useEffect(() => {
@@ -89,7 +88,7 @@ function MessageArea({
     const result = formSchema.safeParse(message);
     if (result.success) {
       socket.emit("message", {
-        userId: me.id,
+        userId: currentUser?.id,
         content: message,
         roomId,
       });

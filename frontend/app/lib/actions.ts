@@ -145,7 +145,24 @@ export async function getRooms(): Promise<Room[]> {
   return rooms;
 }
 
-export async function getRoom(roomId: number) {
+export type GetRoomResponse = {
+  id: number;
+  name: string;
+  users: UserOnRoom[];
+};
+export type UserOnRoom = {
+  id: number;
+  userId: number;
+  role: string;
+  roomId: number;
+  user: {
+    id: number;
+    name: string;
+    avatarUrl?: string;
+  };
+};
+
+export async function getRoom(roomId: number): Promise<GetRoomResponse> {
   const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
     cache: "no-cache",
     headers: {
@@ -154,10 +171,10 @@ export async function getRoom(roomId: number) {
   });
   if (!res.ok) {
     console.error("getRoom error: ", await res.json());
-  } else {
-    const room = await res.json();
-    return room;
+    throw new Error("Room not found");
   }
+  const room = await res.json();
+  return room;
 }
 
 export async function createRoom(formData: FormData) {
@@ -225,7 +242,7 @@ export async function updateRoomUser(
   }
 }
 
-export async function deleteRoomUser(roomId: number, userId: number) {
+export async function deleteUserOnRoom(roomId: number, userId: number) {
   const res = await fetch(`${process.env.API_URL}/room/${roomId}/${userId}`, {
     method: "DELETE",
     headers: {
@@ -233,8 +250,8 @@ export async function deleteRoomUser(roomId: number, userId: number) {
     },
   });
   if (!res.ok) {
-    console.error("deleteRoomUser error: ", await res.json());
-    throw new Error("deleteRoomUser error");
+    console.error("deleteUserOnRoom error: ", await res.json());
+    throw new Error("deleteUserOnRoom error");
   } else {
     return "Success";
   }
@@ -319,6 +336,42 @@ export async function updatePassword(
   });
   if (!res.ok) {
     console.error("updatePassword error: ", await res.json());
+    return "Error";
+  } else {
+    return "Success";
+  }
+}
+
+export async function blockUser(blockedUserId: number) {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`${process.env.API_URL}/user/${userId}/block`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ blockedUserId: blockedUserId }),
+  });
+  if (!res.ok) {
+    console.error("blockUser error: ", await res.json());
+    return "Error";
+  } else {
+    return "Success";
+  }
+}
+
+export async function unblockUser(blockedUserId: number) {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`${process.env.API_URL}/user/${userId}/unblock`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ blockedUserId: blockedUserId }),
+  });
+  if (!res.ok) {
+    console.error("unblockUser error: ", await res.json());
     return "Error";
   } else {
     return "Success";
