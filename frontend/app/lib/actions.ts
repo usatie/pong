@@ -283,7 +283,6 @@ export async function updatePassword(
   prevState: string | undefined,
   formData: FormData,
 ) {
-  console.log("updatePassword");
   // Check if new password and confirm password match
   const newPassword = formData.get("new-password");
   const confirmPassword = formData.get("confirm-password");
