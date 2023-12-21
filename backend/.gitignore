@@ -5,6 +5,10 @@
 # public
 /public/avatar/*
 !/public/avatar/default.png
+!/public/avatar/susami.jpg
+!/public/avatar/shongou.jpg
+!/public/avatar/kakiba.jpg
+!/public/avatar/thara.jpg
 
 # Logs
 logs

@@ -15,6 +15,7 @@ async function main() {
       `password-${name.toLowerCase()}`,
       roundsOfHashing,
     ),
+    avatarURL: `/avatar/${name.toLowerCase()}.jpg`,
   }));
   const users = await Promise.all(
     userData.map(async (user) => {
