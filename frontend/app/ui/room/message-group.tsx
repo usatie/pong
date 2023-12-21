@@ -1,6 +1,6 @@
 import { Stack } from "@/app/ui/layout/stack";
 import { MessageItem } from "./message-item";
-import type { Message } from "./test-data";
+import type { Message } from "./types";
 
 export function MessageGroup({ messages }: { messages: Message[] }) {
   return (

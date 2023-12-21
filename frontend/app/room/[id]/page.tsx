@@ -11,6 +11,7 @@ export default async function Page({
   const roomId = Number(id);
   const room = await getRoom(roomId);
   const messages = await getMessages(roomId);
+  console.log(messages);
   return (
     <>
       <div className="overflow-auto flex-grow flex gap-4 pb-4">

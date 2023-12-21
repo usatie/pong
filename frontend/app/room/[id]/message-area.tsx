@@ -4,7 +4,7 @@ import { Stack } from "@/app/ui/layout/stack";
 import { groupMessagesByUser, useScrollToBottom } from "@/app/ui/room/helper";
 import { MessageGroup } from "@/app/ui/room/message-group";
 import { MessageSkeleton } from "@/app/ui/room/skeleton";
-import { Message } from "@/app/ui/room/test-data";
+import { Message } from "@/app/ui/room/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { chatSocket as socket } from "@/socket";

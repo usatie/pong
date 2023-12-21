@@ -1,6 +1,6 @@
 import { HStack, Stack } from "@/app/ui/layout/stack";
-import { AvatarSkeleton } from "./skeleton";
-import type { Message } from "./test-data";
+import { Avatar } from "./skeleton";
+import type { Message } from "./types";
 
 export function MessageItem({
   message,
@@ -14,7 +14,7 @@ export function MessageItem({
   return (
     <HStack spacing={4} className="group hover:opacity-60">
       {/* Left Side */}
-      {withAvatar && <AvatarSkeleton />}
+      {withAvatar && <Avatar avatarURL={message.user.avatarURL} />}
       {!withAvatar && (
         <div className="group-hover:text-muted-foreground flex-none text-background text-xs w-10 text-center">
           {/* <span>{created_at_hhmm}</span> */}
