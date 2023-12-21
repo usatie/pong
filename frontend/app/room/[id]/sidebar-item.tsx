@@ -26,6 +26,14 @@ function truncateString(str: string | undefined, num: number): string {
   return str.slice(0, num) + "...";
 }
 
+function Avatar({ avatarURL }: { avatarURL?: string }) {
+  console.log("avatarURL: ", avatarURL);
+  if (!avatarURL) {
+    return <SmallAvatarSkeleton />;
+  }
+  return <img className="rounded-full w-6 h-6" src={avatarURL} />;
+}
+
 export default function SidebarItem({
   roomId,
   user,
@@ -45,11 +53,12 @@ export default function SidebarItem({
   const updateUserRole = isUserAdmin
     ? () => updateRoomUser("MEMBER", roomId, user.userId)
     : () => updateRoomUser("ADMINISTRATOR", roomId, user.userId);
+  console.log("user.user", user.user);
   return (
     <>
       <ContextMenu>
         <ContextMenuTrigger className="flex gap-2 items-center group hover:opacity-60">
-          <SmallAvatarSkeleton />
+          <Avatar avatarURL={user.user.avatarURL} />
           <span className="text-muted-foreground text-sm whitespace-nowrap group-hover:text-primary">
             {truncateString(user.user.name, 15)}
             {isUserOwner && " 👑"}

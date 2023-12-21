@@ -1,15 +1,15 @@
 "use client";
+import { useAuthContext } from "@/app/lib/client-auth";
 import { Stack } from "@/app/ui/layout/stack";
 import { groupMessagesByUser, useScrollToBottom } from "@/app/ui/room/helper";
 import { MessageGroup } from "@/app/ui/room/message-group";
 import { MessageSkeleton } from "@/app/ui/room/skeleton";
+import { Message } from "@/app/ui/room/test-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { chatSocket as socket } from "@/socket";
 import { useEffect, useRef, useState } from "react";
 import * as z from "zod";
-import { useAuthContext } from "../lib/client-auth";
-import { Message } from "../ui/room/test-data";
 
 type TextInputProps = {
   sendMessage: (e: React.SyntheticEvent) => void;

@@ -158,7 +158,7 @@ export type UserOnRoom = {
   user: {
     id: number;
     name: string;
-    avatarUrl?: string;
+    avatarURL?: string;
   };
 };
 

@@ -1,6 +1,6 @@
 import { getMessages, getRoom } from "@/app/lib/actions";
 import { Separator } from "@/components/ui/separator";
-import MessageArea from "../message-area";
+import MessageArea from "./message-area";
 import { Sidebar } from "./sidebar";
 
 export default async function Page({
