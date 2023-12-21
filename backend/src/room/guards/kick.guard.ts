@@ -1,9 +1,9 @@
 import {
-  Injectable,
+  BadRequestException,
   CanActivate,
   ExecutionContext,
-  BadRequestException,
   ForbiddenException,
+  Injectable,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';

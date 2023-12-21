@@ -1,10 +1,8 @@
-import * as React from "react";
-
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { v4 } from "uuid";
 import JoinRoomForm from "./JoinRoomForm";
 import MatchButton from "./MatchButton";
-import { v4 } from "uuid";
 
 export default function Page() {
   const roomId = v4();

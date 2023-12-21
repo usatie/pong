@@ -1,6 +1,6 @@
-import { initializeApp } from './utils/initialize';
 import { constants } from './constants';
 import { TestApp } from './utils/app';
+import { initializeApp } from './utils/initialize';
 import { expectHistoryResponse } from './utils/matcher';
 
 describe('HistoryController (e2e)', () => {

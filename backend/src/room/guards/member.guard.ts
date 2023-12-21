@@ -1,9 +1,9 @@
 import {
-  Injectable,
+  BadRequestException,
   CanActivate,
   ExecutionContext,
-  BadRequestException,
   ForbiddenException,
+  Injectable,
 } from '@nestjs/common';
 import { RoomService } from '../room.service';
 

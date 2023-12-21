@@ -1,28 +1,28 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
   HttpCode,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
   UseGuards,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiOkResponse,
   ApiNoContentResponse,
+  ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserEntity } from './entities/user.entity';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserEntity } from './entities/user.entity';
 import { UserGuard } from './user.guard';
+import { UserService } from './user.service';
 
 @Controller('user')
 @ApiTags('user')

@@ -1,8 +1,8 @@
-import { initializeApp } from './utils/initialize';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
 import { constants } from './constants';
 import { TestApp } from './utils/app';
+import { initializeApp } from './utils/initialize';
 import { expectFile } from './utils/matcher';
 
 describe('AvatarController (e2e)', () => {

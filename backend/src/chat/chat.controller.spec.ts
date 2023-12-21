@@ -1,9 +1,9 @@
+import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthService } from 'src/auth/auth.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthService } from 'src/auth/auth.service';
-import { JwtService } from '@nestjs/jwt';
 
 describe('ChatController', () => {
   let controller: ChatController;

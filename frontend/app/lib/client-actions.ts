@@ -1,7 +1,7 @@
 "use client";
 
-import { RedirectType, redirect } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
+import { RedirectType, redirect } from "next/navigation";
 
 export async function createUser(formData: FormData) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {

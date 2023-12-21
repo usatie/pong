@@ -1,6 +1,6 @@
 "use client";
-import { SidebarNav } from "@/app/ui/profile/sidebar-nav";
 import { Stack } from "@/app/ui/layout/stack";
+import { SidebarNav } from "@/app/ui/profile/sidebar-nav";
 import { Separator } from "@/components/ui/separator";
 import { usePathname } from "next/navigation";
 

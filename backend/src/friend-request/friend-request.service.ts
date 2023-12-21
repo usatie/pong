@@ -4,9 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
 
 @Injectable()
 export class FriendRequestService {

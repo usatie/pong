@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-import AuthProvider from "./client-auth-provider";
 import { getCurrentUser, isLoggedIn } from "@/app/lib/session";
+import AuthProvider from "./client-auth-provider";
 
 // components
 import { ThemeProvider } from "@/components/theme-provider";

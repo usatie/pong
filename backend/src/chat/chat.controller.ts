@@ -5,11 +5,11 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
-import { ChatService } from './chat.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { User } from '@prisma/client';
+import { ChatService } from './chat.service';
 
 @Controller('chat')
 @ApiTags('chat')

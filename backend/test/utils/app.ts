@@ -1,11 +1,11 @@
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
 import { LoginDto } from 'src/auth/dto/login.dto';
-import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
 import { CreateRoomDto } from 'src/room/dto/create-room.dto';
-import { UpdateUserDto } from 'src/user/dto/update-user.dto';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
+import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { UpdateUserDto } from 'src/user/dto/update-user.dto';
+import * as request from 'supertest';
 
 export class TestApp {
   constructor(private readonly app: INestApplication) {}

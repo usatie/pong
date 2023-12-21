@@ -1,14 +1,12 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
   Param,
-  UseGuards,
   ParseIntPipe,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { HistoryService } from './history.service';
-import { CreateHistoryDto } from './dto/create-history.dto';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -17,6 +15,8 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UserGuard } from 'src/user/user.guard';
+import { CreateHistoryDto } from './dto/create-history.dto';
+import { HistoryService } from './history.service';
 
 @Controller()
 @ApiTags('history')

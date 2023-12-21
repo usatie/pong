@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AvatarService } from './avatar.service';
-import { AvatarController } from './avatar.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { AvatarController } from './avatar.controller';
+import { AvatarService } from './avatar.service';
 
 @Module({
   controllers: [AvatarController],

@@ -1,26 +1,26 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  UseGuards,
   ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { FriendRequestService } from './friend-request.service';
-import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { User } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { UserGuard } from 'src/user/user.guard';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { CreateFriendRequestDto } from './dto/create-friend-request.dto';
+import { FriendRequestService } from './friend-request.service';
 
 @Controller('user/:userId/friendrequest')
 @UseGuards(JwtAuthGuard, UserGuard)

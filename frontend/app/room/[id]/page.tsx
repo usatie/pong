@@ -25,15 +25,14 @@
 //  );
 //}
 
+import { getMessages, getRoom, getUser, getUsers } from "@/app/lib/actions";
 import { getCurrentUserId } from "@/app/lib/session";
-import { Separator } from "@/components/ui/separator";
-import { Sidebar } from "../sidebar";
-import { getRoom, getUsers, getUser } from "@/app/lib/actions";
-import MessageArea from "../message-area";
-import { notFound } from "next/navigation";
 import type { User } from "@/app/ui/user/card";
+import { Separator } from "@/components/ui/separator";
+import { notFound } from "next/navigation";
+import MessageArea from "../message-area";
 import type { UserOnRoom, UserWithRole } from "../sidebar";
-import { getMessages } from "@/app/lib/actions";
+import { Sidebar } from "../sidebar";
 
 type UserRole = {
   id: number;

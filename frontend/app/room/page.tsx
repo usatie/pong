@@ -1,6 +1,5 @@
-import RoomCard from "@/app/ui/room/card";
-import type { Room } from "@/app/ui/room/card";
 import { getRooms } from "@/app/lib/actions";
+import RoomCard from "@/app/ui/room/card";
 
 export default async function RoomListPage() {
   const rooms = await getRooms();

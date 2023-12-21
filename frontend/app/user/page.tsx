@@ -1,5 +1,5 @@
-import UserCard from "@/app/ui/user/card";
 import { getUsers } from "@/app/lib/actions";
+import UserCard from "@/app/ui/user/card";
 
 export default async function UserListPage() {
   const users = await getUsers();

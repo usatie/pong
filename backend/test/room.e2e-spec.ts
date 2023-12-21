@@ -1,15 +1,15 @@
-import { RoomEntity } from 'src/room/entities/room.entity';
+import { Role } from '@prisma/client';
+import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
+import { RoomEntity } from 'src/room/entities/room.entity';
+import { constants } from './constants';
+import { TestApp } from './utils/app';
 import { initializeApp } from './utils/initialize';
 import {
   expectRoom,
   expectRoomWithUsers,
   expectUserOnRoom,
 } from './utils/matcher';
-import { constants } from './constants';
-import { Role } from '@prisma/client';
-import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
-import { TestApp } from './utils/app';
 
 describe('RoomController (e2e)', () => {
   let app: TestApp;

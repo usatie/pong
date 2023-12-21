@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FriendRequestService } from './friend-request.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { FriendRequestService } from './friend-request.service';
 
 describe('FriendRequestService', () => {
   let service: FriendRequestService;

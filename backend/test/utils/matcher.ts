@@ -1,5 +1,5 @@
-import * as request from 'supertest';
 import * as fs from 'fs';
+import * as request from 'supertest';
 
 export const expectRoomWithUsers = (room) => {
   const expected = {

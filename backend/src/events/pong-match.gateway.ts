@@ -1,10 +1,10 @@
 import { Logger } from '@nestjs/common';
 import {
+  ConnectedSocket,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  ConnectedSocket,
-  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { v4 } from 'uuid';

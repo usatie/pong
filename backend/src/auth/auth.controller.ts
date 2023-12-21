@@ -1,18 +1,18 @@
 import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthEntity } from './entity/auth.entity';
-import { LoginDto } from './dto/login.dto';
-import { JwtGuardWithout2FA } from './jwt-auth.guard';
 import type { User } from '@prisma/client';
-import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
-import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
+import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
+import { AuthEntity } from './entity/auth.entity';
+import { JwtGuardWithout2FA } from './jwt-auth.guard';
 
 @Controller('auth')
 @ApiTags('auth')
