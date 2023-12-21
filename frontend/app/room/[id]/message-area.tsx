@@ -47,9 +47,8 @@ function MessageArea({
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
   const { currentUser } = useAuthContext();
-  //  const myId = me.id.toString();
+  if (!currentUser) throw new Error("currentUser is not defined");
 
-  // TODO: Messageを取得するsocketのロジック等を実装
   // メッセージを取得
   useEffect(() => {
     socket.connect();
@@ -70,7 +69,7 @@ function MessageArea({
     const result = formSchema.safeParse(message);
     if (result.success) {
       socket.emit("message", {
-        userId: currentUser?.id,
+        userId: currentUser.id,
         content: message,
         roomId,
       });
