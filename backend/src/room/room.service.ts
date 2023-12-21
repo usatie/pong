@@ -46,8 +46,8 @@ export class RoomService {
     return this.prisma.room.findMany();
   }
 
-  async findRoom(id: number) {
-    const room = await this.prisma.room.findUniqueOrThrow({
+  findRoom(id: number) {
+    return this.prisma.room.findUniqueOrThrow({
       where: { id },
       include: {
         users: {
@@ -63,18 +63,6 @@ export class RoomService {
         },
       },
     });
-    const res = {
-      id: room.id,
-      name: room.name,
-      users: room.users.map((userOnRoom) => {
-        const { user, ...res } = userOnRoom;
-        return {
-          ...res,
-          ...user, // id is overwritten by user.id
-        };
-      }),
-    };
-    return res;
   }
 
   updateRoom(
