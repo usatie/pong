@@ -10,6 +10,16 @@ export type Session = {};
 const secret = jose.base64url.decode(process.env.JWT_SECRET!);
 const spki = process.env.JWT_PUBLIC_KEY!;
 
+export function setAccessToken(token: string) {
+  cookies()?.set("token", token, {
+    httpOnly: true, // JS cannot access
+    secure: process.env.NODE_ENV === "production", // HTTPS only
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+    sameSite: "strict", // no CSRF
+    path: "/",
+  });
+}
+
 /*
  * JWT token [for backend API] is stored in a cookie named "token"
  *
@@ -20,7 +30,11 @@ const spki = process.env.JWT_PUBLIC_KEY!;
  */
 export async function isLoggedIn() {
   const payload = await getAccessTokenPayload({ ignoreExpiration: false });
+  // No payload
   if (!payload) return false;
+  // 2FA is enabled but not authenticated
+  if (payload.isTwoFactorEnabled && !payload.isTwoFactorAuthenticated)
+    return false;
   return true;
 }
 
@@ -48,7 +62,7 @@ export async function getCurrentUserId(): Promise<number> {
   return parseInt(userId);
 }
 
-async function getAccessTokenPayload(options: any) {
+export async function getAccessTokenPayload(options: any) {
   const token = cookies()?.get("token")?.value;
   if (!token) return null;
   try {

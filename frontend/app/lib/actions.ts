@@ -5,7 +5,12 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import { Room } from "../ui/room/card";
-import { destroySession, getCurrentUser, getCurrentUserId } from "./session";
+import {
+  destroySession,
+  getCurrentUser,
+  getCurrentUserId,
+  setAccessToken,
+} from "./session";
 
 export async function signOut() {
   cookies()?.delete("token");
@@ -31,13 +36,7 @@ export async function signIn({
   if (!res.ok) {
     throw new Error("Authentication failed");
   }
-  cookies()?.set("token", data.accessToken, {
-    httpOnly: true, // JS cannot access
-    secure: process.env.NODE_ENV === "production", // HTTPS only
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-    sameSite: "strict", // no CSRF
-    path: "/",
-  });
+  setAccessToken(data.accessToken);
 }
 
 export async function authenticate(
@@ -566,6 +565,7 @@ export async function getMe(): Promise<UserEntity> {
     headers: {
       Authorization: "Bearer " + getAccessToken(),
     },
+    cache: "no-cache",
   });
   if (!res.ok) {
     console.error("getMe error: ", await res.json());
@@ -573,5 +573,68 @@ export async function getMe(): Promise<UserEntity> {
   } else {
     const me = await res.json();
     return me;
+  }
+}
+
+export async function generate2FASecret() {
+  const res = await fetch(`${process.env.API_URL}/auth/2fa/generate`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("generate2FASecret error: ", await res.json());
+    return "Error";
+  } else {
+    return res.json();
+  }
+}
+
+export async function enableTwoFactorAuthentication(
+  prevState: string,
+  formData: FormData,
+) {
+  const code = formData.get("code") as string;
+  const res = await fetch(`${process.env.API_URL}/auth/2fa/enable`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ code }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    console.error("enableTwoFactorAuthentication error: ", data);
+    return JSON.stringify(data);
+  } else {
+    console.log("enableTwoFactorAuthentication success: ", data);
+    setAccessToken(data.accessToken);
+    return "Success";
+  }
+}
+
+export async function twoFactorAuthenticate(
+  prevState: string,
+  formData: FormData,
+) {
+  const code = formData.get("code") as string;
+  const res = await fetch(`${process.env.API_URL}/auth/2fa/authenticate`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ code }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    console.error("twoFactorAuthenticate error: ", data);
+    return JSON.stringify(data);
+  } else {
+    console.log("twoFactorAuthenticate success: ", data);
+    setAccessToken(data.accessToken);
+    return "Success";
   }
 }

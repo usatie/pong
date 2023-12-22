@@ -1,26 +1,19 @@
 "use client";
 
-import { AuthContext } from "@/app/lib/client-auth";
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  avatarURL?: string;
-  createdAt: string;
-};
+import { AuthContext, JwtPayload } from "@/app/lib/client-auth";
+import { UserEntity } from "./lib/actions";
 
 export type AuthProviderProps = {
-  user?: User;
   children: React.ReactNode;
-  isLoggedIn: boolean;
+  payload?: JwtPayload;
+  user?: UserEntity;
 };
 
 export default function AuthProvider({
   children,
+  payload,
   user,
-  isLoggedIn,
 }: AuthProviderProps) {
-  const auth = { currentUser: user, isLoggedIn };
+  const auth = { payload, currentUser: user };
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 }

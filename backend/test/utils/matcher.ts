@@ -112,3 +112,13 @@ export function expectGetFriendRequestsResponse(res: request.Response) {
   res.body.requestedBy.forEach(expectPublicUser);
   res.body.requesting.forEach(expectPublicUser);
 }
+
+export function expectPostGenerateTwoFactorAuthenticationSecretResponse(
+  res: request.Response,
+) {
+  const expected = {
+    secret: expect.any(String),
+    otpAuthUrl: expect.any(String),
+  };
+  expect(res.body).toEqual(expected);
+}
