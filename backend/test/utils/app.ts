@@ -177,6 +177,11 @@ export class TestApp {
       .get(`/user/${id}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
+  getMe = (accessToken: string) =>
+    request(this.app.getHttpServer())
+      .get(`/user/me`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
   updateUser = (id: number, user: UpdateUserDto, accessToken: string) =>
     request(this.app.getHttpServer())
       .patch(`/user/${id}`)

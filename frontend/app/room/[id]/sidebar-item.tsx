@@ -50,7 +50,7 @@ export default function SidebarItem({
   const router = useRouter();
   const openProfile = () => {
     if (user.userId === me.userId) {
-      router.push("/profile");
+      router.push("/settings");
     } else {
       router.push(`/user/${user.userId}`);
     }

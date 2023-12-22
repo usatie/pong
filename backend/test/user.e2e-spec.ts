@@ -43,6 +43,10 @@ describe('UserController (e2e)', () => {
     it('DELETE /user/:id should return 401 Unauthorized', () => {
       return app.deleteUser(1, 'invalid_token').expect(401);
     });
+
+    it('GET /user/me should return 401 Unauthorized', () => {
+      return app.getMe('invalid_token').expect(401);
+    });
   });
 
   describe('Invalid Sign up', () => {
@@ -137,7 +141,7 @@ describe('UserController (e2e)', () => {
       await app.deleteUser(user.id, user.accessToken);
     });
 
-    it('GET /user/:id should return the user', () => {
+    it('GET /user/:id should return the public user info', () => {
       const expected = {
         id: user.id,
         name: constants.user.test.name,
@@ -147,6 +151,17 @@ describe('UserController (e2e)', () => {
         .getUser(user.id, user.accessToken)
         .expect(200)
         .expect(expected);
+    });
+
+    it('GET /user/me should return the full user', () => {
+      const expected = {
+        id: user.id,
+        email: constants.user.test.email,
+        name: constants.user.test.name,
+        avatarURL: null,
+        twoFactorEnabled: false,
+      };
+      return app.getMe(user.accessToken).expect(200).expect(expected);
     });
 
     it('PATCH /user/:id should update the user', () => {

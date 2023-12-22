@@ -1,7 +1,7 @@
 import * as jose from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getUser } from "./actions";
+import { getMe } from "./actions";
 
 // TODO: add types
 export type Session = {};
@@ -26,11 +26,9 @@ export async function isLoggedIn() {
 
 export async function getCurrentUser(): Promise<any> {
   try {
-    const userId = await getCurrentUserId();
-    const user = getUser(userId);
-    return user;
+    return await getMe();
   } catch (e) {
-    console.log("getCurrentUser: ", e);
+    console.error("getCurrentUser: ", e);
     return null;
   }
 }

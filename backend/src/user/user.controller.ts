@@ -17,7 +17,9 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PublicUserEntity } from './entities/public-user.entity';
@@ -42,6 +44,14 @@ export class UserController {
   async findAll(): Promise<PublicUserEntity[]> {
     const users = await this.userService.findAll();
     return users.map((user) => new PublicUserEntity(user));
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse()
+  async findMe(@CurrentUser() user: User): Promise<User> {
+    return new UserEntity(await this.userService.findOne(user.id));
   }
 
   @Get(':userId')
