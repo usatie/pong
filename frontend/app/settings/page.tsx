@@ -1,5 +1,5 @@
-import ProfileForm from "@/app/ui/settings/profile-form";
+import { redirect } from "next/navigation";
 
-export default function ProfilePage() {
-  return <ProfileForm />;
+export default function SettingsPage() {
+  redirect("/settings/profile");
 }

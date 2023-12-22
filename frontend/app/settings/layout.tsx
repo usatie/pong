@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 const sidebarNavItems = [
   {
     title: "Profile",
-    href: "/settings",
+    href: "/settings/profile",
   },
   {
     title: "Change Password",
