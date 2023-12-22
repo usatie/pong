@@ -1,21 +1,16 @@
 "use client";
 import { createContext, useContext } from "react";
 
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  avatarURL?: string;
-  createdAt: string;
+export type JwtPayload = {
+  userId: number;
+  isTwoFactorEnabled: boolean;
+  isTwoFactorAuthenticated: boolean;
 };
 
-type AuthContextType = {
-  currentUser?: User;
-  isLoggedIn: boolean;
+export type AuthContextType = {
+  payload?: JwtPayload;
 };
 
-export const AuthContext = createContext<AuthContextType>({
-  isLoggedIn: false,
-});
+export const AuthContext = createContext<AuthContextType>({});
 
 export const useAuthContext = () => useContext(AuthContext);

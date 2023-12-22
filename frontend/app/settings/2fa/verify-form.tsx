@@ -1,13 +1,23 @@
 "use client";
 import { enableTwoFactorAuthentication } from "@/app/lib/actions";
+import { useAuthContext } from "@/app/lib/client-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
-export default function TwoFactorAuthVerifyForm() {
-  const [response, action] = useFormState(enableTwoFactorAuthentication, "");
+export default async function TwoFactorAuthVerifyForm() {
+  const { payload } = useAuthContext();
+  if (!payload) {
+    throw new Error("No access token payload");
+  }
+  const [response, action] = useFormState(
+    payload.isTwoFactorEnabled
+      ? enableTwoFactorAuthentication
+      : enableTwoFactorAuthentication,
+    "",
+  );
   const { pending } = useFormStatus();
   const [code, setCode] = useState("");
   const validateOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {

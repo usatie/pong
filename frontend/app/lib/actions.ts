@@ -614,3 +614,27 @@ export async function enableTwoFactorAuthentication(
     return "Success";
   }
 }
+
+export async function twoFactorAuthenticate(
+  prevState: string,
+  formData: FormData,
+) {
+  const code = formData.get("code") as string;
+  const res = await fetch(`${process.env.API_URL}/auth/2fa/authenticate`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ code }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    console.error("twoFactorAuthenticate error: ", data);
+    return JSON.stringify(data);
+  } else {
+    console.log("twoFactorAuthenticate success: ", data);
+    setAccessToken(data.accessToken);
+    return "Success";
+  }
+}
