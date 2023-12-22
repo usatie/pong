@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 // ui
 import Nav from "@/app/ui/nav";
+import { GlobalSocketProvider } from "./global-socket-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,7 +40,7 @@ export default async function RootLayout({
           <AuthProvider user={user} isLoggedIn={isAuthorized}>
             <div className="flex flex-col px-16 h-[100vh]">
               <Nav />
-              {children}
+              <GlobalSocketProvider>{children}</GlobalSocketProvider>
             </div>
             <Toaster />
           </AuthProvider>

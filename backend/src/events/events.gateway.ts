@@ -77,7 +77,6 @@ export class EventsGateway implements OnGatewayDisconnect {
     this.broadcastToRooms(client, 'join');
     client.emit('log', 'You joined as a player.');
     if (Object.keys(this.players[gameId]).length == 2) {
-      console.log('here');
       client.emit('log', 'Your friend is already here. You can start.');
     }
     this.lostPoints[client.id] = 0;
