@@ -60,6 +60,9 @@ export class HistoryService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
       ...SelectHistory,
     });
   }
