@@ -4,6 +4,7 @@ import AcceptFriendButton from "@/app/ui/user/accept-friend-request-button";
 import AddFriendButton from "@/app/ui/user/add-friend-button";
 import { Avatar } from "@/app/ui/user/avatar";
 import CancelFriendRequestButton from "@/app/ui/user/cancel-friend-request-button";
+import Friends from "@/app/ui/user/friends";
 import MatchHistory from "@/app/ui/user/match-history";
 import MatchRequestButton from "@/app/ui/user/match-request-button";
 import RejectFriendButton from "@/app/ui/user/reject-friend-request-button";
@@ -18,12 +19,12 @@ export default async function FindUser({
   const userId = parseInt(id, 10);
   const user = await getUser(userId);
   const requests = await getFriendRequests();
-  const friends = await getFriends();
+  const currentUserId = await getCurrentUserId();
+  const myFriends = await getFriends(currentUserId);
   // check if any requesting contains userId
   const hasSentRequest = requests.requesting.some((r) => r.id === userId);
   const hasReceivedRequest = requests.requestedBy.some((r) => r.id === userId);
-  const isFriend = friends.some((f) => f.id == userId);
-  const currentUserId = await getCurrentUserId();
+  const isFriend = myFriends.some((f) => f.id == userId);
   const canAddFriend = !hasSentRequest && !hasReceivedRequest && !isFriend;
   // TODO: Must consider these situations
   // 1. Already friends
@@ -51,9 +52,9 @@ export default async function FindUser({
           <MatchRequestButton id={userId} />
         </>
       )}
+      <Friends userId={userId} />
       <Stats userId={userId} />
       <MatchHistory userId={userId} />
-      <div className="bg-secondary">Friends</div>
     </div>
   );
 }

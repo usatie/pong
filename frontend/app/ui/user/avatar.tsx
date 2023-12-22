@@ -3,9 +3,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function Avatar({
   avatarURL,
   size,
+  alt,
 }: {
   avatarURL?: string;
   size: "small" | "medium" | "large";
+  alt?: string;
 }) {
   let sizeClass = "";
   switch (size) {
@@ -29,7 +31,7 @@ export function Avatar({
       <img
         className={`flex-none rounded-full object-cover ${sizeClass}`}
         src={avatarURL}
-        alt="avatar"
+        alt={alt}
       />
     );
   }

@@ -378,8 +378,7 @@ export async function unblockUser(blockedUserId: number) {
   }
 }
 
-export async function getFriends(): Promise<PublicUserEntity[]> {
-  const userId = await getCurrentUserId();
+export async function getFriends(userId: number): Promise<PublicUserEntity[]> {
   const res = await fetch(`${process.env.API_URL}/user/${userId}/friend`, {
     headers: {
       Authorization: "Bearer " + getAccessToken(),
