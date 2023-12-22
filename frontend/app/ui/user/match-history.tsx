@@ -1,6 +1,7 @@
 import { MatchDetailEntity, getMatchHistory } from "@/app/lib/actions";
 import Link from "next/link";
 import { Avatar } from "./avatar";
+import ProfileItem from "./profile-item";
 
 function MatchDetailItem({
   detail,
@@ -32,8 +33,7 @@ function MatchDetailItem({
 export default async function MatchHistory({ userId }: { userId: number }) {
   const history = await getMatchHistory(userId);
   return (
-    <div className="flex flex-col gap-2">
-      <div className="text-xl font-bold">Match History</div>
+    <ProfileItem title="Match History">
       <div className="flex flex-col gap-2">
         {history.map((match) => {
           return (
@@ -51,6 +51,6 @@ export default async function MatchHistory({ userId }: { userId: number }) {
           );
         })}
       </div>
-    </div>
+    </ProfileItem>
   );
 }

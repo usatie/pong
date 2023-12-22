@@ -8,6 +8,7 @@ import MatchHistory from "@/app/ui/user/match-history";
 import MatchRequestButton from "@/app/ui/user/match-request-button";
 import RejectFriendButton from "@/app/ui/user/reject-friend-request-button";
 import RemoveFriendButton from "@/app/ui/user/remove-friend-button";
+import Stats from "@/app/ui/user/stats";
 
 export default async function FindUser({
   params: { id },
@@ -50,6 +51,7 @@ export default async function FindUser({
           <MatchRequestButton id={userId} />
         </>
       )}
+      <Stats userId={userId} />
       <MatchHistory userId={userId} />
       <div className="bg-secondary">Friends</div>
     </div>
