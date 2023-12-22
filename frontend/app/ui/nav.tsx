@@ -10,7 +10,7 @@ function AuthorizedMenu() {
       <Link href="/user">User List</Link>
       <Link href="/room">Chat</Link>
       <Link href="/pong">Game</Link>
-      <Link href="/profile">Profile</Link>
+      <Link href="/settings">Settings</Link>
       <form action={signOut}>
         <Button type="submit">Sign Out</Button>
       </form>

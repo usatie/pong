@@ -1,33 +1,33 @@
 "use client";
 import { Stack } from "@/app/ui/layout/stack";
-import { SidebarNav } from "@/app/ui/profile/sidebar-nav";
+import { SidebarNav } from "@/app/ui/settings/sidebar-nav";
 import { Separator } from "@/components/ui/separator";
 import { usePathname } from "next/navigation";
 
 const sidebarNavItems = [
   {
     title: "Profile",
-    href: "/profile",
+    href: "/settings",
   },
   {
     title: "Change Password",
-    href: "/profile/change-password",
+    href: "/settings/change-password",
   },
   {
     title: "Account",
-    href: "/profile/account",
+    href: "/settings/account",
   },
   {
     title: "Appearance",
-    href: "/profile/appearance",
+    href: "/settings/appearance",
   },
   {
     title: "Notifications",
-    href: "/profile/notifications",
+    href: "/settings/notifications",
   },
   {
     title: "Display",
-    href: "/profile/display",
+    href: "/settings/display",
   },
 ];
 

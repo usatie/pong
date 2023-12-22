@@ -280,7 +280,7 @@ export async function uploadAvatar(formData: FormData) {
     console.error("uploadAvatar error: ", data);
     return "Error";
   } else {
-    revalidatePath("/profile");
+    revalidatePath("/settings");
     return "Success";
   }
 }
