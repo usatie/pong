@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 const roundsOfHashing = 10;
 
-async function main() {
+async function seedUsers() {
   const userNames = ['Susami', 'Thara', 'Kakiba', 'Shongou', 'Test'];
   const userData = userNames.map((name) => ({
     email: `${name.toLowerCase()}@example.com`,
@@ -17,7 +17,7 @@ async function main() {
     ),
     avatarURL: `/avatar/${name.toLowerCase()}.jpg`,
   }));
-  const users = await Promise.all(
+  return Promise.all(
     userData.map(async (user) => {
       return await prisma.user.upsert({
         where: { email: user.email },
@@ -26,7 +26,9 @@ async function main() {
       });
     }),
   );
+}
 
+async function seedRooms(users) {
   const user1 = users[0];
   const user2 = users[1];
   const user3 = users[2];
@@ -60,6 +62,58 @@ async function main() {
       },
     });
   }
+}
+
+async function seedMatchHistory() {
+  const dtos = [
+    { winner: { userId: 1, score: 10 }, loser: { userId: 2, score: 4 } },
+    { winner: { userId: 1, score: 10 }, loser: { userId: 3, score: 7 } },
+    { winner: { userId: 1, score: 10 }, loser: { userId: 4, score: 3 } },
+    { winner: { userId: 1, score: 10 }, loser: { userId: 5, score: 4 } },
+    { winner: { userId: 2, score: 10 }, loser: { userId: 1, score: 5 } },
+    { winner: { userId: 2, score: 10 }, loser: { userId: 3, score: 2 } },
+    { winner: { userId: 2, score: 10 }, loser: { userId: 4, score: 1 } },
+    { winner: { userId: 2, score: 10 }, loser: { userId: 5, score: 2 } },
+    { winner: { userId: 3, score: 10 }, loser: { userId: 1, score: 0 } },
+    { winner: { userId: 3, score: 10 }, loser: { userId: 2, score: 0 } },
+    { winner: { userId: 3, score: 10 }, loser: { userId: 4, score: 2 } },
+    { winner: { userId: 3, score: 10 }, loser: { userId: 5, score: 2 } },
+    { winner: { userId: 4, score: 10 }, loser: { userId: 1, score: 5 } },
+    { winner: { userId: 4, score: 10 }, loser: { userId: 2, score: 0 } },
+    { winner: { userId: 4, score: 10 }, loser: { userId: 3, score: 2 } },
+    { winner: { userId: 4, score: 10 }, loser: { userId: 5, score: 2 } },
+    { winner: { userId: 5, score: 10 }, loser: { userId: 1, score: 5 } },
+  ];
+
+  return Promise.all(
+    dtos.map((dto) =>
+      prisma.match.create({
+        data: {
+          players: {
+            create: [
+              {
+                userId: dto.winner.userId,
+                score: dto.winner.score,
+                winLose: 'WIN',
+              },
+              {
+                userId: dto.loser.userId,
+                score: dto.loser.score,
+                winLose: 'LOSE',
+              },
+            ],
+          },
+          result: 'COMPLETE',
+        },
+      }),
+    ),
+  );
+}
+
+async function main() {
+  const users = await seedUsers();
+  await seedRooms(users);
+  await seedMatchHistory();
 }
 
 main()
