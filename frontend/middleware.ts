@@ -3,16 +3,16 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 function isPathProtected(path: string) {
-  if (path == "/user/signup") return false;
+  if (path == "/signup") return false;
   return (
     path.startsWith("/user") ||
     path.startsWith("/room") ||
-    path.startsWith("/direct-message")
+    path.startsWith("/profile")
   );
 }
 
 function isPathGuestOnly(path: string) {
-  return path == "/login" || path == "/user/signup";
+  return path == "/login" || path == "/signup";
 }
 
 export default async function authMiddleware(request: NextRequest) {

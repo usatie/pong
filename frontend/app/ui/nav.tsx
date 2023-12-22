@@ -22,7 +22,7 @@ function AuthorizedMenu() {
 function UnauthorizedMenu() {
   return (
     <li className="flex gap-8 items-center">
-      <Link href="/user/signup">Sign Up</Link>
+      <Link href="/signup">Sign Up</Link>
       <Link href="/login">Log In</Link>
       {process.env.NODE_ENV === "development" && (
         <form action={signInAsTestUser}>
