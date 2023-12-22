@@ -76,7 +76,7 @@ export class UserController {
 
   /* Friend requests */
   @Get(':userId/friend')
-  @UseGuards(JwtAuthGuard, UserGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async findAllFriends(@Param('userId', ParseIntPipe) userId: number) {
     const friends = await this.userService.findAllFriends(userId);
