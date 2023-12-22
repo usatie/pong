@@ -38,6 +38,7 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign({
         userId: user.id,
+        isTwoFactorEnabled: user.twoFactorEnabled,
         isTwoFactorAuthenticated: false,
       }),
     };
@@ -59,8 +60,8 @@ export class AuthService {
   async generateTwoFactorAuthenticationSecret(userId: number) {
     return this.prisma.$transaction(async (prisma) => {
       const user = await prisma.user.findUnique({ where: { id: userId } });
-      if (user.twoFactorSecret) {
-        throw new ConflictException('2FA secret is already generated');
+      if (user.twoFactorEnabled) {
+        throw new ConflictException('2FA secret is already enabled');
       }
       const secret = authenticator.generateSecret();
       const otpAuthUrl = authenticator.keyuri(
