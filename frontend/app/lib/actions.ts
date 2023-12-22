@@ -552,3 +552,26 @@ export async function getMatchHistory(
     return matchHistory;
   }
 }
+
+export type UserEntity = {
+  id: number;
+  name: string;
+  email: string;
+  avatarURL?: string;
+  twoFactorEnabled: boolean;
+};
+
+export async function getMe(): Promise<UserEntity> {
+  const res = await fetch(`${process.env.API_URL}/user/me`, {
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("getMe error: ", await res.json());
+    throw new Error("getMe error");
+  } else {
+    const me = await res.json();
+    return me;
+  }
+}
