@@ -5,7 +5,12 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import { Room } from "../ui/room/card";
-import { destroySession, getCurrentUser, getCurrentUserId } from "./session";
+import {
+  destroySession,
+  getCurrentUser,
+  getCurrentUserId,
+  setAccessToken,
+} from "./session";
 
 export async function signOut() {
   cookies()?.delete("token");
@@ -31,13 +36,7 @@ export async function signIn({
   if (!res.ok) {
     throw new Error("Authentication failed");
   }
-  cookies()?.set("token", data.accessToken, {
-    httpOnly: true, // JS cannot access
-    secure: process.env.NODE_ENV === "production", // HTTPS only
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-    sameSite: "strict", // no CSRF
-    path: "/",
-  });
+  setAccessToken(data.accessToken);
 }
 
 export async function authenticate(
@@ -566,6 +565,7 @@ export async function getMe(): Promise<UserEntity> {
     headers: {
       Authorization: "Bearer " + getAccessToken(),
     },
+    cache: "no-cache",
   });
   if (!res.ok) {
     console.error("getMe error: ", await res.json());
@@ -604,11 +604,13 @@ export async function enableTwoFactorAuthentication(
     },
     body: JSON.stringify({ code }),
   });
+  const data = await res.json();
   if (!res.ok) {
-    const data = await res.json();
     console.error("enableTwoFactorAuthentication error: ", data);
     return JSON.stringify(data);
   } else {
+    console.log("enableTwoFactorAuthentication success: ", data);
+    setAccessToken(data.accessToken);
     return "Success";
   }
 }

@@ -10,6 +10,16 @@ export type Session = {};
 const secret = jose.base64url.decode(process.env.JWT_SECRET!);
 const spki = process.env.JWT_PUBLIC_KEY!;
 
+export function setAccessToken(token: string) {
+  cookies()?.set("token", token, {
+    httpOnly: true, // JS cannot access
+    secure: process.env.NODE_ENV === "production", // HTTPS only
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+    sameSite: "strict", // no CSRF
+    path: "/",
+  });
+}
+
 /*
  * JWT token [for backend API] is stored in a cookie named "token"
  *

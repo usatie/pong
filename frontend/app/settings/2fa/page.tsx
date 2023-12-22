@@ -7,6 +7,14 @@ import TwoFactorAuthVerifyForm from "./verify-form";
 
 export default async function TwoFactorAuthPage() {
   const currentUser = await getCurrentUser();
+  if (currentUser?.twoFactorEnabled) {
+    // TODO: Disable 2FA button
+    return (
+      <div className="flex flex-col items-center">
+        <p className="my-4">&#9989; 2FA is already enabled.</p>
+      </div>
+    );
+  }
   const { otpAuthUrl } = await generate2FASecret();
   const qrcodeDataURL = await toDataURL(otpAuthUrl);
   return (

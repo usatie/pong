@@ -27,7 +27,7 @@ describe('AuthController (e2e)', () => {
 
     let secret;
     it('[POST /auth/2fa/generate] should generate 2FA secret', async () => {
-      const res = await app
+      await app
         .generateTwoFactorAuthenticationSecret(user.accessToken)
         .expect(201)
         .expect(expectPostGenerateTwoFactorAuthenticationSecretResponse);

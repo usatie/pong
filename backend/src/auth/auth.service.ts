@@ -90,7 +90,7 @@ export class AuthService {
     userId: number,
   ) {
     return this.prisma.$transaction(async (prisma) => {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      let user = await prisma.user.findUnique({ where: { id: userId } });
       if (user.twoFactorEnabled) {
         throw new ConflictException('2FA secret is already enabled');
       }
@@ -101,10 +101,17 @@ export class AuthService {
       if (!isCodeValid) {
         throw new UnauthorizedException('Invalid 2FA code');
       }
-      return this.prisma.user.update({
+      user = await this.prisma.user.update({
         where: { id: user.id },
         data: { twoFactorEnabled: true },
       });
+      return {
+        accessToken: this.jwtService.sign({
+          userId: user.id,
+          isTwoFactorEnabled: user.twoFactorEnabled,
+          isTwoFactorAuthenticated: true,
+        }),
+      };
     });
   }
 
