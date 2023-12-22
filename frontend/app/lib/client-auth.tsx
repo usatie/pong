@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useContext } from "react";
+import { UserEntity } from "./actions";
 
 export type JwtPayload = {
   userId: number;
@@ -9,6 +10,7 @@ export type JwtPayload = {
 
 export type AuthContextType = {
   payload?: JwtPayload;
+  currentUser?: UserEntity;
 };
 
 export const AuthContext = createContext<AuthContextType>({});

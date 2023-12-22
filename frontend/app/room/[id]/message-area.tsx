@@ -46,8 +46,8 @@ function MessageArea({
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
-  const { currentUser } = useAuthContext();
-  if (!currentUser) throw new Error("currentUser is not defined");
+  const { payload } = useAuthContext();
+  if (!payload) throw new Error("jwt payload is not defined");
 
   // メッセージを取得
   useEffect(() => {
@@ -69,7 +69,7 @@ function MessageArea({
     const result = formSchema.safeParse(message);
     if (result.success) {
       socket.emit("message", {
-        userId: currentUser.id,
+        userId: payload.userId,
         content: message,
         roomId,
       });

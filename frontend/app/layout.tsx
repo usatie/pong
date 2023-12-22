@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 // ui
 import Nav from "@/app/ui/nav";
+import { getMe } from "./lib/actions";
 import { JwtPayload } from "./lib/client-auth";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -26,6 +27,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const payload = await getAccessTokenPayload({ ignoreExpiration: true }); // Allows expired tokens
+  let user;
+  try {
+    user = await getMe();
+  } catch (err) {
+    console.log("Error getting user", err);
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -36,7 +43,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider payload={payload as JwtPayload}>
+          <AuthProvider payload={payload as JwtPayload} user={user}>
             <div className="flex flex-col px-16 h-[100vh]">
               <Nav />
               {children}

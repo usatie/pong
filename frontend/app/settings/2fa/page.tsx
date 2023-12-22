@@ -1,13 +1,13 @@
 import { generate2FASecret } from "@/app/lib/actions";
-import { getCurrentUser } from "@/app/lib/session";
+import { getAccessTokenPayload } from "@/app/lib/session";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { toDataURL } from "qrcode";
 import TwoFactorAuthVerifyForm from "./verify-form";
 
 export default async function TwoFactorAuthPage() {
-  const currentUser = await getCurrentUser();
-  if (currentUser?.twoFactorEnabled) {
+  const payload = await getAccessTokenPayload({ ignoreExpiration: true });
+  if (payload?.isTwoFactorEnabled) {
     // TODO: Disable 2FA button
     return (
       <div className="flex flex-col items-center">
