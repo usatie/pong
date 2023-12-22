@@ -4,6 +4,7 @@ import AcceptFriendButton from "@/app/ui/user/accept-friend-request-button";
 import AddFriendButton from "@/app/ui/user/add-friend-button";
 import { Avatar } from "@/app/ui/user/avatar";
 import CancelFriendRequestButton from "@/app/ui/user/cancel-friend-request-button";
+import MatchHistory from "@/app/ui/user/match-history";
 import MatchRequestButton from "@/app/ui/user/match-request-button";
 import RejectFriendButton from "@/app/ui/user/reject-friend-request-button";
 import RemoveFriendButton from "@/app/ui/user/remove-friend-button";
@@ -36,7 +37,7 @@ export default async function FindUser({
       <div>
         <Avatar avatarURL={user.avatarURL} size="large" />
       </div>
-      <div className="text-xl font-bold">{user.name}</div>
+      <div className="text-3xl font-bold">{user.name}</div>
       {user.id !== currentUserId && (
         <>
           <div className="flex gap-4">
@@ -49,7 +50,7 @@ export default async function FindUser({
           <MatchRequestButton id={userId} />
         </>
       )}
-      <div className="bg-secondary">Match History</div>
+      <MatchHistory userId={userId} />
       <div className="bg-secondary">Friends</div>
     </div>
   );

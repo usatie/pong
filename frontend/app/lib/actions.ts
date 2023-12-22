@@ -522,3 +522,34 @@ export async function unfriend(friendId: number) {
     return "Success";
   }
 }
+
+export type MatchDetailEntity = {
+  score: number;
+  winLose: "WIN" | "LOSE";
+  user: PublicUserEntity;
+};
+
+export type MatchHistoryEntity = {
+  id: number;
+  players: MatchDetailEntity[];
+  result: "COMPLETE" | "INCOMPLETE";
+  createdAt: string;
+};
+
+export async function getMatchHistory(
+  userId: number,
+): Promise<MatchHistoryEntity[]> {
+  console.log(`${process.env.API_URL}/user/${userId}/history`);
+  const res = await fetch(`${process.env.API_URL}/user/${userId}/history`, {
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("getMatchHistory error: ", await res.json());
+    return [];
+  } else {
+    const matchHistory = await res.json();
+    return matchHistory;
+  }
+}
