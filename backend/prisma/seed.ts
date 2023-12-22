@@ -17,6 +17,7 @@ async function seedUsers() {
     ),
     avatarURL: `/avatar/${name.toLowerCase()}.jpg`,
   }));
+  userData[4].avatarURL = '/avatar/default.png';
   return Promise.all(
     userData.map(async (user) => {
       return await prisma.user.upsert({
