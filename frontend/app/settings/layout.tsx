@@ -26,8 +26,8 @@ const sidebarNavItems = [
     href: "/settings/notifications",
   },
   {
-    title: "Display",
-    href: "/settings/display",
+    title: "Configure 2FA",
+    href: "/settings/2fa",
   },
 ];
 

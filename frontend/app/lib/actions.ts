@@ -575,3 +575,40 @@ export async function getMe(): Promise<UserEntity> {
     return me;
   }
 }
+
+export async function generate2FASecret() {
+  const res = await fetch(`${process.env.API_URL}/auth/2fa/generate`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("generate2FASecret error: ", await res.json());
+    return "Error";
+  } else {
+    return res.json();
+  }
+}
+
+export async function enableTwoFactorAuthentication(
+  prevState: string,
+  formData: FormData,
+) {
+  const code = formData.get("code") as string;
+  const res = await fetch(`${process.env.API_URL}/auth/2fa/enable`, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) {
+    const data = await res.json();
+    console.error("enableTwoFactorAuthentication error: ", data);
+    return JSON.stringify(data);
+  } else {
+    return "Success";
+  }
+}
