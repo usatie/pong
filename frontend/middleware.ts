@@ -11,12 +11,15 @@ function isPathProtected(path: string) {
   );
 }
 
+function isPath2FAOnly(path: string) {
+  return path == "/login/2fa";
+}
+
 function isPathGuestOnly(path: string) {
   return path == "/login" || path == "/signup";
 }
 
 export default async function authMiddleware(request: NextRequest) {
-  const jwtPayload = await getAccessTokenPayload({ ignoreExpiration: true });
   // 1. Authenticated user
   // 2. 2FA user
   // 3. Guest
@@ -32,9 +35,10 @@ export default async function authMiddleware(request: NextRequest) {
   // a. Protected path
   // b. Guest-only path
   // c. Public path
-  const pathStatus: "PROTECTED" | "GUEST_ONLY" | "PUBLIC" = (() => {
+  const pathStatus: "PROTECTED" | "GUEST_ONLY" | "2FA" | "PUBLIC" = (() => {
     if (isPathProtected(request.nextUrl.pathname)) return "PROTECTED";
     if (isPathGuestOnly(request.nextUrl.pathname)) return "GUEST_ONLY";
+    if (isPath2FAOnly(request.nextUrl.pathname)) return "2FA";
     return "PUBLIC";
   })();
   console.log("pathStatus: ", pathStatus);
@@ -42,29 +46,30 @@ export default async function authMiddleware(request: NextRequest) {
   switch (userStatus) {
     case "AUTHENTICATED":
       switch (pathStatus) {
-        case "PROTECTED":
-          return NextResponse.next();
         case "GUEST_ONLY":
-          return NextResponse.redirect(new URL("/user", request.nextUrl));
+        case "2FA":
+          return NextResponse.redirect(new URL("/", request.nextUrl));
         case "PUBLIC":
+        case "PROTECTED":
           return NextResponse.next();
       }
     case "2FA":
-      if (request.nextUrl.pathname == "/login/2fa") return NextResponse.next();
-      else return NextResponse.redirect(new URL("/login/2fa", request.nextUrl));
+      // if (request.nextUrl.pathname == "/login/2fa") return NextResponse.next();
+      // else return NextResponse.redirect(new URL("/login/2fa", request.nextUrl));
       switch (pathStatus) {
         case "PROTECTED":
         case "GUEST_ONLY":
-          return NextResponse.redirect(new URL("/login/2fa", request.nextUrl));
         case "PUBLIC":
+          return NextResponse.redirect(new URL("/login/2fa", request.nextUrl));
+        case "2FA":
           return NextResponse.next();
       }
     case "GUEST":
       switch (pathStatus) {
+        case "2FA":
         case "PROTECTED":
           return NextResponse.redirect(new URL("/login", request.nextUrl));
         case "GUEST_ONLY":
-          return NextResponse.next();
         case "PUBLIC":
           return NextResponse.next();
       }

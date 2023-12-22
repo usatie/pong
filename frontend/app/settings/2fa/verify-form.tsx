@@ -1,5 +1,8 @@
 "use client";
-import { enableTwoFactorAuthentication } from "@/app/lib/actions";
+import {
+  enableTwoFactorAuthentication,
+  twoFactorAuthenticate,
+} from "@/app/lib/actions";
 import { useAuthContext } from "@/app/lib/client-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,14 +10,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
-export default async function TwoFactorAuthVerifyForm() {
+export default function TwoFactorAuthVerifyForm() {
   const { payload } = useAuthContext();
   if (!payload) {
     throw new Error("No access token payload");
   }
   const [response, action] = useFormState(
     payload.isTwoFactorEnabled
-      ? enableTwoFactorAuthentication
+      ? twoFactorAuthenticate
       : enableTwoFactorAuthentication,
     "",
   );
