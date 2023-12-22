@@ -14,7 +14,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { UserGuard } from 'src/user/user.guard';
 import { CreateHistoryDto } from './dto/create-history.dto';
 import { HistoryService } from './history.service';
 
@@ -32,7 +31,7 @@ export class HistoryController {
   }
 
   @Get('user/:userId/history')
-  @UseGuards(JwtAuthGuard, UserGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse()
   findAll(@Param('userId', ParseIntPipe) userId: number) {
