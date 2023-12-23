@@ -1,4 +1,4 @@
-import { Stack } from "@/app/ui/layout/stack";
+import { Stack } from "@/components/layout/stack";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
 
@@ -10,7 +10,7 @@ export type ProfileItemProps = {
 
 export function ProfileItem({ type, title, value }: ProfileItemProps) {
   return (
-    <Stack spacing={1} className="w-96">
+    <Stack space="space-y-1">
       <Label htmlFor={title} className="text-xs text-muted-foreground">
         {title}
       </Label>

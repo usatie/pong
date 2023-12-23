@@ -1,7 +1,7 @@
 "use client";
 // layout
 import { updatePassword } from "@/app/lib/actions";
-import { Stack } from "@/app/ui/layout/stack";
+import { Stack } from "@/components/layout/stack";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,7 +50,7 @@ function PasswordItem({
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <Stack spacing={1}>
+    <Stack space="space-y-1">
       <Label htmlFor={id} className="text-xs text-muted-foreground">
         {title}
       </Label>
@@ -75,7 +75,7 @@ export default function ChangePasswordForm() {
   }
   return (
     <form action={action}>
-      <Stack spacing={4}>
+      <Stack space="space-y-4">
         <PasswordItem
           id="current-password"
           title="Current Password"

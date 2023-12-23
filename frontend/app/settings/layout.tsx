@@ -1,6 +1,6 @@
 "use client";
-import { Stack } from "@/app/ui/layout/stack";
 import { SidebarNav } from "@/app/ui/settings/sidebar-nav";
+import { Stack } from "@/components/layout/stack";
 import { Separator } from "@/components/ui/separator";
 import { usePathname } from "next/navigation";
 
@@ -46,8 +46,8 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
             <SidebarNav items={sidebarNavItems} />
           </aside>
           <div className="flex-1 lg:max-w-2xl">
-            <Stack spacing={4}>
-              <Stack spacing={1}>
+            <Stack space="space-y-4">
+              <Stack space="space-y-1">
                 <div className="text-2xl">{title}</div>
                 <Separator />
               </Stack>
