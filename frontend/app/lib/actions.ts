@@ -14,7 +14,7 @@ import {
   GetRoomResponse,
   MatchHistoryEntity,
   PublicUserEntity,
-  Room,
+  RoomEntity,
   UserEntity,
 } from "./types";
 
@@ -139,7 +139,7 @@ export async function deleteUser(
   }
 }
 
-export async function getRooms(): Promise<Room[]> {
+export async function getRooms(): Promise<RoomEntity[]> {
   const res = await fetch(`${process.env.API_URL}/room`, {
     cache: "no-cache",
     headers: {

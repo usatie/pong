@@ -1,8 +1,8 @@
-import type { Message } from "@/app/lib/types";
+import type { MessageEvent } from "@/app/lib/types";
 import { Stack } from "@/components/layout/stack";
 import { MessageItem } from "./message-item";
 
-export function MessageGroup({ messages }: { messages: Message[] }) {
+export function MessageGroup({ messages }: { messages: MessageEvent[] }) {
   return (
     <Stack space="space-y-1">
       {messages.map((msg, i) => {

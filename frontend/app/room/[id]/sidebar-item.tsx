@@ -6,7 +6,7 @@ import {
   unblockUser,
   updateRoomUser,
 } from "@/app/lib/actions";
-import type { UserOnRoom } from "@/app/lib/types";
+import type { UserOnRoomEntity } from "@/app/lib/types";
 import { SmallAvatarSkeleton } from "@/app/ui/room/skeleton";
 import {
   ContextMenu,
@@ -40,8 +40,8 @@ export default function SidebarItem({
   me,
 }: {
   roomId: number;
-  user: UserOnRoom;
-  me: UserOnRoom;
+  user: UserOnRoomEntity;
+  me: UserOnRoomEntity;
 }) {
   const isUserAdmin = user.role === "ADMINISTRATOR";
   const isUserOwner = user.role === "OWNER";

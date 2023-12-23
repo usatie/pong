@@ -1,6 +1,6 @@
 "use client";
 import { useAuthContext } from "@/app/lib/client-auth";
-import { Message } from "@/app/lib/types";
+import { MessageEvent } from "@/app/lib/types";
 import { groupMessagesByUser, useScrollToBottom } from "@/app/ui/room/helper";
 import { MessageGroup } from "@/app/ui/room/message-group";
 import { MessageSkeleton } from "@/app/ui/room/skeleton";
@@ -39,10 +39,10 @@ function MessageArea({
   messages: existingMessages,
 }: {
   roomId: number;
-  messages: Message[];
+  messages: MessageEvent[];
 }) {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>(existingMessages);
+  const [messages, setMessages] = useState<MessageEvent[]>(existingMessages);
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
@@ -53,7 +53,7 @@ function MessageArea({
   useEffect(() => {
     socket.connect();
 
-    const handleMessage = (message: Message) => {
+    const handleMessage = (message: MessageEvent) => {
       setMessages((messages) => [...messages, message]);
     };
 

@@ -1,10 +1,10 @@
 export type GetRoomResponse = {
   id: number;
   name: string;
-  users: UserOnRoom[];
+  users: UserOnRoomEntity[];
 };
 
-export type UserOnRoom = {
+export type UserOnRoomEntity = {
   userId: number;
   role: string;
   roomId: number;
@@ -53,9 +53,9 @@ export type JwtPayload = {
   isTwoFactorAuthenticated: boolean;
 };
 
-export type Message = {
+export type MessageEvent = {
   user: PublicUserEntity;
   content: string;
 };
 
-export type Room = { id: number; name?: string };
+export type RoomEntity = { id: number; name?: string };

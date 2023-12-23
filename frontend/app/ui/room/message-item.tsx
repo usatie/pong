@@ -1,4 +1,4 @@
-import type { Message } from "@/app/lib/types";
+import type { MessageEvent } from "@/app/lib/types";
 import { Avatar } from "@/app/ui/user/avatar";
 import { Stack } from "@/components/layout/stack";
 
@@ -6,7 +6,7 @@ export function MessageItem({
   message,
   withAvatar,
 }: {
-  message: Message;
+  message: MessageEvent;
   withAvatar: boolean;
 }) {
   //  const created_at_hhmm = message.created_at.split(" ")[1].slice(0, 5);

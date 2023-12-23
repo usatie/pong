@@ -1,5 +1,5 @@
 import { getCurrentUserId } from "@/app/lib/session";
-import type { UserOnRoom } from "@/app/lib/types";
+import type { UserOnRoomEntity } from "@/app/lib/types";
 import { Stack } from "@/components/layout/stack";
 import SidebarItem from "./sidebar-item";
 
@@ -8,7 +8,7 @@ export async function Sidebar({
   users,
 }: {
   roomId: number;
-  users: UserOnRoom[];
+  users: UserOnRoomEntity[];
 }) {
   const currentUserId = await getCurrentUserId();
   const me = users.find((u) => u.userId === currentUserId);
