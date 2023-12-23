@@ -101,7 +101,7 @@ export class RoomService {
 
   // UserOnRoom CRUD
 
-  async createUserOnRoom(id: number, user: User): Promise<UserOnRoomEntity> {
+  async enterRoom(id: number, user: User): Promise<UserOnRoomEntity> {
     const userOnRoom = await this.prisma.userOnRoom.create({
       data: {
         roomId: id,

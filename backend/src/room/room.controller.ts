@@ -27,6 +27,7 @@ import { UpdateRoomDto } from './dto/update-room.dto';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
 import { ChangeRoleGuard } from './guards/change-role.guard';
+import { EnterRoomGuard } from './guards/enter-room.guard';
 import { GetRoomGuard } from './guards/get-room.guard';
 import { KickGuard } from './guards/kick.guard';
 import { MemberGuard } from './guards/member.guard';
@@ -89,13 +90,14 @@ export class RoomController {
   }
 
   @Post(':roomId')
+  @UseGuards(EnterRoomGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  createUserOnRoom(
+  enterRoom(
     @Param('roomId', ParseIntPipe) roomId: number,
     @CurrentUser() user: User,
   ) {
-    return this.roomService.createUserOnRoom(roomId, user);
+    return this.roomService.enterRoom(roomId, user);
   }
 
   @Get(':roomId/messages')
