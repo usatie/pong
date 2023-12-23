@@ -1,4 +1,5 @@
-import { MatchDetailEntity, getMatchHistory } from "@/app/lib/actions";
+import { getMatchHistory } from "@/app/lib/actions";
+import type { MatchDetailEntity } from "@/app/lib/types";
 import Link from "next/link";
 import { Avatar } from "./avatar";
 import ProfileItem from "./profile-item";

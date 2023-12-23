@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthContext, JwtPayload } from "@/app/lib/client-auth";
-import { UserEntity } from "./actions";
+import type { UserEntity } from "@/app/lib/types";
 
 export type AuthProviderProps = {
   children: React.ReactNode;

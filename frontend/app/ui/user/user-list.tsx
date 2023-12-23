@@ -1,4 +1,4 @@
-import { PublicUserEntity } from "@/app/lib/actions";
+import type { PublicUserEntity } from "@/app/lib/types";
 import {
   Tooltip,
   TooltipContent,

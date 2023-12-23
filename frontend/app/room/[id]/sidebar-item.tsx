@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  UserOnRoom,
   blockUser,
   deleteUserOnRoom,
   unblockUser,
   updateRoomUser,
 } from "@/app/lib/actions";
+import type { UserOnRoom } from "@/app/lib/types";
 import { SmallAvatarSkeleton } from "@/app/ui/room/skeleton";
 import {
   ContextMenu,

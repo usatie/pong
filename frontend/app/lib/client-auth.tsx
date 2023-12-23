@@ -1,6 +1,6 @@
 "use client";
+import type { UserEntity } from "@/app/lib/types";
 import { createContext, useContext } from "react";
-import { UserEntity } from "./actions";
 
 export type JwtPayload = {
   userId: number;

@@ -1,5 +1,5 @@
-import { UserOnRoom } from "@/app/lib/actions";
 import { getCurrentUserId } from "@/app/lib/session";
+import type { UserOnRoom } from "@/app/lib/types";
 import { Stack } from "@/components/layout/stack";
 import SidebarItem from "./sidebar-item";
 
