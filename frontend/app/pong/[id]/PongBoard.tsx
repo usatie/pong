@@ -136,6 +136,7 @@ function PongBoard({ id }: PongBoardProps) {
   useEffect(() => {
     const socket = io("/pong", {
       query: { game_id: id, is_player: userMode === "player" },
+      forceNew: true,
     });
     socketRef.current = socket;
 
