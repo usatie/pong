@@ -1,20 +1,6 @@
 import { uploadAvatar } from "@/app/lib/actions";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar } from "@/app/ui/user/avatar";
 import { useRef } from "react";
-
-function Avatar({ avatarURL }: { avatarURL?: string }) {
-  if (avatarURL) {
-    return (
-      <img
-        src={avatarURL}
-        className="rounded-full w-20 h-20 object-cover"
-        alt="Avatar"
-      />
-    );
-  } else {
-    return <Skeleton className="rounded-full h-20 w-20" />;
-  }
-}
 
 export default function AvatarForm({ avatarURL }: { avatarURL?: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -25,7 +11,7 @@ export default function AvatarForm({ avatarURL }: { avatarURL?: string }) {
   return (
     <form id="avatar-form" action={uploadAvatar}>
       <button type="button" onClick={() => inputRef.current?.click()}>
-        <Avatar avatarURL={avatarURL} />
+        <Avatar avatarURL={avatarURL} size="large" />
       </button>
       <input
         ref={inputRef}

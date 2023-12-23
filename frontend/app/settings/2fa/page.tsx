@@ -1,9 +1,9 @@
 import { generate2FASecret } from "@/app/lib/actions";
 import { getAccessTokenPayload } from "@/app/lib/session";
+import TwoFactorAuthVerifyForm from "@/app/ui/auth/verify-form";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { toDataURL } from "qrcode";
-import TwoFactorAuthVerifyForm from "@/app/ui/auth/verify-form";
 
 export default async function TwoFactorAuthPage() {
   const payload = await getAccessTokenPayload({ ignoreExpiration: true });
