@@ -59,6 +59,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   // Please do not rely on client.handshake.query in handleConnection and handleDisconnect
   // as we use one connection globally in client
   handleConnection() {}
+  handleDisconnect() {}
 
   @SubscribeMessage('join')
   async join(
@@ -89,9 +90,10 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
-  handleDisconnect(client: Socket) {
+  @SubscribeMessage('leave')
+  async leave(@ConnectedSocket() client: Socket) {
     this.logger.log(`disconnect: ${client.id} `);
-    const roomId = client.handshake.query['game_id'] as string;
+    const roomId = this.getRoom(client);
     client.leave(roomId);
 
     if (isPlayer(this.players, roomId, client.id)) {
