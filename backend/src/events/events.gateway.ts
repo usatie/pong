@@ -55,11 +55,16 @@ export class EventsGateway implements OnGatewayDisconnect {
   private lostPoints: Scores = {};
   private players: Players = {};
 
-  handleConnection(client: Socket) {
-    this.logger.log(`connect: ${client.id} `);
+  // Please do not rely on client.handshake.query in handleConnection and handleDisconnect
+  // as we use one connection globally in client
+  handleConnection() {}
 
-    const gameId = client.handshake.query['game_id'] as string;
-    const isPlayer = client.handshake.query['is_player'] == 'true';
+  @SubscribeMessage('join')
+  async join(
+    @MessageBody() { gameId, isPlayer }: { gameId: string; isPlayer: boolean },
+    @ConnectedSocket() client: Socket,
+  ) {
+    this.logger.log(`connect: ${client.id} `);
 
     // Both of viewers and players join the Socket.io room
     client.join(gameId);
