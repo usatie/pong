@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { LoginDto } from 'src/auth/dto/login.dto';
 import { CreateRoomDto } from 'src/room/dto/create-room.dto';
+import { EnterRoomDto } from 'src/room/dto/enter-room.dto';
 import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -62,10 +63,15 @@ export class TestApp {
       .set('Authorization', `Bearer ${accessToken}`)
       .send(createRoomDto);
 
-  enterRoom = (roomId: number, accessToken: string) =>
+  enterRoom = (
+    roomId: number,
+    accessToken: string,
+    enterRoomDto: EnterRoomDto = {},
+  ) =>
     request(this.app.getHttpServer())
       .post(`/room/${roomId}`)
-      .set('Authorization', `Bearer ${accessToken}`);
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(enterRoomDto);
 
   leaveRoom = (roomId: number, userId: number, accessToken: string) =>
     request(this.app.getHttpServer())

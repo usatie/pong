@@ -41,14 +41,22 @@ describe('RoomController (e2e)', () => {
       member = await app.createAndLoginUser(constants.user.member);
       await app.enterRoom(publicRoom.id, member.accessToken).expect(201);
       await app.enterRoom(privateRoom.id, member.accessToken).expect(201);
-      await app.enterRoom(protectedRoom.id, member.accessToken).expect(201);
+      await app
+        .enterRoom(protectedRoom.id, member.accessToken, {
+          password: constants.room.protectedRoom.password,
+        })
+        .expect(201);
     }
     // Admin
     {
       admin = await app.createAndLoginUser(constants.user.admin);
       await app.enterRoom(publicRoom.id, admin.accessToken).expect(201);
       await app.enterRoom(privateRoom.id, admin.accessToken).expect(201);
-      await app.enterRoom(protectedRoom.id, admin.accessToken).expect(201);
+      await app
+        .enterRoom(protectedRoom.id, admin.accessToken, {
+          password: constants.room.protectedRoom.password,
+        })
+        .expect(201);
       await app
         .updateUserOnRoom(
           publicRoom.id,
@@ -220,30 +228,92 @@ describe('RoomController (e2e)', () => {
   });
 
   describe('POST /room/:id (Enter Room)', () => {
-    it('owner/admin/member should not enter (409 Conflict)', async () => {
-      for (const user of [owner, admin, member]) {
-        await app.enterRoom(publicRoom.id, user.accessToken).expect(409);
-      }
+    afterAll(async () => {
+      await app.leaveRoom(publicRoom.id, notMember.id, notMember.accessToken);
+      await app.leaveRoom(
+        protectedRoom.id,
+        notMember.id,
+        notMember.accessToken,
+      );
     });
-
-    it('notMember should enter public room (201)', async () => {
-      await app.enterRoom(publicRoom.id, notMember.accessToken).expect(201);
-      await app.enterRoom(publicRoom.id, notMember.accessToken).expect(409);
-      await app
-        .leaveRoom(publicRoom.id, notMember.id, notMember.accessToken)
-        .expect(204);
+    describe('owner', () => {
+      it('should not enter already entered room (409 Conflict)', async () => {
+        await app.enterRoom(publicRoom.id, owner.accessToken).expect(409);
+        await app
+          .enterRoom(protectedRoom.id, owner.accessToken, {
+            password: constants.room.protectedRoom.password,
+          })
+          .expect(409);
+        await app.enterRoom(privateRoom.id, owner.accessToken).expect(409);
+      });
     });
-
-    it('notMember should not enter private room (403 Forbidden)', async () => {});
-
-    it('notMember should not enter protected room without password (403 Forbidden)', async () => {});
-
-    it('notMember should enter protected room with password (201 Created)', async () => {});
-
-    it('notMember should not enter room with invalid password (403 Forbidden)', async () => {});
-
-    it('Entered user should not enter again (409 Conflict)', async () => {});
-
+    describe('admin', () => {
+      it('should not enter already entered room (409 Conflict)', async () => {
+        await app.enterRoom(publicRoom.id, admin.accessToken).expect(409);
+        await app
+          .enterRoom(protectedRoom.id, admin.accessToken, {
+            password: constants.room.protectedRoom.password,
+          })
+          .expect(409);
+        await app.enterRoom(privateRoom.id, admin.accessToken).expect(409);
+      });
+    });
+    describe('member', () => {
+      it('should not enter already entered room (409 Conflict)', async () => {
+        await app.enterRoom(publicRoom.id, member.accessToken).expect(409);
+        await app
+          .enterRoom(protectedRoom.id, member.accessToken, {
+            password: constants.room.protectedRoom.password,
+          })
+          .expect(409);
+        await app.enterRoom(privateRoom.id, member.accessToken).expect(409);
+      });
+    });
+    describe('notMember', () => {
+      describe('public room', () => {
+        it('should enter public room (201 Created)', async () => {
+          await app.enterRoom(publicRoom.id, notMember.accessToken).expect(201);
+        });
+        it('should not enter public room twice (409 Conflict)', async () => {
+          await app.enterRoom(publicRoom.id, notMember.accessToken).expect(409);
+        });
+      });
+      describe('private room', () => {
+        it('should not enter private room (403 Forbidden)', async () => {
+          await app
+            .enterRoom(privateRoom.id, notMember.accessToken)
+            .expect(403);
+        });
+      });
+      describe('protected room', () => {
+        it('should not enter protected room without password (400 Bad Request)', async () => {
+          await app
+            .enterRoom(protectedRoom.id, notMember.accessToken)
+            .expect(400);
+        });
+        it('should not enter protected room with invalid password (403 Forbidden)', async () => {
+          await app
+            .enterRoom(protectedRoom.id, notMember.accessToken, {
+              password: 'invalid_password',
+            })
+            .expect(403);
+        });
+        it('should enter protected room with password (201 Created)', async () => {
+          await app
+            .enterRoom(protectedRoom.id, notMember.accessToken, {
+              password: constants.room.protectedRoom.password,
+            })
+            .expect(201);
+        });
+        it('should not enter protected room twice (409 Conflict)', async () => {
+          await app
+            .enterRoom(protectedRoom.id, notMember.accessToken, {
+              password: constants.room.protectedRoom.password,
+            })
+            .expect(409);
+        });
+      });
+    });
     it('Anyone should not enter invalid room (404 Not Found)', async () => {});
   });
 
