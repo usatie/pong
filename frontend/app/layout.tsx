@@ -11,7 +11,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 // ui
 import { getMe } from "@/app/lib/actions";
-import { JwtPayload } from "@/app/lib/types";
+import { JwtPayload } from "@/app/lib/dtos";
 import Nav from "@/app/ui/nav";
 
 const inter = Inter({ subsets: ["latin"] });

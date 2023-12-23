@@ -5,7 +5,7 @@ import { useFormState } from "react-dom";
 // components
 import { joinRoom } from "@/app/lib/actions";
 import { deleteRoom, updateRoom } from "@/app/lib/client-actions";
-import { RoomEntity } from "@/app/lib/types";
+import { RoomEntity } from "@/app/lib/dtos";
 import { Button } from "@/components/ui/button";
 import {
   Card,

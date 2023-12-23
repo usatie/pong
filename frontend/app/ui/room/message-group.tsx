@@ -1,4 +1,4 @@
-import type { MessageEvent } from "@/app/lib/types";
+import type { MessageEvent } from "@/app/lib/dtos";
 import { Stack } from "@/components/layout/stack";
 import { MessageItem } from "./message-item";
 

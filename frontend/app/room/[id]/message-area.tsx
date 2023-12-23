@@ -1,6 +1,6 @@
 "use client";
 import { useAuthContext } from "@/app/lib/client-auth";
-import { MessageEvent } from "@/app/lib/types";
+import { MessageEvent } from "@/app/lib/dtos";
 import { groupMessagesByUser, useScrollToBottom } from "@/app/ui/room/helper";
 import { MessageGroup } from "@/app/ui/room/message-group";
 import { MessageSkeleton } from "@/app/ui/room/skeleton";

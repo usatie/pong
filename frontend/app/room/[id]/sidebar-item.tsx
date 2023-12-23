@@ -6,7 +6,7 @@ import {
   unblockUser,
   updateRoomUser,
 } from "@/app/lib/actions";
-import type { UserOnRoomEntity } from "@/app/lib/types";
+import type { UserOnRoomEntity } from "@/app/lib/dtos";
 import { SmallAvatarSkeleton } from "@/app/ui/room/skeleton";
 import {
   ContextMenu,

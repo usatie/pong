@@ -4,19 +4,19 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import {
-  destroySession,
-  getCurrentUser,
-  getCurrentUserId,
-  setAccessToken,
-} from "./session";
-import {
   FriendRequestsEntity,
   GetRoomResponse,
   MatchHistoryEntity,
   PublicUserEntity,
   RoomEntity,
   UserEntity,
-} from "./types";
+} from "./dtos";
+import {
+  destroySession,
+  getCurrentUser,
+  getCurrentUserId,
+  setAccessToken,
+} from "./session";
 
 export async function signOut() {
   cookies()?.delete("token");

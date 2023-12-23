@@ -1,4 +1,4 @@
-import type { MessageEvent } from "@/app/lib/types";
+import type { MessageEvent } from "@/app/lib/dtos";
 import { useEffect, useState } from "react";
 
 export function groupMessagesByUser(

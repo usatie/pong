@@ -1,5 +1,5 @@
 "use client";
-import type { JwtPayload, UserEntity } from "@/app/lib/types";
+import type { JwtPayload, UserEntity } from "@/app/lib/dtos";
 import { createContext, useContext } from "react";
 
 export type AuthContextType = {

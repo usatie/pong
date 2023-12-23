@@ -1,4 +1,4 @@
-import type { MessageEvent } from "@/app/lib/types";
+import type { MessageEvent } from "@/app/lib/dtos";
 import { Avatar } from "@/app/ui/user/avatar";
 import { Stack } from "@/components/layout/stack";
 
