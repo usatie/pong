@@ -1,6 +1,6 @@
+import type { Message } from "@/app/lib/types";
 import { Avatar } from "@/app/ui/user/avatar";
 import { Stack } from "@/components/layout/stack";
-import type { Message } from "./types";
 
 export function MessageItem({
   message,

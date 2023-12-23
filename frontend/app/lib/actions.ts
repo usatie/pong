@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
-import { Room } from "../ui/room/card";
 import {
   destroySession,
   getCurrentUser,
@@ -15,6 +14,7 @@ import {
   GetRoomResponse,
   MatchHistoryEntity,
   PublicUserEntity,
+  Room,
   UserEntity,
 } from "./types";
 

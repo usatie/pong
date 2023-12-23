@@ -46,3 +46,16 @@ export type UserEntity = {
   avatarURL?: string;
   twoFactorEnabled: boolean;
 };
+
+export type JwtPayload = {
+  userId: number;
+  isTwoFactorEnabled: boolean;
+  isTwoFactorAuthenticated: boolean;
+};
+
+export type Message = {
+  user: PublicUserEntity;
+  content: string;
+};
+
+export type Room = { id: number; name?: string };

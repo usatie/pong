@@ -1,5 +1,5 @@
+import type { Message } from "@/app/lib/types";
 import { useEffect, useState } from "react";
-import type { Message } from "./types";
 
 export function groupMessagesByUser(messages: Message[]): Message[][] {
   let prevUserId: number | undefined = undefined;
