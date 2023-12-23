@@ -111,10 +111,28 @@ async function seedMatchHistory() {
   );
 }
 
+async function seedFriends(users) {
+  let promises = [];
+  for (let i = 0; i < users.length - 1; i++) {
+    promises.push(
+      prisma.user.update({
+        where: { id: users[users.length - 1].id },
+        data: {
+          friends: {
+            connect: { id: users[i].id },
+          },
+        },
+      }),
+    );
+  }
+  await Promise.all(promises);
+}
+
 async function main() {
   const users = await seedUsers();
   await seedRooms(users);
   await seedMatchHistory();
+  await seedFriends(users);
 }
 
 main()
