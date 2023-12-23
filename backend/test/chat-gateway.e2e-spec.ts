@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Socket, io } from 'socket.io-client';
 import { AppModule } from 'src/app.module';
 import { MessageEntity } from 'src/chat/entities/message.entity';
+import { constants } from './constants';
 import { TestApp } from './utils/app';
 
 async function createNestApp(): Promise<INestApplication> {
@@ -103,7 +104,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     let room;
     it('Create and enter a room', async () => {
       const res = await app
-        .createRoom({ name: 'test-room' }, user1.accessToken)
+        .createRoom(constants.room.test, user1.accessToken)
         .expect(201);
       room = res.body;
       expect(room.id).toBeDefined();

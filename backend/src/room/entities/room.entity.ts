@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Room } from '@prisma/client';
+import { Exclude } from 'class-transformer';
 
 export class RoomEntity implements Room {
   constructor(partial: Partial<RoomEntity>) {
@@ -10,4 +11,10 @@ export class RoomEntity implements Room {
 
   @ApiProperty()
   name: string;
+
+  @ApiProperty()
+  accessLevel: 'PUBLIC' | 'PRIVATE' | 'PROTECTED';
+
+  @Exclude()
+  password: string;
 }

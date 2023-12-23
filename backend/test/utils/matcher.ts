@@ -5,17 +5,21 @@ export const expectRoomWithUsers = (room) => {
   const expected = {
     id: expect.any(Number),
     name: expect.any(String),
+    accessLevel: expect.any(String),
     users: expect.any(Array),
   };
   expect(room).toEqual(expected);
+  expect(room.accessLevel).toMatch(/PUBLIC|PRIVATE|PROTECTED/);
 };
 
 export const expectRoom = (room) => {
   const expected = {
     id: expect.any(Number),
     name: expect.any(String),
+    accessLevel: expect.any(String),
   };
   expect(room).toEqual(expected);
+  expect(room.accessLevel).toMatch(/PUBLIC|PRIVATE|PROTECTED/);
 };
 
 export const expectUserOnRoom = (userOnRoom) => {

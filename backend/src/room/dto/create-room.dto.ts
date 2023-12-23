@@ -6,4 +6,9 @@ export class CreateRoomDto {
   @IsNotEmpty()
   @ApiProperty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  accessLevel: 'PUBLIC' | 'PRIVATE' | 'PROTECTED';
 }

@@ -40,33 +40,39 @@ export class RoomController {
   @Post()
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: RoomEntity })
-  create(@Body() createRoomDto: CreateRoomDto, @CurrentUser() user: User) {
-    return this.roomService.create(createRoomDto, user);
+  async create(
+    @Body() createRoomDto: CreateRoomDto,
+    @CurrentUser() user: User,
+  ) {
+    return new RoomEntity(await this.roomService.create(createRoomDto, user));
   }
 
   @Get()
   @ApiOkResponse({ type: RoomEntity, isArray: true })
-  findAll() {
-    return this.roomService.findAllRoom();
+  async findAll() {
+    const rooms = await this.roomService.findAllRoom();
+    return rooms.map((room) => new RoomEntity(room));
   }
 
   @Get(':roomId')
   @UseGuards(MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  findOne(@Member() member: UserOnRoomEntity) {
-    return this.roomService.findRoom(member.roomId);
+  async findOne(@Member() member: UserOnRoomEntity) {
+    return new RoomEntity(await this.roomService.findRoom(member.roomId));
   }
 
   @Patch(':roomId')
   @UseGuards(OwnerGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  update(
+  async update(
     @Body() updateRoomDto: UpdateRoomDto,
     @Member() member: UserOnRoomEntity,
   ) {
-    return this.roomService.updateRoom(member.roomId, updateRoomDto);
+    return new RoomEntity(
+      await this.roomService.updateRoom(member.roomId, updateRoomDto),
+    );
   }
 
   @Delete(':roomId')
@@ -74,11 +80,11 @@ export class RoomController {
   @UseGuards(OwnerGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
-  removeRoom(
+  async removeRoom(
     @Param('roomId', ParseIntPipe) roomId: number,
     @Member() member: UserOnRoomEntity,
   ) {
-    return this.roomService.removeRoom(member.roomId);
+    return new RoomEntity(await this.roomService.removeRoom(member.roomId));
   }
 
   @Post(':roomId')

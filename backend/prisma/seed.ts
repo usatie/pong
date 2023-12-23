@@ -40,6 +40,7 @@ async function seedRooms(users) {
     await prisma.room.create({
       data: {
         name: 'Room 1',
+        accessLevel: 'PUBLIC',
         users: {
           create: [
             { userId: user1.id, role: 'OWNER' },
@@ -53,11 +54,25 @@ async function seedRooms(users) {
     await prisma.room.create({
       data: {
         name: 'Room 2',
+        accessLevel: 'PROTECTED',
         users: {
           create: [
             { userId: user1.id, role: 'MEMBER' },
             { userId: user2.id, role: 'MEMBER' },
             { userId: user4.id, role: 'OWNER' },
+          ],
+        },
+      },
+    });
+    await prisma.room.create({
+      data: {
+        name: 'Room 3',
+        accessLevel: 'PRIVATE',
+        users: {
+          create: [
+            { userId: user1.id, role: 'MEMBER' },
+            { userId: user2.id, role: 'ADMINISTRATOR' },
+            { userId: user3.id, role: 'OWNER' },
           ],
         },
       },
