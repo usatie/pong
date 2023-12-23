@@ -6,6 +6,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 
@@ -195,5 +196,17 @@ export class EventsGateway implements OnGatewayDisconnect {
   ) {
     if (data) socket.to(roomId).emit(eventName, data);
     else socket.to(roomId).emit(eventName);
+  }
+
+  getRoom(socket: Socket) {
+    const roomIds = Object.keys(socket.rooms).filter(
+      (item) => item != socket.id,
+    );
+    if (roomIds.length != 1) {
+      throw new WsException(
+        'should not reach: use one room per socket and call this after joining a room',
+      );
+    }
+    return roomIds[0];
   }
 }
