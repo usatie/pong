@@ -1,6 +1,5 @@
 "use server";
 
-import type { User } from "@/app/ui/user/card";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
@@ -65,7 +64,7 @@ function getAccessToken() {
   return accessToken;
 }
 
-export async function getUsers(): Promise<User[]> {
+export async function getUsers(): Promise<PublicUserEntity[]> {
   const res = await fetch(`${process.env.API_URL}/user`, {
     cache: "no-cache",
   });
@@ -412,13 +411,13 @@ export async function addFriend(recipientId: number) {
   }
 }
 
-type PublicUserEntity = {
+export type PublicUserEntity = {
   id: number;
   name: string;
   avatarURL?: string;
 };
 
-type FriendRequestsEntity = {
+export type FriendRequestsEntity = {
   requestedBy: PublicUserEntity[];
   requesting: PublicUserEntity[];
 };

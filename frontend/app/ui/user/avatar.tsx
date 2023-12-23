@@ -1,12 +1,14 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
+export type AvatarSize = "small" | "medium" | "large";
+
 export function Avatar({
   avatarURL,
   size,
   alt,
 }: {
   avatarURL?: string;
-  size: "small" | "medium" | "large";
+  size: AvatarSize;
   alt?: string;
 }) {
   let sizeClass = "";

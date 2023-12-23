@@ -1,13 +1,12 @@
 import { getUsers } from "@/app/lib/actions";
-import UserCard from "@/app/ui/user/card";
+import UserList from "@/app/ui/user/user-list";
 
 export default async function UserListPage() {
   const users = await getUsers();
   return (
-    <div className="flex flex-wrap gap-8">
-      {users.map((user, index) => (
-        <UserCard user={user} key={index} />
-      ))}
+    <div className="flex flex-col gap-4">
+      <div className="font-bold text-4xl">All Users</div>
+      <UserList users={users} avatarSize="large"></UserList>
     </div>
   );
 }
