@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreateRoomDto {
   @IsString()
@@ -11,4 +17,10 @@ export class CreateRoomDto {
   @IsNotEmpty()
   @ApiProperty()
   accessLevel: 'PUBLIC' | 'PRIVATE' | 'PROTECTED';
+
+  @IsString()
+  @MinLength(4)
+  @IsOptional()
+  @ApiProperty({ required: false })
+  password?: string;
 }

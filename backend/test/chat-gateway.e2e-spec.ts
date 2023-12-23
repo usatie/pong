@@ -104,7 +104,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     let room;
     it('Create and enter a room', async () => {
       const res = await app
-        .createRoom(constants.room.test, user1.accessToken)
+        .createRoom(constants.room.publicRoom, user1.accessToken)
         .expect(201);
       room = res.body;
       expect(room.id).toBeDefined();

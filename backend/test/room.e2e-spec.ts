@@ -26,7 +26,7 @@ describe('RoomController (e2e)', () => {
     {
       owner = await app.createAndLoginUser(constants.user.owner);
       room = await app
-        .createRoom(constants.room.test, owner.accessToken)
+        .createRoom(constants.room.publicRoom, owner.accessToken)
         .expect(201)
         .then((res) => res.body);
     }
@@ -73,7 +73,7 @@ describe('RoomController (e2e)', () => {
     await app.updateRoom(room.id, dto, 'invalid_access_token').expect(401);
     await app.deleteRoom(room.id, 'invalid_access_token').expect(401);
     await app
-      .createRoom(constants.room.test, 'invalid_access_token')
+      .createRoom(constants.room.publicRoom, 'invalid_access_token')
       .expect(401);
     await app.getRooms('invalid_access_token').expect(401);
     await app.enterRoom(room.id, 'invalid_access_token').expect(401);
@@ -88,7 +88,7 @@ describe('RoomController (e2e)', () => {
 
     it('should create public room (201 Created)', async () => {
       testRoom = await app
-        .createRoom(constants.room.test, owner.accessToken)
+        .createRoom(constants.room.publicRoom, owner.accessToken)
         .expect(201)
         .expect((res) => expectRoom(res.body))
         .then((res) => res.body);
@@ -199,7 +199,7 @@ describe('RoomController (e2e)', () => {
   describe('DELETE /room/:id (Delete Room)', () => {
     it('owner should delete the room (204 No Content)', async () => {
       const testRoom = await app
-        .createRoom(constants.room.test, owner.accessToken)
+        .createRoom(constants.room.publicRoom, owner.accessToken)
         .expect(201)
         .then((res): RoomEntity => res.body);
       await app.deleteRoom(testRoom.id, owner.accessToken).expect(204);
@@ -233,7 +233,7 @@ describe('RoomController (e2e)', () => {
   const testRoomSetup = async (): Promise<number> => {
     // Owner
     const roomId = await app
-      .createRoom(constants.room.test, owner.accessToken)
+      .createRoom(constants.room.publicRoom, owner.accessToken)
       .expect(201)
       .then((res) => res.body.id);
     // Admin
