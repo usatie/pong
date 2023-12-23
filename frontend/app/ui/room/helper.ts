@@ -1,10 +1,12 @@
+import type { MessageEvent } from "@/app/lib/dtos";
 import { useEffect, useState } from "react";
-import type { Message } from "./types";
 
-export function groupMessagesByUser(messages: Message[]): Message[][] {
+export function groupMessagesByUser(
+  messages: MessageEvent[],
+): MessageEvent[][] {
   let prevUserId: number | undefined = undefined;
-  const groupedMessages: Message[][] = [];
-  let currentGroup: Message[] = [];
+  const groupedMessages: MessageEvent[][] = [];
+  let currentGroup: MessageEvent[] = [];
 
   for (const msg of messages) {
     if (msg.user.id === prevUserId) {
@@ -27,7 +29,7 @@ export function groupMessagesByUser(messages: Message[]): Message[][] {
 
 export function useScrollToBottom(
   ref: React.RefObject<HTMLDivElement>,
-  messages: Message[],
+  messages: MessageEvent[],
 ) {
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
 

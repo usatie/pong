@@ -1,10 +1,10 @@
 "use client";
 import { useAuthContext } from "@/app/lib/client-auth";
-import { Stack } from "@/app/ui/layout/stack";
+import { MessageEvent } from "@/app/lib/dtos";
 import { groupMessagesByUser, useScrollToBottom } from "@/app/ui/room/helper";
 import { MessageGroup } from "@/app/ui/room/message-group";
 import { MessageSkeleton } from "@/app/ui/room/skeleton";
-import { Message } from "@/app/ui/room/types";
+import { Stack } from "@/components/layout/stack";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { chatSocket as socket } from "@/socket";
@@ -39,10 +39,10 @@ function MessageArea({
   messages: existingMessages,
 }: {
   roomId: number;
-  messages: Message[];
+  messages: MessageEvent[];
 }) {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>(existingMessages);
+  const [messages, setMessages] = useState<MessageEvent[]>(existingMessages);
   const messageGroups = groupMessagesByUser(messages);
   const contentRef: React.RefObject<HTMLDivElement> = useRef(null);
   const isScrolledToBottom = useScrollToBottom(contentRef, messages);
@@ -53,7 +53,7 @@ function MessageArea({
   useEffect(() => {
     socket.connect();
 
-    const handleMessage = (message: Message) => {
+    const handleMessage = (message: MessageEvent) => {
       setMessages((messages) => [...messages, message]);
     };
 
@@ -81,7 +81,7 @@ function MessageArea({
     <div className="flex-grow flex flex-col">
       {/* Skeleton*/}
       <div className={`flex-grow ${isScrolledToBottom ? "hidden" : ""}`}>
-        <Stack spacing={4}>
+        <Stack space="space-y-4">
           <MessageSkeleton />
           <MessageSkeleton />
         </Stack>
@@ -93,7 +93,7 @@ function MessageArea({
           isScrolledToBottom ? "" : "invisible"
         }`}
       >
-        <Stack spacing={4}>
+        <Stack space="space-y-4">
           {messageGroups.map((group, index) => (
             <MessageGroup messages={group} key={index} />
           ))}

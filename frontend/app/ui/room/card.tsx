@@ -5,6 +5,7 @@ import { useFormState } from "react-dom";
 // components
 import { joinRoom } from "@/app/lib/actions";
 import { deleteRoom, updateRoom } from "@/app/lib/client-actions";
+import { RoomEntity } from "@/app/lib/dtos";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,11 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type Room = { id: number; name?: string };
-
-export type { Room };
-
-export default function RoomCard({ room }: { room: Room }) {
+export default function RoomCard({ room }: { room: RoomEntity }) {
   const [joinCode, joinAction] = useFormState(joinRoom, undefined);
   return (
     <>

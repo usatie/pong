@@ -1,17 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function Avatar({ avatarURL }: { avatarURL?: string }) {
-  if (!avatarURL) {
-    return <AvatarSkeleton />;
-  }
-  return (
-    <img
-      className="flex-none rounded-full h-10 w-10 object-cover"
-      src={avatarURL}
-      alt="avatar"
-    />
-  );
-}
 export function AvatarSkeleton() {
   return <Skeleton className="flex-none rounded-full h-10 w-10" />;
 }

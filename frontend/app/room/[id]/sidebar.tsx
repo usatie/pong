@@ -1,6 +1,6 @@
-import { UserOnRoom } from "@/app/lib/actions";
+import type { UserOnRoomEntity } from "@/app/lib/dtos";
 import { getCurrentUserId } from "@/app/lib/session";
-import { Stack } from "@/app/ui/layout/stack";
+import { Stack } from "@/components/layout/stack";
 import SidebarItem from "./sidebar-item";
 
 export async function Sidebar({
@@ -8,7 +8,7 @@ export async function Sidebar({
   users,
 }: {
   roomId: number;
-  users: UserOnRoom[];
+  users: UserOnRoomEntity[];
 }) {
   const currentUserId = await getCurrentUserId();
   const me = users.find((u) => u.userId === currentUserId);
@@ -17,7 +17,7 @@ export async function Sidebar({
   }
   return (
     <div className="overflow-y-auto shrink-0 basis-36 pb-4">
-      <Stack spacing={2}>
+      <Stack space="space-y-2">
         {users.map((user) => (
           <SidebarItem roomId={roomId} user={user} me={me} key={user.userId} />
         ))}

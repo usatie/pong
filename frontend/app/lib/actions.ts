@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
-import { Room } from "../ui/room/card";
+import {
+  FriendRequestsEntity,
+  GetRoomResponse,
+  MatchHistoryEntity,
+  PublicUserEntity,
+  RoomEntity,
+  UserEntity,
+} from "./dtos";
 import {
   destroySession,
   getCurrentUser,
@@ -132,7 +139,7 @@ export async function deleteUser(
   }
 }
 
-export async function getRooms(): Promise<Room[]> {
+export async function getRooms(): Promise<RoomEntity[]> {
   const res = await fetch(`${process.env.API_URL}/room`, {
     cache: "no-cache",
     headers: {
@@ -142,23 +149,6 @@ export async function getRooms(): Promise<Room[]> {
   const rooms = await res.json();
   return rooms;
 }
-
-export type GetRoomResponse = {
-  id: number;
-  name: string;
-  users: UserOnRoom[];
-};
-
-export type UserOnRoom = {
-  userId: number;
-  role: string;
-  roomId: number;
-  user: {
-    id: number;
-    name: string;
-    avatarURL?: string;
-  };
-};
 
 export async function getRoom(roomId: number): Promise<GetRoomResponse> {
   const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
@@ -411,17 +401,6 @@ export async function addFriend(recipientId: number) {
   }
 }
 
-export type PublicUserEntity = {
-  id: number;
-  name: string;
-  avatarURL?: string;
-};
-
-export type FriendRequestsEntity = {
-  requestedBy: PublicUserEntity[];
-  requesting: PublicUserEntity[];
-};
-
 export async function getFriendRequests(): Promise<FriendRequestsEntity> {
   const userId = await getCurrentUserId();
   const res = await fetch(
@@ -520,19 +499,6 @@ export async function unfriend(friendId: number) {
   }
 }
 
-export type MatchDetailEntity = {
-  score: number;
-  winLose: "WIN" | "LOSE";
-  user: PublicUserEntity;
-};
-
-export type MatchHistoryEntity = {
-  id: number;
-  players: MatchDetailEntity[];
-  result: "COMPLETE" | "INCOMPLETE";
-  createdAt: string;
-};
-
 export async function getMatchHistory(
   userId: number,
 ): Promise<MatchHistoryEntity[]> {
@@ -550,14 +516,6 @@ export async function getMatchHistory(
     return matchHistory;
   }
 }
-
-export type UserEntity = {
-  id: number;
-  name: string;
-  email: string;
-  avatarURL?: string;
-  twoFactorEnabled: boolean;
-};
 
 export async function getMe(): Promise<UserEntity> {
   const res = await fetch(`${process.env.API_URL}/user/me`, {

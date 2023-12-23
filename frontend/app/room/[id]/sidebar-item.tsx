@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  UserOnRoom,
   blockUser,
   deleteUserOnRoom,
   unblockUser,
   updateRoomUser,
 } from "@/app/lib/actions";
+import type { UserOnRoomEntity } from "@/app/lib/dtos";
 import { SmallAvatarSkeleton } from "@/app/ui/room/skeleton";
 import {
   ContextMenu,
@@ -40,8 +40,8 @@ export default function SidebarItem({
   me,
 }: {
   roomId: number;
-  user: UserOnRoom;
-  me: UserOnRoom;
+  user: UserOnRoomEntity;
+  me: UserOnRoomEntity;
 }) {
   const isUserAdmin = user.role === "ADMINISTRATOR";
   const isUserOwner = user.role === "OWNER";

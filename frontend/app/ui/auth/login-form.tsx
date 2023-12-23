@@ -1,12 +1,12 @@
 "use client";
 
 import { authenticate } from "@/app/lib/actions";
+import { useAuthContext } from "@/app/lib/client-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFormState, useFormStatus } from "react-dom";
-import { useAuthContext } from "../lib/client-auth";
 
 export default function LoginForm() {
   return (

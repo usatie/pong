@@ -1,12 +1,6 @@
 "use client";
+import type { JwtPayload, UserEntity } from "@/app/lib/dtos";
 import { createContext, useContext } from "react";
-import { UserEntity } from "./actions";
-
-export type JwtPayload = {
-  userId: number;
-  isTwoFactorEnabled: boolean;
-  isTwoFactorAuthenticated: boolean;
-};
 
 export type AuthContextType = {
   payload?: JwtPayload;

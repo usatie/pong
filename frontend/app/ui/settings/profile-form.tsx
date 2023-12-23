@@ -1,6 +1,6 @@
 "use client";
 import { useAuthContext } from "@/app/lib/client-auth";
-import { Stack } from "@/app/ui/layout/stack";
+import { Stack } from "@/components/layout/stack";
 import { Button } from "@/components/ui/button";
 import AvatarForm from "./avatar-form";
 import { ProfileItem } from "./profile-item-form";
@@ -13,7 +13,7 @@ export default function ProfileForm() {
     <>
       <AvatarForm avatarURL={currentUser?.avatarURL} />
       <form>
-        <Stack spacing={4}>
+        <Stack space="space-y-4">
           <ProfileItem type="text" title="name" value={currentUser?.name} />
           <ProfileItem type="email" title="email" value={currentUser?.email} />
           <div></div>
