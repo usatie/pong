@@ -27,6 +27,7 @@ import { UpdateRoomDto } from './dto/update-room.dto';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
 import { ChangeRoleGuard } from './guards/change-role.guard';
+import { GetRoomGuard } from './guards/get-room.guard';
 import { KickGuard } from './guards/kick.guard';
 import { MemberGuard } from './guards/member.guard';
 import { OwnerGuard } from './guards/owner.guard';
@@ -55,11 +56,11 @@ export class RoomController {
   }
 
   @Get(':roomId')
-  @UseGuards(MemberGuard)
+  @UseGuards(GetRoomGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
-  async findOne(@Member() member: UserOnRoomEntity) {
-    return new RoomEntity(await this.roomService.findRoom(member.roomId));
+  async findOne(@Param('roomId', ParseIntPipe) roomId: number) {
+    return new RoomEntity(await this.roomService.findRoom(roomId));
   }
 
   @Patch(':roomId')

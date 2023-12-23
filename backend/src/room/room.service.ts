@@ -23,7 +23,7 @@ export class RoomService {
   async create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
     const room = await this.prisma.room.create({
       data: {
-        name: createRoomDto.name,
+        ...createRoomDto,
         users: {
           create: [
             {
