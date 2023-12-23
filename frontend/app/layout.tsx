@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 
 import { getAccessTokenPayload } from "@/app/lib/session";
-import AuthProvider from "./client-auth-provider";
+import AuthProvider from "@/app/lib/client-auth-provider";
 
 // components
 import { ThemeProvider } from "@/components/theme-provider";
@@ -11,8 +11,8 @@ import { Toaster } from "@/components/ui/toaster";
 
 // ui
 import Nav from "@/app/ui/nav";
-import { getMe } from "./lib/actions";
-import { JwtPayload } from "./lib/client-auth";
+import { getMe } from "@/app/lib/actions";
+import { JwtPayload } from "@/app/lib/client-auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
