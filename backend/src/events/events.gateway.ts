@@ -58,16 +58,22 @@ export class EventsGateway implements OnGatewayDisconnect {
 
   // Please do not rely on client.handshake.query in handleConnection and handleDisconnect
   // as we use one connection globally in client
-  handleConnection() {}
-  handleDisconnect() {}
+  handleConnection(client: Socket) {
+    this.logger.log(`connect: ${client.id} `);
+  }
+  handleDisconnect(client: Socket) {
+    this.logger.log(`disconnect: ${client.id} `);
+  }
 
   @SubscribeMessage('join')
   async join(
     @MessageBody() { gameId, isPlayer }: { gameId: string; isPlayer: boolean },
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.log(`connect: ${client.id} `);
+    console.log('----JOIN----');
+    console.log('players: ', this.players);
 
+    this.logger.log(`join: ${client.id} `);
     // Both of viewers and players join the Socket.io room
     client.join(gameId);
 
@@ -75,7 +81,9 @@ export class EventsGateway implements OnGatewayDisconnect {
       return;
     }
 
+    console.log('players: ', this.players[gameId]);
     if (this.players[gameId] && Object.keys(this.players[gameId]).length == 2) {
+      console.log('full', client.id);
       this.logger.log(`full: ${gameId} ${client.id}`);
       client.emit('log', 'The game is full. You joined as a viewer.');
       return;
@@ -87,20 +95,29 @@ export class EventsGateway implements OnGatewayDisconnect {
       client.emit('log', 'Your friend is already here. You can start.');
     }
     this.lostPoints[client.id] = 0;
+    console.log('players: ', this.players[gameId]);
+    console.log('----END----');
     return;
   }
 
   @SubscribeMessage('leave')
-  async leave(@ConnectedSocket() client: Socket) {
-    this.logger.log(`disconnect: ${client.id} `);
-    const roomId = this.getRoom(client);
-    client.leave(roomId);
+  async leave(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() { gameId }: { gameId: string },
+  ) {
+    console.log('----LEAVE----');
+    console.log(this.players);
+    this.logger.log(`leave: ${client.id} `);
+    client.leave(gameId);
 
-    if (isPlayer(this.players, roomId, client.id)) {
-      this.broadcastToRoom(client, roomId, 'leave');
-      removePlayer(this.players, roomId, client.id);
+    if (isPlayer(this.players, gameId, client.id)) {
+      console.log('did leave');
+      this.broadcastToRoom(client, gameId, 'leave');
+      removePlayer(this.players, gameId, client.id);
       delete this.lostPoints[client.id];
+      console.log('players: ', this.players[gameId]);
     }
+    console.log('----END----');
   }
 
   @SubscribeMessage('start')
@@ -108,7 +125,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: { vx: number; vy: number },
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    const roomId = client.handshake.query['game_id'] as string;
+    const roomId = this.getRoom(client);
     if (!isPlayer(this.players, roomId, client.id)) return;
 
     this.logger.log(`start: ${JSON.stringify(data)} ${client.id}`);
@@ -121,7 +138,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    const roomId = client.handshake.query['game_id'] as string;
+    const roomId = this.getRoom(client);
     if (!isPlayer(this.players, roomId, client.id)) return;
 
     this.logger.log(`left: ${client.id}`);
@@ -137,7 +154,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    const roomId = client.handshake.query['game_id'] as string;
+    const roomId = this.getRoom(client);
     if (!isPlayer(this.players, roomId, client.id)) return;
 
     this.broadcastToRooms(client, 'right', {
@@ -151,7 +168,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    const roomId = client.handshake.query['game_id'] as string;
+    const roomId = this.getRoom(client);
     if (!isPlayer(this.players, roomId, client.id)) return;
 
     this.broadcastToRooms(client, 'bounce', {
@@ -165,7 +182,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<string> {
-    const roomId = client.handshake.query['game_id'] as string;
+    const roomId = this.getRoom(client);
     if (!isPlayer(this.players, roomId, client.id)) return;
 
     this.broadcastToRooms(client, 'collide', {

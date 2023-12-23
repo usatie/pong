@@ -134,9 +134,7 @@ function PongBoard({ id }: PongBoardProps) {
   }, [getGame]);
 
   useEffect(() => {
-    const socket = io("/pong", {
-      query: { game_id: id, is_player: userMode === "player" },
-    });
+    const socket = io("/pong");
     socketRef.current = socket;
 
     const game = getGame();
@@ -155,6 +153,7 @@ function PongBoard({ id }: PongBoardProps) {
       console.log(`Connected: ${socketRef.current?.id}`);
       const log = "Connected to server";
       setLogs((logs) => [...logs, log]);
+      socket.emit("join", { gameId: id, isPlayer: userMode === "player" });
     };
 
     const handleStart = (data: { vx: number; vy: number }) => {
@@ -239,6 +238,8 @@ function PongBoard({ id }: PongBoardProps) {
     socket.on("finish", handleFinish);
 
     return () => {
+      console.log("running cleanup...");
+      socket.emit("leave", { gameId: id });
       socket.off("connect", handleConnect);
       socket.off("start", handleStart);
       socket.off("right", handleRight);
