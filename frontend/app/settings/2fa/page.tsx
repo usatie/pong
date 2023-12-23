@@ -3,7 +3,7 @@ import { getAccessTokenPayload } from "@/app/lib/session";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { toDataURL } from "qrcode";
-import TwoFactorAuthVerifyForm from "./verify-form";
+import TwoFactorAuthVerifyForm from "@/app/ui/auth/verify-form";
 
 export default async function TwoFactorAuthPage() {
   const payload = await getAccessTokenPayload({ ignoreExpiration: true });
