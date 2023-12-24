@@ -460,6 +460,49 @@ describe('RoomController (e2e)', () => {
     });
   });
 
+  describe('GET /room (Get All Rooms)', () => {
+    const testGetRooms = (accessToken: string) =>
+      app
+        .getRooms(accessToken)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toBeInstanceOf(Array);
+          res.body.forEach(expectRoom);
+          expect(res.body).toContainEqual(publicRoom);
+          expect(res.body).toContainEqual(protectedRoom);
+        });
+    describe('owner', () => {
+      it('should get all rooms (200 OK)', async () => {
+        await testGetRooms(owner.accessToken).expect((res) => {
+          expect(res.body).toContainEqual(privateRoom);
+        });
+      });
+    });
+    describe('admin', () => {
+      it('should get all rooms (200 OK)', async () => {
+        await testGetRooms(admin.accessToken).expect((res) => {
+          expect(res.body).toContainEqual(privateRoom);
+        });
+      });
+    });
+    describe('member', () => {
+      it('should get all rooms (200 OK)', async () => {
+        await testGetRooms(member.accessToken).expect((res) => {
+          expect(res.body).toContainEqual(privateRoom);
+        });
+      });
+    });
+    describe('non-member', () => {
+      it('should not get private rooms (200 OK)', async () => {
+        await testGetRooms(notMember.accessToken).expect((res) => {
+          const expectNotPrivate = (room: RoomEntity) =>
+            expect(room.accessLevel).not.toEqual('PRIVATE');
+          res.body.forEach(expectNotPrivate);
+        });
+      });
+    });
+  });
+
   // name: room name
   // access_level : public, private, protected
   // password?
@@ -513,22 +556,6 @@ describe('RoomController (e2e)', () => {
     });
 
     it('invalid roomId should return 404 Not Found', async () => {});
-  });
-
-  describe('GET /room (Get All Rooms)', () => {
-    it('anyone should get all rooms (200 OK)', async () => {
-      for (const user of [owner, admin, member, notMember]) {
-        await app
-          .getRooms(user.accessToken)
-          .expect(200)
-          .then((res) => {
-            expect(res.body).toBeInstanceOf(Array);
-            res.body.forEach(expectRoom);
-          });
-      }
-    });
-
-    it('should not get private rooms which a user is not in (200 OK)', async () => {});
   });
 
   const testRoomSetup = async (): Promise<number> => {
