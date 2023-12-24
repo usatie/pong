@@ -86,7 +86,7 @@ export class TestApp {
 
   kickFromRoom = (roomId: number, userId: number, accessToken: string) =>
     request(this.app.getHttpServer())
-      .delete(`/room/${roomId}/${userId}`)
+      .delete(`/room/${roomId}/kick/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
   getRoom = (id: number, accessToken: string) =>

@@ -133,16 +133,25 @@ export class RoomController {
     return this.roomService.findUserOnRoom(member.roomId, userId);
   }
 
-  @Delete(':roomId/:userId')
+  @Delete(':roomId/leave')
   @HttpCode(204)
-  @UseGuards(MemberGuard, KickGuard)
+  @UseGuards(MemberGuard)
   @ApiBearerAuth()
   @ApiNoContentResponse()
-  deleteUserOnRoom(
+  leaveUserOnRoom(@Member() member: UserOnRoomEntity) {
+    return this.roomService.kickUser(member.roomId, member.userId);
+  }
+
+  @Delete(':roomId/kick/:userId')
+  @HttpCode(204)
+  @UseGuards(AdminGuard, KickGuard)
+  @ApiBearerAuth()
+  @ApiNoContentResponse()
+  kickUserOnRoom(
+    @Param('roomId', ParseIntPipe) roomId: number,
     @Param('userId', ParseIntPipe) userId: number,
-    @Member() member: UserOnRoomEntity,
   ) {
-    return this.roomService.kickUser(member.roomId, userId);
+    return this.roomService.kickUser(roomId, userId);
   }
 
   @Patch(':roomId/:userId')
