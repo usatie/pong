@@ -6,6 +6,7 @@ import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/user/dto/update-user.dto';
+import { UserEntity } from 'src/user/entities/user.entity';
 import * as request from 'supertest';
 
 export class TestApp {
@@ -276,7 +277,9 @@ export class TestApp {
       .set('Authorization', `Bearer ${accessToken}`);
 
   /* Utility */
-  createAndLoginUser = async (dto: CreateUserDto) => {
+  createAndLoginUser = async (
+    dto: CreateUserDto,
+  ): Promise<UserEntityWithAccessToken> => {
     const res = await this.createUser(dto).expect(201);
     const loginDto: LoginDto = {
       email: dto.email,
@@ -288,3 +291,5 @@ export class TestApp {
     return user;
   };
 }
+
+export type UserEntityWithAccessToken = UserEntity & { accessToken: string };

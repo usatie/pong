@@ -1,9 +1,11 @@
 import { Role } from '@prisma/client';
+import { CreateRoomDto } from 'src/room/dto/create-room.dto';
 import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
 import { RoomEntity } from 'src/room/entities/room.entity';
+import supertest from 'supertest';
 import { constants } from './constants';
-import { TestApp } from './utils/app';
+import { TestApp, UserEntityWithAccessToken } from './utils/app';
 import { initializeApp } from './utils/initialize';
 import { expectRoom } from './utils/matcher';
 
@@ -14,31 +16,44 @@ describe('RoomController (e2e)', () => {
   });
   afterAll(() => app.close());
 
-  let owner, admin, member, notMember;
+  class Ref<T> {
+    current: T;
+  }
+  let owner, admin, member, notMember: UserEntityWithAccessToken;
+  const ownerRef: Ref<UserEntityWithAccessToken> = new Ref();
+  const adminRef: Ref<UserEntityWithAccessToken> = new Ref();
+  const memberRef: Ref<UserEntityWithAccessToken> = new Ref();
+  const nonMemberRef: Ref<UserEntityWithAccessToken> = new Ref();
 
-  let publicRoom: RoomEntity;
-  let privateRoom: RoomEntity;
-  let protectedRoom: RoomEntity;
+  let publicRoom, privateRoom, protectedRoom: RoomEntity;
+  const publicRoomRef: Ref<RoomEntity> = new Ref();
+  const privateRoomRef: Ref<RoomEntity> = new Ref();
+  const protectedRoomRef: Ref<RoomEntity> = new Ref();
   beforeAll(async () => {
     // Owner
     {
       owner = await app.createAndLoginUser(constants.user.owner);
+      ownerRef.current = owner;
       publicRoom = await app
         .createRoom(constants.room.publicRoom, owner.accessToken)
         .expect(201)
         .then((res) => res.body);
+      publicRoomRef.current = publicRoom;
       privateRoom = await app
         .createRoom(constants.room.privateRoom, owner.accessToken)
         .expect(201)
         .then((res) => res.body);
+      privateRoomRef.current = privateRoom;
       protectedRoom = await app
         .createRoom(constants.room.protectedRoom, owner.accessToken)
         .expect(201)
         .then((res) => res.body);
+      protectedRoomRef.current = protectedRoom;
     }
     // Member
     {
       member = await app.createAndLoginUser(constants.user.member);
+      memberRef.current = member;
       await app.enterRoom(publicRoom.id, member.accessToken).expect(201);
       await app
         .inviteRoom(privateRoom.id, member.id, owner.accessToken)
@@ -52,6 +67,7 @@ describe('RoomController (e2e)', () => {
     // Admin
     {
       admin = await app.createAndLoginUser(constants.user.admin);
+      adminRef.current = admin;
       await app.enterRoom(publicRoom.id, admin.accessToken).expect(201);
       await app
         .inviteRoom(privateRoom.id, admin.id, owner.accessToken)
@@ -89,6 +105,7 @@ describe('RoomController (e2e)', () => {
     // Not Member
     {
       notMember = await app.createAndLoginUser(constants.user.notMember);
+      nonMemberRef.current = notMember;
     }
   });
 
@@ -503,39 +520,96 @@ describe('RoomController (e2e)', () => {
     });
   });
 
-  // name: room name
-  // access_level : public, private, protected
-  // password?
   describe('PATCH /room/:id (Update Room)', () => {
-    describe('Owner should update room', () => {
-      it("Public room's name should be updated (200 OK)", async () => {
-        const dto: UpdateRoomDto = { name: 'new_name' };
-        const expected = { ...publicRoom, ...dto };
-        await app
-          .updateRoom(publicRoom.id, dto, owner.accessToken)
-          .expect(200)
-          .expect(expected);
+    const shouldNotUpdateAny =
+      (update: (dto: UpdateRoomDto) => supertest.Test) => () => {
+        it('should not update name (403 Forbidden)', async () => {
+          await update({ name: 'new_name' }).expect(403);
+        });
+        it('should not update access_level (403 Forbidden)', async () => {
+          await update({ accessLevel: 'PUBLIC' }).expect(403);
+          await update({ accessLevel: 'PRIVATE' }).expect(403);
+          await update({ accessLevel: 'PROTECTED' }).expect(403);
+          await update({
+            accessLevel: 'PROTECTED',
+            password: '12345678',
+          }).expect(403);
+        });
+        it('should not update password (403 Forbidden)', async () => {
+          await update({ password: '12345678' }).expect(403);
+        });
+      };
+    const updater =
+      (user: Ref<UserEntityWithAccessToken>, room: Ref<RoomEntity>) =>
+      (dto: UpdateRoomDto) =>
+        app.updateRoom(room.current.id, dto, user.current.accessToken);
+    const setupRoom = async (dto: CreateRoomDto) => {
+      const room = await app
+        .createRoom(dto, owner.accessToken)
+        .expect(201)
+        .then((res) => res.body);
+      await app.inviteRoom(room.id, member.id, owner.accessToken);
+      await app.inviteRoom(room.id, admin.id, owner.accessToken);
+      await app.updateUserOnRoom(
+        room.id,
+        admin.id,
+        { role: Role.ADMINISTRATOR },
+        owner.accessToken,
+      );
+      return room;
+    };
+
+    const testUpdateRoom = (dto: CreateRoomDto) => () => {
+      let _room: RoomEntity;
+      let _roomRef: Ref<RoomEntity> = new Ref();
+      beforeEach(async () => {
+        _room = await setupRoom(dto);
+        _roomRef.current = _room;
       });
+      afterEach(async () => {
+        await app.deleteRoom(_room.id, owner.accessToken);
+      });
+      describe('owner', () => {
+        const update = updater(ownerRef, _roomRef);
+        it('should update name (200 OK)', async () => {
+          await update({ name: 'new_name' }).expect(200);
+        });
+        it('should update access_level to public (200 OK)', async () => {
+          await update({ accessLevel: 'PUBLIC' }).expect(200);
+        });
+        it('should update access_level to private (200 OK)', async () => {
+          await update({ accessLevel: 'PRIVATE' }).expect(200);
+        });
+        it('should update access_level to protected (200 OK)', async () => {
+          await update({
+            accessLevel: 'PROTECTED',
+            password: '12345678',
+          }).expect(200);
+        });
+        if (dto.accessLevel === 'PROTECTED') {
+          it('should update password (200 Bad Request)', async () => {
+            await update({ password: '12345678' }).expect(200);
+          });
+        } else {
+          it('should not update access level to protected without password (400 Bad Request)', async () => {
+            await update({ accessLevel: 'PROTECTED' }).expect(400);
+          });
+          it('should not update password (400 Bad Request)', async () => {
+            await update({ password: '12345678' }).expect(400);
+          });
+        }
+      });
+      describe('admin', shouldNotUpdateAny(updater(adminRef, _roomRef)));
+      describe('member', shouldNotUpdateAny(updater(memberRef, _roomRef)));
+      describe(
+        'non-member',
+        shouldNotUpdateAny(updater(nonMemberRef, _roomRef)),
+      );
+    };
 
-      // name
-      it("Any room's name should be updated (200 OK)", async () => {});
-      // Password
-      it("Protected room's password should be changed (200 OK)", async () => {});
-      it("Protected room's password should not be removed (400)", async () => {});
-      it("Private room's password should not be changed (400)", async () => {});
-      it("Public room's password should not be changed (400)", async () => {});
-      // access_level
-      it("Any room's access_level should be changed (200 OK)", async () => {});
-      it('access_level should not be changed to protected without password (400)', async () => {});
-      it('access_level should not be changed to public/private with password (400)', async () => {});
-    });
-
-    it('admin/member/notMember should not update room (403 Forbidden)', async () => {
-      const dto: UpdateRoomDto = { name: 'new_name' };
-      for (const user of [admin, member, notMember]) {
-        await app.updateRoom(publicRoom.id, dto, user.accessToken).expect(403);
-      }
-    });
+    describe('PUBLIC room', testUpdateRoom(constants.room.publicRoom));
+    describe('PRIVATE room', testUpdateRoom(constants.room.privateRoom));
+    describe('PROTECTED room', testUpdateRoom(constants.room.protectedRoom));
 
     it('invalid roomId should return 404 Not Found', async () => {});
   });
