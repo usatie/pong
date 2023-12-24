@@ -52,8 +52,8 @@ export class RoomController {
 
   @Get()
   @ApiOkResponse({ type: RoomEntity, isArray: true })
-  async findAll() {
-    const rooms = await this.roomService.findAllRoom();
+  async findAll(@CurrentUser() user: User) {
+    const rooms = await this.roomService.findAllRoom(user.id);
     return rooms.map((room) => new RoomEntity(room));
   }
 

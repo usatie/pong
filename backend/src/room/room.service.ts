@@ -42,8 +42,22 @@ export class RoomService {
     return room;
   }
 
-  findAllRoom(): Promise<RoomEntity[]> {
-    return this.prisma.room.findMany();
+  findAllRoom(userId: number): Promise<RoomEntity[]> {
+    return this.prisma.room.findMany({
+      where: {
+        OR: [
+          { accessLevel: 'PUBLIC' },
+          { accessLevel: 'PROTECTED' },
+          {
+            users: {
+              some: {
+                userId: userId,
+              },
+            },
+          },
+        ],
+      },
+    });
   }
 
   findRoom(id: number) {
