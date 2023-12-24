@@ -520,6 +520,22 @@ describe('RoomController (e2e)', () => {
     });
   });
 
+  const setupRoom = async (dto: CreateRoomDto) => {
+    const room = await app
+      .createRoom(dto, owner.accessToken)
+      .expect(201)
+      .then((res) => res.body);
+    await app.inviteRoom(room.id, member.id, owner.accessToken);
+    await app.inviteRoom(room.id, admin.id, owner.accessToken);
+    await app.updateUserOnRoom(
+      room.id,
+      admin.id,
+      { role: Role.ADMINISTRATOR },
+      owner.accessToken,
+    );
+    return room;
+  };
+
   describe('PATCH /room/:id (Update Room)', () => {
     const shouldNotUpdateAny =
       (update: (dto: UpdateRoomDto) => supertest.Test) => () => {
@@ -543,22 +559,6 @@ describe('RoomController (e2e)', () => {
       (user: Ref<UserEntityWithAccessToken>, room: Ref<RoomEntity>) =>
       (dto: UpdateRoomDto) =>
         app.updateRoom(room.current.id, dto, user.current.accessToken);
-    const setupRoom = async (dto: CreateRoomDto) => {
-      const room = await app
-        .createRoom(dto, owner.accessToken)
-        .expect(201)
-        .then((res) => res.body);
-      await app.inviteRoom(room.id, member.id, owner.accessToken);
-      await app.inviteRoom(room.id, admin.id, owner.accessToken);
-      await app.updateUserOnRoom(
-        room.id,
-        admin.id,
-        { role: Role.ADMINISTRATOR },
-        owner.accessToken,
-      );
-      return room;
-    };
-
     const testUpdateRoom = (dto: CreateRoomDto) => () => {
       let _room: RoomEntity;
       let _roomRef: Ref<RoomEntity> = new Ref();
@@ -615,18 +615,75 @@ describe('RoomController (e2e)', () => {
   });
 
   describe('DELETE /room/:id (Delete Room)', () => {
-    it('owner should delete the room (204 No Content)', async () => {
-      const testRoom = await app
-        .createRoom(constants.room.publicRoom, owner.accessToken)
-        .expect(201)
-        .then((res): RoomEntity => res.body);
-      await app.deleteRoom(testRoom.id, owner.accessToken).expect(204);
+    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    const setupRooms = async () => {
+      _publicRoom = await setupRoom(constants.room.publicRoom);
+      _privateRoom = await setupRoom(constants.room.privateRoom);
+      _protectedRoom = await setupRoom(constants.room.protectedRoom);
+    };
+    const teardownRooms = async () => {
+      await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      await app.deleteRoom(_privateRoom.id, owner.accessToken);
+      await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+    };
+    describe('owner', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should delete public room (204 No Content)', async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+      });
+      test('should delete private room (204 No Content)', async () => {
+        await app.deleteRoom(_privateRoom.id, owner.accessToken).expect(204);
+      });
+      test('should delete protected room (204 No Content)', async () => {
+        await app.deleteRoom(_protectedRoom.id, owner.accessToken).expect(204);
+      });
     });
 
-    it('admin/member/notMember should not delete the room (403 Forbidden)', async () => {
-      for (const user of [admin, member, notMember]) {
-        await app.deleteRoom(publicRoom.id, user.accessToken).expect(403);
-      }
+    describe('admin', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should not delete public room (403 Forbidden)', async () => {
+        await app.deleteRoom(_publicRoom.id, admin.accessToken).expect(403);
+      });
+      test('should not delete private room (403 Forbidden)', async () => {
+        await app.deleteRoom(_privateRoom.id, admin.accessToken).expect(403);
+      });
+      test('should not delete protected room (403 Forbidden)', async () => {
+        await app.deleteRoom(_protectedRoom.id, admin.accessToken).expect(403);
+      });
+    });
+
+    describe('member', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should not delete public room (403 Forbidden)', async () => {
+        await app.deleteRoom(_publicRoom.id, member.accessToken).expect(403);
+      });
+      test('should not delete private room (403 Forbidden)', async () => {
+        await app.deleteRoom(_privateRoom.id, member.accessToken).expect(403);
+      });
+      test('should not delete protected room (403 Forbidden)', async () => {
+        await app.deleteRoom(_protectedRoom.id, member.accessToken).expect(403);
+      });
+    });
+
+    describe('non-member', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should not delete public room (403 Forbidden)', async () => {
+        await app.deleteRoom(_publicRoom.id, notMember.accessToken).expect(403);
+      });
+      test('should not delete private room (403 Forbidden)', async () => {
+        await app
+          .deleteRoom(_privateRoom.id, notMember.accessToken)
+          .expect(403);
+      });
+      test('should not delete protected room (403 Forbidden)', async () => {
+        await app
+          .deleteRoom(_protectedRoom.id, notMember.accessToken)
+          .expect(403);
+      });
     });
 
     it('invalid roomId should return 404 Not Found', async () => {});
