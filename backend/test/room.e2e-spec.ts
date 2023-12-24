@@ -350,6 +350,116 @@ describe('RoomController (e2e)', () => {
     it('Anyone should not enter invalid room (404 Not Found)', async () => {});
   });
 
+  describe('POST /room/:roomId/invite/:userId (Invite Room)', () => {
+    describe('PUBLIC room', () => {
+      afterEach(async () => {
+        await app.leaveRoom(publicRoom.id, notMember.id, notMember.accessToken);
+      });
+      describe('owner', () => {
+        it('should invite non-member (201 Created)', async () => {
+          await app
+            .inviteRoom(publicRoom.id, notMember.id, owner.accessToken)
+            .expect(201);
+        });
+      });
+      describe('admin', () => {
+        it('should invite non-member (201 Created)', async () => {
+          await app
+            .inviteRoom(publicRoom.id, notMember.id, admin.accessToken)
+            .expect(201);
+        });
+      });
+      describe('member', () => {
+        it('should not invite anyone (403 Forbidden)', async () => {
+          await app
+            .inviteRoom(publicRoom.id, notMember.id, member.accessToken)
+            .expect(403);
+        });
+      });
+      describe('non-member', () => {
+        it('should not invite anyone (403 Forbidden)', async () => {
+          await app
+            .inviteRoom(publicRoom.id, notMember.id, notMember.accessToken)
+            .expect(403);
+        });
+      });
+    });
+    describe('PRIVATE room', () => {
+      afterEach(async () => {
+        await app.leaveRoom(
+          privateRoom.id,
+          notMember.id,
+          notMember.accessToken,
+        );
+      });
+      describe('owner', () => {
+        it('should invite non-member (201 Created)', async () => {
+          await app
+            .inviteRoom(privateRoom.id, notMember.id, owner.accessToken)
+            .expect(201);
+        });
+      });
+      describe('admin', () => {
+        it('should invite non-member (201 Created)', async () => {
+          await app
+            .inviteRoom(privateRoom.id, notMember.id, admin.accessToken)
+            .expect(201);
+        });
+      });
+      describe('member', () => {
+        it('should not invite anyone (403 Forbidden)', async () => {
+          await app
+            .inviteRoom(privateRoom.id, notMember.id, member.accessToken)
+            .expect(403);
+        });
+      });
+      describe('non-member', () => {
+        it('should not invite anyone (403 Forbidden)', async () => {
+          await app
+            .inviteRoom(privateRoom.id, notMember.id, notMember.accessToken)
+            .expect(403);
+        });
+      });
+    });
+    describe('PROTECTED room', () => {
+      afterEach(async () => {
+        await app.leaveRoom(
+          protectedRoom.id,
+          notMember.id,
+          notMember.accessToken,
+        );
+      });
+      describe('owner', () => {
+        it('should invite non-member (201 Created)', async () => {
+          await app
+            .inviteRoom(protectedRoom.id, notMember.id, owner.accessToken)
+            .expect(201);
+        });
+      });
+      describe('admin', () => {
+        it('should invite non-member (201 Created)', async () => {
+          await app
+            .inviteRoom(protectedRoom.id, notMember.id, admin.accessToken)
+            .expect(201);
+        });
+      });
+      describe('member', () => {
+        it('should not invite anyone (403 Forbidden)', async () => {
+          await app
+            .inviteRoom(protectedRoom.id, notMember.id, member.accessToken)
+            .expect(403);
+        });
+      });
+      describe('non-member', () => {
+        it('should not invite anyone (403 Forbidden)', async () => {
+          await app
+            .inviteRoom(protectedRoom.id, notMember.id, notMember.accessToken)
+            .expect(403);
+        });
+      });
+    });
+  });
+
   // name: room name
   // access_level : public, private, protected
   // password?
