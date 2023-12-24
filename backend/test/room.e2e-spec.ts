@@ -1,6 +1,5 @@
 import { Role } from '@prisma/client';
 import { CreateRoomDto } from 'src/room/dto/create-room.dto';
-import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
 import { RoomEntity } from 'src/room/entities/room.entity';
 import supertest from 'supertest';
@@ -677,7 +676,6 @@ describe('RoomController (e2e)', () => {
     it('invalid roomId should return 404 Not Found', async () => {});
   });
 
-  // leave / kick
   describe('DELETE /room/:id/:userId (Leave)', () => {
     let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
     const setupRooms = async () => {
@@ -748,6 +746,7 @@ describe('RoomController (e2e)', () => {
       });
     });
   });
+
   describe('DELETE /room/:id/kick/:userId (Kick)', () => {
     let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
     const setupRooms = async () => {
@@ -838,23 +837,324 @@ describe('RoomController (e2e)', () => {
       });
     });
   });
-  const testRoomSetup = async (): Promise<number> => {
-    // Owner
-    const roomId = await app
-      .createRoom(constants.room.publicRoom, owner.accessToken)
-      .expect(201)
-      .then((res) => res.body.id);
-    // Admin
-    await app.enterRoom(roomId, admin.accessToken).expect(201);
-    const role = Role.ADMINISTRATOR;
-    await app
-      .updateUserOnRoom(roomId, admin.id, { role }, owner.accessToken)
-      .expect(200);
-    // Member
-    await app.enterRoom(roomId, member.accessToken).expect(201);
-    // Not Member
-    return roomId;
-  };
+
+  describe('PATCH /room/:id/:userId (Update Role)', () => {
+    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    const setupRooms = async () => {
+      _publicRoom = await setupRoom(constants.room.publicRoom);
+      _privateRoom = await setupRoom(constants.room.privateRoom);
+      _protectedRoom = await setupRoom(constants.room.protectedRoom);
+    };
+    const teardownRooms = async () => {
+      await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      await app.deleteRoom(_privateRoom.id, owner.accessToken);
+      await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+    };
+    beforeEach(setupRooms);
+    afterEach(teardownRooms);
+    describe('Owner', () => {
+      describe('Target: Owner', () => {
+        it('should not update role to admin (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              owner.id,
+              { role: Role.ADMINISTRATOR },
+              owner.accessToken,
+            )
+            .expect(403);
+        });
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              owner.id,
+              { role: Role.MEMBER },
+              owner.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Admin', () => {
+        it('should update role to member (200 OK)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              admin.id,
+              { role: Role.MEMBER },
+              owner.accessToken,
+            )
+            .expect(200);
+        });
+        it('should not update role to owner (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              admin.id,
+              { role: Role.OWNER },
+              owner.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Member', () => {
+        it('should update role to admin (200 OK)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              member.id,
+              { role: Role.ADMINISTRATOR },
+              owner.accessToken,
+            )
+            .expect(200);
+        });
+        it('should not update role to owner (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              member.id,
+              { role: Role.OWNER },
+              owner.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Non-member', () => {
+        it('should not update role to admin (404 Not Found)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              notMember.id,
+              { role: Role.ADMINISTRATOR },
+              owner.accessToken,
+            )
+            .expect(404);
+        });
+        it('should not update role to member (404 Not Found)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              notMember.id,
+              { role: Role.MEMBER },
+              owner.accessToken,
+            )
+            .expect(404);
+        });
+        it('should not update role to owner (404 Not Found)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              notMember.id,
+              { role: Role.OWNER },
+              owner.accessToken,
+            )
+            .expect(404);
+        });
+      });
+    });
+    describe('Admin', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      describe('Target: Owner', () => {
+        it('should not update role to admin (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              owner.id,
+              { role: Role.ADMINISTRATOR },
+              admin.accessToken,
+            )
+            .expect(403);
+        });
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              owner.id,
+              { role: Role.MEMBER },
+              admin.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Admin', () => {
+        it('should update role to member (200 OK)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              admin.id,
+              { role: Role.MEMBER },
+              admin.accessToken,
+            )
+            .expect(200);
+        });
+        it('should not update role to owner (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              admin.id,
+              { role: Role.OWNER },
+              admin.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Member', () => {
+        it('should update role to admin (200 OK)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              member.id,
+              { role: Role.ADMINISTRATOR },
+              admin.accessToken,
+            )
+            .expect(200);
+        });
+        it('should not update role to owner (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              member.id,
+              { role: Role.OWNER },
+              admin.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Non-member', () => {
+        it('should not update role to admin (404 Not Found)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              notMember.id,
+              { role: Role.ADMINISTRATOR },
+              admin.accessToken,
+            )
+            .expect(404);
+        });
+        it('should not update role to member (404 Not Found)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              notMember.id,
+              { role: Role.MEMBER },
+              admin.accessToken,
+            )
+            .expect(404);
+        });
+        it('should not update role to owner (404 Not Found)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              notMember.id,
+              { role: Role.OWNER },
+              admin.accessToken,
+            )
+            .expect(404);
+        });
+      });
+    });
+    describe('Member', () => {
+      describe('Target: Owner', () => {
+        it('should not update role to admin (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              owner.id,
+              { role: Role.ADMINISTRATOR },
+              member.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Admin', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              admin.id,
+              { role: Role.MEMBER },
+              member.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Member', () => {
+        it('should not update role to admin (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              member.id,
+              { role: Role.ADMINISTRATOR },
+              member.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Non-member', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              notMember.id,
+              { role: Role.MEMBER },
+              member.accessToken,
+            )
+            .expect(403);
+        });
+      });
+    });
+    describe('Non-member', () => {
+      describe('Target: Owner', () => {
+        it('should not update role to admin (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              owner.id,
+              { role: Role.ADMINISTRATOR },
+              notMember.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Admin', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              admin.id,
+              { role: Role.MEMBER },
+              notMember.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Member', () => {
+        it('should not update role to admin (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              member.id,
+              { role: Role.ADMINISTRATOR },
+              notMember.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: Non-member', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _publicRoom.id,
+              notMember.id,
+              { role: Role.MEMBER },
+              notMember.accessToken,
+            )
+            .expect(403);
+        });
+      });
+    });
+  });
 
   describe('POST /room/:id/bans/:userId (Ban user)', () => {
     it('owner should ban anyone in the room', async () => {});
@@ -901,81 +1201,5 @@ describe('RoomController (e2e)', () => {
     it('notMember should not unmute anyone', async () => {});
 
     it('unmuted user should be able to speak', async () => {});
-  });
-
-  describe('PATCH /room/:id/:userId (Modify user role in Room)', () => {
-    let testRoomId: number;
-    const toMemberDto: UpdateUserOnRoomDto = { role: Role.MEMBER };
-    const toAdminDto: UpdateUserOnRoomDto = { role: Role.ADMINISTRATOR };
-    const toOwnerDto: UpdateUserOnRoomDto = { role: Role.OWNER };
-
-    beforeEach(async () => {
-      testRoomId = await testRoomSetup();
-    });
-    afterEach(async () => {
-      await app.deleteRoom(testRoomId, owner.accessToken);
-    });
-
-    it('owner should modify member/admin role', async () => {
-      await app
-        .updateUserOnRoom(testRoomId, member.id, toAdminDto, owner.accessToken)
-        .expect(200);
-      await app
-        .updateUserOnRoom(testRoomId, admin.id, toMemberDto, owner.accessToken)
-        .expect(200);
-    });
-    it('admin should modify admin/member role', async () => {
-      await app
-        .updateUserOnRoom(testRoomId, member.id, toAdminDto, admin.accessToken)
-        .expect(200);
-      await app
-        .updateUserOnRoom(testRoomId, admin.id, toMemberDto, admin.accessToken)
-        .expect(200);
-    });
-    it("member should not modify anyone's role", async () => {
-      await app
-        .updateUserOnRoom(
-          testRoomId,
-          member.id,
-          toMemberDto,
-          member.accessToken,
-        )
-        .expect(403);
-    });
-    it("admin should not modify user's role to owner", async () => {
-      /* TODO */
-    });
-    it("admin should not modify user's role to owner", async () => {
-      /* TODO */
-    });
-    it("admin should not modify user's role to owner", async () => {
-      /* TODO */
-    });
-    it("admin should not modify user's role to owner", async () => {
-      /* TODO */
-    });
-    it("admin should not modify user's role to owner", async () => {
-      /* TODO */
-    });
-    it("admin should not modify owner's role", async () => {
-      await app
-        .updateUserOnRoom(testRoomId, owner.id, toAdminDto, admin.accessToken)
-        .expect(403);
-      await app
-        .updateUserOnRoom(testRoomId, owner.id, toMemberDto, admin.accessToken)
-        .expect(403);
-      // from admin to member
-      await app
-        .updateUserOnRoom(testRoomId, member.id, toOwnerDto, admin.accessToken)
-        .expect(403);
-      // from member to admin
-      await app
-        .updateUserOnRoom(testRoomId, admin.id, toMemberDto, member.accessToken)
-        .expect(403);
-      // from member to owner
-      await app
-        .updateUserOnRoom(testRoomId, owner.id, toMemberDto, member.accessToken)
-        .expect(403);
-    });
   });
 });
