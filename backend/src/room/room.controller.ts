@@ -26,6 +26,7 @@ import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
+import { AdminGuard } from './guards/admin.guard';
 import { ChangeRoleGuard } from './guards/change-role.guard';
 import { EnterRoomGuard } from './guards/enter-room.guard';
 import { GetRoomGuard } from './guards/get-room.guard';
@@ -102,6 +103,7 @@ export class RoomController {
 
   // TODO: Implement AdminGuard
   @Post(':roomId/invite/:userId')
+  @UseGuards(AdminGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   invite(
