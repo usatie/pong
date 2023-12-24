@@ -33,6 +33,7 @@ import { GetRoomGuard } from './guards/get-room.guard';
 import { KickGuard } from './guards/kick.guard';
 import { MemberGuard } from './guards/member.guard';
 import { OwnerGuard } from './guards/owner.guard';
+import { UpdateRoomGuard } from './guards/update-room.guard';
 import { RoomService } from './room.service';
 
 @Controller('room')
@@ -66,7 +67,7 @@ export class RoomController {
   }
 
   @Patch(':roomId')
-  @UseGuards(OwnerGuard)
+  @UseGuards(OwnerGuard, UpdateRoomGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity })
   async update(
