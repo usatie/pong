@@ -36,8 +36,8 @@ export class EnterRoomGuard implements CanActivate {
           throw new ForbiddenException('invalid password');
         }
         return true;
-      case 'PRIVATE': // PRIVATE rooms are not accessible to anyone
-        return true; // TODO: implement this
+      case 'PRIVATE': // PRIVATE rooms are invite only
+        return false;
     }
   }
 }

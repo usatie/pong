@@ -73,6 +73,11 @@ export class TestApp {
       .set('Authorization', `Bearer ${accessToken}`)
       .send(enterRoomDto);
 
+  inviteRoom = (roomId: number, userId: number, accessToken: string) =>
+    request(this.app.getHttpServer())
+      .post(`/room/${roomId}/invite/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
   leaveRoom = (roomId: number, userId: number, accessToken: string) =>
     request(this.app.getHttpServer())
       .delete(`/room/${roomId}/${userId}`)

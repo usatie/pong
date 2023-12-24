@@ -92,12 +92,23 @@ export class RoomController {
   @Post(':roomId')
   @UseGuards(EnterRoomGuard)
   @ApiBearerAuth()
-  @ApiOkResponse({ type: RoomEntity })
+  @ApiOkResponse({ type: UserOnRoomEntity })
   enterRoom(
     @Param('roomId', ParseIntPipe) roomId: number,
     @CurrentUser() user: User,
   ) {
     return this.roomService.enterRoom(roomId, user);
+  }
+
+  // TODO: Implement AdminGuard
+  @Post(':roomId/invite/:userId')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: UserOnRoomEntity })
+  invite(
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.roomService.inviteUser(roomId, userId);
   }
 
   @Get(':roomId/messages')

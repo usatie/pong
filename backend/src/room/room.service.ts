@@ -117,6 +117,22 @@ export class RoomService {
     return userOnRoom;
   }
 
+  async inviteUser(id: number, userId: number): Promise<UserOnRoomEntity> {
+    const userOnRoom = await this.prisma.userOnRoom.create({
+      data: {
+        roomId: id,
+        userId: userId,
+        role: Role.MEMBER,
+      },
+    });
+    const event: RoomEnteredEvent = {
+      roomId: id,
+      userId: userId,
+    };
+    this.eventEmitter.emit('room.enter', event);
+    return userOnRoom;
+  }
+
   findAllUserOnRoom(id: number): Promise<UserOnRoomEntity[]> {
     return this.prisma.userOnRoom.findMany({
       where: { roomId: id },
