@@ -155,16 +155,16 @@ export class RoomController {
   }
 
   @Patch(':roomId/:userId')
-  @UseGuards(MemberGuard, ChangeRoleGuard)
+  @UseGuards(AdminGuard, ChangeRoleGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserOnRoomEntity })
   updateUserOnRoom(
+    @Param('roomId', ParseIntPipe) roomId: number,
     @Param('userId', ParseIntPipe) userId: number,
     @Body() updateUserOnRoomDto: UpdateUserOnRoomDto,
-    @Member() member: UserOnRoomEntity,
   ) {
     return this.roomService.updateUserOnRoom(
-      member.roomId,
+      roomId,
       userId,
       updateUserOnRoomDto,
     );
