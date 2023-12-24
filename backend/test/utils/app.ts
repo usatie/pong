@@ -79,9 +79,9 @@ export class TestApp {
       .post(`/room/${roomId}/invite/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
-  leaveRoom = (roomId: number, userId: number, accessToken: string) =>
+  leaveRoom = (roomId: number, accessToken: string) =>
     request(this.app.getHttpServer())
-      .delete(`/room/${roomId}/${userId}`)
+      .delete(`/room/${roomId}/leave`)
       .set('Authorization', `Bearer ${accessToken}`);
 
   kickFromRoom = (roomId: number, userId: number, accessToken: string) =>

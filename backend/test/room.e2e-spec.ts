@@ -250,12 +250,8 @@ describe('RoomController (e2e)', () => {
 
   describe('POST /room/:id (Enter Room)', () => {
     afterAll(async () => {
-      await app.leaveRoom(publicRoom.id, notMember.id, notMember.accessToken);
-      await app.leaveRoom(
-        protectedRoom.id,
-        notMember.id,
-        notMember.accessToken,
-      );
+      await app.leaveRoom(publicRoom.id, notMember.accessToken);
+      await app.leaveRoom(protectedRoom.id, notMember.accessToken);
     });
 
     describe('PUBLIC room', () => {
@@ -370,7 +366,7 @@ describe('RoomController (e2e)', () => {
   describe('POST /room/:roomId/invite/:userId (Invite Room)', () => {
     describe('PUBLIC room', () => {
       afterEach(async () => {
-        await app.leaveRoom(publicRoom.id, notMember.id, notMember.accessToken);
+        await app.leaveRoom(publicRoom.id, notMember.accessToken);
       });
       describe('owner', () => {
         it('should invite non-member (201 Created)', async () => {
@@ -403,11 +399,7 @@ describe('RoomController (e2e)', () => {
     });
     describe('PRIVATE room', () => {
       afterEach(async () => {
-        await app.leaveRoom(
-          privateRoom.id,
-          notMember.id,
-          notMember.accessToken,
-        );
+        await app.leaveRoom(privateRoom.id, notMember.accessToken);
       });
       describe('owner', () => {
         it('should invite non-member (201 Created)', async () => {
@@ -440,11 +432,7 @@ describe('RoomController (e2e)', () => {
     });
     describe('PROTECTED room', () => {
       afterEach(async () => {
-        await app.leaveRoom(
-          protectedRoom.id,
-          notMember.id,
-          notMember.accessToken,
-        );
+        await app.leaveRoom(protectedRoom.id, notMember.accessToken);
       });
       describe('owner', () => {
         it('should invite non-member (201 Created)', async () => {
@@ -689,6 +677,78 @@ describe('RoomController (e2e)', () => {
     it('invalid roomId should return 404 Not Found', async () => {});
   });
 
+  // leave / kick
+  describe('DELETE /room/:id/:userId (Leave)', () => {
+    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    const setupRooms = async () => {
+      _publicRoom = await setupRoom(constants.room.publicRoom);
+      _privateRoom = await setupRoom(constants.room.privateRoom);
+      _protectedRoom = await setupRoom(constants.room.protectedRoom);
+    };
+    const teardownRooms = async () => {
+      await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      await app.deleteRoom(_privateRoom.id, owner.accessToken);
+      await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+    };
+    describe('owner', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      // TODO: What if owner leaves the room?
+      test('should leave public room (204 No Content)', async () => {
+        await app.leaveRoom(_publicRoom.id, owner.accessToken).expect(204);
+      });
+      test('should leave private room (204 No Content)', async () => {
+        await app.leaveRoom(_privateRoom.id, owner.accessToken).expect(204);
+      });
+      test('should leave protected room (204 No Content)', async () => {
+        await app.leaveRoom(_protectedRoom.id, owner.accessToken).expect(204);
+      });
+    });
+    describe('admin', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should leave public room (204 No Content)', async () => {
+        await app.leaveRoom(_publicRoom.id, admin.accessToken).expect(204);
+      });
+      test('should leave private room (204 No Content)', async () => {
+        await app.leaveRoom(_privateRoom.id, admin.accessToken).expect(204);
+      });
+      test('should leave protected room (204 No Content)', async () => {
+        await app.leaveRoom(_protectedRoom.id, admin.accessToken).expect(204);
+      });
+    });
+
+    describe('member', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should leave public room (204 No Content)', async () => {
+        await app.leaveRoom(_publicRoom.id, member.accessToken).expect(204);
+      });
+      test('should leave private room (204 No Content)', async () => {
+        await app.leaveRoom(_privateRoom.id, member.accessToken).expect(204);
+      });
+      test('should leave protected room (204 No Content)', async () => {
+        await app.leaveRoom(_protectedRoom.id, member.accessToken).expect(204);
+      });
+    });
+
+    describe('non-member', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should not leave public room which is not in (403 Forbidden)', async () => {
+        await app.leaveRoom(_publicRoom.id, notMember.accessToken).expect(403);
+      });
+      test('should not leave private room which is not in (403 Forbidden)', async () => {
+        await app.leaveRoom(_privateRoom.id, notMember.accessToken).expect(403);
+      });
+      test('should not leave protected room which is not in (403 Forbidden)', async () => {
+        await app
+          .leaveRoom(_protectedRoom.id, notMember.accessToken)
+          .expect(403);
+      });
+    });
+  });
+  describe('DELETE /room/:id/kick/:userId (Kick)', () => {});
   const testRoomSetup = async (): Promise<number> => {
     // Owner
     const roomId = await app
