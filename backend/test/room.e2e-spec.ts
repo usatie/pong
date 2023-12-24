@@ -748,7 +748,96 @@ describe('RoomController (e2e)', () => {
       });
     });
   });
-  describe('DELETE /room/:id/kick/:userId (Kick)', () => {});
+  describe('DELETE /room/:id/kick/:userId (Kick)', () => {
+    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    const setupRooms = async () => {
+      _publicRoom = await setupRoom(constants.room.publicRoom);
+      _privateRoom = await setupRoom(constants.room.privateRoom);
+      _protectedRoom = await setupRoom(constants.room.protectedRoom);
+    };
+    const teardownRooms = async () => {
+      await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      await app.deleteRoom(_privateRoom.id, owner.accessToken);
+      await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+    };
+    const kickAll = async (
+      userId: number,
+      accessToken: string,
+      status: number,
+    ) => {
+      await app
+        .kickFromRoom(_publicRoom.id, userId, accessToken)
+        .expect(status);
+      await app
+        .kickFromRoom(_privateRoom.id, userId, accessToken)
+        .expect(status);
+      await app
+        .kickFromRoom(_protectedRoom.id, userId, accessToken)
+        .expect(status);
+    };
+
+    describe('owner', () => {
+      beforeEach(setupRooms);
+      afterEach(teardownRooms);
+      it('should kick admin (204 No Content)', async () => {
+        await kickAll(admin.id, owner.accessToken, 204);
+      });
+      it('should kick member (204 No Content)', async () => {
+        await kickAll(member.id, owner.accessToken, 204);
+      });
+      it('should not kick non-member (404 Not Found)', async () => {
+        await kickAll(notMember.id, owner.accessToken, 404);
+      });
+    });
+    describe('admin', () => {
+      beforeEach(setupRooms);
+      afterEach(teardownRooms);
+      it('should not kick owner (403 Forbidden)', async () => {
+        await kickAll(owner.id, admin.accessToken, 403);
+      });
+      it('should kick admin (204 No Content)', async () => {
+        await kickAll(admin.id, admin.accessToken, 204);
+      });
+      it('should kick member (204 No Content)', async () => {
+        await kickAll(member.id, admin.accessToken, 204);
+      });
+      it('should not kick non-member (404 Not Found)', async () => {
+        await kickAll(notMember.id, admin.accessToken, 404);
+      });
+    });
+    describe('member', () => {
+      beforeEach(setupRooms);
+      afterEach(teardownRooms);
+      it('should not kick owner (403 Forbidden)', async () => {
+        await kickAll(owner.id, member.accessToken, 403);
+      });
+      it('should not kick admin (403 Forbidden)', async () => {
+        await kickAll(admin.id, member.accessToken, 403);
+      });
+      it('should not kick member (403 No Content)', async () => {
+        await kickAll(member.id, member.accessToken, 403);
+      });
+      it('should not kick non-member (403 Not Found)', async () => {
+        await kickAll(notMember.id, member.accessToken, 403);
+      });
+    });
+    describe('non-member', () => {
+      beforeEach(setupRooms);
+      afterEach(teardownRooms);
+      it('should not kick owner (403 Forbidden)', async () => {
+        await kickAll(owner.id, notMember.accessToken, 403);
+      });
+      it('should not kick admin (403 Forbidden)', async () => {
+        await kickAll(admin.id, notMember.accessToken, 403);
+      });
+      it('should not kick member (403 No Content)', async () => {
+        await kickAll(member.id, notMember.accessToken, 403);
+      });
+      it('should not kick non-member (403 Not Found)', async () => {
+        await kickAll(notMember.id, notMember.accessToken, 403);
+      });
+    });
+  });
   const testRoomSetup = async (): Promise<number> => {
     // Owner
     const roomId = await app
@@ -814,45 +903,6 @@ describe('RoomController (e2e)', () => {
     it('unmuted user should be able to speak', async () => {});
   });
 
-  describe('DELETE /room/:id/:userId (Kick/Leave)', () => {
-    let testRoomId: number;
-
-    beforeEach(async () => {
-      testRoomId = await testRoomSetup();
-    });
-    afterEach(async () => {
-      await app.deleteRoom(testRoomId, owner.accessToken);
-    });
-
-    it('owner should kick anyone in the room', async () => {
-      for (const user of [admin, member]) {
-        await app
-          .kickFromRoom(testRoomId, user.id, owner.accessToken)
-          .expect(204);
-        await app
-          .getUserOnRoom(testRoomId, user.id, owner.accessToken)
-          .expect(404);
-      }
-    });
-    it('admin should kick admin/member', async () => {
-      await app
-        .kickFromRoom(testRoomId, member.id, admin.accessToken)
-        .expect(204);
-      await app
-        .kickFromRoom(testRoomId, admin.id, admin.accessToken)
-        .expect(204);
-    });
-    it('member should not kick anyone', async () => {});
-    it('not member should not kicked anyone', async () => {});
-
-    it('notMember should not be kicked by anyone', async () => {});
-
-    it('kicked user should enter the room again', async () => {
-      /* TODO */
-    });
-    it('owner/admin/member should leave', async () => {});
-    it('notMember should not leave', async () => {});
-  });
   describe('PATCH /room/:id/:userId (Modify user role in Room)', () => {
     let testRoomId: number;
     const toMemberDto: UpdateUserOnRoomDto = { role: Role.MEMBER };
