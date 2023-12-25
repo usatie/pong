@@ -5,7 +5,11 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { UserModule } from 'src/user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtStrategy, JwtWithout2FAStrategy } from './jwt.strategy';
+import {
+  JwtStrategy,
+  WsJwtStrategy,
+  JwtWithout2FAStrategy,
+} from './jwt.strategy';
 
 export const jwtConstants = {
   publicKey: process.env.JWT_PUBLIC_KEY,
@@ -29,7 +33,7 @@ export const jwtConstants = {
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtWithout2FAStrategy],
+  providers: [AuthService, JwtStrategy, WsJwtStrategy, JwtWithout2FAStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}
