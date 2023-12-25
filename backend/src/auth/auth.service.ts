@@ -45,7 +45,7 @@ export class AuthService {
   }
 
   async verifyAccessToken(accessToken: string) {
-    const payload = this.jwtService.verify(accessToken, {
+    const payload = await this.jwtService.verifyAsync(accessToken, {
       publicKey: jwtConstants.publicKey,
     });
     const user = await this.prisma.user.findUnique({
