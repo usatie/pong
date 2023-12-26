@@ -20,7 +20,9 @@ type Status =
   | 'ready'
   | 'login-required'
   | 'friend-joined'
-  | 'friend-left';
+  | 'friend-left'
+  | 'won'
+  | 'lost';
 
 type Scores = {
   [key: string]: number;
@@ -199,9 +201,11 @@ export class EventsGateway implements OnGatewayDisconnect {
     this.lostPoints[client.id]++;
     if (this.lostPoints[client.id] == POINT_TO_WIN) {
       this.broadcastToRooms(client, 'finish');
-      this.broadcastToRooms(client, 'log', 'You won the game.');
       client.emit('finish');
-      client.emit('log', 'You lost the game.');
+
+      // TODO: handle viewers
+      this.broadcastUpdateStatus(client, 'won');
+      this.emitUpdateStatus(client, 'lost');
     }
     return;
   }

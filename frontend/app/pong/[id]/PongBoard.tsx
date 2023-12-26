@@ -17,7 +17,9 @@ type Status =
   | "ready"
   | "login-required"
   | "friend-joined"
-  | "friend-left";
+  | "friend-left"
+  | "won"
+  | "lost";
 
 type setState<T> = T | ((prevState: T) => T);
 
@@ -59,6 +61,10 @@ const getLogFromStatus = (status: Status) => {
       return "Your friend has joined the game";
     case "friend-left":
       return "Your friend has left";
+    case "won":
+      return "You won!";
+    case "lost":
+      return "You lost!";
   }
 };
 
