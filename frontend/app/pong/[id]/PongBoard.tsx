@@ -10,6 +10,17 @@ import { PongGame } from "./PongGame";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
 
+type Status =
+  | "too-many-players"
+  | "joined-as-player"
+  | "joined-as-viewer"
+  | "ready"
+  | "login-required"
+  | "friend-joined"
+  | "friend-left"
+  | "won"
+  | "lost";
+
 type setState<T> = T | ((prevState: T) => T);
 
 function useStateCallback<T>(
@@ -33,6 +44,29 @@ interface HandleActionProps {
 }
 
 const POINT_TO_WIN = 3;
+
+const getLogFromStatus = (status: Status) => {
+  switch (status) {
+    case "too-many-players":
+      return "There are too many players. You can only watch the game";
+    case "joined-as-player":
+      return "You have joined as player";
+    case "joined-as-viewer":
+      return "You have joined as viewer";
+    case "ready":
+      return "Your friend is already here. The game is ready to start";
+    case "login-required":
+      return "You need to login to play.";
+    case "friend-joined":
+      return "Your friend has joined the game";
+    case "friend-left":
+      return "Your friend has left";
+    case "won":
+      return "You won!";
+    case "lost":
+      return "You lost!";
+  }
+};
 
 function PongBoard({ id }: PongBoardProps) {
   const [fps, setFps] = useStateCallback<number>(0);
@@ -85,6 +119,33 @@ function PongBoard({ id }: PongBoardProps) {
       vy: -vy,
     });
   }, [getGame, userMode]);
+
+  const runSideEffectForStatusUpdate = useCallback(
+    (status: Status) => {
+      const game = getGame();
+
+      switch (status) {
+        case "too-many-players":
+          // TODO: users cannot really see the log
+          setUserMode("viewer");
+          break;
+        case "login-required":
+          // TODO: instead of redirect. Show modal to login
+          setUserMode("viewer");
+          break;
+        case "friend-joined":
+          setStartDisabled(false);
+          setPracticeDisabled(true);
+          game.resetPlayerPosition();
+          break;
+        case "friend-left":
+          setStartDisabled(true);
+          setPracticeDisabled(false);
+          break;
+      }
+    },
+    [setUserMode, getGame],
+  );
 
   useEffect(() => {
     const game = getGame();
@@ -145,11 +206,9 @@ function PongBoard({ id }: PongBoardProps) {
       socket.emit(action);
     };
 
-    const handleLog = (log: string) => {
-      // TODO
-      if (log == "The game is full. You joined as a viewer.") {
-        setUserMode("viewer");
-      }
+    const handleUpdateStatus = (status: Status) => {
+      runSideEffectForStatusUpdate(status);
+      const log = getLogFromStatus(status);
       setLogs((logs) => [...logs, log]);
     };
     const handleConnect = () => {
@@ -207,22 +266,6 @@ function PongBoard({ id }: PongBoardProps) {
       game.endRound();
     };
 
-    const handleJoin = () => {
-      const log = `Your friend has joined the game`;
-      setLogs((logs) => [...logs, log]);
-      // TODO : does not able for viewer
-      setStartDisabled(false);
-      setPracticeDisabled(true);
-      game.resetPlayerPosition();
-    };
-
-    const handleLeave = () => {
-      const log = `Your friend has left`;
-      setLogs((logs) => [...logs, log]);
-      setStartDisabled(true);
-      setPracticeDisabled(false);
-    };
-
     const handleFinish = () => {
       const game = getGame();
       game.stop();
@@ -234,9 +277,7 @@ function PongBoard({ id }: PongBoardProps) {
     socket.on("left", handleLeft);
     socket.on("bounce", handleBounce);
     socket.on("collide", handleCollide);
-    socket.on("join", handleJoin);
-    socket.on("leave", handleLeave);
-    socket.on("log", handleLog);
+    socket.on("update-status", handleUpdateStatus);
     socket.on("finish", handleFinish);
 
     return () => {
@@ -246,13 +287,19 @@ function PongBoard({ id }: PongBoardProps) {
       socket.off("left", handleLeft);
       socket.off("bounce", handleBounce);
       socket.off("collide", handleCollide);
-      socket.off("join", handleJoin);
-      socket.off("leave", handleLeave);
-      socket.off("log", handleLog);
+      socket.off("update-status", handleUpdateStatus);
       socket.off("finish", handleFinish);
       socket.disconnect();
     };
-  }, [id, getGame, setLogs, start, userMode, setUserMode]);
+  }, [
+    id,
+    getGame,
+    setLogs,
+    start,
+    userMode,
+    setUserMode,
+    runSideEffectForStatusUpdate,
+  ]);
 
   return (
     <div className="overflow-hidden flex-grow flex gap-8 pb-8">

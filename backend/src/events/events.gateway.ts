@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,9 +7,24 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { User } from '@prisma/client';
 import { Namespace, Socket } from 'socket.io';
+import { AuthService } from 'src/auth/auth.service';
+import { HistoryService } from 'src/history/history.service';
+import { UserGuardWs } from 'src/user/user.guard-ws';
 
 const POINT_TO_WIN = 3;
+
+type Status =
+  | 'too-many-players'
+  | 'joined-as-player'
+  | 'joined-as-viewer'
+  | 'ready'
+  | 'login-required'
+  | 'friend-joined'
+  | 'friend-left'
+  | 'won'
+  | 'lost';
 
 type Scores = {
   [key: string]: number;
@@ -49,36 +64,57 @@ const isPlayer = (players: Players, roomId: string, socketId: string) => {
   namespace: '/pong',
 })
 export class EventsGateway implements OnGatewayDisconnect {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly historyService: HistoryService,
+  ) {}
+
   @WebSocketServer()
   private server: Namespace;
   private logger: Logger = new Logger('EventsGateway');
   private lostPoints: Scores = {};
   private players: Players = {};
+  private users: { [socketId: string]: User } = {};
 
-  handleConnection(client: Socket) {
+  async handleConnection(client: Socket) {
     this.logger.log(`connect: ${client.id} `);
 
     const gameId = client.handshake.query['game_id'] as string;
     const isPlayer = client.handshake.query['is_player'] == 'true';
+    const token = client.request.headers.cookie?.split('token=')[1];
+    let user;
+
+    if (token) {
+      try {
+        user = await this.authService.verifyAccessToken(token);
+        (client as any).user = user;
+        this.users[client.id] = user;
+      } catch {}
+    }
 
     // Both of viewers and players join the Socket.io room
     client.join(gameId);
 
     if (!isPlayer) {
+      this.emitUpdateStatus(client, 'joined-as-viewer');
+      return;
+    }
+
+    if (!user) {
+      this.emitUpdateStatus(client, 'login-required');
       return;
     }
 
     if (this.players[gameId] && Object.keys(this.players[gameId]).length == 2) {
       this.logger.log(`full: ${gameId} ${client.id}`);
-      client.emit('log', 'The game is full. You joined as a viewer.');
+      this.emitUpdateStatus(client, 'too-many-players');
       return;
     }
     addPlayer(this.players, gameId, client.id);
-    this.broadcastToRooms(client, 'join');
-    client.emit('log', 'You joined as a player.');
+    this.broadcastUpdateStatus(client, 'friend-joined');
+    this.emitUpdateStatus(client, 'joined-as-player');
     if (Object.keys(this.players[gameId]).length == 2) {
-      console.log('here');
-      client.emit('log', 'Your friend is already here. You can start.');
+      this.emitUpdateStatus(client, 'ready');
     }
     this.lostPoints[client.id] = 0;
     return;
@@ -88,14 +124,16 @@ export class EventsGateway implements OnGatewayDisconnect {
     this.logger.log(`disconnect: ${client.id} `);
     const roomId = client.handshake.query['game_id'] as string;
     client.leave(roomId);
+    delete this.users[client.id];
 
     if (isPlayer(this.players, roomId, client.id)) {
-      this.broadcastToRoom(client, roomId, 'leave');
+      this.broadcastUpdateStatus(client, 'friend-left');
       removePlayer(this.players, roomId, client.id);
       delete this.lostPoints[client.id];
     }
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('start')
   async start(
     @MessageBody() data: { vx: number; vy: number },
@@ -109,6 +147,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('left')
   async left(
     @MessageBody() data: string,
@@ -125,6 +164,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('right')
   async right(
     @MessageBody() data: string,
@@ -139,6 +179,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('bounce')
   async bounce(
     @MessageBody() data: string,
@@ -153,6 +194,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('collide')
   async collide(
     @MessageBody() data: string,
@@ -167,9 +209,13 @@ export class EventsGateway implements OnGatewayDisconnect {
     this.lostPoints[client.id]++;
     if (this.lostPoints[client.id] == POINT_TO_WIN) {
       this.broadcastToRooms(client, 'finish');
-      this.broadcastToRooms(client, 'log', 'You won the game.');
       client.emit('finish');
-      client.emit('log', 'You lost the game.');
+
+      // TODO: handle viewers
+      this.broadcastUpdateStatus(client, 'won');
+      this.emitUpdateStatus(client, 'lost');
+
+      await this.createHistory(client);
     }
     return;
   }
@@ -191,5 +237,40 @@ export class EventsGateway implements OnGatewayDisconnect {
   ) {
     if (data) socket.to(roomId).emit(eventName, data);
     else socket.to(roomId).emit(eventName);
+  }
+
+  emitUpdateStatus(socket: Socket, status: Status) {
+    socket.emit('update-status', status);
+  }
+
+  broadcastUpdateStatus(socket: Socket, status: Status) {
+    const roomId = socket.handshake.query['game_id'];
+    socket.to(roomId).emit('update-status', status);
+  }
+
+  async createHistory(socket: Socket) {
+    const roomId = socket.handshake.query['game_id'] as string;
+    const loserSocketId = socket.id;
+    const loserUserId = this.users[loserSocketId].id;
+
+    const winnerSocketId = Object.keys(this.players[roomId]).find(
+      (sockedId) => sockedId != loserSocketId,
+    );
+
+    // TODO: handle invalid game. The opponent must have been disconnected.
+    if (!winnerSocketId) return;
+
+    const winnerUserId = this.users[winnerSocketId].id;
+
+    return await this.historyService.create({
+      winner: {
+        userId: winnerUserId,
+        score: this.lostPoints[loserSocketId],
+      },
+      loser: {
+        userId: loserUserId,
+        score: this.lostPoints[winnerSocketId],
+      },
+    });
   }
 }
