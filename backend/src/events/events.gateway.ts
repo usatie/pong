@@ -7,8 +7,10 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { User } from '@prisma/client';
 import { Namespace, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
+import { HistoryService } from 'src/history/history.service';
 import { UserGuardWs } from 'src/user/user.guard-ws';
 
 const POINT_TO_WIN = 3;
@@ -62,13 +64,17 @@ const isPlayer = (players: Players, roomId: string, socketId: string) => {
   namespace: '/pong',
 })
 export class EventsGateway implements OnGatewayDisconnect {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly historyService: HistoryService,
+  ) {}
 
   @WebSocketServer()
   private server: Namespace;
   private logger: Logger = new Logger('EventsGateway');
   private lostPoints: Scores = {};
   private players: Players = {};
+  private users: { [socketId: string]: User } = {};
 
   async handleConnection(client: Socket) {
     this.logger.log(`connect: ${client.id} `);
@@ -82,6 +88,7 @@ export class EventsGateway implements OnGatewayDisconnect {
       try {
         user = await this.authService.verifyAccessToken(token);
         (client as any).user = user;
+        this.users[client.id] = user;
       } catch {}
     }
 
@@ -117,6 +124,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     this.logger.log(`disconnect: ${client.id} `);
     const roomId = client.handshake.query['game_id'] as string;
     client.leave(roomId);
+    delete this.users[client.id];
 
     if (isPlayer(this.players, roomId, client.id)) {
       this.broadcastUpdateStatus(client, 'friend-left');
@@ -206,6 +214,8 @@ export class EventsGateway implements OnGatewayDisconnect {
       // TODO: handle viewers
       this.broadcastUpdateStatus(client, 'won');
       this.emitUpdateStatus(client, 'lost');
+
+      await this.createHistory(client);
     }
     return;
   }
@@ -236,5 +246,31 @@ export class EventsGateway implements OnGatewayDisconnect {
   broadcastUpdateStatus(socket: Socket, status: Status) {
     const roomId = socket.handshake.query['game_id'];
     socket.to(roomId).emit('update-status', status);
+  }
+
+  async createHistory(socket: Socket) {
+    const roomId = socket.handshake.query['game_id'] as string;
+    const loserSocketId = socket.id;
+    const loserUserId = this.users[loserSocketId].id;
+
+    const winnerSocketId = Object.keys(this.players[roomId]).find(
+      (sockedId) => sockedId != loserSocketId,
+    );
+
+    // TODO: handle invalid game. The opponent must have been disconnected.
+    if (!winnerSocketId) return;
+
+    const winnerUserId = this.users[winnerSocketId].id;
+
+    return await this.historyService.create({
+      winner: {
+        userId: winnerUserId,
+        score: this.lostPoints[loserSocketId],
+      },
+      loser: {
+        userId: loserUserId,
+        score: this.lostPoints[winnerSocketId],
+      },
+    });
   }
 }
