@@ -12,6 +12,13 @@ import { AuthService } from 'src/auth/auth.service';
 
 const POINT_TO_WIN = 3;
 
+type Status =
+  | 'too-many-players'
+  | 'joined-as-player'
+  | 'joined-as-viewer'
+  | 'ready'
+  | 'login-required';
+
 type Scores = {
   [key: string]: number;
 };
@@ -77,24 +84,26 @@ export class EventsGateway implements OnGatewayDisconnect {
     client.join(gameId);
 
     if (!isPlayer) {
+      this.emitUpdateStatus(client, 'joined-as-viewer');
       return;
     }
 
     if (!user) {
-      // TODO: let client know that they need to login to play
+      this.emitUpdateStatus(client, 'login-required');
       return;
     }
 
     if (this.players[gameId] && Object.keys(this.players[gameId]).length == 2) {
       this.logger.log(`full: ${gameId} ${client.id}`);
-      client.emit('log', 'The game is full. You joined as a viewer.');
+      this.emitUpdateStatus(client, 'too-many-players');
       return;
     }
     addPlayer(this.players, gameId, client.id);
+    // TODO: use update-status instead
     this.broadcastToRooms(client, 'join');
-    client.emit('log', 'You joined as a player.');
+    this.emitUpdateStatus(client, 'joined-as-player');
     if (Object.keys(this.players[gameId]).length == 2) {
-      client.emit('log', 'Your friend is already here. You can start.');
+      this.emitUpdateStatus(client, 'ready');
     }
     this.lostPoints[client.id] = 0;
     return;
@@ -106,6 +115,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     client.leave(roomId);
 
     if (isPlayer(this.players, roomId, client.id)) {
+      // TODO: use update-status instead
       this.broadcastToRoom(client, roomId, 'leave');
       removePlayer(this.players, roomId, client.id);
       delete this.lostPoints[client.id];
@@ -207,5 +217,9 @@ export class EventsGateway implements OnGatewayDisconnect {
   ) {
     if (data) socket.to(roomId).emit(eventName, data);
     else socket.to(roomId).emit(eventName);
+  }
+
+  emitUpdateStatus(socket: Socket, status: Status) {
+    socket.emit('update-status', status);
   }
 }
