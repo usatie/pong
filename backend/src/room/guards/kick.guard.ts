@@ -27,9 +27,12 @@ export class KickGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();
-    const { params, user, member } = req;
-    if (!user || !member) {
-      throw new ForbiddenException('require login and member');
+    const { params, user, admin } = req;
+    if (!user) {
+      throw new ForbiddenException('Login is required');
+    }
+    if (!admin) {
+      throw new ForbiddenException('Admin privileges are required');
     }
     // Validate roomId and targetUserId(userId)
     const roomId = this.expectNumberParam(params.roomId, 'roomId');
@@ -48,19 +51,9 @@ export class KickGuard implements CanActivate {
     });
     const targetRole = userOnRoom.role;
 
-    // If anyone is trying to kick themself, that's ok
-    if (targetUserId === user.id) {
-      return true;
-    }
-
-    // If member is trying to kick someone else throw a ForbiddenException
-    if (member.role === Role.MEMBER) {
-      throw new ForbiddenException('Members cannot kick others');
-    }
-
-    // If admin is trying to kick owner, throw a ForbiddenException
-    if (targetRole === Role.OWNER && member.role === Role.ADMINISTRATOR) {
-      throw new ForbiddenException('Admins cannot kick owners');
+    // Owner cannot be kicked
+    if (targetRole === Role.OWNER) {
+      throw new ForbiddenException('Cannot kick owners');
     }
 
     // Otherwise, admin/owner kicking someone else, that's ok

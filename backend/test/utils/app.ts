@@ -1,10 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import { LoginDto } from 'src/auth/dto/login.dto';
 import { CreateRoomDto } from 'src/room/dto/create-room.dto';
+import { EnterRoomDto } from 'src/room/dto/enter-room.dto';
 import { UpdateUserOnRoomDto } from 'src/room/dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from 'src/room/dto/update-room.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/user/dto/update-user.dto';
+import { UserEntity } from 'src/user/entities/user.entity';
 import * as request from 'supertest';
 
 export class TestApp {
@@ -62,19 +64,29 @@ export class TestApp {
       .set('Authorization', `Bearer ${accessToken}`)
       .send(createRoomDto);
 
-  enterRoom = (roomId: number, accessToken: string) =>
+  enterRoom = (
+    roomId: number,
+    accessToken: string,
+    enterRoomDto: EnterRoomDto = {},
+  ) =>
     request(this.app.getHttpServer())
       .post(`/room/${roomId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(enterRoomDto);
+
+  inviteRoom = (roomId: number, userId: number, accessToken: string) =>
+    request(this.app.getHttpServer())
+      .post(`/room/${roomId}/invite/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
-  leaveRoom = (roomId: number, userId: number, accessToken: string) =>
+  leaveRoom = (roomId: number, accessToken: string) =>
     request(this.app.getHttpServer())
-      .delete(`/room/${roomId}/${userId}`)
+      .delete(`/room/${roomId}/leave`)
       .set('Authorization', `Bearer ${accessToken}`);
 
   kickFromRoom = (roomId: number, userId: number, accessToken: string) =>
     request(this.app.getHttpServer())
-      .delete(`/room/${roomId}/${userId}`)
+      .delete(`/room/${roomId}/kick/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
   getRoom = (id: number, accessToken: string) =>
@@ -265,7 +277,9 @@ export class TestApp {
       .set('Authorization', `Bearer ${accessToken}`);
 
   /* Utility */
-  createAndLoginUser = async (dto: CreateUserDto) => {
+  createAndLoginUser = async (
+    dto: CreateUserDto,
+  ): Promise<UserEntityWithAccessToken> => {
     const res = await this.createUser(dto).expect(201);
     const loginDto: LoginDto = {
       email: dto.email,
@@ -277,3 +291,5 @@ export class TestApp {
     return user;
   };
 }
+
+export type UserEntityWithAccessToken = UserEntity & { accessToken: string };

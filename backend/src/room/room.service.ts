@@ -23,7 +23,7 @@ export class RoomService {
   async create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
     const room = await this.prisma.room.create({
       data: {
-        name: createRoomDto.name,
+        ...createRoomDto,
         users: {
           create: [
             {
@@ -42,8 +42,22 @@ export class RoomService {
     return room;
   }
 
-  findAllRoom(): Promise<RoomEntity[]> {
-    return this.prisma.room.findMany();
+  findAllRoom(userId: number): Promise<RoomEntity[]> {
+    return this.prisma.room.findMany({
+      where: {
+        OR: [
+          { accessLevel: 'PUBLIC' },
+          { accessLevel: 'PROTECTED' },
+          {
+            users: {
+              some: {
+                userId: userId,
+              },
+            },
+          },
+        ],
+      },
+    });
   }
 
   findRoom(id: number) {
@@ -101,7 +115,7 @@ export class RoomService {
 
   // UserOnRoom CRUD
 
-  async createUserOnRoom(id: number, user: User): Promise<UserOnRoomEntity> {
+  async enterRoom(id: number, user: User): Promise<UserOnRoomEntity> {
     const userOnRoom = await this.prisma.userOnRoom.create({
       data: {
         roomId: id,
@@ -112,6 +126,22 @@ export class RoomService {
     const event: RoomEnteredEvent = {
       roomId: id,
       userId: user.id,
+    };
+    this.eventEmitter.emit('room.enter', event);
+    return userOnRoom;
+  }
+
+  async inviteUser(id: number, userId: number): Promise<UserOnRoomEntity> {
+    const userOnRoom = await this.prisma.userOnRoom.create({
+      data: {
+        roomId: id,
+        userId: userId,
+        role: Role.MEMBER,
+      },
+    });
+    const event: RoomEnteredEvent = {
+      roomId: id,
+      userId: userId,
     };
     this.eventEmitter.emit('room.enter', event);
     return userOnRoom;
