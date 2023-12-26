@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
+import { UserGuardWs } from 'src/user/user.guard-ws';
 
 const POINT_TO_WIN = 3;
 
@@ -122,6 +123,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     }
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('start')
   async start(
     @MessageBody() data: { vx: number; vy: number },
@@ -135,6 +137,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('left')
   async left(
     @MessageBody() data: string,
@@ -151,6 +154,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('right')
   async right(
     @MessageBody() data: string,
@@ -165,6 +169,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('bounce')
   async bounce(
     @MessageBody() data: string,
@@ -179,6 +184,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
+  @UseGuards(UserGuardWs)
   @SubscribeMessage('collide')
   async collide(
     @MessageBody() data: string,
