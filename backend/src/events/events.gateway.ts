@@ -8,6 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
+import { AuthService } from 'src/auth/auth.service';
 
 const POINT_TO_WIN = 3;
 
@@ -49,22 +50,38 @@ const isPlayer = (players: Players, roomId: string, socketId: string) => {
   namespace: '/pong',
 })
 export class EventsGateway implements OnGatewayDisconnect {
+  constructor(private readonly authService: AuthService) {}
+
   @WebSocketServer()
   private server: Namespace;
   private logger: Logger = new Logger('EventsGateway');
   private lostPoints: Scores = {};
   private players: Players = {};
 
-  handleConnection(client: Socket) {
+  async handleConnection(client: Socket) {
     this.logger.log(`connect: ${client.id} `);
 
     const gameId = client.handshake.query['game_id'] as string;
     const isPlayer = client.handshake.query['is_player'] == 'true';
+    const token = client.request.headers.cookie?.split('token=')[1];
+    let user;
+
+    if (token) {
+      try {
+        user = await this.authService.verifyAccessToken(token);
+        (client as any).user = user;
+      } catch {}
+    }
 
     // Both of viewers and players join the Socket.io room
     client.join(gameId);
 
     if (!isPlayer) {
+      return;
+    }
+
+    if (!user) {
+      // TODO: let client know that they need to login to play
       return;
     }
 
