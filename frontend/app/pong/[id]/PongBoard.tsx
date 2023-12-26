@@ -15,7 +15,9 @@ type Status =
   | "joined-as-player"
   | "joined-as-viewer"
   | "ready"
-  | "login-required";
+  | "login-required"
+  | "friend-joined"
+  | "friend-left";
 
 type setState<T> = T | ((prevState: T) => T);
 
@@ -53,6 +55,10 @@ const getLogFromStatus = (status: Status) => {
       return "Your friend is already here. The game is ready to start";
     case "login-required":
       return "You need to login to play.";
+    case "friend-joined":
+      return "Your friend has joined the game";
+    case "friend-left":
+      return "Your friend has left";
   }
 };
 
@@ -110,6 +116,8 @@ function PongBoard({ id }: PongBoardProps) {
 
   const runSideEffectForStatusUpdate = useCallback(
     (status: Status) => {
+      const game = getGame();
+
       switch (status) {
         case "too-many-players":
           // TODO: users cannot really see the log
@@ -119,9 +127,18 @@ function PongBoard({ id }: PongBoardProps) {
           // TODO: instead of redirect. Show modal to login
           setUserMode("viewer");
           break;
+        case "friend-joined":
+          setStartDisabled(false);
+          setPracticeDisabled(true);
+          game.resetPlayerPosition();
+          break;
+        case "friend-left":
+          setStartDisabled(true);
+          setPracticeDisabled(false);
+          break;
       }
     },
-    [setUserMode],
+    [setUserMode, getGame],
   );
 
   useEffect(() => {
@@ -243,22 +260,6 @@ function PongBoard({ id }: PongBoardProps) {
       game.endRound();
     };
 
-    const handleJoin = () => {
-      const log = `Your friend has joined the game`;
-      setLogs((logs) => [...logs, log]);
-      // TODO : does not able for viewer
-      setStartDisabled(false);
-      setPracticeDisabled(true);
-      game.resetPlayerPosition();
-    };
-
-    const handleLeave = () => {
-      const log = `Your friend has left`;
-      setLogs((logs) => [...logs, log]);
-      setStartDisabled(true);
-      setPracticeDisabled(false);
-    };
-
     const handleFinish = () => {
       const game = getGame();
       game.stop();
@@ -270,8 +271,6 @@ function PongBoard({ id }: PongBoardProps) {
     socket.on("left", handleLeft);
     socket.on("bounce", handleBounce);
     socket.on("collide", handleCollide);
-    socket.on("join", handleJoin);
-    socket.on("leave", handleLeave);
     socket.on("update-status", handleUpdateStatus);
     socket.on("finish", handleFinish);
 
@@ -283,8 +282,6 @@ function PongBoard({ id }: PongBoardProps) {
       socket.off("bounce", handleBounce);
       socket.off("collide", handleCollide);
       socket.off("update-status", handleUpdateStatus);
-      socket.off("leave", handleLeave);
-      socket.off("join", handleJoin);
       socket.off("finish", handleFinish);
       socket.disconnect();
     };

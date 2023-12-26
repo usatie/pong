@@ -17,7 +17,9 @@ type Status =
   | 'joined-as-player'
   | 'joined-as-viewer'
   | 'ready'
-  | 'login-required';
+  | 'login-required'
+  | 'friend-joined'
+  | 'friend-left';
 
 type Scores = {
   [key: string]: number;
@@ -99,8 +101,7 @@ export class EventsGateway implements OnGatewayDisconnect {
       return;
     }
     addPlayer(this.players, gameId, client.id);
-    // TODO: use update-status instead
-    this.broadcastToRooms(client, 'join');
+    this.broadcastUpdateStatus(client, 'friend-joined');
     this.emitUpdateStatus(client, 'joined-as-player');
     if (Object.keys(this.players[gameId]).length == 2) {
       this.emitUpdateStatus(client, 'ready');
@@ -115,8 +116,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     client.leave(roomId);
 
     if (isPlayer(this.players, roomId, client.id)) {
-      // TODO: use update-status instead
-      this.broadcastToRoom(client, roomId, 'leave');
+      this.broadcastUpdateStatus(client, 'friend-left');
       removePlayer(this.players, roomId, client.id);
       delete this.lostPoints[client.id];
     }
@@ -221,5 +221,10 @@ export class EventsGateway implements OnGatewayDisconnect {
 
   emitUpdateStatus(socket: Socket, status: Status) {
     socket.emit('update-status', status);
+  }
+
+  broadcastUpdateStatus(socket: Socket, status: Status) {
+    const roomId = socket.handshake.query['game_id'];
+    socket.to(roomId).emit('update-status', status);
   }
 }
