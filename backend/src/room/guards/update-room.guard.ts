@@ -27,26 +27,54 @@ export class UpdateRoomGuard implements CanActivate {
     }
     const room = await this.roomService.findRoom(Number(roomId));
     const dto: UpdateRoomDto = req.body;
-    // Remove password from PROTECTED by changing accessLevel to PUBLIC/PRIVATE is ok
-    if (
-      room.accessLevel === 'PROTECTED' &&
-      dto.accessLevel !== 'PROTECTED' &&
-      !dto.password
-    ) {
-      return true;
+    switch (room.accessLevel) {
+      case 'PUBLIC':
+      case 'PRIVATE':
+        switch (dto.accessLevel) {
+          case 'PUBLIC':
+          case 'PRIVATE':
+          case undefined:
+            if (dto.password) {
+              throw new BadRequestException(
+                'cannot set password for PUBLIC/PRIVATE room',
+              );
+            }
+            return true;
+          case 'PROTECTED':
+            if (!dto.password) {
+              throw new BadRequestException('password is required');
+            }
+            return true;
+          case 'DIRECT':
+            throw new BadRequestException('cannot update to DIRECT');
+          default:
+            throw new BadRequestException('unreachable');
+        }
+      case 'PROTECTED':
+        switch (dto.accessLevel) {
+          case 'PUBLIC':
+          case 'PRIVATE':
+            if (dto.password) {
+              throw new BadRequestException(
+                'cannot set password for PUBLIC/PRIVATE room',
+              );
+            }
+            return true;
+          case 'PROTECTED':
+          case undefined:
+            if (dto.password === null || dto.password === '') {
+              throw new BadRequestException('password cannot be empty');
+            }
+            return true;
+          case 'DIRECT':
+            throw new BadRequestException('cannot update to DIRECT');
+          default:
+            throw new BadRequestException('unreachable');
+        }
+      case 'DIRECT':
+        throw new BadRequestException('cannot update DIRECT room');
+      default:
+        throw new BadRequestException('unreachable');
     }
-
-    const updated = { ...room, ...dto };
-    // non-PROTECTED room must not have password
-    if (updated.accessLevel !== 'PROTECTED' && updated.password) {
-      throw new BadRequestException(
-        'password is only allowed for PROTECTED rooms',
-      );
-    }
-    // PROTECTED room must have password
-    if (updated.accessLevel === 'PROTECTED' && !updated.password) {
-      throw new BadRequestException('password is required');
-    }
-    return true;
   }
 }

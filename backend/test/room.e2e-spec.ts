@@ -267,6 +267,9 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, owner.accessToken).expect(200);
       });
+      it('should not get direct room (403 Forbidden)', () => {
+        return app.getRoom(directRoom.id, owner.accessToken).expect(403);
+      });
     });
 
     describe('admin', () => {
@@ -278,6 +281,9 @@ describe('RoomController (e2e)', () => {
       });
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, admin.accessToken).expect(200);
+      });
+      it('should not get direct room (403 Forbidden)', () => {
+        return app.getRoom(directRoom.id, admin.accessToken).expect(403);
       });
     });
 
@@ -291,6 +297,9 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, member.accessToken).expect(200);
       });
+      it('should not get direct room (403 Forbidden)', () => {
+        return app.getRoom(directRoom.id, member.accessToken).expect(403);
+      });
     });
 
     describe('notMember', () => {
@@ -303,13 +312,22 @@ describe('RoomController (e2e)', () => {
       it('should not get private room', () => {
         return app.getRoom(privateRoom.id, notMember.accessToken).expect(403);
       });
+      it('should not get direct room (403 Forbidden)', () => {
+        return app.getRoom(directRoom.id, notMember.accessToken).expect(403);
+      });
     });
 
-    it('public room should be accessed by notMember (200 OK)', async () => {});
+    describe('user1', () => {
+      it('should get direct room (200 OK)', () => {
+        return app.getRoom(directRoom.id, user1.accessToken).expect(200);
+      });
+    });
 
-    it('private room should not be accessed by notMember (403 Forbidden)', async () => {});
-
-    it('protected room should not be accessed by notMember (403 Forbidden)', async () => {});
+    describe('user2', () => {
+      it('should get direct room (200 OK)', () => {
+        return app.getRoom(directRoom.id, user2.accessToken).expect(200);
+      });
+    });
 
     it('invalid roomId should return 404 Not Found (403?)', async () => {});
   });
@@ -535,12 +553,12 @@ describe('RoomController (e2e)', () => {
       });
     });
     describe('DIRECT ROOM', () => {
-      it('should not invite anyone (403 Forbidden)', async () => {
+      test('user1 should not invite anyone (403 Forbidden)', async () => {
         await app
           .inviteRoom(directRoom.id, notMember.id, user1.accessToken)
           .expect(403);
       });
-      it('should not invite anyone (403 Forbidden)', async () => {
+      test('user2 should not invite anyone (403 Forbidden)', async () => {
         await app
           .inviteRoom(directRoom.id, notMember.id, user2.accessToken)
           .expect(403);
@@ -560,33 +578,81 @@ describe('RoomController (e2e)', () => {
           expect(res.body).toContainEqual(protectedRoom);
         });
     describe('owner', () => {
-      it('should get all rooms (200 OK)', async () => {
-        await testGetRooms(owner.accessToken).expect((res) => {
-          expect(res.body).toContainEqual(privateRoom);
-        });
+      let _rooms: RoomEntity[];
+      it('should get rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(owner.accessToken).then((res) => res.body);
+      });
+      it('should contain private room', async () => {
+        expect(_rooms).toContainEqual(privateRoom);
+      });
+      it('should not contain the direct room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(directRoom));
       });
     });
     describe('admin', () => {
-      it('should get all rooms (200 OK)', async () => {
-        await testGetRooms(admin.accessToken).expect((res) => {
-          expect(res.body).toContainEqual(privateRoom);
-        });
+      let _rooms: RoomEntity[];
+      it('should get rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(admin.accessToken).then((res) => res.body);
+      });
+      it('should contain private room', async () => {
+        expect(_rooms).toContainEqual(privateRoom);
+      });
+      it('should not contain the direct room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(directRoom));
       });
     });
     describe('member', () => {
-      it('should get all rooms (200 OK)', async () => {
-        await testGetRooms(member.accessToken).expect((res) => {
-          expect(res.body).toContainEqual(privateRoom);
-        });
+      let _rooms: RoomEntity[];
+      it('should get rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(member.accessToken).then((res) => res.body);
+      });
+      it('should contain private room', async () => {
+        expect(_rooms).toContainEqual(privateRoom);
+      });
+      it('should not contain the direct room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(directRoom));
       });
     });
     describe('non-member', () => {
-      it('should not get private rooms (200 OK)', async () => {
-        await testGetRooms(notMember.accessToken).expect((res) => {
-          const expectNotPrivate = (room: RoomEntity) =>
-            expect(room.accessLevel).not.toEqual('PRIVATE');
-          res.body.forEach(expectNotPrivate);
-        });
+      let _rooms: RoomEntity[];
+      it('should get rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(notMember.accessToken).then(
+          (res) => res.body,
+        );
+      });
+      it('should not contain private room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(privateRoom));
+      });
+      it('should not contain the direct room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(directRoom));
+      });
+    });
+    describe('user1', () => {
+      let _rooms: RoomEntity[];
+      it('should get all rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(user1.accessToken).then((res) => res.body);
+      });
+      it('should contain direct room', async () => {
+        expect(_rooms).toContainEqual(directRoom);
+      });
+      it('should not contain private room', async () => {
+        _rooms.forEach((room) =>
+          expect(room.accessLevel).not.toEqual('PRIVATE'),
+        );
+      });
+    });
+    describe('user2', () => {
+      let _rooms: RoomEntity[];
+      it('should get all rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(user2.accessToken).then((res) => res.body);
+      });
+      it('should contain direct room', async () => {
+        expect(_rooms).toContainEqual(directRoom);
+      });
+      it('should not contain private room', async () => {
+        _rooms.forEach((room) =>
+          expect(room.accessLevel).not.toEqual('PRIVATE'),
+        );
       });
     });
   });
@@ -668,6 +734,9 @@ describe('RoomController (e2e)', () => {
             await update({ password: '12345678' }).expect(400);
           });
         }
+        it('should not update access_level to direct (400 Bad Request)', async () => {
+          await update({ accessLevel: 'DIRECT' }).expect(400);
+        });
       });
       describe('admin', shouldNotUpdateAny(updater(adminRef, _roomRef)));
       describe('member', shouldNotUpdateAny(updater(memberRef, _roomRef)));
@@ -680,79 +749,149 @@ describe('RoomController (e2e)', () => {
     describe('PUBLIC room', testUpdateRoom(constants.room.publicRoom));
     describe('PRIVATE room', testUpdateRoom(constants.room.privateRoom));
     describe('PROTECTED room', testUpdateRoom(constants.room.protectedRoom));
+    describe('DIRECT room', () => {
+      let _room: RoomEntity;
+      beforeEach(async () => {
+        _room = await app
+          .createRoom(
+            { ...constants.room.directRoom, userIds: [user2.id] },
+            user1.accessToken,
+          )
+          .then((res) => res.body);
+      });
+      afterEach(async () => {
+        await app.deleteRoom(_room.id, user1.accessToken);
+      });
+      it('should not update name (400 Forbidden)', async () => {
+        await app
+          .updateRoom(_room.id, { name: 'new_name' }, user1.accessToken)
+          .expect(400);
+      });
+      it('should not update access_level (400 Forbidden)', async () => {
+        await app
+          .updateRoom(_room.id, { accessLevel: 'PUBLIC' }, user1.accessToken)
+          .expect(400);
+        await app
+          .updateRoom(_room.id, { accessLevel: 'PRIVATE' }, user1.accessToken)
+          .expect(400);
+        await app
+          .updateRoom(
+            _room.id,
+            { accessLevel: 'PROTECTED', password: '12345678' },
+            user1.accessToken,
+          )
+          .expect(400);
+      });
+    });
 
     it('invalid roomId should return 404 Not Found', async () => {});
   });
 
   describe('DELETE /room/:id (Delete Room)', () => {
-    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    let _publicRoom, _privateRoom, _protectedRoom, _directRoom: RoomEntity;
     const setupRooms = async () => {
       _publicRoom = await setupRoom(constants.room.publicRoom);
       _privateRoom = await setupRoom(constants.room.privateRoom);
       _protectedRoom = await setupRoom(constants.room.protectedRoom);
+      _directRoom = await app
+        .createRoom(
+          { ...constants.room.directRoom, userIds: [user2.id] },
+          user1.accessToken,
+        )
+        .expect(201)
+        .then((res) => res.body);
     };
     const teardownRooms = async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
       await app.deleteRoom(_privateRoom.id, owner.accessToken);
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+      await app.deleteRoom(_directRoom.id, user1.accessToken);
     };
     describe('owner', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
-      test('should delete public room (204 No Content)', async () => {
+      it('should delete public room (204 No Content)', async () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
       });
-      test('should delete private room (204 No Content)', async () => {
+      it('should delete private room (204 No Content)', async () => {
         await app.deleteRoom(_privateRoom.id, owner.accessToken).expect(204);
       });
-      test('should delete protected room (204 No Content)', async () => {
+      it('should delete protected room (204 No Content)', async () => {
         await app.deleteRoom(_protectedRoom.id, owner.accessToken).expect(204);
+      });
+      it('should not delete direct room (403 Forbidden)', async () => {
+        await app.deleteRoom(_directRoom.id, owner.accessToken).expect(403);
       });
     });
 
     describe('admin', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
-      test('should not delete public room (403 Forbidden)', async () => {
+      it('should not delete public room (403 Forbidden)', async () => {
         await app.deleteRoom(_publicRoom.id, admin.accessToken).expect(403);
       });
-      test('should not delete private room (403 Forbidden)', async () => {
+      it('should not delete private room (403 Forbidden)', async () => {
         await app.deleteRoom(_privateRoom.id, admin.accessToken).expect(403);
       });
-      test('should not delete protected room (403 Forbidden)', async () => {
+      it('should not delete protected room (403 Forbidden)', async () => {
         await app.deleteRoom(_protectedRoom.id, admin.accessToken).expect(403);
+      });
+      it('should not delete direct room (403 Forbidden)', async () => {
+        await app.deleteRoom(_directRoom.id, admin.accessToken).expect(403);
       });
     });
 
     describe('member', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
-      test('should not delete public room (403 Forbidden)', async () => {
+      it('should not delete public room (403 Forbidden)', async () => {
         await app.deleteRoom(_publicRoom.id, member.accessToken).expect(403);
       });
-      test('should not delete private room (403 Forbidden)', async () => {
+      it('should not delete private room (403 Forbidden)', async () => {
         await app.deleteRoom(_privateRoom.id, member.accessToken).expect(403);
       });
-      test('should not delete protected room (403 Forbidden)', async () => {
+      it('should not delete protected room (403 Forbidden)', async () => {
         await app.deleteRoom(_protectedRoom.id, member.accessToken).expect(403);
+      });
+      it('should not delete direct room (403 Forbidden)', async () => {
+        await app.deleteRoom(_directRoom.id, member.accessToken).expect(403);
       });
     });
 
     describe('non-member', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
-      test('should not delete public room (403 Forbidden)', async () => {
+      it('should not delete public room (403 Forbidden)', async () => {
         await app.deleteRoom(_publicRoom.id, notMember.accessToken).expect(403);
       });
-      test('should not delete private room (403 Forbidden)', async () => {
+      it('should not delete private room (403 Forbidden)', async () => {
         await app
           .deleteRoom(_privateRoom.id, notMember.accessToken)
           .expect(403);
       });
-      test('should not delete protected room (403 Forbidden)', async () => {
+      it('should not delete protected room (403 Forbidden)', async () => {
         await app
           .deleteRoom(_protectedRoom.id, notMember.accessToken)
           .expect(403);
+      });
+      it('should not delete direct room (403 Forbidden)', async () => {
+        await app.deleteRoom(_directRoom.id, notMember.accessToken).expect(403);
+      });
+    });
+
+    describe('user1', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      it('should delete direct room (204 No Content)', async () => {
+        await app.deleteRoom(_directRoom.id, user1.accessToken).expect(204);
+      });
+    });
+
+    describe('user2', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      it('should delete direct room (204 No Content)', async () => {
+        await app.deleteRoom(_directRoom.id, user2.accessToken).expect(204);
       });
     });
 
@@ -760,16 +899,24 @@ describe('RoomController (e2e)', () => {
   });
 
   describe('DELETE /room/:id/:userId (Leave)', () => {
-    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    let _publicRoom, _privateRoom, _protectedRoom, _directRoom: RoomEntity;
     const setupRooms = async () => {
       _publicRoom = await setupRoom(constants.room.publicRoom);
       _privateRoom = await setupRoom(constants.room.privateRoom);
       _protectedRoom = await setupRoom(constants.room.protectedRoom);
+      _directRoom = await app
+        .createRoom(
+          { ...constants.room.directRoom, userIds: [user2.id] },
+          user1.accessToken,
+        )
+        .expect(201)
+        .then((res) => res.body);
     };
     const teardownRooms = async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
       await app.deleteRoom(_privateRoom.id, owner.accessToken);
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+      await app.deleteRoom(_directRoom.id, user1.accessToken);
     };
     describe('owner', () => {
       beforeAll(setupRooms);
@@ -798,7 +945,6 @@ describe('RoomController (e2e)', () => {
         await app.leaveRoom(_protectedRoom.id, admin.accessToken).expect(204);
       });
     });
-
     describe('member', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
@@ -812,7 +958,6 @@ describe('RoomController (e2e)', () => {
         await app.leaveRoom(_protectedRoom.id, member.accessToken).expect(204);
       });
     });
-
     describe('non-member', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
@@ -828,19 +973,41 @@ describe('RoomController (e2e)', () => {
           .expect(403);
       });
     });
+    describe('user1', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should not leave direct room (403 Forbidden)', async () => {
+        await app.leaveRoom(directRoom.id, user1.accessToken).expect(403);
+      });
+    });
+    describe('user2', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should not leave direct room (403 Forbidden)', async () => {
+        await app.leaveRoom(directRoom.id, user2.accessToken).expect(403);
+      });
+    });
   });
 
   describe('DELETE /room/:id/kick/:userId (Kick)', () => {
-    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    let _publicRoom, _privateRoom, _protectedRoom, _directRoom: RoomEntity;
     const setupRooms = async () => {
       _publicRoom = await setupRoom(constants.room.publicRoom);
       _privateRoom = await setupRoom(constants.room.privateRoom);
       _protectedRoom = await setupRoom(constants.room.protectedRoom);
+      _directRoom = await app
+        .createRoom(
+          { ...constants.room.directRoom, userIds: [user2.id] },
+          user1.accessToken,
+        )
+        .expect(201)
+        .then((res) => res.body);
     };
     const teardownRooms = async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
       await app.deleteRoom(_privateRoom.id, owner.accessToken);
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+      await app.deleteRoom(_directRoom.id, user1.accessToken);
     };
     const kickAll = async (
       userId: number,
@@ -919,19 +1086,43 @@ describe('RoomController (e2e)', () => {
         await kickAll(notMember.id, notMember.accessToken, 403);
       });
     });
+    describe('user1', () => {
+      beforeEach(setupRooms);
+      afterEach(teardownRooms);
+      it('should not kick anyone (403 Forbidden)', async () => {
+        await kickAll(user1.id, user1.accessToken, 403);
+        await kickAll(user2.id, user1.accessToken, 403);
+      });
+    });
+    describe('user2', () => {
+      beforeEach(setupRooms);
+      afterEach(teardownRooms);
+      it('should not kick anyone (403 Forbidden)', async () => {
+        await kickAll(user1.id, user2.accessToken, 403);
+        await kickAll(user2.id, user2.accessToken, 403);
+      });
+    });
   });
 
   describe('PATCH /room/:id/:userId (Update Role)', () => {
-    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    let _publicRoom, _privateRoom, _protectedRoom, _directRoom: RoomEntity;
     const setupRooms = async () => {
       _publicRoom = await setupRoom(constants.room.publicRoom);
       _privateRoom = await setupRoom(constants.room.privateRoom);
       _protectedRoom = await setupRoom(constants.room.protectedRoom);
+      _directRoom = await app
+        .createRoom(
+          { ...constants.room.directRoom, userIds: [user2.id] },
+          user1.accessToken,
+        )
+        .expect(201)
+        .then((res) => res.body);
     };
     const teardownRooms = async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
       await app.deleteRoom(_privateRoom.id, owner.accessToken);
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+      await app.deleteRoom(_directRoom.id, user1.accessToken);
     };
     beforeEach(setupRooms);
     afterEach(teardownRooms);
@@ -1232,6 +1423,44 @@ describe('RoomController (e2e)', () => {
               notMember.id,
               { role: Role.MEMBER },
               notMember.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: User1', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _directRoom.id,
+              user1.id,
+              { role: Role.MEMBER },
+              notMember.accessToken,
+            )
+            .expect(403);
+        });
+      });
+    });
+    describe('User1', () => {
+      describe('Target: User1', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _directRoom.id,
+              user1.id,
+              { role: Role.MEMBER },
+              user1.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: User2', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _directRoom.id,
+              user2.id,
+              { role: Role.MEMBER },
+              user1.accessToken,
             )
             .expect(403);
         });

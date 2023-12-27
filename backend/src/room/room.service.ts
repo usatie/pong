@@ -31,6 +31,9 @@ export class RoomService {
     if (createRoomDto.accessLevel === 'DIRECT' && userIds.length !== 1) {
       throw new BadRequestException('Direct room should have only one user');
     }
+    // If accessLevel is DIRECT, set defaultRole to OWNER
+    const defaultRole =
+      createRoomDto.accessLevel === 'DIRECT' ? Role.OWNER : Role.MEMBER;
 
     const room = await this.prisma.room.create({
       data: {
@@ -43,7 +46,7 @@ export class RoomService {
             },
             ...userIds.map((userId) => ({
               userId: userId,
-              role: Role.MEMBER,
+              role: defaultRole,
             })),
           ],
         },
@@ -205,6 +208,12 @@ export class RoomService {
   };
 
   async kickUser(roomId: number, userId: number): Promise<UserOnRoomEntity> {
+    const room = await this.prisma.room.findUniqueOrThrow({
+      where: { id: roomId },
+    });
+    if (room.accessLevel === 'DIRECT') {
+      throw new ForbiddenException('Direct room cannot kick/leave user');
+    }
     const deletedUserOnRoom = await this.prisma.userOnRoom.delete({
       where: {
         userId_roomId_unique: {
