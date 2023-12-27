@@ -267,6 +267,9 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, owner.accessToken).expect(200);
       });
+      it('should not get direct room (403 Forbidden)', () => {
+        return app.getRoom(directRoom.id, owner.accessToken).expect(403);
+      });
     });
 
     describe('admin', () => {
@@ -278,6 +281,9 @@ describe('RoomController (e2e)', () => {
       });
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, admin.accessToken).expect(200);
+      });
+      it('should not get direct room (403 Forbidden)', () => {
+        return app.getRoom(directRoom.id, admin.accessToken).expect(403);
       });
     });
 
@@ -291,6 +297,9 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, member.accessToken).expect(200);
       });
+      it('should not get direct room (403 Forbidden)', () => {
+        return app.getRoom(directRoom.id, member.accessToken).expect(403);
+      });
     });
 
     describe('notMember', () => {
@@ -303,13 +312,22 @@ describe('RoomController (e2e)', () => {
       it('should not get private room', () => {
         return app.getRoom(privateRoom.id, notMember.accessToken).expect(403);
       });
+      it('should not get direct room (403 Forbidden)', () => {
+        return app.getRoom(directRoom.id, notMember.accessToken).expect(403);
+      });
     });
 
-    it('public room should be accessed by notMember (200 OK)', async () => {});
+    describe('user1', () => {
+      it('should get direct room (200 OK)', () => {
+        return app.getRoom(directRoom.id, user1.accessToken).expect(200);
+      });
+    });
 
-    it('private room should not be accessed by notMember (403 Forbidden)', async () => {});
-
-    it('protected room should not be accessed by notMember (403 Forbidden)', async () => {});
+    describe('user2', () => {
+      it('should get direct room (200 OK)', () => {
+        return app.getRoom(directRoom.id, user2.accessToken).expect(200);
+      });
+    });
 
     it('invalid roomId should return 404 Not Found (403?)', async () => {});
   });
