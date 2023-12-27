@@ -143,6 +143,7 @@ describe('RoomController (e2e)', () => {
     let _protectedRoom: RoomEntity;
     let _duplicatedRoom: RoomEntity;
     let _withUserRoom: RoomEntity;
+    let _directRoom: RoomEntity;
 
     afterAll(async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
@@ -150,6 +151,7 @@ describe('RoomController (e2e)', () => {
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
       await app.deleteRoom(_duplicatedRoom.id, owner.accessToken);
       await app.deleteRoom(_withUserRoom.id, owner.accessToken);
+      await app.deleteRoom(_directRoom.id, owner.accessToken);
     });
 
     it('should create public room (201 Created)', async () => {
@@ -209,10 +211,28 @@ describe('RoomController (e2e)', () => {
     });
 
     describe('DIRECT', () => {
+      it('should create room with DIRECT access level (201 Created)', async () => {
+        _directRoom = await app
+          .createRoom(
+            { ...constants.room.directRoom, userIds: [member.id] },
+            owner.accessToken,
+          )
+          .expect(201)
+          .expect((res) => expectRoom(res.body))
+          .then((res) => res.body);
+      });
       it('should not create room with empty userIds', async () => {
         await app
           .createRoom(
             { ...constants.room.directRoom, userIds: [] },
+            owner.accessToken,
+          )
+          .expect(400);
+      });
+      it('should not create room with more than one userIds', async () => {
+        await app
+          .createRoom(
+            { ...constants.room.directRoom, userIds: [member.id, admin.id] },
             owner.accessToken,
           )
           .expect(400);
