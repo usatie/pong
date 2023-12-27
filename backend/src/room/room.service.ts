@@ -31,6 +31,10 @@ export class RoomService {
               userId: user.id,
               role: Role.OWNER,
             },
+            ...userIds?.map((userId) => ({
+              userId: userId,
+              role: Role.MEMBER,
+            })),
           ],
         },
       },
