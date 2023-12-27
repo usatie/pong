@@ -18,3 +18,9 @@ export const protectedRoom: CreateRoomDto = {
   password: 'password',
   userIds: [],
 };
+
+export const directRoom: CreateRoomDto = {
+  name: 'direct_room',
+  accessLevel: 'DIRECT',
+  userIds: [],
+};

@@ -22,6 +22,9 @@ export class RoomService {
 
   async create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
     const { userIds, ...rest } = createRoomDto;
+
+    // validate if there are only one userIds when accessLevel is DIRECT
+
     const room = await this.prisma.room.create({
       data: {
         ...rest,

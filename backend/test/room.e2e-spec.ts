@@ -207,6 +207,17 @@ describe('RoomController (e2e)', () => {
       expect(userIds).toContainEqual(member.id);
       expect(userIds).toContainEqual(admin.id);
     });
+
+    describe('DIRECT', () => {
+      it('should not create room with empty userIds', async () => {
+        await app
+          .createRoom(
+            { ...constants.room.directRoom, userIds: [] },
+            owner.accessToken,
+          )
+          .expect(400);
+      });
+    });
   });
 
   describe('GET /room/:id (Get Room)', () => {
