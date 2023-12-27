@@ -142,12 +142,14 @@ describe('RoomController (e2e)', () => {
     let _privateRoom: RoomEntity;
     let _protectedRoom: RoomEntity;
     let _duplicatedRoom: RoomEntity;
+    let _withUserRoom: RoomEntity;
 
     afterAll(async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
       await app.deleteRoom(_privateRoom.id, owner.accessToken);
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
       await app.deleteRoom(_duplicatedRoom.id, owner.accessToken);
+      await app.deleteRoom(_withUserRoom.id, owner.accessToken);
     });
 
     it('should create public room (201 Created)', async () => {
@@ -186,6 +188,24 @@ describe('RoomController (e2e)', () => {
         .expect(201)
         .expect((res) => expectRoom(res.body))
         .then((res) => res.body);
+    });
+
+    it('should create room with users (201 OK)', async () => {
+      _withUserRoom = await app
+        .createRoom(
+          { ...constants.room.publicRoom, userIds: [member.id, admin.id] },
+          owner.accessToken,
+        )
+        .expect(201)
+        .expect((res) => expectRoom(res.body))
+        .then((res) => res.body);
+      const room = await app
+        .getRoom(_withUserRoom.id, owner.accessToken)
+        .expect(200)
+        .then((res) => res.body);
+      const userIds = room.users.map((user) => user.userId);
+      expect(userIds).toContainEqual(member.id);
+      expect(userIds).toContainEqual(admin.id);
     });
   });
 
