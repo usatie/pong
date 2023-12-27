@@ -31,6 +31,9 @@ export class RoomService {
     if (createRoomDto.accessLevel === 'DIRECT' && userIds.length !== 1) {
       throw new BadRequestException('Direct room should have only one user');
     }
+    // If accessLevel is DIRECT, set defaultRole to OWNER
+    const defaultRole =
+      createRoomDto.accessLevel === 'DIRECT' ? Role.OWNER : Role.MEMBER;
 
     const room = await this.prisma.room.create({
       data: {
@@ -43,7 +46,7 @@ export class RoomService {
             },
             ...userIds.map((userId) => ({
               userId: userId,
-              role: Role.MEMBER,
+              role: defaultRole,
             })),
           ],
         },
