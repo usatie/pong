@@ -734,6 +734,9 @@ describe('RoomController (e2e)', () => {
             await update({ password: '12345678' }).expect(400);
           });
         }
+        it('should not update access_level to direct (400 Bad Request)', async () => {
+          await update({ accessLevel: 'DIRECT' }).expect(400);
+        });
       });
       describe('admin', shouldNotUpdateAny(updater(adminRef, _roomRef)));
       describe('member', shouldNotUpdateAny(updater(memberRef, _roomRef)));
@@ -759,25 +762,25 @@ describe('RoomController (e2e)', () => {
       afterEach(async () => {
         await app.deleteRoom(_room.id, user1.accessToken);
       });
-      it('should not update name (403 Forbidden)', async () => {
+      it('should not update name (400 Forbidden)', async () => {
         await app
           .updateRoom(_room.id, { name: 'new_name' }, user1.accessToken)
-          .expect(403);
+          .expect(400);
       });
-      it('should not update access_level (403 Forbidden)', async () => {
+      it('should not update access_level (400 Forbidden)', async () => {
         await app
           .updateRoom(_room.id, { accessLevel: 'PUBLIC' }, user1.accessToken)
-          .expect(403);
+          .expect(400);
         await app
           .updateRoom(_room.id, { accessLevel: 'PRIVATE' }, user1.accessToken)
-          .expect(403);
+          .expect(400);
         await app
           .updateRoom(
             _room.id,
             { accessLevel: 'PROTECTED', password: '12345678' },
             user1.accessToken,
           )
-          .expect(403);
+          .expect(400);
       });
     });
 
