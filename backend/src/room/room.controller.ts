@@ -52,6 +52,7 @@ export class RoomController {
   }
 
   @Get()
+  @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity, isArray: true })
   async findAll(@CurrentUser() user: User) {
     const rooms = await this.roomService.findAllRoom(user.id);
