@@ -534,6 +534,18 @@ describe('RoomController (e2e)', () => {
         });
       });
     });
+    describe('DIRECT ROOM', () => {
+      it('should not invite anyone (403 Forbidden)', async () => {
+        await app
+          .inviteRoom(directRoom.id, notMember.id, user1.accessToken)
+          .expect(403);
+      });
+      it('should not invite anyone (403 Forbidden)', async () => {
+        await app
+          .inviteRoom(directRoom.id, notMember.id, user2.accessToken)
+          .expect(403);
+      });
+    });
   });
 
   describe('GET /room (Get All Rooms)', () => {

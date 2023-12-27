@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Role, User } from '@prisma/client';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
@@ -143,6 +147,12 @@ export class RoomService {
   }
 
   async inviteUser(id: number, userId: number): Promise<UserOnRoomEntity> {
+    const room = await this.prisma.room.findUniqueOrThrow({
+      where: { id },
+    });
+    if (room.accessLevel === 'DIRECT') {
+      throw new ForbiddenException('Direct room cannot invite user');
+    }
     const userOnRoom = await this.prisma.userOnRoom.create({
       data: {
         roomId: id,
