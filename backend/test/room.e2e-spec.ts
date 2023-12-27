@@ -746,6 +746,40 @@ describe('RoomController (e2e)', () => {
     describe('PUBLIC room', testUpdateRoom(constants.room.publicRoom));
     describe('PRIVATE room', testUpdateRoom(constants.room.privateRoom));
     describe('PROTECTED room', testUpdateRoom(constants.room.protectedRoom));
+    describe('DIRECT room', () => {
+      let _room: RoomEntity;
+      beforeEach(async () => {
+        _room = await app
+          .createRoom(
+            { ...constants.room.directRoom, userIds: [user2.id] },
+            user1.accessToken,
+          )
+          .then((res) => res.body);
+      });
+      afterEach(async () => {
+        await app.deleteRoom(_room.id, user1.accessToken);
+      });
+      it('should not update name (403 Forbidden)', async () => {
+        await app
+          .updateRoom(_room.id, { name: 'new_name' }, user1.accessToken)
+          .expect(403);
+      });
+      it('should not update access_level (403 Forbidden)', async () => {
+        await app
+          .updateRoom(_room.id, { accessLevel: 'PUBLIC' }, user1.accessToken)
+          .expect(403);
+        await app
+          .updateRoom(_room.id, { accessLevel: 'PRIVATE' }, user1.accessToken)
+          .expect(403);
+        await app
+          .updateRoom(
+            _room.id,
+            { accessLevel: 'PROTECTED', password: '12345678' },
+            user1.accessToken,
+          )
+          .expect(403);
+      });
+    });
 
     it('invalid roomId should return 404 Not Found', async () => {});
   });
