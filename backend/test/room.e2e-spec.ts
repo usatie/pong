@@ -195,7 +195,7 @@ describe('RoomController (e2e)', () => {
     });
 
     it('should not create protected room without password (400 Bad Request)', async () => {
-      let dtoWithoutPassword = { ...constants.room.protectedRoom };
+      const dtoWithoutPassword = { ...constants.room.protectedRoom };
       delete dtoWithoutPassword.password;
       await app.createRoom(dtoWithoutPassword, owner.accessToken).expect(400);
     });
@@ -619,7 +619,7 @@ describe('RoomController (e2e)', () => {
         app.updateRoom(room.current.id, dto, user.current.accessToken);
     const testUpdateRoom = (dto: CreateRoomDto) => () => {
       let _room: RoomEntity;
-      let _roomRef: Ref<RoomEntity> = new Ref();
+      const _roomRef: Ref<RoomEntity> = new Ref();
       beforeEach(async () => {
         _room = await setupRoom(dto);
         _roomRef.current = _room;
