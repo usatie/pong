@@ -39,17 +39,19 @@ model User {
 
   // 2FA
   twoFactorSecret  String?
-  twoFactorEnabled Boolean   @default(false)
+  twoFactorEnabled Boolean         @default(false)
   Message          Message[]
+  BannedRooms      BanUserOnRoom[]
 }
 
 model Room {
-  id          Int          @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   name        String
   users       UserOnRoom[]
   Message     Message[]
   accessLevel AccessLevel
   password    String?
+  BannedUsers BanUserOnRoom[]
 }
 
 enum AccessLevel {
@@ -75,6 +77,18 @@ enum Role {
   OWNER
   ADMINISTRATOR
   MEMBER
+}
+
+model BanUserOnRoom {
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+
+  room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId Int
+
+  createdAt DateTime @default(now())
+
+  @@unique(fields: [userId, roomId], name: "userId_roomId_unique")
 }
 
 model Message {
