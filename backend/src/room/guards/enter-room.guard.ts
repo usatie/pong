@@ -38,6 +38,10 @@ export class EnterRoomGuard implements CanActivate {
         return true;
       case 'PRIVATE': // PRIVATE rooms are invite only
         return false;
+      case 'DIRECT': // DIRECT rooms are invite only
+        return false;
+      default:
+        throw new BadRequestException('invalid accessLevel');
     }
   }
 }
