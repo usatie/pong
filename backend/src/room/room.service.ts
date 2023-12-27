@@ -208,6 +208,12 @@ export class RoomService {
   };
 
   async kickUser(roomId: number, userId: number): Promise<UserOnRoomEntity> {
+    const room = await this.prisma.room.findUniqueOrThrow({
+      where: { id: roomId },
+    });
+    if (room.accessLevel === 'DIRECT') {
+      throw new ForbiddenException('Direct room cannot kick/leave user');
+    }
     const deletedUserOnRoom = await this.prisma.userOnRoom.delete({
       where: {
         userId_roomId_unique: {

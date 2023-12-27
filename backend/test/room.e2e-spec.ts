@@ -899,16 +899,24 @@ describe('RoomController (e2e)', () => {
   });
 
   describe('DELETE /room/:id/:userId (Leave)', () => {
-    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    let _publicRoom, _privateRoom, _protectedRoom, _directRoom: RoomEntity;
     const setupRooms = async () => {
       _publicRoom = await setupRoom(constants.room.publicRoom);
       _privateRoom = await setupRoom(constants.room.privateRoom);
       _protectedRoom = await setupRoom(constants.room.protectedRoom);
+      _directRoom = await app
+        .createRoom(
+          { ...constants.room.directRoom, userIds: [user2.id] },
+          user1.accessToken,
+        )
+        .expect(201)
+        .then((res) => res.body);
     };
     const teardownRooms = async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
       await app.deleteRoom(_privateRoom.id, owner.accessToken);
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+      await app.deleteRoom(_directRoom.id, user1.accessToken);
     };
     describe('owner', () => {
       beforeAll(setupRooms);
@@ -937,7 +945,6 @@ describe('RoomController (e2e)', () => {
         await app.leaveRoom(_protectedRoom.id, admin.accessToken).expect(204);
       });
     });
-
     describe('member', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
@@ -951,7 +958,6 @@ describe('RoomController (e2e)', () => {
         await app.leaveRoom(_protectedRoom.id, member.accessToken).expect(204);
       });
     });
-
     describe('non-member', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
@@ -967,19 +973,41 @@ describe('RoomController (e2e)', () => {
           .expect(403);
       });
     });
+    describe('user1', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should not leave direct room (403 Forbidden)', async () => {
+        await app.leaveRoom(directRoom.id, user1.accessToken).expect(403);
+      });
+    });
+    describe('user2', () => {
+      beforeAll(setupRooms);
+      afterAll(teardownRooms);
+      test('should not leave direct room (403 Forbidden)', async () => {
+        await app.leaveRoom(directRoom.id, user2.accessToken).expect(403);
+      });
+    });
   });
 
   describe('DELETE /room/:id/kick/:userId (Kick)', () => {
-    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    let _publicRoom, _privateRoom, _protectedRoom, _directRoom: RoomEntity;
     const setupRooms = async () => {
       _publicRoom = await setupRoom(constants.room.publicRoom);
       _privateRoom = await setupRoom(constants.room.privateRoom);
       _protectedRoom = await setupRoom(constants.room.protectedRoom);
+      _directRoom = await app
+        .createRoom(
+          { ...constants.room.directRoom, userIds: [user2.id] },
+          user1.accessToken,
+        )
+        .expect(201)
+        .then((res) => res.body);
     };
     const teardownRooms = async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
       await app.deleteRoom(_privateRoom.id, owner.accessToken);
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+      await app.deleteRoom(_directRoom.id, user1.accessToken);
     };
     const kickAll = async (
       userId: number,
@@ -1056,6 +1084,22 @@ describe('RoomController (e2e)', () => {
       });
       it('should not kick non-member (403 Not Found)', async () => {
         await kickAll(notMember.id, notMember.accessToken, 403);
+      });
+    });
+    describe('user1', () => {
+      beforeEach(setupRooms);
+      afterEach(teardownRooms);
+      it('should not kick anyone (403 Forbidden)', async () => {
+        await kickAll(user1.id, user1.accessToken, 403);
+        await kickAll(user2.id, user1.accessToken, 403);
+      });
+    });
+    describe('user2', () => {
+      beforeEach(setupRooms);
+      afterEach(teardownRooms);
+      it('should not kick anyone (403 Forbidden)', async () => {
+        await kickAll(user1.id, user2.accessToken, 403);
+        await kickAll(user2.id, user2.accessToken, 403);
       });
     });
   });
