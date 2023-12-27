@@ -13,7 +13,7 @@ export class RoomEntity implements Room {
   name: string;
 
   @ApiProperty()
-  accessLevel: 'PUBLIC' | 'PRIVATE' | 'PROTECTED';
+  accessLevel: 'PUBLIC' | 'PRIVATE' | 'PROTECTED' | 'DIRECT';
 
   @Exclude()
   password: string;

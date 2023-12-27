@@ -17,7 +17,7 @@ export class CreateRoomDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  accessLevel: 'PUBLIC' | 'PRIVATE' | 'PROTECTED';
+  accessLevel: 'PUBLIC' | 'PRIVATE' | 'PROTECTED' | 'DIRECT';
 
   @ValidateIf((o) => o.accessLevel === 'PROTECTED')
   @IsString()
