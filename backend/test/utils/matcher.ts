@@ -9,7 +9,7 @@ export const expectRoomWithUsers = (room) => {
     users: expect.any(Array),
   };
   expect(room).toEqual(expected);
-  expect(room.accessLevel).toMatch(/PUBLIC|PRIVATE|PROTECTED/);
+  expect(room.accessLevel).toMatch(/PUBLIC|PRIVATE|PROTECTED|DIRECT/);
 };
 
 export const expectRoom = (room) => {
@@ -19,7 +19,7 @@ export const expectRoom = (room) => {
     accessLevel: expect.any(String),
   };
   expect(room).toEqual(expected);
-  expect(room.accessLevel).toMatch(/PUBLIC|PRIVATE|PROTECTED/);
+  expect(room.accessLevel).toMatch(/PUBLIC|PRIVATE|PROTECTED|DIRECT/);
 };
 
 export const expectUserOnRoom = (userOnRoom) => {
