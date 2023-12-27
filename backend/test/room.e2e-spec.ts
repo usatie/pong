@@ -19,15 +19,17 @@ describe('RoomController (e2e)', () => {
     current: T;
   }
   let owner, admin, member, notMember: UserEntityWithAccessToken;
+  let user1, user2: UserEntityWithAccessToken;
   const ownerRef: Ref<UserEntityWithAccessToken> = new Ref();
   const adminRef: Ref<UserEntityWithAccessToken> = new Ref();
   const memberRef: Ref<UserEntityWithAccessToken> = new Ref();
   const nonMemberRef: Ref<UserEntityWithAccessToken> = new Ref();
 
-  let publicRoom, privateRoom, protectedRoom: RoomEntity;
+  let publicRoom, privateRoom, protectedRoom, directRoom: RoomEntity;
   const publicRoomRef: Ref<RoomEntity> = new Ref();
   const privateRoomRef: Ref<RoomEntity> = new Ref();
   const protectedRoomRef: Ref<RoomEntity> = new Ref();
+  const directRoomRef: Ref<RoomEntity> = new Ref();
   beforeAll(async () => {
     // Owner
     {
@@ -106,6 +108,19 @@ describe('RoomController (e2e)', () => {
       notMember = await app.createAndLoginUser(constants.user.notMember);
       nonMemberRef.current = notMember;
     }
+    // User1, User2
+    {
+      user1 = await app.createAndLoginUser(constants.user.test);
+      user2 = await app.createAndLoginUser(constants.user.test2);
+      directRoom = await app
+        .createRoom(
+          { ...constants.room.directRoom, userIds: [user2.id] },
+          user1.accessToken,
+        )
+        .expect(201)
+        .then((res) => res.body);
+      directRoomRef.current = directRoom;
+    }
   });
 
   afterAll(async () => {
@@ -113,8 +128,9 @@ describe('RoomController (e2e)', () => {
     await app.deleteRoom(publicRoom.id, owner.accessToken);
     await app.deleteRoom(privateRoom.id, owner.accessToken);
     await app.deleteRoom(protectedRoom.id, owner.accessToken);
+    await app.deleteRoom(directRoom.id, owner.accessToken);
     // Delete users
-    for (const user of [owner, admin, member, notMember]) {
+    for (const user of [owner, admin, member, notMember, user1, user2]) {
       await app.deleteUser(user.id, user.accessToken);
     }
   });
@@ -142,12 +158,16 @@ describe('RoomController (e2e)', () => {
     let _privateRoom: RoomEntity;
     let _protectedRoom: RoomEntity;
     let _duplicatedRoom: RoomEntity;
+    let _withUserRoom: RoomEntity;
+    let _directRoom: RoomEntity;
 
     afterAll(async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
       await app.deleteRoom(_privateRoom.id, owner.accessToken);
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
       await app.deleteRoom(_duplicatedRoom.id, owner.accessToken);
+      await app.deleteRoom(_withUserRoom.id, owner.accessToken);
+      await app.deleteRoom(_directRoom.id, owner.accessToken);
     });
 
     it('should create public room (201 Created)', async () => {
@@ -175,7 +195,7 @@ describe('RoomController (e2e)', () => {
     });
 
     it('should not create protected room without password (400 Bad Request)', async () => {
-      let dtoWithoutPassword = { ...constants.room.protectedRoom };
+      const dtoWithoutPassword = { ...constants.room.protectedRoom };
       delete dtoWithoutPassword.password;
       await app.createRoom(dtoWithoutPassword, owner.accessToken).expect(400);
     });
@@ -186,6 +206,53 @@ describe('RoomController (e2e)', () => {
         .expect(201)
         .expect((res) => expectRoom(res.body))
         .then((res) => res.body);
+    });
+
+    it('should create room with users (201 OK)', async () => {
+      _withUserRoom = await app
+        .createRoom(
+          { ...constants.room.publicRoom, userIds: [member.id, admin.id] },
+          owner.accessToken,
+        )
+        .expect(201)
+        .expect((res) => expectRoom(res.body))
+        .then((res) => res.body);
+      const room = await app
+        .getRoom(_withUserRoom.id, owner.accessToken)
+        .expect(200)
+        .then((res) => res.body);
+      const userIds = room.users.map((user) => user.userId);
+      expect(userIds).toContainEqual(member.id);
+      expect(userIds).toContainEqual(admin.id);
+    });
+
+    describe('DIRECT', () => {
+      it('should create room with DIRECT access level (201 Created)', async () => {
+        _directRoom = await app
+          .createRoom(
+            { ...constants.room.directRoom, userIds: [member.id] },
+            owner.accessToken,
+          )
+          .expect(201)
+          .expect((res) => expectRoom(res.body))
+          .then((res) => res.body);
+      });
+      it('should not create room with empty userIds', async () => {
+        await app
+          .createRoom(
+            { ...constants.room.directRoom, userIds: [] },
+            owner.accessToken,
+          )
+          .expect(400);
+      });
+      it('should not create room with more than one userIds', async () => {
+        await app
+          .createRoom(
+            { ...constants.room.directRoom, userIds: [member.id, admin.id] },
+            owner.accessToken,
+          )
+          .expect(400);
+      });
     });
   });
 
@@ -359,6 +426,11 @@ describe('RoomController (e2e)', () => {
         });
       });
     });
+    describe('DIRECT room', () => {
+      it('should not enter direct room (403 Forbidden)', async () => {
+        await app.enterRoom(directRoom.id, notMember.accessToken).expect(403);
+      });
+    });
     it('Anyone should not enter invalid room (404 Not Found)', async () => {});
   });
 
@@ -462,6 +534,18 @@ describe('RoomController (e2e)', () => {
         });
       });
     });
+    describe('DIRECT ROOM', () => {
+      it('should not invite anyone (403 Forbidden)', async () => {
+        await app
+          .inviteRoom(directRoom.id, notMember.id, user1.accessToken)
+          .expect(403);
+      });
+      it('should not invite anyone (403 Forbidden)', async () => {
+        await app
+          .inviteRoom(directRoom.id, notMember.id, user2.accessToken)
+          .expect(403);
+      });
+    });
   });
 
   describe('GET /room (Get All Rooms)', () => {
@@ -508,12 +592,11 @@ describe('RoomController (e2e)', () => {
   });
 
   const setupRoom = async (dto: CreateRoomDto) => {
+    dto.userIds = [member.id, admin.id];
     const room = await app
       .createRoom(dto, owner.accessToken)
       .expect(201)
       .then((res) => res.body);
-    await app.inviteRoom(room.id, member.id, owner.accessToken);
-    await app.inviteRoom(room.id, admin.id, owner.accessToken);
     await app.updateUserOnRoom(
       room.id,
       admin.id,
@@ -548,7 +631,7 @@ describe('RoomController (e2e)', () => {
         app.updateRoom(room.current.id, dto, user.current.accessToken);
     const testUpdateRoom = (dto: CreateRoomDto) => () => {
       let _room: RoomEntity;
-      let _roomRef: Ref<RoomEntity> = new Ref();
+      const _roomRef: Ref<RoomEntity> = new Ref();
       beforeEach(async () => {
         _room = await setupRoom(dto);
         _roomRef.current = _room;

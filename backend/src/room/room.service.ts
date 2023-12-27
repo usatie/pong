@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Role, User } from '@prisma/client';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
@@ -21,15 +25,26 @@ export class RoomService {
   // room CRUD
 
   async create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
+    const { userIds, ...rest } = createRoomDto;
+
+    // validate if there are only one userIds when accessLevel is DIRECT
+    if (createRoomDto.accessLevel === 'DIRECT' && userIds.length !== 1) {
+      throw new BadRequestException('Direct room should have only one user');
+    }
+
     const room = await this.prisma.room.create({
       data: {
-        ...createRoomDto,
+        ...rest,
         users: {
           create: [
             {
               userId: user.id,
               role: Role.OWNER,
             },
+            ...userIds.map((userId) => ({
+              userId: userId,
+              role: Role.MEMBER,
+            })),
           ],
         },
       },
@@ -132,6 +147,12 @@ export class RoomService {
   }
 
   async inviteUser(id: number, userId: number): Promise<UserOnRoomEntity> {
+    const room = await this.prisma.room.findUniqueOrThrow({
+      where: { id },
+    });
+    if (room.accessLevel === 'DIRECT') {
+      throw new ForbiddenException('Direct room cannot invite user');
+    }
     const userOnRoom = await this.prisma.userOnRoom.create({
       data: {
         roomId: id,
