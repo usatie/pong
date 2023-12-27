@@ -508,12 +508,11 @@ describe('RoomController (e2e)', () => {
   });
 
   const setupRoom = async (dto: CreateRoomDto) => {
+    dto.userIds = [member.id, admin.id];
     const room = await app
       .createRoom(dto, owner.accessToken)
       .expect(201)
       .then((res) => res.body);
-    await app.inviteRoom(room.id, member.id, owner.accessToken);
-    await app.inviteRoom(room.id, admin.id, owner.accessToken);
     await app.updateUserOnRoom(
       room.id,
       admin.id,
