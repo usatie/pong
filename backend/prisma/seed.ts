@@ -77,6 +77,42 @@ async function seedRooms(users) {
         },
       },
     });
+    await prisma.room.create({
+      data: {
+        name: 'DM 1',
+        accessLevel: 'DIRECT',
+        users: {
+          create: [
+            { userId: user1.id, role: 'OWNER' },
+            { userId: user2.id, role: 'MEMBER' },
+          ],
+        },
+      },
+    });
+    await prisma.room.create({
+      data: {
+        name: 'DM 2',
+        accessLevel: 'DIRECT',
+        users: {
+          create: [
+            { userId: user2.id, role: 'OWNER' },
+            { userId: user3.id, role: 'MEMBER' },
+          ],
+        },
+      },
+    });
+    await prisma.room.create({
+      data: {
+        name: 'DM 3',
+        accessLevel: 'DIRECT',
+        users: {
+          create: [
+            { userId: user3.id, role: 'OWNER' },
+            { userId: user4.id, role: 'MEMBER' },
+          ],
+        },
+      },
+    });
   }
 }
 
