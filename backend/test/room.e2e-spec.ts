@@ -1105,16 +1105,24 @@ describe('RoomController (e2e)', () => {
   });
 
   describe('PATCH /room/:id/:userId (Update Role)', () => {
-    let _publicRoom, _privateRoom, _protectedRoom: RoomEntity;
+    let _publicRoom, _privateRoom, _protectedRoom, _directRoom: RoomEntity;
     const setupRooms = async () => {
       _publicRoom = await setupRoom(constants.room.publicRoom);
       _privateRoom = await setupRoom(constants.room.privateRoom);
       _protectedRoom = await setupRoom(constants.room.protectedRoom);
+      _directRoom = await app
+        .createRoom(
+          { ...constants.room.directRoom, userIds: [user2.id] },
+          user1.accessToken,
+        )
+        .expect(201)
+        .then((res) => res.body);
     };
     const teardownRooms = async () => {
       await app.deleteRoom(_publicRoom.id, owner.accessToken);
       await app.deleteRoom(_privateRoom.id, owner.accessToken);
       await app.deleteRoom(_protectedRoom.id, owner.accessToken);
+      await app.deleteRoom(_directRoom.id, user1.accessToken);
     };
     beforeEach(setupRooms);
     afterEach(teardownRooms);
@@ -1415,6 +1423,44 @@ describe('RoomController (e2e)', () => {
               notMember.id,
               { role: Role.MEMBER },
               notMember.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: User1', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _directRoom.id,
+              user1.id,
+              { role: Role.MEMBER },
+              notMember.accessToken,
+            )
+            .expect(403);
+        });
+      });
+    });
+    describe('User1', () => {
+      describe('Target: User1', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _directRoom.id,
+              user1.id,
+              { role: Role.MEMBER },
+              user1.accessToken,
+            )
+            .expect(403);
+        });
+      });
+      describe('Target: User2', () => {
+        it('should not update role to member (403 Forbidden)', async () => {
+          await app
+            .updateUserOnRoom(
+              _directRoom.id,
+              user2.id,
+              { role: Role.MEMBER },
+              user1.accessToken,
             )
             .expect(403);
         });
