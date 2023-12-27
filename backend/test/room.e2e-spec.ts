@@ -578,33 +578,81 @@ describe('RoomController (e2e)', () => {
           expect(res.body).toContainEqual(protectedRoom);
         });
     describe('owner', () => {
-      it('should get all rooms (200 OK)', async () => {
-        await testGetRooms(owner.accessToken).expect((res) => {
-          expect(res.body).toContainEqual(privateRoom);
-        });
+      let _rooms: RoomEntity[];
+      it('should get rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(owner.accessToken).then((res) => res.body);
+      });
+      it('should contain private room', async () => {
+        expect(_rooms).toContainEqual(privateRoom);
+      });
+      it('should not contain the direct room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(directRoom));
       });
     });
     describe('admin', () => {
-      it('should get all rooms (200 OK)', async () => {
-        await testGetRooms(admin.accessToken).expect((res) => {
-          expect(res.body).toContainEqual(privateRoom);
-        });
+      let _rooms: RoomEntity[];
+      it('should get rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(admin.accessToken).then((res) => res.body);
+      });
+      it('should contain private room', async () => {
+        expect(_rooms).toContainEqual(privateRoom);
+      });
+      it('should not contain the direct room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(directRoom));
       });
     });
     describe('member', () => {
-      it('should get all rooms (200 OK)', async () => {
-        await testGetRooms(member.accessToken).expect((res) => {
-          expect(res.body).toContainEqual(privateRoom);
-        });
+      let _rooms: RoomEntity[];
+      it('should get rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(member.accessToken).then((res) => res.body);
+      });
+      it('should contain private room', async () => {
+        expect(_rooms).toContainEqual(privateRoom);
+      });
+      it('should not contain the direct room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(directRoom));
       });
     });
     describe('non-member', () => {
-      it('should not get private rooms (200 OK)', async () => {
-        await testGetRooms(notMember.accessToken).expect((res) => {
-          const expectNotPrivate = (room: RoomEntity) =>
-            expect(room.accessLevel).not.toEqual('PRIVATE');
-          res.body.forEach(expectNotPrivate);
-        });
+      let _rooms: RoomEntity[];
+      it('should get rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(notMember.accessToken).then(
+          (res) => res.body,
+        );
+      });
+      it('should not contain private room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(privateRoom));
+      });
+      it('should not contain the direct room', async () => {
+        _rooms.forEach((room) => expect(room).not.toEqual(directRoom));
+      });
+    });
+    describe('user1', () => {
+      let _rooms: RoomEntity[];
+      it('should get all rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(user1.accessToken).then((res) => res.body);
+      });
+      it('should contain direct room', async () => {
+        expect(_rooms).toContainEqual(directRoom);
+      });
+      it('should not contain private room', async () => {
+        _rooms.forEach((room) =>
+          expect(room.accessLevel).not.toEqual('PRIVATE'),
+        );
+      });
+    });
+    describe('user2', () => {
+      let _rooms: RoomEntity[];
+      it('should get all rooms (200 OK)', async () => {
+        _rooms = await testGetRooms(user2.accessToken).then((res) => res.body);
+      });
+      it('should contain direct room', async () => {
+        expect(_rooms).toContainEqual(directRoom);
+      });
+      it('should not contain private room', async () => {
+        _rooms.forEach((room) =>
+          expect(room.accessLevel).not.toEqual('PRIVATE'),
+        );
       });
     });
   });
