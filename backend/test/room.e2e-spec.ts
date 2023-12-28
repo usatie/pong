@@ -281,8 +281,8 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, owner.accessToken).expect(200);
       });
-      it('should not get direct room (403 Forbidden)', () => {
-        return app.getRoom(directRoom.id, owner.accessToken).expect(403);
+      it('should not get direct room (404 Not Found)', () => {
+        return app.getRoom(directRoom.id, owner.accessToken).expect(404);
       });
     });
 
@@ -296,8 +296,8 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, admin.accessToken).expect(200);
       });
-      it('should not get direct room (403 Forbidden)', () => {
-        return app.getRoom(directRoom.id, admin.accessToken).expect(403);
+      it('should not get direct room (404 Not Found)', () => {
+        return app.getRoom(directRoom.id, admin.accessToken).expect(404);
       });
     });
 
@@ -311,8 +311,8 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, member.accessToken).expect(200);
       });
-      it('should not get direct room (403 Forbidden)', () => {
-        return app.getRoom(directRoom.id, member.accessToken).expect(403);
+      it('should not get direct room (404 Not Found)', () => {
+        return app.getRoom(directRoom.id, member.accessToken).expect(404);
       });
     });
 
@@ -323,11 +323,11 @@ describe('RoomController (e2e)', () => {
       it('should get protected room', () => {
         return app.getRoom(protectedRoom.id, notMember.accessToken).expect(200);
       });
-      it('should not get private room', () => {
-        return app.getRoom(privateRoom.id, notMember.accessToken).expect(403);
+      it('should not get private room (404 Not Found)', () => {
+        return app.getRoom(privateRoom.id, notMember.accessToken).expect(404);
       });
-      it('should not get direct room (403 Forbidden)', () => {
-        return app.getRoom(directRoom.id, notMember.accessToken).expect(403);
+      it('should not get direct room (404 Not Found)', () => {
+        return app.getRoom(directRoom.id, notMember.accessToken).expect(404);
       });
     });
 
@@ -1664,6 +1664,16 @@ describe('RoomController (e2e)', () => {
       });
       test('banned user should not be able to enter the room (403 Forbidden)', async () => {
         await app.enterRoom(_publicRoom.id, _user.accessToken).expect(403);
+      });
+      test('banned user should not get the room (404 Not Found)', async () => {
+        await app.getRoom(_publicRoom.id, _user.accessToken).expect(404);
+      });
+      test('banned user should not get the room in the list (200 OK)', async () => {
+        const rooms = await app
+          .getRooms(_user.accessToken)
+          .expect(200)
+          .then((res) => res.body);
+        rooms.forEach((room) => expect(room).not.toEqual(_publicRoom));
       });
     });
   });
