@@ -161,9 +161,15 @@ export class RoomService {
   async inviteUser(id: number, userId: number): Promise<UserOnRoomEntity> {
     const room = await this.prisma.room.findUniqueOrThrow({
       where: { id },
+      include: {
+        BannedUsers: true,
+      },
     });
     if (room.accessLevel === 'DIRECT') {
       throw new ForbiddenException('Direct room cannot invite user');
+    }
+    if (room.BannedUsers.some((bannedUser) => bannedUser.userId === userId)) {
+      throw new ForbiddenException('User is banned from this room');
     }
     const userOnRoom = await this.prisma.userOnRoom.create({
       data: {
