@@ -11,7 +11,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class BanService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: number, roomId: number) {
+  async create(roomId: number, userId: number) {
     await this.prisma.$transaction(async (prisma) => {
       const room = await prisma.room.findUnique({
         where: {

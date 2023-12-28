@@ -23,7 +23,7 @@ export class BanController {
     @Param('roomId', ParseIntPipe) roomId: number,
     @Param('userId', ParseIntPipe) userId: number,
   ) {
-    return this.banService.create(userId, roomId);
+    return this.banService.create(roomId, userId);
   }
 
   @Delete(':userId')
