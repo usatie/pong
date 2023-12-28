@@ -134,6 +134,15 @@ export class RoomService {
   // UserOnRoom CRUD
 
   async enterRoom(id: number, user: User): Promise<UserOnRoomEntity> {
+    const room = await this.prisma.room.findUniqueOrThrow({
+      where: { id },
+      include: {
+        BannedUsers: true,
+      },
+    });
+    if (room.BannedUsers.some((bannedUser) => bannedUser.userId === user.id)) {
+      throw new ForbiddenException('You are banned from this room');
+    }
     const userOnRoom = await this.prisma.userOnRoom.create({
       data: {
         roomId: id,
