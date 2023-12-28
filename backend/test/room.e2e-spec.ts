@@ -1669,13 +1669,47 @@ describe('RoomController (e2e)', () => {
   });
 
   describe('DELETE /room/:id/bans/:userId (Unban user)', () => {
-    it('owner should unban anyone in the room', async () => {});
+    describe('Owner', () => {
+      let _publicRoom: RoomEntity;
+      let _user: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        _user = await app.createAndLoginUser({
+          name: 'BANNED USER',
+          email: 'banned@example.com',
+          password: '12345678',
+        });
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _user.id, owner.accessToken);
+        await app
+          .banUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_user.id, _user.accessToken).expect(204);
+      });
+      it('should unban user (200 OK)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(200);
+      });
+      test('unbanned user should not be in the room until re-enter (404 Not Found)', async () => {
+        await app
+          .getUserOnRoom(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(404);
+      });
+      test('unbanned user should be able to join the room (201 Created)', async () => {
+        await app.enterRoom(_publicRoom.id, _user.accessToken).expect(201);
+      });
+      it('should not unban user who is not banned (404 Not Found)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, member.id, owner.accessToken)
+          .expect(404);
+      });
+    });
     it('admin should unban admin/member', async () => {});
     it('member should not unban anyone', async () => {});
     it('notMember should not unban anyone', async () => {});
-
-    it('unbanned user is not in the room anymore', async () => {});
-    it('unbanned user should enter the room again', async () => {});
   });
 
   describe('POST /room/:id/mutes/:userId (Mute user)', () => {
