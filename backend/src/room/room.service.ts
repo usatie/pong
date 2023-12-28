@@ -74,6 +74,8 @@ export class RoomService {
             },
           },
         ],
+        // Should not include room for banned users
+        BannedUsers: { none: { userId: userId } },
       },
     });
   }
