@@ -1755,8 +1755,31 @@ describe('RoomController (e2e)', () => {
           .expect(404);
       });
     });
-    it('admin should unban admin/member', async () => {});
-    it('member should not unban anyone', async () => {});
+    describe('Member', () => {
+      let _publicRoom: RoomEntity;
+      let _user: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        _user = await app.createAndLoginUser({
+          name: 'BANNED USER',
+          email: 'banned@example.com',
+          password: '12345678',
+        });
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _user.id, owner.accessToken);
+        await app
+          .banUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_user.id, _user.accessToken).expect(204);
+      });
+      it('should not unban user (403 Forbidden)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, _user.id, member.accessToken)
+          .expect(403);
+      });
+    });
     it('notMember should not unban anyone', async () => {});
   });
 
