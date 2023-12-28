@@ -1,42 +1,37 @@
 import {
-  Body,
   Controller,
   Delete,
-  Get,
   Param,
-  Patch,
-  Post,
+  ParseIntPipe,
+  Put,
+  UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AdminGuard } from '../guards/admin.guard';
 import { BanService } from './ban.service';
-import { CreateBanDto } from './dto/create-ban.dto';
-import { UpdateBanDto } from './dto/update-ban.dto';
 
-@Controller('ban')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('room/:roomId/bans')
 export class BanController {
   constructor(private readonly banService: BanService) {}
 
-  @Post()
-  create(@Body() createBanDto: CreateBanDto) {
-    return this.banService.create(createBanDto);
+  @Put(':userId')
+  @UseGuards(AdminGuard)
+  create(
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.banService.create(userId, roomId);
   }
 
-  @Get()
-  findAll() {
-    return this.banService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.banService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBanDto: UpdateBanDto) {
-    return this.banService.update(+id, updateBanDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.banService.remove(+id);
+  @Delete(':userId')
+  @UseGuards(AdminGuard)
+  remove(
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.banService.remove(roomId, userId);
   }
 }
