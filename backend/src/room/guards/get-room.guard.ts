@@ -5,11 +5,15 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { RoomService } from '../room.service';
 
 @Injectable()
 export class GetRoomGuard implements CanActivate {
-  constructor(private roomService: RoomService) {}
+  constructor(
+    private roomService: RoomService,
+    private prisma: PrismaService,
+  ) {}
 
   async canActivate(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();
@@ -24,23 +28,26 @@ export class GetRoomGuard implements CanActivate {
     if (typeof roomId !== 'string' || !/^\d+$/.test(roomId)) {
       throw new BadRequestException('roomId parameter must be a valid integer');
     }
-    const room = await this.roomService.findRoom(Number(roomId));
-    // PUBLIC/PROTECTED rooms are accessible to everyone
-    if (room.accessLevel === 'PUBLIC' || room.accessLevel === 'PROTECTED') {
-      return true;
-    }
-    // PRIVATE rooms are only accessible to members
-    try {
-      await this.roomService.findUserOnRoom(Number(roomId), user.id);
-      return true;
-    } catch (e) {
-      if (e.code === 'P2025') {
-        // If userOnRoom is not found, throw a ForbiddenException
-        throw new ForbiddenException('You are not a member of this room');
-      } else {
-        // Otherwise, throw the error
-        throw e;
-      }
+    const roomIdInt = Number(roomId);
+    // 404 if room does not exist
+    // 404 if user is banned from the room
+    const room = await this.prisma.room.findUniqueOrThrow({
+      where: { id: roomIdInt, BannedUsers: { none: { userId: user.id } } },
+    });
+    switch (room.accessLevel) {
+      case 'PUBLIC':
+      case 'PROTECTED':
+        return true;
+      case 'PRIVATE':
+      case 'DIRECT':
+        // 404 if user is not a member of the room
+        const userOnRoom = await this.roomService.findUserOnRoom(
+          roomIdInt,
+          user.id,
+        );
+        return !!userOnRoom;
+      default:
+        throw new BadRequestException('Invalid accessLevel');
     }
   }
 }

@@ -41,6 +41,8 @@ import { RoomService } from './room.service';
 @ApiTags('room')
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
+
+  // Room CRUD
   @Post()
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: RoomEntity })
@@ -92,6 +94,18 @@ export class RoomController {
     return new RoomEntity(await this.roomService.removeRoom(member.roomId));
   }
 
+  // Message CRUD
+  // This endpoint should be defined earlier than UserOnRoom CRUD endpoints
+  // because of the route matching order.
+  @Get(':roomId/messages')
+  @UseGuards(MemberGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse()
+  getMessages(@Member() member: UserOnRoomEntity) {
+    return this.roomService.findAllMessages(member.roomId);
+  }
+
+  // UserOnRoom CRUD
   @Post(':roomId')
   @UseGuards(EnterRoomGuard)
   @ApiBearerAuth()
@@ -103,7 +117,6 @@ export class RoomController {
     return this.roomService.enterRoom(roomId, user);
   }
 
-  // TODO: Implement AdminGuard
   @Post(':roomId/invite/:userId')
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
@@ -113,14 +126,6 @@ export class RoomController {
     @Param('userId', ParseIntPipe) userId: number,
   ) {
     return this.roomService.inviteUser(roomId, userId);
-  }
-
-  @Get(':roomId/messages')
-  @UseGuards(MemberGuard)
-  @ApiBearerAuth()
-  @ApiOkResponse()
-  getMessages(@Member() member: UserOnRoomEntity) {
-    return this.roomService.findAllMessages(member.roomId);
   }
 
   @Get(':roomId/:userId')

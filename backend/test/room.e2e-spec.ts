@@ -125,16 +125,30 @@ describe('RoomController (e2e)', () => {
 
   afterAll(async () => {
     // Delete room created by owner
-    await app.deleteRoom(publicRoom.id, owner.accessToken);
-    await app.deleteRoom(privateRoom.id, owner.accessToken);
-    await app.deleteRoom(protectedRoom.id, owner.accessToken);
-    await app.deleteRoom(directRoom.id, owner.accessToken);
+    await app.deleteRoom(publicRoom.id, owner.accessToken).expect(204);
+    await app.deleteRoom(privateRoom.id, owner.accessToken).expect(204);
+    await app.deleteRoom(protectedRoom.id, owner.accessToken).expect(204);
+    await app.deleteRoom(directRoom.id, user1.accessToken).expect(204);
     // Delete users
     for (const user of [owner, admin, member, notMember, user1, user2]) {
-      await app.deleteUser(user.id, user.accessToken);
+      await app.deleteUser(user.id, user.accessToken).expect(204);
     }
   });
 
+  const setupRoom = async (createRoomDto: CreateRoomDto) => {
+    const dto = { ...createRoomDto, userIds: [member.id, admin.id] };
+    const room = await app
+      .createRoom(dto, owner.accessToken)
+      .expect(201)
+      .then((res) => res.body);
+    await app.updateUserOnRoom(
+      room.id,
+      admin.id,
+      { role: Role.ADMINISTRATOR },
+      owner.accessToken,
+    );
+    return room;
+  };
   // room : 1. public 2. private 3. protected
   // member : 1. owner 2. admin 3. member 4. notMember
   // status : kick, ban, mute
@@ -162,12 +176,12 @@ describe('RoomController (e2e)', () => {
     let _directRoom: RoomEntity;
 
     afterAll(async () => {
-      await app.deleteRoom(_publicRoom.id, owner.accessToken);
-      await app.deleteRoom(_privateRoom.id, owner.accessToken);
-      await app.deleteRoom(_protectedRoom.id, owner.accessToken);
-      await app.deleteRoom(_duplicatedRoom.id, owner.accessToken);
-      await app.deleteRoom(_withUserRoom.id, owner.accessToken);
-      await app.deleteRoom(_directRoom.id, owner.accessToken);
+      await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_privateRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_protectedRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_duplicatedRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_withUserRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_directRoom.id, owner.accessToken).expect(204);
     });
 
     it('should create public room (201 Created)', async () => {
@@ -267,8 +281,8 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, owner.accessToken).expect(200);
       });
-      it('should not get direct room (403 Forbidden)', () => {
-        return app.getRoom(directRoom.id, owner.accessToken).expect(403);
+      it('should not get direct room (404 Not Found)', () => {
+        return app.getRoom(directRoom.id, owner.accessToken).expect(404);
       });
     });
 
@@ -282,8 +296,8 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, admin.accessToken).expect(200);
       });
-      it('should not get direct room (403 Forbidden)', () => {
-        return app.getRoom(directRoom.id, admin.accessToken).expect(403);
+      it('should not get direct room (404 Not Found)', () => {
+        return app.getRoom(directRoom.id, admin.accessToken).expect(404);
       });
     });
 
@@ -297,8 +311,8 @@ describe('RoomController (e2e)', () => {
       it('should get private room', () => {
         return app.getRoom(privateRoom.id, member.accessToken).expect(200);
       });
-      it('should not get direct room (403 Forbidden)', () => {
-        return app.getRoom(directRoom.id, member.accessToken).expect(403);
+      it('should not get direct room (404 Not Found)', () => {
+        return app.getRoom(directRoom.id, member.accessToken).expect(404);
       });
     });
 
@@ -309,11 +323,11 @@ describe('RoomController (e2e)', () => {
       it('should get protected room', () => {
         return app.getRoom(protectedRoom.id, notMember.accessToken).expect(200);
       });
-      it('should not get private room', () => {
-        return app.getRoom(privateRoom.id, notMember.accessToken).expect(403);
+      it('should not get private room (404 Not Found)', () => {
+        return app.getRoom(privateRoom.id, notMember.accessToken).expect(404);
       });
-      it('should not get direct room (403 Forbidden)', () => {
-        return app.getRoom(directRoom.id, notMember.accessToken).expect(403);
+      it('should not get direct room (404 Not Found)', () => {
+        return app.getRoom(directRoom.id, notMember.accessToken).expect(404);
       });
     });
 
@@ -656,21 +670,6 @@ describe('RoomController (e2e)', () => {
       });
     });
   });
-
-  const setupRoom = async (dto: CreateRoomDto) => {
-    dto.userIds = [member.id, admin.id];
-    const room = await app
-      .createRoom(dto, owner.accessToken)
-      .expect(201)
-      .then((res) => res.body);
-    await app.updateUserOnRoom(
-      room.id,
-      admin.id,
-      { role: Role.ADMINISTRATOR },
-      owner.accessToken,
-    );
-    return room;
-  };
 
   describe('PATCH /room/:id (Update Room)', () => {
     const shouldNotUpdateAny =
@@ -1468,29 +1467,320 @@ describe('RoomController (e2e)', () => {
     });
   });
 
-  describe('POST /room/:id/bans/:userId (Ban user)', () => {
-    it('owner should ban anyone in the room', async () => {});
-    it('admin should ban admin/member', async () => {});
-    it('member should not ban anyone', async () => {});
-    it('notMember should not ban anyone', async () => {});
-
-    it('banned user is not in the room anymore', async () => {});
-    it('banned user should not enter the room again', async () => {});
-
-    // It is okay to ban user who is already banned
-    // it('should not ban user who is already banned', async () => {});
-    // It is okay to ban user who is not in the room
-    // it('should not ban user who is not in the room (400)', async () => {});
+  describe('PUT /room/:id/bans/:userId (Ban user)', () => {
+    describe('Owner', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      });
+      it('should ban admin in the room (200 OK)', async () => {
+        await app
+          .banUser(_publicRoom.id, admin.id, owner.accessToken)
+          .expect(200);
+      });
+      it('should ban member in the room (200 OK)', async () => {
+        await app
+          .banUser(_publicRoom.id, member.id, owner.accessToken)
+          .expect(200);
+      });
+      it('should ban non-member (200 OK)', async () => {
+        await app
+          .banUser(_publicRoom.id, notMember.id, owner.accessToken)
+          .expect(200);
+      });
+    });
+    describe('Admin', () => {
+      let _publicRoom: RoomEntity;
+      let _admin2: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        const dto = {
+          ...constants.user.admin,
+          name: 'admin2',
+          email: 'admin2@example.com',
+        };
+        _admin2 = await app.createAndLoginUser(dto);
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _admin2.id, admin.accessToken);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken);
+        await app.deleteUser(_admin2.id, _admin2.accessToken).expect(204);
+      });
+      it('should not ban owner in the room (403 Forbidden)', async () => {
+        await app
+          .banUser(_publicRoom.id, owner.id, admin.accessToken)
+          .expect(403);
+      });
+      it('should ban admin in the room (200 OK)', async () => {
+        await app
+          .banUser(_publicRoom.id, _admin2.id, admin.accessToken)
+          .expect(200);
+      });
+      it('should ban member in the room (200 OK)', async () => {
+        await app
+          .banUser(_publicRoom.id, member.id, admin.accessToken)
+          .expect(200);
+      });
+      it('should ban non-member (200 OK)', async () => {
+        await app
+          .banUser(_publicRoom.id, notMember.id, admin.accessToken)
+          .expect(200);
+      });
+    });
+    describe('Member', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      });
+      it('should not ban owner in the room (403 Forbidden)', async () => {
+        await app
+          .banUser(_publicRoom.id, owner.id, member.accessToken)
+          .expect(403);
+      });
+      it('should not ban admin in the room (403 Forbidden)', async () => {
+        await app
+          .banUser(_publicRoom.id, admin.id, member.accessToken)
+          .expect(403);
+      });
+      it('should not ban member in the room (403 Forbidden)', async () => {
+        await app
+          .banUser(_publicRoom.id, member.id, member.accessToken)
+          .expect(403);
+      });
+      it('should not ban anyone who is not in the room (404 Not Found)', async () => {
+        await app
+          .banUser(_publicRoom.id, notMember.id, member.accessToken)
+          .expect(403);
+      });
+    });
+    describe('Non-member', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      });
+      it('should not ban owner in the room (403 Forbidden)', async () => {
+        await app
+          .banUser(_publicRoom.id, owner.id, notMember.accessToken)
+          .expect(403);
+      });
+      it('should not ban admin in the room (403 Forbidden)', async () => {
+        await app
+          .banUser(_publicRoom.id, admin.id, notMember.accessToken)
+          .expect(403);
+      });
+      it('should not ban member in the room (403 Forbidden)', async () => {
+        await app
+          .banUser(_publicRoom.id, member.id, notMember.accessToken)
+          .expect(403);
+      });
+      it('should not ban anyone who is not in the room (404 Not Found)', async () => {
+        await app
+          .banUser(_publicRoom.id, notMember.id, notMember.accessToken)
+          .expect(403);
+      });
+    });
+    describe('User1', () => {
+      let _directRoom: RoomEntity;
+      beforeEach(async () => {
+        _directRoom = await app
+          .createRoom(
+            { ...constants.room.directRoom, userIds: [user2.id] },
+            user1.accessToken,
+          )
+          .expect(201)
+          .then((res) => res.body);
+      });
+      afterEach(async () => {
+        await app.deleteRoom(_directRoom.id, user1.accessToken);
+      });
+      it('should not ban user2 (400 Bad Request)', async () => {
+        await app
+          .banUser(_directRoom.id, user2.id, user1.accessToken)
+          .expect(400);
+      });
+      it('shoud not ban non-member in DIRECT room (400 Bad Request)', async () => {
+        await app
+          .banUser(_directRoom.id, notMember.id, user1.accessToken)
+          .expect(400);
+      });
+    });
+    describe('Ban Scenario', () => {
+      let _publicRoom: RoomEntity;
+      let _user: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        _user = await app.createAndLoginUser({
+          name: 'BANNED USER',
+          email: 'banned@example.com',
+          password: '12345678',
+        });
+        _publicRoom = await app
+          .createRoom(constants.room.publicRoom, owner.accessToken)
+          .then((res) => res.body);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_user.id, _user.accessToken).expect(204);
+      });
+      // It is okay to ban user who is not in the room
+      it('should ban user who is not in the room (200 OK)', async () => {
+        await app
+          .banUser(_publicRoom.id, notMember.id, owner.accessToken)
+          .expect(200);
+      });
+      it('should invite user to the room (200 OK)', async () => {
+        await app
+          .inviteRoom(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(201);
+      });
+      it('should ban user (200 OK)', async () => {
+        await app
+          .banUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(200);
+      });
+      test('banned user should not be in the room anymore (404 Not Found)', async () => {
+        await app
+          .getUserOnRoom(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(404);
+      });
+      // It is okay to ban user who is already banned
+      it('should not ban user who is already banned (409 Conflict)', async () => {
+        await app
+          .banUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(409);
+      });
+      it('should not invite banned user to the room (403 Forbidden)', async () => {
+        await app
+          .inviteRoom(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(403);
+      });
+      test('banned user should not be able to enter the room (403 Forbidden)', async () => {
+        await app.enterRoom(_publicRoom.id, _user.accessToken).expect(403);
+      });
+      test('banned user should not get the room (404 Not Found)', async () => {
+        await app.getRoom(_publicRoom.id, _user.accessToken).expect(404);
+      });
+      test('banned user should not get the room in the list (200 OK)', async () => {
+        const rooms = await app
+          .getRooms(_user.accessToken)
+          .expect(200)
+          .then((res) => res.body);
+        rooms.forEach((room) => expect(room).not.toEqual(_publicRoom));
+      });
+    });
   });
 
   describe('DELETE /room/:id/bans/:userId (Unban user)', () => {
-    it('owner should unban anyone in the room', async () => {});
-    it('admin should unban admin/member', async () => {});
-    it('member should not unban anyone', async () => {});
+    describe('Owner', () => {
+      let _publicRoom: RoomEntity;
+      let _user: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        _user = await app.createAndLoginUser({
+          name: 'BANNED USER',
+          email: 'banned@example.com',
+          password: '12345678',
+        });
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _user.id, owner.accessToken);
+        await app
+          .banUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_user.id, _user.accessToken).expect(204);
+      });
+      it('should unban user (200 OK)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(200);
+      });
+      test('unbanned user should not be in the room until re-enter (404 Not Found)', async () => {
+        await app
+          .getUserOnRoom(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(404);
+      });
+      test('unbanned user should join the room (201 Created)', async () => {
+        await app.enterRoom(_publicRoom.id, _user.accessToken).expect(201);
+      });
+      it('should not unban user who is not banned (404 Not Found)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, member.id, owner.accessToken)
+          .expect(404);
+      });
+    });
+    describe('Admin', () => {
+      let _publicRoom: RoomEntity;
+      let _user: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        _user = await app.createAndLoginUser({
+          name: 'BANNED USER',
+          email: 'banned@example.com',
+          password: '12345678',
+        });
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _user.id, owner.accessToken);
+        await app
+          .banUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_user.id, _user.accessToken).expect(204);
+      });
+      it('should unban user (200 OK)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, _user.id, admin.accessToken)
+          .expect(200);
+      });
+      test('unbanned user should not be in the room until re-enter (404 Not Found)', async () => {
+        await app
+          .getUserOnRoom(_publicRoom.id, _user.id, admin.accessToken)
+          .expect(404);
+      });
+      test('unbanned user should join the room (201 Created)', async () => {
+        await app.enterRoom(_publicRoom.id, _user.accessToken).expect(201);
+      });
+      it('should not unban user who is not banned (404 Not Found)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, member.id, admin.accessToken)
+          .expect(404);
+      });
+    });
+    describe('Member', () => {
+      let _publicRoom: RoomEntity;
+      let _user: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        _user = await app.createAndLoginUser({
+          name: 'BANNED USER',
+          email: 'banned@example.com',
+          password: '12345678',
+        });
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _user.id, owner.accessToken);
+        await app
+          .banUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_user.id, _user.accessToken).expect(204);
+      });
+      it('should not unban user (403 Forbidden)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, _user.id, member.accessToken)
+          .expect(403);
+      });
+    });
     it('notMember should not unban anyone', async () => {});
-
-    it('unbanned user is not in the room anymore', async () => {});
-    it('unbanned user should enter the room again', async () => {});
   });
 
   describe('POST /room/:id/mutes/:userId (Mute user)', () => {
