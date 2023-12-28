@@ -1708,12 +1708,50 @@ describe('RoomController (e2e)', () => {
           .getUserOnRoom(_publicRoom.id, _user.id, owner.accessToken)
           .expect(404);
       });
-      test('unbanned user should be able to join the room (201 Created)', async () => {
+      test('unbanned user should join the room (201 Created)', async () => {
         await app.enterRoom(_publicRoom.id, _user.accessToken).expect(201);
       });
       it('should not unban user who is not banned (404 Not Found)', async () => {
         await app
           .unbanUser(_publicRoom.id, member.id, owner.accessToken)
+          .expect(404);
+      });
+    });
+    describe('Admin', () => {
+      let _publicRoom: RoomEntity;
+      let _user: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        _user = await app.createAndLoginUser({
+          name: 'BANNED USER',
+          email: 'banned@example.com',
+          password: '12345678',
+        });
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _user.id, owner.accessToken);
+        await app
+          .banUser(_publicRoom.id, _user.id, owner.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_user.id, _user.accessToken).expect(204);
+      });
+      it('should unban user (200 OK)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, _user.id, admin.accessToken)
+          .expect(200);
+      });
+      test('unbanned user should not be in the room until re-enter (404 Not Found)', async () => {
+        await app
+          .getUserOnRoom(_publicRoom.id, _user.id, admin.accessToken)
+          .expect(404);
+      });
+      test('unbanned user should join the room (201 Created)', async () => {
+        await app.enterRoom(_publicRoom.id, _user.accessToken).expect(201);
+      });
+      it('should not unban user who is not banned (404 Not Found)', async () => {
+        await app
+          .unbanUser(_publicRoom.id, member.id, admin.accessToken)
           .expect(404);
       });
     });
