@@ -127,11 +127,11 @@ describe('RoomController (e2e)', () => {
     // Delete room created by owner
     await app.deleteRoom(publicRoom.id, owner.accessToken).expect(204);
     await app.deleteRoom(privateRoom.id, owner.accessToken).expect(204);
-    await app.deleteRoom(protectedRoom.id, owner.accessToken);
-    await app.deleteRoom(directRoom.id, owner.accessToken);
+    await app.deleteRoom(protectedRoom.id, owner.accessToken).expect(204);
+    await app.deleteRoom(directRoom.id, user1.accessToken).expect(204);
     // Delete users
     for (const user of [owner, admin, member, notMember, user1, user2]) {
-      await app.deleteUser(user.id, user.accessToken);
+      await app.deleteUser(user.id, user.accessToken).expect(204);
     }
   });
 
@@ -176,12 +176,12 @@ describe('RoomController (e2e)', () => {
     let _directRoom: RoomEntity;
 
     afterAll(async () => {
-      await app.deleteRoom(_publicRoom.id, owner.accessToken);
-      await app.deleteRoom(_privateRoom.id, owner.accessToken);
-      await app.deleteRoom(_protectedRoom.id, owner.accessToken);
-      await app.deleteRoom(_duplicatedRoom.id, owner.accessToken);
-      await app.deleteRoom(_withUserRoom.id, owner.accessToken);
-      await app.deleteRoom(_directRoom.id, owner.accessToken);
+      await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_privateRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_protectedRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_duplicatedRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_withUserRoom.id, owner.accessToken).expect(204);
+      await app.deleteRoom(_directRoom.id, owner.accessToken).expect(204);
     });
 
     it('should create public room (201 Created)', async () => {
