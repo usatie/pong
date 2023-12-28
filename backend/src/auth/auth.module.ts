@@ -7,8 +7,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import {
   JwtStrategy,
-  WsJwtStrategy,
   JwtWithout2FAStrategy,
+  WsJwtStrategy,
 } from './jwt.strategy';
 
 export const jwtConstants = {
