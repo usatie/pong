@@ -25,7 +25,8 @@ type Status =
   | 'friend-joined'
   | 'friend-left'
   | 'won'
-  | 'lost';
+  | 'lost'
+  | 'finish';
 
 type Scores = {
   [key: string]: number;
@@ -59,6 +60,10 @@ const removePlayer = (players: Players, roomId: string, socketId: string) => {
 
 const isPlayer = (players: Players, roomId: string, socketId: string) => {
   return roomId in players && socketId in players[roomId];
+};
+
+const getOpponent = (players: Players, roomId: string, socketId: string) => {
+  return Object.keys(players[roomId]).find((id) => id != socketId);
 };
 
 @WebSocketGateway({
@@ -122,7 +127,7 @@ export class EventsGateway implements OnGatewayDisconnect {
       return;
     }
     addPlayer(this.players, gameId, client.id);
-    this.broadcastUpdateStatus(client, 'friend-joined');
+    this.emitUpdateStatusToRoomId(client, gameId, 'friend-joined');
     this.emitUpdateStatus(client, 'joined-as-player');
     if (Object.keys(this.players[gameId]).length == 2) {
       this.emitUpdateStatus(client, 'ready');
@@ -138,7 +143,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     delete this.users[client.id];
 
     if (isPlayer(this.players, roomId, client.id)) {
-      this.broadcastUpdateStatus(client, 'friend-left');
+      this.emitUpdateStatusToRoomId(client, roomId, 'friend-left');
       removePlayer(this.players, roomId, client.id);
       delete this.lostPoints[client.id];
     }
@@ -226,9 +231,10 @@ export class EventsGateway implements OnGatewayDisconnect {
       this.broadcastToRooms(client, 'finish');
       client.emit('finish');
 
-      // TODO: handle viewers
-      this.broadcastUpdateStatus(client, 'won');
+      const opponent = getOpponent(this.players, roomId, client.id);
       this.emitUpdateStatus(client, 'lost');
+      this.emitUpdateStatusToRoomId(client, opponent, 'won');
+      this.emitUpdateStatusToRoomId(client, roomId, 'finish');
 
       await this.createHistory(client);
     }
@@ -288,8 +294,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     socket.emit('update-status', status);
   }
 
-  broadcastUpdateStatus(socket: Socket, status: Status) {
-    const roomId = socket.handshake.query['game_id'];
+  emitUpdateStatusToRoomId(socket: Socket, roomId: string, status: Status) {
     socket.to(roomId).emit('update-status', status);
   }
 

@@ -19,7 +19,8 @@ type Status =
   | "friend-joined"
   | "friend-left"
   | "won"
-  | "lost";
+  | "lost"
+  | "finish";
 
 type setState<T> = T | ((prevState: T) => T);
 
@@ -65,6 +66,8 @@ const getLogFromStatus = (status: Status) => {
       return "You won!";
     case "lost":
       return "You lost!";
+    case "finish":
+      return "The game has finished";
   }
 };
 
@@ -307,8 +310,7 @@ function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"
-      ></canvas>
+        className="border flex-grow"></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
@@ -316,14 +318,12 @@ function PongBoard({ id }: PongBoardProps) {
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_battle_mode()}
-            disabled={battleDisabled}
-          >
+            disabled={battleDisabled}>
             Battle
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_practice_mode()}
-            disabled={practiceDisabled}
-          >
+            disabled={practiceDisabled}>
             Practice
           </Button>
         </div>
