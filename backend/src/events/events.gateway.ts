@@ -12,6 +12,7 @@ import { Namespace, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { HistoryService } from 'src/history/history.service';
 import { UserGuardWs } from 'src/user/user.guard-ws';
+import { v4 } from 'uuid';
 
 const POINT_TO_WIN = 3;
 
@@ -76,6 +77,8 @@ export class EventsGateway implements OnGatewayDisconnect {
   private players: Players = {};
   private users: { [socketId: string]: User } = {};
 
+  private waitingClient: string | null = null;
+
   async handleConnection(client: Socket) {
     this.logger.log(`connect: ${client.id} `);
 
@@ -133,6 +136,10 @@ export class EventsGateway implements OnGatewayDisconnect {
       this.broadcastUpdateStatus(client, 'friend-left');
       removePlayer(this.players, roomId, client.id);
       delete this.lostPoints[client.id];
+    }
+
+    if (this.waitingClient == client.id) {
+      this.waitingClient = null;
     }
   }
 
@@ -221,6 +228,37 @@ export class EventsGateway implements OnGatewayDisconnect {
       await this.createHistory(client);
     }
     return;
+  }
+
+  @UseGuards(UserGuardWs)
+  @SubscribeMessage('request')
+  async request(@ConnectedSocket() client: Socket) {
+    this.logger.log(`request: ${client.id}`);
+    if (this.waitingClient) {
+      const roomId = v4();
+      this.server.to(client.id).emit('matched', roomId);
+      this.server.to(this.waitingClient).emit('matched', roomId);
+      this.waitingClient = null;
+      return;
+    }
+    this.waitingClient = client.id;
+    return;
+  }
+
+  @SubscribeMessage('list-games')
+  async listGames(@ConnectedSocket() client: Socket) {
+    this.logger.log(`list-games: ${client.id}`);
+    const games = Object.keys(this.players)
+      .filter((roomId) => Object.keys(this.players[roomId]).length == 2)
+      .map((roomId) => {
+        const socketIds = Object.keys(this.players[roomId]);
+        return {
+          roomId,
+          players: [this.users[socketIds[0]], this.users[socketIds[1]]],
+        };
+      });
+    console.log(games);
+    return games;
   }
 
   broadcastToRooms(socket: Socket, eventName: string, data: any = null) {

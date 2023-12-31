@@ -8,7 +8,7 @@ import { io } from "socket.io-client";
 export default function MatchButton() {
   const router = useRouter();
   const [socket] = useState(() =>
-    io("/pong-match", { autoConnect: false, forceNew: true }),
+    io("/pong", { autoConnect: false, forceNew: true }),
   );
   const [message, setMessage] = useState("Match with someone!");
   const [disabled, setDisabled] = useState(false);

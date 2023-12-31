@@ -1,12 +1,7 @@
 import type { PublicUserEntity } from "@/app/lib/dtos";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import Link from "next/link";
-import { Avatar, AvatarSize } from "./avatar";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AvatarSize } from "./avatar";
+import UserTooltip from "./user-tool-tip";
 
 export default function UserList({
   users,
@@ -20,18 +15,7 @@ export default function UserList({
       <div className="flex flex-wrap gap-2">
         {users.length === 0 && <div>No users to display</div>}
         {users.map((u) => (
-          <Tooltip key={u.id}>
-            <TooltipTrigger>
-              <Link href={`/user/${u.id}`} key={u.id}>
-                <Avatar
-                  avatarURL={u.avatarURL}
-                  size={avatarSize}
-                  alt={u.name}
-                />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>{u.name}</TooltipContent>
-          </Tooltip>
+          <UserTooltip key={u.id} user={u} avatarSize={avatarSize} />
         ))}
       </div>
     </TooltipProvider>
