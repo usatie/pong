@@ -9,6 +9,7 @@ import { io } from "socket.io-client";
 import { PongGame } from "./PongGame";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
+import { useAuthContext } from "@/app/lib/client-auth";
 
 type Status =
   | "too-many-players"
@@ -19,7 +20,8 @@ type Status =
   | "friend-joined"
   | "friend-left"
   | "won"
-  | "lost";
+  | "lost"
+  | "finish";
 
 type setState<T> = T | ((prevState: T) => T);
 
@@ -65,6 +67,8 @@ const getLogFromStatus = (status: Status) => {
       return "You won!";
     case "lost":
       return "You lost!";
+    case "finish":
+      return "The game has finished";
   }
 };
 
@@ -84,6 +88,8 @@ function PongBoard({ id }: PongBoardProps) {
   const [battleDisabled] = useState(true);
   const { resolvedTheme } = useTheme();
   const defaultColor = "hsl(0, 0%, 0%)";
+
+  const { currentUser } = useAuthContext();
 
   const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
@@ -134,7 +140,7 @@ function PongBoard({ id }: PongBoardProps) {
           setUserMode("viewer");
           break;
         case "friend-joined":
-          setStartDisabled(false);
+          currentUser && setStartDisabled(false);
           setPracticeDisabled(true);
           game.resetPlayerPosition();
           break;
@@ -144,7 +150,7 @@ function PongBoard({ id }: PongBoardProps) {
           break;
       }
     },
-    [setUserMode, getGame],
+    [currentUser, setUserMode, getGame],
   );
 
   useEffect(() => {
@@ -218,7 +224,6 @@ function PongBoard({ id }: PongBoardProps) {
     };
 
     const handleStart = (data: { vx: number; vy: number }) => {
-      console.log(`Start: ${JSON.stringify(data)}`);
       game.start(data);
       setStartDisabled(true);
     };
@@ -249,14 +254,12 @@ function PongBoard({ id }: PongBoardProps) {
 
     const handleCollide = (msg: HandleActionProps) => {
       const { playerNumber } = msg;
-      console.log(msg);
       if (userMode === "player") {
         const score = game.increaseScorePlayer1();
         if (score != POINT_TO_WIN) {
           setTimeout(() => start(), 1000);
         }
       } else {
-        console.log(playerNumber);
         if (playerNumber == 1) {
           game.increaseScorePlayer2();
         } else {
