@@ -9,6 +9,7 @@ import { io } from "socket.io-client";
 import { PongGame } from "./PongGame";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
+import { useAuthContext } from "@/app/lib/client-auth";
 
 type Status =
   | "too-many-players"
@@ -88,6 +89,8 @@ function PongBoard({ id }: PongBoardProps) {
   const { resolvedTheme } = useTheme();
   const defaultColor = "hsl(0, 0%, 0%)";
 
+  const { currentUser } = useAuthContext();
+
   const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) {
@@ -137,7 +140,7 @@ function PongBoard({ id }: PongBoardProps) {
           setUserMode("viewer");
           break;
         case "friend-joined":
-          setStartDisabled(false);
+          currentUser && setStartDisabled(false);
           setPracticeDisabled(true);
           game.resetPlayerPosition();
           break;
@@ -147,7 +150,7 @@ function PongBoard({ id }: PongBoardProps) {
           break;
       }
     },
-    [setUserMode, getGame],
+    [currentUser, setUserMode, getGame],
   );
 
   useEffect(() => {
@@ -221,7 +224,6 @@ function PongBoard({ id }: PongBoardProps) {
     };
 
     const handleStart = (data: { vx: number; vy: number }) => {
-      console.log(`Start: ${JSON.stringify(data)}`);
       game.start(data);
       setStartDisabled(true);
     };
@@ -252,14 +254,12 @@ function PongBoard({ id }: PongBoardProps) {
 
     const handleCollide = (msg: HandleActionProps) => {
       const { playerNumber } = msg;
-      console.log(msg);
       if (userMode === "player") {
         const score = game.increaseScorePlayer1();
         if (score != POINT_TO_WIN) {
           setTimeout(() => start(), 1000);
         }
       } else {
-        console.log(playerNumber);
         if (playerNumber == 1) {
           game.increaseScorePlayer2();
         } else {
@@ -310,7 +310,8 @@ function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"></canvas>
+        className="border flex-grow"
+      ></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
@@ -318,12 +319,14 @@ function PongBoard({ id }: PongBoardProps) {
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_battle_mode()}
-            disabled={battleDisabled}>
+            disabled={battleDisabled}
+          >
             Battle
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_practice_mode()}
-            disabled={practiceDisabled}>
+            disabled={practiceDisabled}
+          >
             Practice
           </Button>
         </div>
