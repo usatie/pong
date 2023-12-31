@@ -3,6 +3,7 @@ import Link from "next/link";
 import { v4 } from "uuid";
 import JoinRoomForm from "./JoinRoomForm";
 import MatchButton from "./MatchButton";
+import GameList from "./GameList";
 
 export default function Page() {
   const roomId = v4();
@@ -16,6 +17,7 @@ export default function Page() {
       </Button>
       <MatchButton></MatchButton>
       <JoinRoomForm />
+      <GameList />
     </div>
   );
 }

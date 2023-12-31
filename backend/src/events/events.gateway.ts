@@ -245,6 +245,22 @@ export class EventsGateway implements OnGatewayDisconnect {
     return;
   }
 
+  @SubscribeMessage('list-games')
+  async listGames(@ConnectedSocket() client: Socket) {
+    this.logger.log(`list-games: ${client.id}`);
+    const games = Object.keys(this.players)
+      .filter((roomId) => Object.keys(this.players[roomId]).length == 2)
+      .map((roomId) => {
+        const socketIds = Object.keys(this.players[roomId]);
+        return {
+          roomId,
+          players: [this.users[socketIds[0]], this.users[socketIds[1]]],
+        };
+      });
+    console.log(games);
+    return games;
+  }
+
   broadcastToRooms(socket: Socket, eventName: string, data: any = null) {
     socket.rooms.forEach((room: string) => {
       if (room != socket.id) {
