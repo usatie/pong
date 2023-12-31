@@ -30,7 +30,7 @@ export function GameCard({
   roomId,
   players,
 }: {
-  roomId: number;
+  roomId: string;
   players: PublicUserEntity[];
 }) {
   const router = useRouter();

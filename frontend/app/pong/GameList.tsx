@@ -44,7 +44,7 @@ export default function GameList() {
             games.map((game: any, index: number) => (
               <GameCard
                 key={game.roomId}
-                roomId={index}
+                roomId={game.roomId}
                 players={game.players}
               />
             ))
