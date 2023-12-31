@@ -81,7 +81,10 @@ export class EventsGateway implements OnGatewayDisconnect {
 
     const gameId = client.handshake.query['game_id'] as string;
     const isPlayer = client.handshake.query['is_player'] == 'true';
-    const token = client.request.headers.cookie?.split('token=')[1];
+    const token = client.request.headers.cookie
+      ?.split('; ')
+      ?.find((c) => c.startsWith('token='))
+      ?.split('=')[1];
     let user;
 
     if (token) {
