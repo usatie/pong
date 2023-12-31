@@ -12,10 +12,15 @@ export class UserGuardWs implements CanActivate {
     // This means that the user could be outdated.
     if (client.user) return true;
 
+    // TODO: there is a still overhead for non-authenticated users.
     // When handleConnection is called, the connection is already created.
     // This means that clients can send messages before `client.user` is set.
     // The code below makes sure that authorized users don't get unauthorized.
-    const token = client.request.headers.cookie?.split('token=')[1];
+    const token = client.request.headers.cookie
+      ?.split('; ')
+      ?.find((c) => c.startsWith('token='))
+      ?.split('=')[1];
+
     if (!token) return false;
 
     try {
