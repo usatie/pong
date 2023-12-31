@@ -29,6 +29,7 @@ function UnauthorizedMenu() {
           <button type="submit">Log in as test</button>
         </form>
       )}
+      <Link href="/pong">Game</Link>
       <ModeToggle></ModeToggle>
     </li>
   );

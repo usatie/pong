@@ -5,13 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-export default function MatchButton() {
+export default function MatchButton({
+  disabled: initiallyDisabled,
+}: {
+  disabled: boolean;
+}) {
   const router = useRouter();
   const [socket] = useState(() =>
     io("/pong", { autoConnect: false, forceNew: true }),
   );
   const [message, setMessage] = useState("Match with someone!");
-  const [disabled, setDisabled] = useState(false);
+  const [disabled, setDisabled] = useState(initiallyDisabled);
 
   useEffect(() => {
     const handleConnect = () => {
