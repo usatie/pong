@@ -82,7 +82,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   async handleConnection(client: Socket) {
     this.logger.log(`connect: ${client.id} `);
 
-    const gameId = client.handshake.query['game_id'] as string;
+    const gameId = client.handshake.query['game_id'] as string | undefined;
     const isPlayer = client.handshake.query['is_player'] == 'true';
     const token = client.request.headers.cookie
       ?.split('; ')
@@ -96,6 +96,11 @@ export class EventsGateway implements OnGatewayDisconnect {
         (client as any).user = user;
         this.users[client.id] = user;
       } catch {}
+    }
+
+    // When a user tries to match with someone
+    if (!gameId) {
+      return;
     }
 
     // Both of viewers and players join the Socket.io room
@@ -257,7 +262,6 @@ export class EventsGateway implements OnGatewayDisconnect {
           players: [this.users[socketIds[0]], this.users[socketIds[1]]],
         };
       });
-    console.log(games);
     return games;
   }
 
