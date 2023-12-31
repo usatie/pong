@@ -15,9 +15,7 @@ export default function GameList() {
   const { toast } = useToast();
 
   const requestListingGames = useCallback(() => {
-    console.log("requesting listing games");
     socket.emit("list-games", (games: any) => {
-      console.log("return: ", games);
       setGames(games);
       toast({
         title: "List games",

@@ -262,7 +262,6 @@ export class EventsGateway implements OnGatewayDisconnect {
           players: [this.users[socketIds[0]], this.users[socketIds[1]]],
         };
       });
-    console.log(games);
     return games;
   }
 
