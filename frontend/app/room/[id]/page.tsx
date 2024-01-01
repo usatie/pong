@@ -15,7 +15,7 @@ export default async function Page({
   return (
     <>
       <div className="overflow-auto flex-grow flex gap-4 pb-4">
-        <Sidebar roomId={roomId} users={room.users} />
+        <Sidebar roomId={roomId} roomName={room.name} users={room.users} />
         <Separator orientation="vertical" />
         <MessageArea roomId={roomId} messages={messages} />
       </div>
