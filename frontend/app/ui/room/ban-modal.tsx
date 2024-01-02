@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -26,6 +25,9 @@ export const BanModal = () => {
 
   const onBan = async (userId: number) => {
     console.log("onBan");
+    if (!roomId) {
+      throw new Error("not found room");
+    }
     banUser(roomId, userId);
     // ban action
   };
@@ -45,7 +47,7 @@ export const BanModal = () => {
               onClick={() => onBan(user.id)}
               className="flex items-center gap-x-2 mb-6"
             >
-              <Avatar avatarURL={user.avatarURL} />
+              <Avatar avatarURL={user.avatarURL} size="medium" />
               <div className="flex flex-col gap-y-1">
                 <div className="text-xs font-semibold flex items-center gap-x-1">
                   {user.name}

@@ -8,9 +8,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, UserPlus, Settings, Ban, LogOut } from "lucide-react";
-import type { PublicUserEntity } from "@/app/lib/dtos";
 import { useModal } from "@/app/lib/hooks/use-modal-store";
 import { BanModal } from "@/app/ui/room/ban-modal";
+import { UserOnRoomEntity, PublicUserEntity } from "@/app/lib/dtos";
 
 export const SidebarMenu = ({
   roomId,
