@@ -595,3 +595,41 @@ export async function twoFactorAuthenticate(
     return "Success";
   }
 }
+
+export async function banUser(roomId: number, userId: number) {
+  const res = await fetch(
+    `${process.env.API_URL}/room/${roomId}/bans/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+      },
+    },
+  );
+  if (!res.ok) {
+    console.error("banUser error: ", await res.json());
+    return "Error";
+  } else {
+    revalidatePath(`/room/${roomId}`);
+    return "Success";
+  }
+}
+
+export async function unbanUser(roomId: number, userId: number) {
+  const res = await fetch(
+    `${process.env.API_URL}/room/${roomId}/bans/${userId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+      },
+    },
+  );
+  if (!res.ok) {
+    console.error("unbanUser error: ", await res.json());
+    return "Error";
+  } else {
+    revalidatePath(`/room/${roomId}`);
+    return "Success";
+  }
+}
