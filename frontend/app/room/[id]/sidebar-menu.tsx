@@ -11,6 +11,7 @@ import { ChevronDown, UserPlus, Settings, Ban, LogOut } from "lucide-react";
 import { useModal } from "@/app/lib/hooks/use-modal-store";
 import { BanModal } from "@/app/ui/room/ban-modal";
 import { UserOnRoomEntity, PublicUserEntity } from "@/app/lib/dtos";
+import { leaveRoom } from "@/app/lib/actions";
 
 export const SidebarMenu = ({
   roomId,
@@ -24,6 +25,10 @@ export const SidebarMenu = ({
   allUsers: PublicUserEntity[];
 }) => {
   const { onOpen } = useModal();
+
+  const handleLeave = () => {
+    leaveRoom(roomId);
+  };
 
   return (
     <DropdownMenu>
@@ -54,7 +59,10 @@ export const SidebarMenu = ({
             <BanModal />
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem className="text-rose-500 px-3 py-2 text-sm cursor-pointer">
+        <DropdownMenuItem
+          onClick={handleLeave}
+          className="text-rose-500 px-3 py-2 text-sm cursor-pointer"
+        >
           Leave
           <LogOut className="h-4 w-4 ml-auto" />
         </DropdownMenuItem>
