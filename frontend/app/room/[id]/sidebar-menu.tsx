@@ -1,4 +1,4 @@
-"use clinet";
+"use client";
 
 import {
   DropdownMenu,
@@ -8,19 +8,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, UserPlus, Settings, Ban, LogOut } from "lucide-react";
-import type { UserOnRoomEntity } from "@/app/lib/dtos";
+import type { PublicUserEntity } from "@/app/lib/dtos";
+import { useModal } from "@/app/lib/hooks/use-modal-store";
+import { BanModal } from "@/app/ui/room/ban-modal";
 
 export const SidebarMenu = ({
   roomId,
   roomName,
   me,
-  users,
+  allUsers,
 }: {
   roomId: number;
   roomName: string;
   me: UserOnRoomEntity;
-  users: UserOnRoomEntity[];
+  allUsers: PublicUserEntity[];
 }) => {
+  const { onOpen } = useModal();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none" asChild>
@@ -41,9 +45,13 @@ export const SidebarMenu = ({
           </DropdownMenuItem>
         )}
         {(me.role === "OWNER" || me.role === "ADMINISTRATOR") && (
-          <DropdownMenuItem className="text-rose-500 px-3 py-2 text-sm cursor-pointer">
+          <DropdownMenuItem
+            onClick={() => onOpen("ban", { roomId, roomName, me, allUsers })}
+            className="text-rose-500 px-3 py-2 text-sm cursor-pointer"
+          >
             Ban User
             <Ban className="h-4 w-4 ml-auto" />
+            <BanModal />
           </DropdownMenuItem>
         )}
         <DropdownMenuItem className="text-rose-500 px-3 py-2 text-sm cursor-pointer">
