@@ -633,3 +633,19 @@ export async function unbanUser(roomId: number, userId: number) {
     return "Success";
   }
 }
+
+export async function leaveRoom(roomId: number) {
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}/leave`, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("leaveRoom error: ", await res.json());
+    return "Error";
+  } else {
+    redirect(`/room`, RedirectType.push);
+    return "Success";
+  }
+}
