@@ -21,7 +21,6 @@ export class BanController {
   @Get()
   @UseGuards(AdminGuard)
   findAll(@Param('roomId', ParseIntPipe) roomId: number) {
-    console.log('roomId', roomId);
     return this.banService.findAll(roomId);
   }
 

@@ -67,7 +67,6 @@ export class BanService {
         },
       },
     });
-    console.log(tmp);
     const users = tmp.map((item) => item.user);
     return users;
   }
