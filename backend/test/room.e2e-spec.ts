@@ -1678,6 +1678,14 @@ describe('RoomController (e2e)', () => {
     });
   });
 
+  describe('GET /room/:id/bans (Get banned users)', () => {
+    describe('Owner', () => {
+      it('should get banned users', async () => {
+        await app.getBannedUsers(publicRoom.id, owner.accessToken).expect(200);
+      });
+    });
+  });
+
   describe('DELETE /room/:id/bans/:userId (Unban user)', () => {
     describe('Owner', () => {
       let _publicRoom: RoomEntity;
