@@ -11,12 +11,14 @@ import { HistoryModule } from './history/history.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RoomModule } from './room/room.module';
 import { UserModule } from './user/user.module';
+import { BanModule } from './room/ban/ban.module';
 
 @Module({
   imports: [
     UserModule,
     PrismaModule,
     AuthModule,
+    BanModule,
     RoomModule,
     EventsModule,
     ChatModule,

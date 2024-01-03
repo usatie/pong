@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Delete,
   Param,
   ParseIntPipe,
@@ -16,6 +17,13 @@ import { BanService } from './ban.service';
 @Controller('room/:roomId/bans')
 export class BanController {
   constructor(private readonly banService: BanService) {}
+
+  @Get()
+  @UseGuards(AdminGuard)
+  findAll(@Param('roomId', ParseIntPipe) roomId: number) {
+    console.log('roomId', roomId);
+    return this.banService.findAll(roomId);
+  }
 
   @Put(':userId')
   @UseGuards(AdminGuard)

@@ -52,6 +52,26 @@ export class BanService {
     return { message: 'Ban user successfully' };
   }
 
+  async findAll(roomId: number) {
+    const tmp = await this.prisma.banUserOnRoom.findMany({
+      where: {
+        roomId: roomId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarURL: true,
+          },
+        },
+      },
+    });
+    console.log(tmp);
+    const users = tmp.map((item) => item.user);
+    return users;
+  }
+
   async remove(roomId: number, userId: number) {
     await this.prisma.$transaction(async (prisma) => {
       const user = await prisma.banUserOnRoom.findUnique({
