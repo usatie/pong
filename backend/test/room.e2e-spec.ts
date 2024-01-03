@@ -1716,7 +1716,16 @@ describe('RoomController (e2e)', () => {
             .expect(200);
           expect(res.body).toBeInstanceOf(Array);
           res.body.forEach(expectPublicUser);
-          expect(res.body).toContainEqual(bannedUser);
+          const {
+            /* eslint-disable */
+            email,
+            twoFactorEnabled,
+            accessToken,
+            /* eslint-enable */
+            ...bannedUserWithoutAccessToken
+          } = bannedUser;
+
+          expect(res.body).toContainEqual(bannedUserWithoutAccessToken);
         });
       });
     });
