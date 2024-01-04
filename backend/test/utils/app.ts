@@ -131,6 +131,11 @@ export class TestApp {
       .delete(`/room/${roomId}/bans/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
+  getBannedUsers = (roomId: number, accessToken: string) =>
+    request(this.app.getHttpServer())
+      .get(`/room/${roomId}/bans`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
   muteUser = (
     roomId: number,
     userId: number,
