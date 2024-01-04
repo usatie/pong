@@ -1,17 +1,16 @@
 "use client";
 
+import { leaveRoom } from "@/app/lib/actions";
+import { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
+import { useModal } from "@/app/lib/hooks/use-modal-store";
+import { BanModal } from "@/app/ui/room/ban-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, UserPlus, Settings, Ban, LogOut } from "lucide-react";
-import { useModal } from "@/app/lib/hooks/use-modal-store";
-import { BanModal } from "@/app/ui/room/ban-modal";
-import { UserOnRoomEntity, PublicUserEntity } from "@/app/lib/dtos";
-import { leaveRoom } from "@/app/lib/actions";
+import { Ban, ChevronDown, LogOut, Settings, UserPlus } from "lucide-react";
 
 export const SidebarMenu = ({
   roomId,

@@ -1,4 +1,4 @@
-import type { UserOnRoomEntity, PublicUserEntity } from "@/app/lib/dtos";
+import type { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
 import { getCurrentUserId } from "@/app/lib/session";
 import { Stack } from "@/components/layout/stack";
 import SidebarItem from "./sidebar-item";

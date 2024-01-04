@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { v4 } from "uuid";
+import { isLoggedIn } from "../lib/session";
+import GameList from "./GameList";
 import JoinRoomForm from "./JoinRoomForm";
 import MatchButton from "./MatchButton";
-import GameList from "./GameList";
-import { isLoggedIn } from "../lib/session";
 
 export default async function Page() {
   const isAuthorized = await isLoggedIn();

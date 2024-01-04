@@ -1,7 +1,7 @@
 import {
   Controller,
-  Get,
   Delete,
+  Get,
   Param,
   ParseIntPipe,
   Put,

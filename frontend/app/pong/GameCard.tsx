@@ -1,19 +1,11 @@
 "use client";
 
-import * as React from "react";
-
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import UserTooltip from "../ui/user/user-tool-tip";
-import { PublicUserEntity } from "../lib/dtos";
 import { useRouter } from "next/navigation";
+import { PublicUserEntity } from "../lib/dtos";
+import UserTooltip from "../ui/user/user-tool-tip";
 
 function UserCard({ user }: { user: PublicUserEntity }) {
   return (
