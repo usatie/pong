@@ -140,8 +140,16 @@ export async function deleteUser(
   }
 }
 
-export async function getRooms(): Promise<RoomEntity[]> {
-  const res = await fetch(`${process.env.API_URL}/room`, {
+export async function getRooms(
+  query: {
+    joined?: boolean;
+  } = {},
+): Promise<RoomEntity[]> {
+  let queryStr = "?";
+  if (query.joined) {
+    queryStr += "joined=true";
+  }
+  const res = await fetch(`${process.env.API_URL}/room${queryStr}`, {
     cache: "no-cache",
     headers: {
       Authorization: "Bearer " + getAccessToken(),
