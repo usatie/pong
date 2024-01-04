@@ -1,5 +1,5 @@
+import { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
 import { create } from "zustand";
-import { UserOnRoomEntity, PublicUserEntity } from "@/app/lib/dtos";
 
 type ModalType = "ban";
 

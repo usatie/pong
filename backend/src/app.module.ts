@@ -9,9 +9,9 @@ import { EventsModule } from './events/events.module';
 import { FriendRequestModule } from './friend-request/friend-request.module';
 import { HistoryModule } from './history/history.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { BanModule } from './room/ban/ban.module';
 import { RoomModule } from './room/room.module';
 import { UserModule } from './user/user.module';
-import { BanModule } from './room/ban/ban.module';
 
 @Module({
   imports: [

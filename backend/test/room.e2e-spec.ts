@@ -1689,170 +1689,52 @@ describe('RoomController (e2e)', () => {
           password: '12345678',
         });
         _publicRoom = await setupRoom(constants.room.publicRoom);
-        // await app.banUser(_publicRoom.id, bannedUser.id, owner.accessToken);
       });
       afterAll(async () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
         await app.deleteUser(bannedUser.id, bannedUser.accessToken).expect(204);
       });
-      describe('No banned users in the room', () => {
-        it('should get empty array (200 OK)', async () => {
-          const res = await app
-            .getBannedUsers(_publicRoom.id, owner.accessToken)
-            .expect(200);
-          expect(res.body).toBeInstanceOf(Array);
-          expect(res.body).toHaveLength(0);
-        });
+      it('should get empty array when no banned users in the room (200 OK)', async () => {
+        const res = await app
+          .getBannedUsers(_publicRoom.id, owner.accessToken)
+          .expect(200);
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body).toHaveLength(0);
       });
       it('Ban user', async () => {
         await app
           .banUser(_publicRoom.id, bannedUser.id, owner.accessToken)
           .expect(200);
       });
-      describe('Banned users in the room', () => {
-        it('should get banned users (200 OK)', async () => {
-          const res = await app
-            .getBannedUsers(_publicRoom.id, owner.accessToken)
-            .expect(200);
-          expect(res.body).toBeInstanceOf(Array);
-          res.body.forEach(expectPublicUser);
-          const {
-            /* eslint-disable */
-            email,
-            twoFactorEnabled,
-            accessToken,
-            /* eslint-enable */
-            ...bannedUserWithoutAccessToken
-          } = bannedUser;
-
-          expect(res.body).toContainEqual(bannedUserWithoutAccessToken);
-        });
+      it('should get banned users (200 OK)', async () => {
+        const res = await app
+          .getBannedUsers(_publicRoom.id, owner.accessToken)
+          .expect(200);
+        expect(res.body).toBeInstanceOf(Array);
+        res.body.forEach(expectPublicUser);
+        const publicBannedUser = {
+          id: bannedUser.id,
+          name: bannedUser.name,
+          avatarURL: bannedUser.avatarURL,
+        };
+        expect(res.body).toContainEqual(publicBannedUser);
       });
     });
     describe('Admin', () => {
-      let _publicRoom: RoomEntity;
-      let bannedUser: UserEntityWithAccessToken;
-      beforeAll(async () => {
-        bannedUser = await app.createAndLoginUser({
-          name: 'BANNED USER',
-          email: 'banned@example.com',
-          password: '12345678',
-        });
-        _publicRoom = await setupRoom(constants.room.publicRoom);
-        // await app.banUser(_publicRoom.id, bannedUser.id, owner.accessToken);
-      });
-      afterAll(async () => {
-        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
-        await app.deleteUser(bannedUser.id, bannedUser.accessToken).expect(204);
-      });
-      describe('No banned users in the room', () => {
-        it('should get empty array (200 OK)', async () => {
-          const res = await app
-            .getBannedUsers(_publicRoom.id, admin.accessToken)
-            .expect(200);
-          expect(res.body).toBeInstanceOf(Array);
-          expect(res.body).toHaveLength(0);
-        });
-      });
-      it('Ban user', async () => {
-        await app
-          .banUser(_publicRoom.id, bannedUser.id, owner.accessToken)
-          .expect(200);
-      });
-      describe('Banned users in the room', () => {
-        it('should get banned users (200 OK)', async () => {
-          const res = await app
-            .getBannedUsers(_publicRoom.id, admin.accessToken)
-            .expect(200);
-          expect(res.body).toBeInstanceOf(Array);
-          res.body.forEach(expectPublicUser);
-          const {
-            /* eslint-disable */
-            email,
-            twoFactorEnabled,
-            accessToken,
-            /* eslint-enable */
-            ...bannedUserWithoutAccessToken
-          } = bannedUser;
-
-          expect(res.body).toContainEqual(bannedUserWithoutAccessToken);
-        });
+      it('should get banned users (200 OK)', async () => {
+        await app.getBannedUsers(publicRoom.id, admin.accessToken).expect(200);
       });
     });
     describe('Member', () => {
-      let _publicRoom: RoomEntity;
-      let bannedUser: UserEntityWithAccessToken;
-      beforeAll(async () => {
-        bannedUser = await app.createAndLoginUser({
-          name: 'BANNED USER',
-          email: 'banned@example.com',
-          password: '12345678',
-        });
-        _publicRoom = await setupRoom(constants.room.publicRoom);
-        // await app.banUser(_publicRoom.id, bannedUser.id, owner.accessToken);
-      });
-      afterAll(async () => {
-        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
-        await app.deleteUser(bannedUser.id, bannedUser.accessToken).expect(204);
-      });
-      describe('No banned users in the room', () => {
-        it('should get empty array (200 OK)', async () => {
-          const res = await app
-            .getBannedUsers(_publicRoom.id, admin.accessToken)
-            .expect(200);
-          expect(res.body).toBeInstanceOf(Array);
-          expect(res.body).toHaveLength(0);
-        });
-      });
-      it('Ban user', async () => {
-        await app
-          .banUser(_publicRoom.id, bannedUser.id, owner.accessToken)
-          .expect(200);
-      });
-      describe('Banned users in the room', () => {
-        it('should not get banned users (403 Forbidden)', async () => {
-          await app
-            .getBannedUsers(publicRoom.id, member.accessToken)
-            .expect(403);
-        });
+      it('should not get banned users (403 Forbidden)', async () => {
+        await app.getBannedUsers(publicRoom.id, member.accessToken).expect(403);
       });
     });
-    describe('notMember', () => {
-      let _publicRoom: RoomEntity;
-      let bannedUser: UserEntityWithAccessToken;
-      beforeAll(async () => {
-        bannedUser = await app.createAndLoginUser({
-          name: 'BANNED USER',
-          email: 'banned@example.com',
-          password: '12345678',
-        });
-        _publicRoom = await setupRoom(constants.room.publicRoom);
-        // await app.banUser(_publicRoom.id, bannedUser.id, owner.accessToken);
-      });
-      afterAll(async () => {
-        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
-        await app.deleteUser(bannedUser.id, bannedUser.accessToken).expect(204);
-      });
-      describe('No banned users in the room', () => {
-        it('should get empty array (200 OK)', async () => {
-          const res = await app
-            .getBannedUsers(_publicRoom.id, admin.accessToken)
-            .expect(200);
-          expect(res.body).toBeInstanceOf(Array);
-          expect(res.body).toHaveLength(0);
-        });
-      });
-      it('Ban user', async () => {
+    describe('Non-member', () => {
+      it('should not get banned users (403 Forbidden)', async () => {
         await app
-          .banUser(_publicRoom.id, bannedUser.id, owner.accessToken)
-          .expect(200);
-      });
-      describe('Banned users in the room', () => {
-        it('should not get banned users (403 Forbidden)', async () => {
-          await app
-            .getBannedUsers(publicRoom.id, notMember.accessToken)
-            .expect(403);
-        });
+          .getBannedUsers(publicRoom.id, notMember.accessToken)
+          .expect(403);
       });
     });
   });

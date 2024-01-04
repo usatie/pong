@@ -1,18 +1,17 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { banUser } from "@/app/lib/actions";
+import { useModal } from "@/app/lib/hooks/use-modal-store";
+import { Avatar } from "@/app/ui/user/avatar";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useModal } from "@/app/lib/hooks/use-modal-store";
-import { Avatar } from "@/app/ui/user/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronDown, UserPlus, Settings, Ban, LogOut } from "lucide-react";
-import { banUser } from "@/app/lib/actions";
+import { Ban } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export const BanModal = () => {
   const router = useRouter();

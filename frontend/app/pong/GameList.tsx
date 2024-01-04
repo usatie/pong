@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { io } from "socket.io-client";
-import { GameCard } from "./GameCard";
-import { IoRefresh } from "react-icons/io5";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { IoRefresh } from "react-icons/io5";
+import { io } from "socket.io-client";
+import { GameCard } from "./GameCard";
 
 export default function GameList() {
   const socket = useMemo(() => io("/pong", { forceNew: true }), []);
