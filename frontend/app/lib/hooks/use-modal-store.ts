@@ -8,6 +8,7 @@ interface ModalData {
   roomName?: string;
   me?: UserOnRoomEntity;
   allUsers?: PublicUserEntity[];
+  bannedUsers?: PublicUserEntity[];
 }
 
 interface ModalStore {
