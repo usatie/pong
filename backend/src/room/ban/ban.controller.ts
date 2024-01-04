@@ -7,11 +7,12 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AdminGuard } from '../guards/admin.guard';
 import { BanService } from './ban.service';
 
+@ApiTags('Ban')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('room/:roomId/bans')
