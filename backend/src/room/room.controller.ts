@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -22,6 +23,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Member } from './decorators/member.decorator';
 import { CreateRoomDto } from './dto/create-room.dto';
+import { GetRoomsQueryDto } from './dto/get-rooms-query.dto';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
@@ -56,8 +58,8 @@ export class RoomController {
   @Get()
   @ApiBearerAuth()
   @ApiOkResponse({ type: RoomEntity, isArray: true })
-  async findAll(@CurrentUser() user: User) {
-    const rooms = await this.roomService.findAllRoom(user.id);
+  async findAll(@CurrentUser() user: User, @Query() query: GetRoomsQueryDto) {
+    const rooms = await this.roomService.findAllRoom(user.id, query.joined);
     return rooms.map((room) => new RoomEntity(room));
   }
 
