@@ -615,6 +615,21 @@ export async function banUser(roomId: number, userId: number) {
   }
 }
 
+export async function getBannedUsers(roomId: number) {
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}/bans`, {
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("getBannedUsers error: ", await res.json());
+    return "Error";
+  } else {
+    const bannedUsers = res.json();
+    return bannedUsers;
+  }
+}
+
 export async function unbanUser(roomId: number, userId: number) {
   const res = await fetch(
     `${process.env.API_URL}/room/${roomId}/bans/${userId}`,

@@ -17,11 +17,13 @@ export const SidebarMenu = ({
   roomName,
   me,
   allUsers,
+  bannedUsers,
 }: {
   roomId: number;
   roomName: string;
   me: UserOnRoomEntity;
   allUsers: PublicUserEntity[];
+  bannedUsers: PublicUserEntity[];
 }) => {
   const { onOpen } = useModal();
 
@@ -50,7 +52,9 @@ export const SidebarMenu = ({
         )}
         {(me.role === "OWNER" || me.role === "ADMINISTRATOR") && (
           <DropdownMenuItem
-            onClick={() => onOpen("ban", { roomId, roomName, me, allUsers })}
+            onClick={() =>
+              onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers })
+            }
             className="text-rose-500 px-3 py-2 text-sm cursor-pointer"
           >
             Ban User
