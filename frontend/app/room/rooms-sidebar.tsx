@@ -1,6 +1,17 @@
 "use client";
 import type { RoomEntity } from "@/app/lib/dtos";
 import { Stack } from "@/components/layout/stack";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -17,14 +28,33 @@ function RoomSidebarTitle() {
     <TooltipProvider delayDuration={0}>
       <div className="flex justify-between">
         <div className={`font-bold`}>Chats</div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button className="px-2" onClick={onClick}>
-              +
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Create Room</TooltipContent>
-        </Tooltip>
+        <Dialog>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DialogTrigger asChild>
+                <button className="px-2" onClick={onClick}>
+                  +
+                </button>
+              </DialogTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Create Room</TooltipContent>
+          </Tooltip>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Room</DialogTitle>
+              <DialogDescription>Let's create a room</DialogDescription>
+            </DialogHeader>
+            <div>TODO</div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button>Create</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );
