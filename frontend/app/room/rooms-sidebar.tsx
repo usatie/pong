@@ -20,43 +20,40 @@ import {
 } from "@/components/ui/tooltip";
 import { usePathname, useRouter } from "next/navigation";
 
-function RoomSidebarTitle() {
+function CreateRoomButton() {
   const onClick = () => {
     console.log("create room");
   };
   return (
-    <TooltipProvider delayDuration={0}>
-      <div className="flex justify-between">
-        <div className={`font-bold`}>Chats</div>
-        <Dialog>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DialogTrigger asChild>
-                <button className="px-2" onClick={onClick}>
-                  +
-                </button>
-              </DialogTrigger>
-            </TooltipTrigger>
-            <TooltipContent>Create Room</TooltipContent>
-          </Tooltip>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Room</DialogTitle>
-              <DialogDescription>Let's create a room</DialogDescription>
-            </DialogHeader>
-            <div>TODO</div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="secondary">
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button>Create</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </TooltipProvider>
+    <Dialog>
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <button className="px-2" onClick={onClick}>
+                +
+              </button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Create Room</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create Room</DialogTitle>
+          <DialogDescription>Let&apos;s create a room</DialogDescription>
+        </DialogHeader>
+        <div>TODO</div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="secondary">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button>Create</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -92,10 +89,17 @@ export default function RoomsSidebar({ rooms }: { rooms: RoomEntity[] }) {
   }
   return (
     <div className="overflow-y-auto shrink-0 basis-48 pb-4">
-      <RoomSidebarTitle />
+      <div className="flex justify-between">
+        <div className={`font-bold`}>Chats</div>
+        <CreateRoomButton />
+      </div>
       <Stack space="space-y-0">
         {rooms.map((room) => (
-          <RoomButton room={room} selected={room.id === selectedRoomId} />
+          <RoomButton
+            room={room}
+            selected={room.id === selectedRoomId}
+            key={room.id}
+          />
         ))}
       </Stack>
     </div>
