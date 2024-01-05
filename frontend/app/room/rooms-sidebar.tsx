@@ -3,7 +3,7 @@ import type { RoomEntity } from "@/app/lib/dtos";
 import { Stack } from "@/components/layout/stack";
 import { usePathname, useRouter } from "next/navigation";
 
-export default async function RoomsSidebar({ rooms }: { rooms: RoomEntity[] }) {
+export default function RoomsSidebar({ rooms }: { rooms: RoomEntity[] }) {
   const router = useRouter();
   const pathname = usePathname();
   let selectedRoomId: number | undefined;
