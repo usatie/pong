@@ -13,7 +13,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Ban, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { PublicUserEntity } from "@/app/lib/dtos";
 
 export const BanModal = () => {
   const router = useRouter();
