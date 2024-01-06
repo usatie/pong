@@ -1,7 +1,7 @@
 import { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
 import { create } from "zustand";
 
-type ModalType = "ban";
+type ModalType = "ban" | "setting";
 
 interface ModalData {
   roomId?: number;
@@ -9,6 +9,7 @@ interface ModalData {
   me?: UserOnRoomEntity;
   allUsers?: PublicUserEntity[];
   bannedUsers?: PublicUserEntity[];
+  accessLevel?: string;
 }
 
 interface ModalStore {
