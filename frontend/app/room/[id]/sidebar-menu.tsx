@@ -4,6 +4,7 @@ import { leaveRoom } from "@/app/lib/actions";
 import { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
 import { useModal } from "@/app/lib/hooks/use-modal-store";
 import { BanModal } from "@/app/ui/room/ban-modal";
+import { SettingModal } from "@/app/ui/room/setting-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,12 +16,14 @@ import { Ban, ChevronDown, LogOut, Settings, UserPlus } from "lucide-react";
 export const SidebarMenu = ({
   roomId,
   roomName,
+  accessLevel,
   me,
   allUsers,
   bannedUsers,
 }: {
   roomId: number;
   roomName: string;
+  accessLevel: string;
   me: UserOnRoomEntity;
   allUsers: PublicUserEntity[];
   bannedUsers: PublicUserEntity[];
@@ -45,9 +48,13 @@ export const SidebarMenu = ({
           <UserPlus className="h-4 w-4 ml-auto" />
         </DropdownMenuItem>
         {(me.role === "OWNER" || me.role === "ADMINISTRATOR") && (
-          <DropdownMenuItem className="px-3 py-2 text-sm cursor-pointer">
+          <DropdownMenuItem
+            onClick={() => onOpen("setting", { roomId, roomName, accessLevel })}
+            className="px-3 py-2 text-sm cursor-pointer"
+          >
             Setting
             <Settings className="h-4 w-4 ml-auto" />
+            <SettingModal />
           </DropdownMenuItem>
         )}
         {(me.role === "OWNER" || me.role === "ADMINISTRATOR") && (

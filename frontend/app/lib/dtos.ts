@@ -1,6 +1,7 @@
 export type GetRoomResponse = {
   id: number;
   name: string;
+  accessLevel: string;
   users: UserOnRoomEntity[];
 };
 
