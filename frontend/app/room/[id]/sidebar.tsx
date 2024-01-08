@@ -8,11 +8,13 @@ import { getBannedUsers } from "@/app/lib/actions";
 export async function Sidebar({
   roomId,
   roomName,
+  accessLevel,
   users,
   allUsers,
 }: {
   roomId: number;
   roomName: string;
+  accessLevel: string;
   users: UserOnRoomEntity[];
   allUsers: PublicUserEntity[];
 }) {
@@ -27,6 +29,7 @@ export async function Sidebar({
       <SidebarMenu
         roomId={roomId}
         roomName={roomName}
+        accessLevel={accessLevel}
         me={me}
         allUsers={allUsers}
         bannedUsers={bannedUsers}

@@ -19,6 +19,7 @@ export default async function Page({
         <Sidebar
           roomId={roomId}
           roomName={room.name}
+          accessLevel={room.accessLevel}
           users={room.users}
           allUsers={allUsers}
         />
