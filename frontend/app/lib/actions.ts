@@ -207,19 +207,18 @@ export async function joinRoom(
 }
 
 export async function updateRoom(
-  formData: FormData,
+  roomName: string,
   roomId: number,
   accessLevel: string,
+  password?: string,
 ) {
-  const name = formData.get("roomName");
-  const password = formData.get("password");
   const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + getAccessToken(),
     },
-    body: JSON.stringify({ name, accessLevel, password }),
+    body: JSON.stringify({ name: roomName, accessLevel, password }),
   });
   if (!res.ok) {
     console.error("updateRoom error: ", await res.json());
