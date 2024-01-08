@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +36,7 @@ const settingSchema = z.discriminatedUnion("isProtected", [
 
 export const SettingModal = () => {
   const router = useRouter();
+  const [error, setError] = useState<string | undefined>(undefined);
   const { isOpen, onClose, type, data } = useModal();
 
   const isModalOpen = isOpen && type === "setting";
@@ -44,13 +46,18 @@ export const SettingModal = () => {
     if (!roomId || !accessLevel) {
       throw new Error("not found room");
     }
+    let result;
     if (accessLevel !== "PROTECTED" && e.password === "") {
-      await updateRoom(e.roomName, roomId, accessLevel);
+      result = await updateRoom(e.roomName, roomId, accessLevel);
     } else {
-      await updateRoom(e.roomName, roomId, accessLevel, e.password);
+      result = await updateRoom(e.roomName, roomId, accessLevel, e.password);
     }
-    router.refresh();
-    onClose();
+    if (result === "Success") {
+      router.refresh();
+      onClose();
+    } else {
+      setError(result);
+    }
   };
 
   const {
@@ -111,6 +118,9 @@ export const SettingModal = () => {
                   <p className="text-red-500">{errors.password?.message}</p>
                 )}
               </div>
+            )}
+            {error && (
+              <p className="text-red-500">Error: Somehing went wrong</p>
             )}
             <Button type="submit">Save</Button>
           </div>
