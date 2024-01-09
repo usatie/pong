@@ -2,7 +2,7 @@
 
 import {
   blockUser,
-  deleteUserOnRoom,
+  kickUserOnRoom,
   unblockUser,
   updateRoomUser,
 } from "@/app/lib/actions";
@@ -57,7 +57,7 @@ export default function SidebarItem({
   };
   const block = () => blockUser(user.userId);
   const unblock = () => unblockUser(user.userId);
-  const kick = () => deleteUserOnRoom(roomId, user.userId);
+  const kick = () => kickUserOnRoom(roomId, user.userId);
   const updateUserRole = isUserAdmin
     ? () => updateRoomUser("MEMBER", roomId, user.userId)
     : () => updateRoomUser("ADMINISTRATOR", roomId, user.userId);
