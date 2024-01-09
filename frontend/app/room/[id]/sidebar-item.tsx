@@ -2,7 +2,6 @@
 
 import {
   blockUser,
-  getBlockingUsers,
   kickUserOnRoom,
   unblockUser,
   updateRoomUser,
@@ -17,7 +16,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 function truncateString(str: string | undefined, num: number): string {
   if (!str) {
@@ -40,26 +39,20 @@ export default function SidebarItem({
   roomId,
   user,
   me,
+  blockingUsers,
 }: {
   roomId: number;
   user: UserOnRoomEntity;
   me: UserOnRoomEntity;
+  blockingUsers: PublicUserEntity[];
 }) {
-  const [isBlocked, setIsBlocked] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(
+    blockingUsers.some((u: PublicUserEntity) => u.id === user.userId),
+  );
   const isUserAdmin = user.role === "ADMINISTRATOR";
   const isUserOwner = user.role === "OWNER";
   const isMeAdminOrOwner = me.role === "ADMINISTRATOR" || me.role === "OWNER";
 
-  useEffect(() => {
-    const fetchGetBlockingUsers = async () => {
-      const blockingUsers = await getBlockingUsers();
-      const isBlocked = blockingUsers.some(
-        (u: PublicUserEntity) => u.id === user.userId,
-      );
-      setIsBlocked(isBlocked);
-    };
-    fetchGetBlockingUsers();
-  }, []);
   const router = useRouter();
   const openProfile = () => {
     if (user.userId === me.userId) {
@@ -68,13 +61,17 @@ export default function SidebarItem({
       router.push(`/user/${user.userId}`);
     }
   };
-  const block = () => {
-    blockUser(user.userId);
-    setIsBlocked(true);
+  const block = async () => {
+    const res = await blockUser(user.userId);
+    if (res === "Success") {
+      setIsBlocked(true);
+    }
   };
-  const unblock = () => {
-    unblockUser(user.userId);
-    setIsBlocked(false);
+  const unblock = async () => {
+    const res = await unblockUser(user.userId);
+    if (res === "Success") {
+      setIsBlocked(false);
+    }
   };
   const kick = () => kickUserOnRoom(roomId, user.userId);
   const updateUserRole = isUserAdmin
