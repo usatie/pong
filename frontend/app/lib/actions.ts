@@ -356,6 +356,23 @@ export async function updatePassword(
   }
 }
 
+export async function getBlockingUsers() {
+  const userId = await getCurrentUserId();
+  const res = await fetch(`${process.env.API_URL}/user/${userId}/block`, {
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) {
+    console.error("getBlockingUsers error: ", await res.json());
+    throw new Error("getBlockingUsers error");
+  } else {
+    const blockingUsers = await res.json();
+    return blockingUsers;
+  }
+}
+
 export async function blockUser(blockedUserId: number) {
   const userId = await getCurrentUserId();
   const res = await fetch(`${process.env.API_URL}/user/${userId}/block`, {
