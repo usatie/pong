@@ -252,17 +252,21 @@ export async function updateRoomUser(
   }
 }
 
-export async function deleteUserOnRoom(roomId: number, userId: number) {
-  const res = await fetch(`${process.env.API_URL}/room/${roomId}/${userId}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: "Bearer " + getAccessToken(),
+export async function kickUserOnRoom(roomId: number, userId: number) {
+  const res = await fetch(
+    `${process.env.API_URL}/room/${roomId}/kick/${userId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+      },
     },
-  });
+  );
   if (!res.ok) {
-    console.error("deleteUserOnRoom error: ", await res.json());
-    throw new Error("deleteUserOnRoom error");
+    console.error("kickUserOnRoom error: ", await res.json());
+    throw new Error("kickUserOnRoom error");
   } else {
+    revalidatePath(`/room/${roomId}`);
     return "Success";
   }
 }
