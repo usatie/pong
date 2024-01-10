@@ -1,6 +1,7 @@
 "use client";
 import type { RoomEntity } from "@/app/lib/dtos";
 import { Stack } from "@/components/layout/stack";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import CreateRoomDialog from "./create-room-dialog";
 
@@ -28,6 +29,16 @@ function RoomButton({
   );
 }
 
+function ExploreButton() {
+  return (
+    <div
+      className={`p-2 rounded text-start font-bold text-primary hover:bg-primary hover:text-primary-foreground`}
+    >
+      <Link href={`/explore-rooms`}>Explore Rooms</Link>
+    </div>
+  );
+}
+
 export default function RoomsSidebar({ rooms }: { rooms: RoomEntity[] }) {
   const pathname = usePathname();
   let selectedRoomId: number | undefined;
@@ -48,6 +59,7 @@ export default function RoomsSidebar({ rooms }: { rooms: RoomEntity[] }) {
             key={room.id}
           />
         ))}
+        <ExploreButton />
       </Stack>
     </div>
   );
