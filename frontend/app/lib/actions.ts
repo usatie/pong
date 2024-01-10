@@ -188,14 +188,15 @@ export async function createRoom(
       userIds: [],
     });
   } else {
+    if (formData.get("password")) {
+      return { error: "Only PROTECTED room needs password." };
+    }
     payload = JSON.stringify({
       name: formData.get("name"),
       accessLevel: formData.get("accessLevel"),
       userIds: [],
     });
   }
-
-  console.log(payload);
   const res = await fetch(`${process.env.API_URL}/room`, {
     method: "POST",
     headers: {
