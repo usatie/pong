@@ -175,20 +175,40 @@ export async function getRoom(roomId: number): Promise<GetRoomResponse> {
   return room;
 }
 
-export async function createRoom(formData: FormData) {
+export async function createRoom(
+  prevState: { error?: string },
+  formData: FormData,
+) {
+  let payload;
+  if (formData.get("accessLevel") === "PROTECTED") {
+    payload = JSON.stringify({
+      name: formData.get("name"),
+      accessLevel: formData.get("accessLevel"),
+      password: formData.get("password"),
+      userIds: [],
+    });
+  } else {
+    if (formData.get("password")) {
+      return { error: "Only PROTECTED room needs password." };
+    }
+    payload = JSON.stringify({
+      name: formData.get("name"),
+      accessLevel: formData.get("accessLevel"),
+      userIds: [],
+    });
+  }
   const res = await fetch(`${process.env.API_URL}/room`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + getAccessToken(),
     },
-    body: JSON.stringify({
-      name: formData.get("name"),
-    }),
+    body: payload,
   });
   const data = await res.json();
   if (!res.ok) {
     console.error("createRoom error: ", data);
+    return { error: data.message };
   } else {
     redirect(`/room/${data.id}`, RedirectType.push);
   }
