@@ -1,4 +1,8 @@
-import type { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
+import type {
+  AccessLevel,
+  PublicUserEntity,
+  UserOnRoomEntity,
+} from "@/app/lib/dtos";
 import { getCurrentUserId } from "@/app/lib/session";
 import { Stack } from "@/components/layout/stack";
 import SidebarItem from "./sidebar-item";
@@ -14,7 +18,7 @@ export async function Sidebar({
 }: {
   roomId: number;
   roomName: string;
-  accessLevel: string;
+  accessLevel: AccessLevel;
   users: UserOnRoomEntity[];
   allUsers: PublicUserEntity[];
 }) {

@@ -111,7 +111,7 @@ export const SettingModal = () => {
                 <Input
                   className="text-black dark:text-white"
                   id="password"
-                  placeholder="Enterr new password"
+                  placeholder="Enter new password"
                   {...register("password")}
                 />
                 {errors.password?.message && (
@@ -120,7 +120,7 @@ export const SettingModal = () => {
               </div>
             )}
             {error && (
-              <p className="text-red-500">Error: Somehing went wrong</p>
+              <p className="text-red-500">Error: Something went wrong</p>
             )}
             <Button type="submit">Save</Button>
           </div>

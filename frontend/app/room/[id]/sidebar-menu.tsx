@@ -1,7 +1,11 @@
 "use client";
 
 import { leaveRoom } from "@/app/lib/actions";
-import { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
+import {
+  AccessLevel,
+  PublicUserEntity,
+  UserOnRoomEntity,
+} from "@/app/lib/dtos";
 import { useModal } from "@/app/lib/hooks/use-modal-store";
 import { BanModal } from "@/app/ui/room/ban-modal";
 import { SettingModal } from "@/app/ui/room/setting-modal";
@@ -23,7 +27,7 @@ export const SidebarMenu = ({
 }: {
   roomId: number;
   roomName: string;
-  accessLevel: string;
+  accessLevel: AccessLevel;
   me: UserOnRoomEntity;
   allUsers: PublicUserEntity[];
   bannedUsers: PublicUserEntity[];

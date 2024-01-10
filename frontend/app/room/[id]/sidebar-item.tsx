@@ -61,6 +61,7 @@ export default function SidebarItem({
       router.push(`/user/${user.userId}`);
     }
   };
+  //TODO: pending to implement
   const block = async () => {
     const res = await blockUser(user.userId);
     if (res === "Success") {
