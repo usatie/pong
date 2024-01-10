@@ -176,15 +176,30 @@ export async function getRoom(roomId: number): Promise<GetRoomResponse> {
 }
 
 export async function createRoom(formData: FormData) {
+  let payload;
+  if (formData.get("accessLevel") === "PROTECTED") {
+    payload = JSON.stringify({
+      name: formData.get("name"),
+      accessLevel: formData.get("accessLevel"),
+      password: formData.get("password"),
+      userIds: [],
+    });
+  } else {
+    payload = JSON.stringify({
+      name: formData.get("name"),
+      accessLevel: formData.get("accessLevel"),
+      userIds: [],
+    });
+  }
+
+  console.log(payload);
   const res = await fetch(`${process.env.API_URL}/room`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + getAccessToken(),
     },
-    body: JSON.stringify({
-      name: formData.get("name"),
-    }),
+    body: payload,
   });
   const data = await res.json();
   if (!res.ok) {
