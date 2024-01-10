@@ -191,8 +191,17 @@ export class ChatGateway {
 
     // TODO: exclude blocked users
 
+    //block APIが呼ばれて成功した時user.controller.tsからchat.gateway.tsの（ブロックされた側の各ユーザーの）block roomにjoinするようにする
+    //unblock APIが呼ばれて成功した時user.controller.tsからchat.gateway.tsのblock roomからleaveするようにする
+    //block roomにjoinしているユーザーにはメッセージを送らないようにする
+    //
+    //もしくはmessageを送る前に送信者をblockしているユーザーを取得して、そのユーザーIDからsocket idを取得して送らないようにする
+    //こちらの場合はblockされた側が自分のことをblockしているユーザーを取得できるようにAPIを作る必要がある
+
     // Send message to the room
-    const room = this.server.to(data.roomId.toString());
+    const room = this.server
+      .to(data.roomId.toString())
+      .except('block' + data.userId);
     room.emit(
       'message',
       new MessageEntity(data, this.chatService.getUser(client)),
