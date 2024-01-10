@@ -19,7 +19,8 @@ describe('ChatGateway and ChatController (e2e)', () => {
   let app: TestApp;
   let ws1: Socket; // Client socket 1
   let ws2: Socket; // Client socket 2
-  let user1, user2;
+  let ws3: Socket; // Client socket 3
+  let user1, user2, blockedUser;
 
   beforeAll(async () => {
     //app = await initializeApp();
@@ -36,16 +37,30 @@ describe('ChatGateway and ChatController (e2e)', () => {
       email: 'test2@test.com',
       password: 'test-password',
     };
+    const dto3 = {
+      name: 'blocked-user',
+      email: 'blocked@test.com',
+      password: 'test-password',
+    };
     user1 = await app.createAndLoginUser(dto1);
     user2 = await app.createAndLoginUser(dto2);
+    blockedUser = await app.createAndLoginUser(dto3);
+    await app
+      .blockUser(user1.id, blockedUser.id, user1.accessToken)
+      .expect(200);
+    await app
+      .blockUser(user2.id, blockedUser.id, user2.accessToken)
+      .expect(200);
   });
 
   afterAll(async () => {
     await app.deleteUser(user1.id, user1.accessToken).expect(204);
     await app.deleteUser(user2.id, user2.accessToken).expect(204);
+    await app.deleteUser(blockedUser.id, blockedUser.accessToken).expect(204);
     await app.close();
     ws1.close();
     ws2.close();
+    ws3.close();
   });
 
   const connect = (ws: Socket) => {
@@ -92,12 +107,17 @@ describe('ChatGateway and ChatController (e2e)', () => {
       ws2 = io('ws://localhost:3000/chat', {
         extraHeaders: { cookie: 'token=' + user2.accessToken },
       });
+      ws3 = io('ws://localhost:3000/chat', {
+        extraHeaders: { cookie: 'token=' + blockedUser.accessToken },
+      });
       expect(ws1).toBeDefined();
       expect(ws2).toBeDefined();
+      expect(ws3).toBeDefined();
 
       // Wait for connection
       await connect(ws1);
       await connect(ws2);
+      await connect(ws3);
     });
 
     // // Enter room by API call
@@ -110,6 +130,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
       expect(room.id).toBeDefined();
       // user2 (ws2) enters the room
       await app.enterRoom(room.id, user2.accessToken).expect(201);
+      await app.enterRoom(room.id, blockedUser.accessToken).expect(201);
     });
 
     // Setup promises to recv messages
