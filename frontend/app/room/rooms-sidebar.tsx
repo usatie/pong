@@ -85,7 +85,7 @@ export default function RoomsSidebar({ rooms }: { rooms: RoomEntity[] }) {
   const pathname = usePathname();
   let selectedRoomId: number | undefined;
   if (pathname.startsWith("/room/")) {
-    selectedRoomId = parseInt(pathname.split("/")[2]);
+    selectedRoomId = parseInt(pathname.split("/")[2], 10);
   }
   return (
     <div className="overflow-y-auto shrink-0 basis-48 pb-4">
