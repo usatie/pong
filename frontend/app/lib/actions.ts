@@ -175,7 +175,10 @@ export async function getRoom(roomId: number): Promise<GetRoomResponse> {
   return room;
 }
 
-export async function createRoom(formData: FormData) {
+export async function createRoom(
+  prevState: { error?: string },
+  formData: FormData,
+) {
   let payload;
   if (formData.get("accessLevel") === "PROTECTED") {
     payload = JSON.stringify({
@@ -204,6 +207,7 @@ export async function createRoom(formData: FormData) {
   const data = await res.json();
   if (!res.ok) {
     console.error("createRoom error: ", data);
+    return { error: data.message };
   } else {
     redirect(`/room/${data.id}`, RedirectType.push);
   }

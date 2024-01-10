@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -19,35 +18,54 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useFormState, useFormStatus } from "react-dom";
 
-export function CreateRoomForm() {
+export function CreateRoomForm({ error }: { error?: string }) {
+  const { pending } = useFormStatus();
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor="name">Name</Label>
-      <Input
-        id="name"
-        name="name"
-        type="text"
-        placeholder="e.g. 42Tokyo Room"
-      />
-      <Label htmlFor="accessLevel">Access Level</Label>
-      <select defaultValue="PUBLIC" id="accessLevel" name="accessLevel">
-        <option value="PUBLIC">PUBLIC</option>
-        <option value="PROTECTED">PROTECTED</option>
-        <option value="PRIVATE">PRIVATE</option>
-      </select>
-      <Label htmlFor="password">Password</Label>
-      <Input
-        id="password"
-        name="password"
-        type="password"
-        placeholder="At least 6 characters. (PROTECTED ROOM ONLY)"
-      />
-    </div>
+    <>
+      <DialogHeader>
+        <DialogTitle>Create New Room</DialogTitle>
+      </DialogHeader>
+      <div className="flex flex-col gap-4">
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          name="name"
+          type="text"
+          placeholder="e.g. 42Tokyo Room"
+        />
+        <Label htmlFor="accessLevel">Access Level</Label>
+        <select defaultValue="PUBLIC" id="accessLevel" name="accessLevel">
+          <option value="PUBLIC">PUBLIC</option>
+          <option value="PROTECTED">PROTECTED</option>
+          <option value="PRIVATE">PRIVATE</option>
+        </select>
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="At least 6 characters. (PROTECTED ROOM ONLY)"
+        />
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="secondary">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button type="submit" disabled={pending}>
+            Create
+          </Button>
+        </DialogFooter>
+        {error && <div className="text-red-500 text-end">{error}</div>}
+      </div>
+    </>
   );
 }
 
 export default function CreateRoomDialog() {
+  const [state, action] = useFormState(createRoom, { error: undefined });
   return (
     <Dialog>
       <TooltipProvider delayDuration={0}>
@@ -61,20 +79,8 @@ export default function CreateRoomDialog() {
         </Tooltip>
       </TooltipProvider>
       <DialogContent>
-        <form action={createRoom} className="flex flex-col gap-4">
-          <DialogHeader>
-            <DialogTitle>Create Room</DialogTitle>
-            <DialogDescription>Let&apos;s create a room</DialogDescription>
-          </DialogHeader>
-          <CreateRoomForm />
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type="submit">Create</Button>
-          </DialogFooter>
+        <form action={action} className="flex flex-col gap-4">
+          <CreateRoomForm error={state.error} />
         </form>
       </DialogContent>
     </Dialog>
