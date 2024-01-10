@@ -4,6 +4,7 @@ import { WebSocketGateway, WsException } from '@nestjs/websockets';
 import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
+import { UserService } from 'src/user/user.service';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,11 +17,13 @@ export class ChatService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
+    private userService: UserService,
   ) {}
 
   // Map<User.id, Socket>
   private clients = new Map<User['id'], Socket>();
   private users = new Map<Socket['id'], User>();
+  //  private blockMap = new Map<number, number[]>();
 
   getUser(client: Socket) {
     return this.users.get(client.id);
@@ -109,6 +112,10 @@ export class ChatService {
     try {
       const user = await this.authService.verifyAccessToken(token);
       this.addClient(user, client);
+      const blockingUsers = await this.userService.findAllBlocked(user.id);
+      blockingUsers.forEach((blockingUser) =>
+        client.join('block' + blockingUser.id),
+      );
       const rooms = await this.prisma.room.findMany({
         where: {
           users: {
