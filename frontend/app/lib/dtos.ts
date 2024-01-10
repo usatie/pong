@@ -1,7 +1,9 @@
+export type AccessLevel = "PUBLIC" | "PRIVATE" | "PROTECTED";
+
 export type GetRoomResponse = {
   id: number;
   name: string;
-  accessLevel: string;
+  accessLevel: AccessLevel;
   users: UserOnRoomEntity[];
 };
 

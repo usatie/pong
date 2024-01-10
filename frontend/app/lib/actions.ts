@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import {
+  AccessLevel,
   FriendRequestsEntity,
   GetRoomResponse,
   MatchHistoryEntity,
@@ -209,7 +210,7 @@ export async function joinRoom(
 export async function updateRoom(
   roomName: string,
   roomId: number,
-  accessLevel: string,
+  accessLevel: AccessLevel,
   password?: string,
 ) {
   const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
