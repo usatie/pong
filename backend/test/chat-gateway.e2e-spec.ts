@@ -134,7 +134,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     });
 
     // Setup promises to recv messages
-    let ctx1, ctx2: Promise<void>;
+    let ctx1, ctx2, ctx3, ctx4: Promise<void>;
     it('Setup promises to recv messages', () => {
       ctx1 = new Promise<void>((resolve) => {
         ws2.on('message', (data) => {
@@ -177,6 +177,15 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
     });
 
+    it('blockedUser sends message and user1 and user2 should not receive it', () => {
+      const helloMessage = {
+        userId: blockedUser.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws3.emit('message', helloMessage);
+    });
+
     // Send messages
     it('user1 sends messages', async () => {
       const helloMessage = {
@@ -193,6 +202,36 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
     it('user1 receives ACK', async () => {
       await ctx2;
+    });
+
+    it('user1 and user2 should not receive message from blockedUser', async () => {
+      await new Promise((r) => setTimeout(r, 1000));
+      ctx3 = new Promise<void>((resolve) => {
+        ws1.on('message', (data) => {
+          console.error(data);
+          throw new Error(
+            'User1 should not receive any message from blockedUser',
+          );
+        });
+        setTimeout(() => {
+          ws1.off('message');
+          resolve();
+        }, 3000);
+      });
+      ctx4 = new Promise<void>((resolve) => {
+        ws2.on('message', (data) => {
+          console.error(data);
+          throw new Error(
+            'User2 should not receive any message from blockedUser',
+          );
+        });
+        setTimeout(() => {
+          ws2.off('message');
+          resolve();
+        }, 3000);
+      });
+      await ctx3;
+      await ctx4;
     });
 
     it('user1 should get all messages in the room', async () => {
