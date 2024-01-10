@@ -18,18 +18,13 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function CreateRoomDialog() {
-  const onClick = () => {
-    console.log("create room");
-  };
   return (
     <Dialog>
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <button className="px-2" onClick={onClick}>
-                +
-              </button>
+              <button className="px-2">+</button>
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent>Create Room</TooltipContent>
