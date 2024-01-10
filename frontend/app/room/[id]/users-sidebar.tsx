@@ -1,3 +1,4 @@
+import { getBannedUsers, getBlockingUsers } from "@/app/lib/actions";
 import type {
   AccessLevel,
   PublicUserEntity,
@@ -7,9 +8,8 @@ import { getCurrentUserId } from "@/app/lib/session";
 import { Stack } from "@/components/layout/stack";
 import SidebarItem from "./sidebar-item";
 import { SidebarMenu } from "./sidebar-menu";
-import { getBannedUsers, getBlockingUsers } from "@/app/lib/actions";
 
-export async function Sidebar({
+export default async function UsersSidebar({
   roomId,
   roomName,
   accessLevel,

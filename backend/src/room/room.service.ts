@@ -60,9 +60,11 @@ export class RoomService {
     return room;
   }
 
-  findAllRoom(userId: number): Promise<RoomEntity[]> {
+  findAllRoom(userId: number, joined?: boolean): Promise<RoomEntity[]> {
     return this.prisma.room.findMany({
       where: {
+        // If joined is true, only return rooms that the user is joined
+        users: joined ? { some: { userId: userId } } : undefined,
         OR: [
           { accessLevel: 'PUBLIC' },
           { accessLevel: 'PROTECTED' },
