@@ -145,6 +145,7 @@ export async function getRooms(
     joined?: boolean;
   } = {},
 ): Promise<RoomEntity[]> {
+  // TODO: use URLSearchParams
   let queryStr = "?";
   if (query.joined) {
     queryStr += "joined=true";
