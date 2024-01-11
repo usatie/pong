@@ -334,6 +334,73 @@ describe('ChatGateway and ChatController (e2e)', () => {
         },
       ]);
     });
+
+    it('user1 unblocks blockedUser1', async () => {
+      await app
+        .unblockUser(user1.id, blockedUser1.id, user1.accessToken)
+        .expect(200);
+    });
+
+    let ctx7, ctx8: Promise<void>;
+    it('setup promises to recv messages from blockedUser1 after unblocking', async () => {
+      await new Promise((r) => setTimeout(r, 1000));
+      ctx7 = new Promise<void>((resolve) => {
+        ws1.on('message', (data) => {
+          const expected: MessageEntity = {
+            user: {
+              id: blockedUser1.id,
+              name: blockedUser1.name,
+              avatarURL: blockedUser1.avatarURL,
+            },
+            roomId: room.id,
+            content: 'hello',
+          };
+          expect(data).toEqual(expected);
+          const ack = {
+            userId: user1.id,
+            roomId: room.id,
+            content: 'ACK: ' + data.content,
+          };
+          ws1.emit('message', ack);
+          ws1.off('message');
+          resolve();
+        });
+      });
+      ctx8 = new Promise<void>((resolve) => {
+        ws3.on('message', (data) => {
+          if (data.user.id === blockedUser1.id) return;
+          const expected: MessageEntity = {
+            user: {
+              id: user1.id,
+              name: user1.name,
+              avatarURL: user1.avatarURL,
+            },
+            roomId: room.id,
+            content: 'ACK: hello',
+          };
+          expect(data).toEqual(expected);
+          ws3.off('message');
+          resolve();
+        });
+      });
+    });
+
+    it('blockedUser1 sends message after unblocking', () => {
+      const helloMessage = {
+        userId: blockedUser1.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws3.emit('message', helloMessage);
+    });
+
+    it('user1 receives messages and send ACK', async () => {
+      await ctx7;
+    });
+
+    it('blockedUser1 receives ACK', async () => {
+      await ctx8;
+    });
   });
 
   /*
