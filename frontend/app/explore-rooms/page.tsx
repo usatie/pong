@@ -1,14 +1,5 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { getRooms } from "../lib/actions";
+import { getRooms } from "@/app/lib/actions";
+import RoomCard from "./room-card";
 
 export default async function ExploreRoomsPage() {
   const rooms = await getRooms({ joined: false });
@@ -17,22 +8,7 @@ export default async function ExploreRoomsPage() {
       <h1 className="text-4xl font-bold">Explore Rooms</h1>
       <div className="flex flex-wrap gap-4">
         {rooms.map((room) => (
-          <Card key={room.id} className="basis-64">
-            <CardHeader>
-              <CardTitle>{room.name}</CardTitle>
-              <CardDescription>{room.accessLevel}</CardDescription>
-            </CardHeader>
-            {room.accessLevel === "PROTECTED" ? (
-              <CardContent>
-                <Input placeholder="Enter password" />
-              </CardContent>
-            ) : null}
-            <CardFooter>
-              <Button variant={"outline"} className="w-full">
-                Join
-              </Button>
-            </CardFooter>
-          </Card>
+          <RoomCard room={room} key={room.id} />
         ))}
       </div>
     </div>

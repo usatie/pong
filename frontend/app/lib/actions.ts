@@ -215,22 +215,27 @@ export async function createRoom(
 }
 
 export async function joinRoom(
-  prevState: void | undefined,
+  roomId: number,
+  prevState: { error: string } | undefined,
   formData: FormData,
 ) {
-  const { roomId } = Object.fromEntries(formData.entries());
+  const payload = JSON.stringify({
+    password: formData.get("password"),
+  });
   const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + getAccessToken(),
     },
+    body: payload,
   });
   const data = await res.json();
   if (res.status === 409) {
     redirect(`/room/${roomId}`, RedirectType.push);
   } else if (!res.ok) {
     console.error("joinRoom error: ", data);
+    return { error: data.message };
   } else {
     redirect(`/room/${roomId}`, RedirectType.push);
   }
