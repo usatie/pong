@@ -9,6 +9,7 @@ import {
 import { useModal } from "@/app/lib/hooks/use-modal-store";
 import { BanModal } from "@/app/ui/room/ban-modal";
 import { SettingModal } from "@/app/ui/room/setting-modal";
+import { InviteModal } from "@/app/ui/room/invite-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +24,7 @@ export const SidebarMenu = ({
   accessLevel,
   me,
   allUsers,
+  usersOnRoom,
   bannedUsers,
 }: {
   roomId: number;
@@ -30,6 +32,7 @@ export const SidebarMenu = ({
   accessLevel: AccessLevel;
   me: UserOnRoomEntity;
   allUsers: PublicUserEntity[];
+  usersOnRoom: UserOnRoomEntity[];
   bannedUsers: PublicUserEntity[];
 }) => {
   const { onOpen } = useModal();
@@ -37,6 +40,8 @@ export const SidebarMenu = ({
   const handleLeave = () => {
     leaveRoom(roomId);
   };
+
+  const members = usersOnRoom.map((member) => member.user);
 
   return (
     <DropdownMenu>
@@ -47,10 +52,25 @@ export const SidebarMenu = ({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-full text-xs font-medium text-black dark:text-neutral-400 space-y-[2px]">
-        <DropdownMenuItem className="text-indigo-600 dark:text-indigo-400 px-3 py-2 text-sm cursor-pointer">
-          Add User
-          <UserPlus className="h-4 w-4 ml-auto" />
-        </DropdownMenuItem>
+        {(me.role === "OWNER" || me.role === "ADMINISTRATOR") && (
+          <DropdownMenuItem
+            onClick={() =>
+              onOpen("invite", {
+                roomId,
+                roomName,
+                me,
+                allUsers,
+                members,
+                bannedUsers,
+              })
+            }
+            className="text-indigo-600 dark:text-indigo-400 px-3 py-2 text-sm cursor-pointer"
+          >
+            Add User
+            <UserPlus className="h-4 w-4 ml-auto" />
+            <InviteModal />
+          </DropdownMenuItem>
+        )}
         {(me.role === "OWNER" || me.role === "ADMINISTRATOR") && (
           <DropdownMenuItem
             onClick={() => onOpen("setting", { roomId, roomName, accessLevel })}

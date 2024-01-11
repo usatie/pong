@@ -2,6 +2,7 @@
 
 import { BanModal } from "@/app/ui/room/ban-modal";
 import { SettingModal } from "@/app/ui/room/setting-modal";
+import { InviteModal } from "@/app/ui/room/invite-modal";
 import { useEffect, useState } from "react";
 
 export const ModalProvider = () => {
@@ -17,8 +18,9 @@ export const ModalProvider = () => {
 
   return (
     <>
-      <BanModal />
+      <InviteModal />
       <SettingModal />
+      <BanModal />
     </>
   );
 };
