@@ -7,6 +7,9 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
+import { BlockEvent } from 'src/common/events/block.event';
+import { UnblockEvent } from 'src/common/events/unblock.event';
+import { Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -20,10 +23,11 @@ export class ChatService {
     private userService: UserService,
   ) {}
 
+  private logger: Logger = new Logger('ChatService');
+
   // Map<User.id, Socket>
   private clients = new Map<User['id'], Socket>();
   private users = new Map<Socket['id'], User>();
-  //  private blockMap = new Map<number, number[]>();
 
   getUser(client: Socket) {
     return this.users.get(client.id);
@@ -71,6 +75,22 @@ export class ChatService {
     const client = this.clients.get(user.id);
     if (client) {
       client.leave(roomId.toString());
+    }
+  }
+
+  @OnEvent('block', { async: true })
+  async handleBlockUser(event: BlockEvent) {
+    const client = this.clients.get(event.blockerId);
+    if (client) {
+      client.join('block' + event.blockedId);
+    }
+  }
+
+  @OnEvent('unblock', { async: true })
+  async handleUnblockUser(event: UnblockEvent) {
+    const client = this.clients.get(event.unblockerId);
+    if (client) {
+      client.leave('block' + event.unblockedId);
     }
   }
 

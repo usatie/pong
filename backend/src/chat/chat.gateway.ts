@@ -73,50 +73,6 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage('block')
-  handleBlockUser(
-    @MessageBody() userId: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const blockerId = this.getValueToKey(this.userMap, client.id);
-    if (
-      this.blockMap.has(userId) &&
-      this.blockMap.get(userId).includes(blockerId)
-    ) {
-      this.logger.error('Already blocked');
-    } else {
-      this.userService.block(blockerId, userId);
-      this.logger.log(`block user: ${userId}(${client.id})`);
-      if (this.blockMap.has(userId)) {
-        this.blockMap.get(userId).push(blockerId);
-      } else {
-        this.blockMap.set(userId, [blockerId]);
-      }
-      client.join('block' + userId);
-    }
-  }
-
-  @SubscribeMessage('unblock')
-  handleUnblockUser(
-    @MessageBody() userId: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const unblockerId = this.getValueToKey(this.userMap, client.id);
-    if (this.blockMap.has(userId)) {
-      this.userService.unblock(unblockerId, userId);
-      const index = this.blockMap.get(userId).indexOf(unblockerId);
-      if (index !== -1) {
-        this.blockMap.get(userId).splice(index, 1);
-        this.logger.log(`unblock user: ${userId}(${client.id})`);
-        client.leave('block' + userId);
-      } else {
-        this.logger.error(`User ${userId} has not been blocked`);
-      }
-    } else {
-      this.logger.error(`User ${userId} has not been blocked`);
-    }
-  }
-
   @SubscribeMessage('joinDM')
   async handleJoinUser(
     @MessageBody() userId: number,
