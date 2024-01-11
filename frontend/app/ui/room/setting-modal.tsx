@@ -1,5 +1,6 @@
 "use client";
 
+import { AccessLevel } from "@/app/lib/dtos";
 import { updateRoom } from "@/app/lib/actions";
 import { useModal } from "@/app/lib/hooks/use-modal-store";
 import { Button } from "@/components/ui/button";
@@ -17,15 +18,15 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-const settingSchema = z.discriminatedUnion("isProtected", [
+const settingSchema = z.discriminatedUnion("selectedAccessLevel", [
   z.object({
     roomName: z.string().min(1, { message: "Please enter room name" }),
-    isProtected: z.literal(false),
+    selectedAccessLevel: z.enum(["PUBLIC", "PRIVATE"]),
     password: z.string().optional(),
   }),
   z.object({
     roomName: z.string().min(1, { message: "Please enter room name" }),
-    isProtected: z.literal(true),
+    selectedAccessLevel: z.literal("PROTECTED"),
     password: z
       .string()
       .min(4, { message: "Invalid password: must be at least 4 characters" }),
@@ -45,10 +46,15 @@ export const SettingModal = () => {
       throw new Error("not found room");
     }
     let result;
-    if (accessLevel !== "PROTECTED" && e.password === "") {
-      result = await updateRoom(e.roomName, roomId, accessLevel);
+    if (e.selectedAccessLevel !== "PROTECTED") {
+      result = await updateRoom(e.roomName, roomId, e.selectedAccessLevel);
     } else {
-      result = await updateRoom(e.roomName, roomId, accessLevel, e.password);
+      result = await updateRoom(
+        e.roomName,
+        roomId,
+        e.selectedAccessLevel,
+        e.password,
+      );
     }
     if (result === "Success") {
       router.refresh();
@@ -61,15 +67,18 @@ export const SettingModal = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(settingSchema),
     defaultValues: {
       roomName: roomName as string,
-      isProtected: accessLevel === "PROTECTED",
+      selectedAccessLevel: accessLevel as AccessLevel,
       password: "",
     },
   });
+
+  const selectedAccessLevel = watch("selectedAccessLevel", accessLevel);
 
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>
@@ -94,16 +103,17 @@ export const SettingModal = () => {
                 <p className="text-red-500">{errors.roomName?.message}</p>
               )}
             </div>
-            <div className="hidden">
-              <Input
-                className="hidden"
-                id="isProtected"
-                type="checkbox"
-                defaultChecked={accessLevel === "PROTECTED"}
-                {...register("isProtected")}
-              />
-            </div>
-            {accessLevel === "PROTECTED" && (
+            <Label htmlFor="accessLevel">Access Level</Label>
+            <select
+              className="bg-white text-black"
+              defaultValue={accessLevel}
+              {...register("selectedAccessLevel")}
+            >
+              <option value="PUBLIC">PUBLIC</option>
+              <option value="PROTECTED">PROTECTED</option>
+              <option value="PRIVATE">PRIVATE</option>
+            </select>
+            {selectedAccessLevel === "PROTECTED" && (
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="password">New Password</Label>
                 <Input
