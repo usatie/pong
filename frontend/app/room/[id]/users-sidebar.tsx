@@ -37,6 +37,7 @@ export default async function UsersSidebar({
         accessLevel={accessLevel}
         me={me}
         allUsers={allUsers}
+        usersOnRoom={users}
         bannedUsers={bannedUsers}
       />
       <Stack space="space-y-2">

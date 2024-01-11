@@ -5,13 +5,14 @@ import {
 } from "@/app/lib/dtos";
 import { create } from "zustand";
 
-type ModalType = "ban" | "setting";
+type ModalType = "ban" | "setting" | "invite";
 
 interface ModalData {
   roomId?: number;
   roomName?: string;
   me?: UserOnRoomEntity;
   allUsers?: PublicUserEntity[];
+  members?: PublicUserEntity[];
   bannedUsers?: PublicUserEntity[];
   accessLevel?: AccessLevel;
 }
