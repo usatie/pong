@@ -140,22 +140,22 @@ export async function deleteUser(
   }
 }
 
-export async function getRooms(
-  query: {
-    joined?: boolean;
-  } = {},
-): Promise<RoomEntity[]> {
-  // TODO: use URLSearchParams
-  let queryStr = "?";
-  if (query.joined) {
-    queryStr += "joined=true";
+export async function getRooms(query: any = {}): Promise<RoomEntity[]> {
+  let url = `${process.env.API_URL}/room`;
+  if (query) {
+    const params = new URLSearchParams(query);
+    url += "?" + params.toString();
   }
-  const res = await fetch(`${process.env.API_URL}/room${queryStr}`, {
+  const res = await fetch(url, {
     cache: "no-cache",
     headers: {
       Authorization: "Bearer " + getAccessToken(),
     },
   });
+  if (!res.ok) {
+    console.error("getRooms error: ", await res.json());
+    throw new Error("getRooms error");
+  }
   const rooms = await res.json();
   return rooms;
 }
