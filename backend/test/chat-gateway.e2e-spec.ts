@@ -431,6 +431,66 @@ describe('ChatGateway and ChatController (e2e)', () => {
     it('blockedUser1 receives ACK', async () => {
       await ctx8;
     });
+
+    it('user1 should get all messages in the room', async () => {
+      const res = await app
+        .getMessagesInRoom(room.id, user1.accessToken)
+        .expect(200);
+      const messages = res.body;
+      expect(messages).toHaveLength(5);
+      expect(messages).toEqual([
+        {
+          user: {
+            id: user1.id,
+            name: user1.name,
+            avatarURL: user1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: user2.id,
+            name: user2.name,
+            avatarURL: user2.avatarURL,
+          },
+          roomId: room.id,
+          content: 'ACK: hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: blockedUser1.id,
+            name: blockedUser1.name,
+            avatarURL: blockedUser1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: blockedUser1.id,
+            name: blockedUser1.name,
+            avatarURL: blockedUser1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: user1.id,
+            name: user1.name,
+            avatarURL: user1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'ACK: hello',
+          createdAt: expect.any(String),
+        },
+      ]);
+    });
   });
 
   /*
