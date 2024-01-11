@@ -20,7 +20,8 @@ describe('ChatGateway and ChatController (e2e)', () => {
   let ws1: Socket; // Client socket 1
   let ws2: Socket; // Client socket 2
   let ws3: Socket; // Client socket 3
-  let user1, user2, blockedUser;
+  let ws4: Socket; // Client socket 4
+  let user1, user2, blockedUser1, blockedUser2;
 
   beforeAll(async () => {
     //app = await initializeApp();
@@ -38,29 +39,37 @@ describe('ChatGateway and ChatController (e2e)', () => {
       password: 'test-password',
     };
     const dto3 = {
-      name: 'blocked-user',
-      email: 'blocked@test.com',
+      name: 'blocked-user1',
+      email: 'blocked1@test.com',
+      password: 'test-password',
+    };
+    const dto4 = {
+      name: 'blocked-user2',
+      email: 'blocked2@test.com',
       password: 'test-password',
     };
     user1 = await app.createAndLoginUser(dto1);
     user2 = await app.createAndLoginUser(dto2);
-    blockedUser = await app.createAndLoginUser(dto3);
+    blockedUser1 = await app.createAndLoginUser(dto3);
+    blockedUser2 = await app.createAndLoginUser(dto4);
     await app
-      .blockUser(user1.id, blockedUser.id, user1.accessToken)
+      .blockUser(user1.id, blockedUser1.id, user1.accessToken)
       .expect(200);
     await app
-      .blockUser(user2.id, blockedUser.id, user2.accessToken)
+      .blockUser(user2.id, blockedUser1.id, user2.accessToken)
       .expect(200);
   });
 
   afterAll(async () => {
     await app.deleteUser(user1.id, user1.accessToken).expect(204);
     await app.deleteUser(user2.id, user2.accessToken).expect(204);
-    await app.deleteUser(blockedUser.id, blockedUser.accessToken).expect(204);
+    await app.deleteUser(blockedUser1.id, blockedUser1.accessToken).expect(204);
+    await app.deleteUser(blockedUser2.id, blockedUser2.accessToken).expect(204);
     await app.close();
     ws1.close();
     ws2.close();
     ws3.close();
+    ws4.close();
   });
 
   const connect = (ws: Socket) => {
@@ -108,16 +117,21 @@ describe('ChatGateway and ChatController (e2e)', () => {
         extraHeaders: { cookie: 'token=' + user2.accessToken },
       });
       ws3 = io('ws://localhost:3000/chat', {
-        extraHeaders: { cookie: 'token=' + blockedUser.accessToken },
+        extraHeaders: { cookie: 'token=' + blockedUser1.accessToken },
+      });
+      ws4 = io('ws://localhost:3000/chat', {
+        extraHeaders: { cookie: 'token=' + blockedUser2.accessToken },
       });
       expect(ws1).toBeDefined();
       expect(ws2).toBeDefined();
       expect(ws3).toBeDefined();
+      expect(ws4).toBeDefined();
 
       // Wait for connection
       await connect(ws1);
       await connect(ws2);
       await connect(ws3);
+      await connect(ws4);
     });
 
     // // Enter room by API call
@@ -130,11 +144,12 @@ describe('ChatGateway and ChatController (e2e)', () => {
       expect(room.id).toBeDefined();
       // user2 (ws2) enters the room
       await app.enterRoom(room.id, user2.accessToken).expect(201);
-      await app.enterRoom(room.id, blockedUser.accessToken).expect(201);
+      await app.enterRoom(room.id, blockedUser1.accessToken).expect(201);
+      await app.enterRoom(room.id, blockedUser2.accessToken).expect(201);
     });
 
     // Setup promises to recv messages
-    let ctx1, ctx2, ctx3, ctx4: Promise<void>;
+    let ctx1, ctx2: Promise<void>;
     it('Setup promises to recv messages', () => {
       ctx1 = new Promise<void>((resolve) => {
         ws2.on('message', (data) => {
@@ -177,15 +192,6 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
     });
 
-    it('blockedUser sends message and user1 and user2 should not receive it', () => {
-      const helloMessage = {
-        userId: blockedUser.id,
-        roomId: room.id,
-        content: 'hello',
-      };
-      ws3.emit('message', helloMessage);
-    });
-
     // Send messages
     it('user1 sends messages', async () => {
       const helloMessage = {
@@ -204,13 +210,14 @@ describe('ChatGateway and ChatController (e2e)', () => {
       await ctx2;
     });
 
-    it('user1 and user2 should not receive message from blockedUser', async () => {
+    let ctx3, ctx4: Promise<void>;
+    it('setup promises to not recv messages from blockedUser1', async () => {
       await new Promise((r) => setTimeout(r, 1000));
       ctx3 = new Promise<void>((resolve) => {
         ws1.on('message', (data) => {
           console.error(data);
           throw new Error(
-            'User1 should not receive any message from blockedUser',
+            'User1 should not receive any message from blockedUser1',
           );
         });
         setTimeout(() => {
@@ -222,7 +229,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
         ws2.on('message', (data) => {
           console.error(data);
           throw new Error(
-            'User2 should not receive any message from blockedUser',
+            'User2 should not receive any message from blockedUser1',
           );
         });
         setTimeout(() => {
@@ -230,8 +237,72 @@ describe('ChatGateway and ChatController (e2e)', () => {
           resolve();
         }, 3000);
       });
+    });
+
+    it('blockedUser1 sends message', () => {
+      const helloMessage = {
+        userId: blockedUser1.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws3.emit('message', helloMessage);
+    });
+
+    it('user1 and user2 should not receive message from blockedUser1', async () => {
       await ctx3;
       await ctx4;
+    });
+
+    it('user1 and user2 block blockedUser2', async () => {
+      await app
+        .blockUser(user1.id, blockedUser2.id, user1.accessToken)
+        .expect(200);
+      await app
+        .blockUser(user2.id, blockedUser2.id, user2.accessToken)
+        .expect(200);
+    });
+
+    let ctx5, ctx6: Promise<void>;
+    it('setup promises to not recv messages from blockedUser2', async () => {
+      await new Promise((r) => setTimeout(r, 1000));
+      ctx5 = new Promise<void>((resolve) => {
+        ws1.on('message', (data) => {
+          console.error(data);
+          throw new Error(
+            'User1 should not receive any message from blockedUser2',
+          );
+        });
+        setTimeout(() => {
+          ws1.off('message');
+          resolve();
+        }, 3000);
+      });
+      ctx6 = new Promise<void>((resolve) => {
+        ws2.on('message', (data) => {
+          console.error(data);
+          throw new Error(
+            'User2 should not receive any message from blockedUser2',
+          );
+        });
+        setTimeout(() => {
+          ws2.off('message');
+          resolve();
+        }, 3000);
+      });
+    });
+
+    it('blockedUser2 sends message', () => {
+      const helloMessage = {
+        userId: blockedUser2.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws4.emit('message', helloMessage);
+    });
+
+    it('user1 and user2 should not receive message from blockedUser2', async () => {
+      await ctx5;
+      await ctx6;
     });
 
     it('user1 should get all messages in the room', async () => {
