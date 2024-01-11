@@ -241,6 +241,25 @@ export async function joinRoom(
   }
 }
 
+export async function inviteUserToRoom(roomId: number, userId: number) {
+  const res = await fetch(
+    `${process.env.API_URL}/room/${roomId}/invite/${userId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+      },
+    },
+  );
+  const data = await res.json();
+  if (!res.ok) {
+    console.error("inviteUserToRoom error: ", data);
+    return "Error";
+  } else {
+    return "Success";
+  }
+}
+
 export async function updateRoom(
   roomName: string,
   roomId: number,
