@@ -26,9 +26,7 @@ export default async function ExploreRoomsPage() {
               <CardContent>
                 <Input placeholder="Enter password" />
               </CardContent>
-            ) : (
-              <div></div>
-            )}
+            ) : null}
             <CardFooter>
               <Button variant={"outline"} className="w-full">
                 Join
