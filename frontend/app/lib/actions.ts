@@ -140,22 +140,22 @@ export async function deleteUser(
   }
 }
 
-export async function getRooms(
-  query: {
-    joined?: boolean;
-  } = {},
-): Promise<RoomEntity[]> {
-  // TODO: use URLSearchParams
-  let queryStr = "?";
-  if (query.joined) {
-    queryStr += "joined=true";
+export async function getRooms(query: any = {}): Promise<RoomEntity[]> {
+  let url = `${process.env.API_URL}/room`;
+  if (query) {
+    const params = new URLSearchParams(query);
+    url += "?" + params.toString();
   }
-  const res = await fetch(`${process.env.API_URL}/room${queryStr}`, {
+  const res = await fetch(url, {
     cache: "no-cache",
     headers: {
       Authorization: "Bearer " + getAccessToken(),
     },
   });
+  if (!res.ok) {
+    console.error("getRooms error: ", await res.json());
+    throw new Error("getRooms error");
+  }
   const rooms = await res.json();
   return rooms;
 }
@@ -215,22 +215,27 @@ export async function createRoom(
 }
 
 export async function joinRoom(
-  prevState: void | undefined,
+  roomId: number,
+  prevState: { error: string } | undefined,
   formData: FormData,
 ) {
-  const { roomId } = Object.fromEntries(formData.entries());
+  const payload = JSON.stringify({
+    password: formData.get("password"),
+  });
   const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + getAccessToken(),
     },
+    body: payload,
   });
   const data = await res.json();
   if (res.status === 409) {
     redirect(`/room/${roomId}`, RedirectType.push);
   } else if (!res.ok) {
     console.error("joinRoom error: ", data);
+    return { error: data.message };
   } else {
     redirect(`/room/${roomId}`, RedirectType.push);
   }

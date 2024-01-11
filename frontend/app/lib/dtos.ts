@@ -61,4 +61,4 @@ export type MessageEvent = {
   content: string;
 };
 
-export type RoomEntity = { id: number; name?: string };
+export type RoomEntity = { id: number; name: string; accessLevel: AccessLevel };
