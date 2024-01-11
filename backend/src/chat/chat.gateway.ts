@@ -40,7 +40,6 @@ export class ChatGateway {
   private logger: Logger = new Logger('ChatGateway');
 
   private userMap = new Map<number, string>();
-  private blockMap = new Map<number, number[]>();
 
   private getValueToKey = (map, findValue): number | undefined => {
     for (const [key, value] of map.entries()) {
@@ -73,57 +72,6 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage('joinDM')
-  async handleJoinUser(
-    @MessageBody() userId: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.userMap.set(userId, client.id);
-    const blockedUsers = await this.userService.findAllBlocked(userId);
-    blockedUsers.map((user) => client.join('block' + user.id));
-    this.logger.log(`join DM: ${client.id} joined DM user${userId}`);
-  }
-
-  @SubscribeMessage('kick')
-  handleKick(
-    @MessageBody() { roomId, userId }: { roomId: number; userId: number },
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.logger.log(`kick user: ${userId} left room ${roomId}`);
-    if (client.rooms.has('room/' + roomId)) {
-      this.server.to('room/' + roomId).emit('kick', userId, client.id);
-    } else {
-      this.logger.error('socket has not joined this room');
-    }
-  }
-
-  @SubscribeMessage('updateRole')
-  handleUpdateRole(
-    @MessageBody()
-    { roomId, userId, role }: { roomId: number; userId: number; role: string },
-    @ConnectedSocket() client: Socket,
-  ) {
-    this.logger.log(`update role user: ${userId} room ${roomId} role ${role}`);
-    if (role !== 'ADMINISTRATOR' && role !== 'MEMBER') {
-      this.logger.error('invalid role');
-      return;
-    }
-    if (client.rooms.has('room/' + roomId)) {
-      this.server
-        .to('room/' + roomId)
-        .emit('updateRole', role, userId, client.id);
-    } else {
-      this.logger.error('socket has not joined this room');
-    }
-    //    if (client.rooms.has('room/' + roomId)) {
-    //      this.server
-    //        .to(this.userMap.get(userId))
-    //        .emit('updateRole', role, client.id);
-    //    } else {
-    //      this.logger.error('socket has not joined this room');
-    //    }
-  }
-
   @SubscribeMessage('message')
   async handleMessage(
     @MessageBody() data: CreateMessageDto,
@@ -144,15 +92,6 @@ export class ChatGateway {
 
     // Save message to the database
     await this.chatService.createMessage(data);
-
-    // TODO: exclude blocked users
-
-    //block APIが呼ばれて成功した時user.controller.tsからchat.gateway.tsの（ブロックされた側の各ユーザーの）block roomにjoinするようにする
-    //unblock APIが呼ばれて成功した時user.controller.tsからchat.gateway.tsのblock roomからleaveするようにする
-    //block roomにjoinしているユーザーにはメッセージを送らないようにする
-    //
-    //もしくはmessageを送る前に送信者をblockしているユーザーを取得して、そのユーザーIDからsocket idを取得して送らないようにする
-    //こちらの場合はblockされた側が自分のことをblockしているユーザーを取得できるようにAPIを作る必要がある
 
     // Send message to the room
     const room = this.server
