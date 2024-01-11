@@ -73,50 +73,6 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage('block')
-  handleBlockUser(
-    @MessageBody() userId: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const blockerId = this.getValueToKey(this.userMap, client.id);
-    if (
-      this.blockMap.has(userId) &&
-      this.blockMap.get(userId).includes(blockerId)
-    ) {
-      this.logger.error('Already blocked');
-    } else {
-      this.userService.block(blockerId, userId);
-      this.logger.log(`block user: ${userId}(${client.id})`);
-      if (this.blockMap.has(userId)) {
-        this.blockMap.get(userId).push(blockerId);
-      } else {
-        this.blockMap.set(userId, [blockerId]);
-      }
-      client.join('block' + userId);
-    }
-  }
-
-  @SubscribeMessage('unblock')
-  handleUnblockUser(
-    @MessageBody() userId: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const unblockerId = this.getValueToKey(this.userMap, client.id);
-    if (this.blockMap.has(userId)) {
-      this.userService.unblock(unblockerId, userId);
-      const index = this.blockMap.get(userId).indexOf(unblockerId);
-      if (index !== -1) {
-        this.blockMap.get(userId).splice(index, 1);
-        this.logger.log(`unblock user: ${userId}(${client.id})`);
-        client.leave('block' + userId);
-      } else {
-        this.logger.error(`User ${userId} has not been blocked`);
-      }
-    } else {
-      this.logger.error(`User ${userId} has not been blocked`);
-    }
-  }
-
   @SubscribeMessage('joinDM')
   async handleJoinUser(
     @MessageBody() userId: number,
@@ -191,8 +147,17 @@ export class ChatGateway {
 
     // TODO: exclude blocked users
 
+    //block APIが呼ばれて成功した時user.controller.tsからchat.gateway.tsの（ブロックされた側の各ユーザーの）block roomにjoinするようにする
+    //unblock APIが呼ばれて成功した時user.controller.tsからchat.gateway.tsのblock roomからleaveするようにする
+    //block roomにjoinしているユーザーにはメッセージを送らないようにする
+    //
+    //もしくはmessageを送る前に送信者をblockしているユーザーを取得して、そのユーザーIDからsocket idを取得して送らないようにする
+    //こちらの場合はblockされた側が自分のことをblockしているユーザーを取得できるようにAPIを作る必要がある
+
     // Send message to the room
-    const room = this.server.to(data.roomId.toString());
+    const room = this.server
+      .to(data.roomId.toString())
+      .except('block' + data.userId);
     room.emit(
       'message',
       new MessageEntity(data, this.chatService.getUser(client)),

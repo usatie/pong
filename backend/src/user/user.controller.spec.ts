@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserController } from './user.controller';
@@ -9,7 +10,7 @@ describe('UserController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
-      providers: [UserService, PrismaService],
+      providers: [UserService, PrismaService, EventEmitter2],
     }).compile();
 
     controller = module.get<UserController>(UserController);

@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { User } from '@prisma/client';
 import { hash } from 'bcrypt';
+import { BlockEvent } from 'src/common/events/block.event';
+import { UnblockEvent } from 'src/common/events/unblock.event';
 import * as fs from 'fs';
 import * as path from 'path';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,7 +12,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
@@ -96,7 +102,14 @@ export class UserService {
           },
         },
       })
-      .then(() => 'Blocked');
+      .then(() => {
+        const event: BlockEvent = {
+          blockerId: userId,
+          blockedId: blockedUserId,
+        };
+        this.eventEmitter.emit('block', event);
+        return 'Blocked';
+      });
   }
 
   async unblock(userId: number, blockedUserId: number) {
@@ -109,7 +122,14 @@ export class UserService {
           },
         },
       })
-      .then(() => 'Unblocked');
+      .then(() => {
+        const event: UnblockEvent = {
+          unblockerId: userId,
+          unblockedId: blockedUserId,
+        };
+        this.eventEmitter.emit('unblock', event);
+        return 'Unblocked';
+      });
   }
 
   async findAllBlocked(userId: number) {

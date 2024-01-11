@@ -103,8 +103,8 @@ export class RoomController {
   @UseGuards(MemberGuard)
   @ApiBearerAuth()
   @ApiOkResponse()
-  getMessages(@Member() member: UserOnRoomEntity) {
-    return this.roomService.findAllMessages(member.roomId);
+  getMessages(@Member() member: UserOnRoomEntity, @CurrentUser() user: User) {
+    return this.roomService.findAllMessages(member.roomId, user);
   }
 
   // UserOnRoom CRUD

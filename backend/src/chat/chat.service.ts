@@ -4,8 +4,12 @@ import { WebSocketGateway, WsException } from '@nestjs/websockets';
 import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
+import { UserService } from 'src/user/user.service';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
+import { BlockEvent } from 'src/common/events/block.event';
+import { UnblockEvent } from 'src/common/events/unblock.event';
+import { Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -16,7 +20,10 @@ export class ChatService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
+    private userService: UserService,
   ) {}
+
+  private logger: Logger = new Logger('ChatService');
 
   // Map<User.id, Socket>
   private clients = new Map<User['id'], Socket>();
@@ -71,6 +78,22 @@ export class ChatService {
     }
   }
 
+  @OnEvent('block', { async: true })
+  async handleBlockUser(event: BlockEvent) {
+    const client = this.clients.get(event.blockerId);
+    if (client) {
+      client.join('block' + event.blockedId);
+    }
+  }
+
+  @OnEvent('unblock', { async: true })
+  async handleUnblockUser(event: UnblockEvent) {
+    const client = this.clients.get(event.unblockerId);
+    if (client) {
+      client.leave('block' + event.unblockedId);
+    }
+  }
+
   createMessage(data: CreateMessageDto) {
     return this.prisma.message.create({
       data: {
@@ -109,6 +132,10 @@ export class ChatService {
     try {
       const user = await this.authService.verifyAccessToken(token);
       this.addClient(user, client);
+      const blockingUsers = await this.userService.findAllBlocked(user.id);
+      blockingUsers.forEach((blockingUser) =>
+        client.join('block' + blockingUser.id),
+      );
       const rooms = await this.prisma.room.findMany({
         where: {
           users: {
