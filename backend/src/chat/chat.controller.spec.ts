@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from 'src/auth/auth.service';
@@ -18,6 +19,7 @@ describe('ChatController', () => {
         AuthService,
         UserService,
         JwtService,
+        EventEmitter2,
       ],
     }).compile();
 

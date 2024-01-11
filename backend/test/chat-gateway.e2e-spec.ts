@@ -333,7 +333,6 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
     let ctx3, ctx4: Promise<void>;
     it('setup promises to recv messages from blockedUser1 after unblocking', async () => {
-      await new Promise((r) => setTimeout(r, 1000));
       ctx3 = new Promise<void>((resolve) => {
         ws1.on('message', (data) => {
           const expected: MessageEntity = {
@@ -392,7 +391,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
       await ctx4;
     });
 
-    it('user1 should get all messages in the room', async () => {
+    it('user1 should get all messages except from blockedUser2 in the room', async () => {
       const res = await app
         .getMessagesInRoom(room.id, user1.accessToken)
         .expect(200);
