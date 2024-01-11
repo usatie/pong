@@ -109,9 +109,18 @@ export class RoomService {
     });
   }
 
-  findAllMessages(roomId: number) {
+  findAllMessages(roomId: number, user: User) {
     return this.prisma.message.findMany({
-      where: { roomId: roomId },
+      where: {
+        roomId: roomId,
+        user: {
+          blockedBy: {
+            none: {
+              id: user.id,
+            },
+          },
+        },
+      },
       select: {
         content: true,
         roomId: true,
@@ -123,6 +132,9 @@ export class RoomService {
             avatarURL: true,
           },
         },
+      },
+      orderBy: {
+        createdAt: 'asc',
       },
     });
   }
