@@ -2,7 +2,7 @@
 
 import { AccessLevel } from "@/app/lib/dtos";
 import { updateRoom } from "@/app/lib/actions";
-import { AccessLevel } from "@/app/lib/dtos";
+import { RoomEntity } from "@/app/lib/dtos";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,32 +36,28 @@ const settingSchema = z.discriminatedUnion("selectedAccessLevel", [
 export default function SettingModal({
   open,
   setOpen,
-  roomId,
-  roomName,
-  accessLevel,
+  room,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
-  roomId: number;
-  roomName: string;
-  accessLevel: AccessLevel;
+  room: RoomEntity;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | undefined>(undefined);
 
   const onSubmit = async (e: z.infer<typeof settingSchema>) => {
-    if (!roomId || !accessLevel) {
+    if (!room.id || !room.accessLevel) {
       throw new Error("not found room");
     }
     let result;
-    if (e.selectedAccessLevel !== "PROTECTED") {
-      result = await updateRoom(e.roomName, roomId, e.selectedAccessLevel);
+    if (room.accessLevel !== "PROTECTED" && e.password === "") {
+      result = await updateRoom(e.roomName, room.id, room.accessLevel);
     } else {
       result = await updateRoom(
         e.roomName,
-        roomId,
-        e.selectedAccessLevel,
-        e.password,
+        room.id,
+        room.accessLevel,
+        e.password
       );
     }
     if (result === "Success") {
@@ -80,13 +76,13 @@ export default function SettingModal({
   } = useForm({
     resolver: zodResolver(settingSchema),
     defaultValues: {
-      roomName: roomName as string,
-      selectedAccessLevel: accessLevel as AccessLevel,
+      roomName: room.name as string,
+      selectedAccessLevel: room.accessLevel as AccessLevel,
       password: "",
     },
   });
 
-  const selectedAccessLevel = watch("selectedAccessLevel", accessLevel);
+  const selectedAccessLevel = watch("selectedAccessLevel", room.accessLevel);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -104,7 +100,7 @@ export default function SettingModal({
                 className="text-black dark:text-white"
                 id="roomName"
                 placeholder="Enter room name"
-                defaultValue={roomName}
+                defaultValue={room.name}
                 {...register("roomName")}
               />
               {errors.roomName?.message && (
@@ -114,7 +110,7 @@ export default function SettingModal({
             <Label htmlFor="accessLevel">Access Level</Label>
             <select
               className="bg-white text-black"
-              defaultValue={accessLevel}
+              defaultValue={room.accessLevel}
               {...register("selectedAccessLevel")}
             >
               <option value="PUBLIC">PUBLIC</option>

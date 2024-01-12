@@ -17,13 +17,7 @@ export default async function Page({
       <div className="overflow-auto flex-grow flex gap-4 pb-4">
         <MessageArea roomId={roomId} messages={messages} />
         <Separator orientation="vertical" />
-        <RoomDetail
-          roomId={roomId}
-          roomName={room.name}
-          accessLevel={room.accessLevel}
-          users={room.users}
-          allUsers={allUsers}
-        />
+        <RoomDetail room={room} users={room.users} allUsers={allUsers} />
       </div>
     </>
   );

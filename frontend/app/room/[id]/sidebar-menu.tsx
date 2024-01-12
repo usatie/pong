@@ -1,13 +1,8 @@
 "use client";
 
 import { leaveRoom } from "@/app/lib/actions";
-import {
-  AccessLevel,
-  PublicUserEntity,
-  UserOnRoomEntity,
-} from "@/app/lib/dtos";
-import { useModal } from "@/app/lib/hooks/use-modal-store";
-import { BanModal } from "@/app/ui/room/ban-modal";
+import { PublicUserEntity, RoomEntity, UserOnRoomEntity } from "@/app/lib/dtos";
+import BanModal from "@/app/ui/room/ban-modal";
 import SettingModal from "@/app/ui/room/setting-modal";
 import {
   DropdownMenu,
@@ -41,32 +36,32 @@ function Item({ title, variant, Icon, onSelect, Modal }: ItemProps) {
   );
 }
 
-export const SidebarMenu = ({
-  roomId,
-  roomName,
-  accessLevel,
-  me,
-  allUsers,
-  usersOnRoom,
-  bannedUsers,
-}: {
-  roomId: number;
-  roomName: string;
-  accessLevel: AccessLevel;
+interface Props {
+  room: RoomEntity;
   me: UserOnRoomEntity;
   allUsers: PublicUserEntity[];
   usersOnRoom: UserOnRoomEntity[];
   bannedUsers: PublicUserEntity[];
-}) => {
-  const { onOpen } = useModal();
+}
 
+export const SidebarMenu = ({
+  room,
+  me,
+  allUsers,
+  usersOnRoom,
+  bannedUsers,
+}: Props) => {
   const isAdmin = me.role === "OWNER" || me.role === "ADMINISTRATOR";
   const [isSettingOpen, setIsSettingOpen] = useState(false);
+  const [isBanOpen, setIsBanOpen] = useState(false);
   const leave = () => {
-    leaveRoom(roomId);
+    leaveRoom(room.id);
   };
   const openSetting = () => {
     setIsSettingOpen(true);
+  };
+  const openBan = () => {
+    setIsBanOpen(true);
   };
 
   const members = usersOnRoom.map((member) => member.user);
@@ -76,14 +71,20 @@ export const SidebarMenu = ({
       <SettingModal
         open={isSettingOpen}
         setOpen={setIsSettingOpen}
-        roomId={roomId}
-        roomName={roomName}
-        accessLevel={accessLevel}
+        room={room}
+      />
+      <BanModal
+        open={isBanOpen}
+        setOpen={setIsBanOpen}
+        roomId={room.id}
+        me={me}
+        allUsers={allUsers}
+        bannedUsers={bannedUsers}
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div className="flex justify-between items-center h-10 border-b-2 mb-2 hover:bg-secondary cursor-pointer">
-            <a className="text-md font-semibold">{roomName}</a>
+            <a className="text-md font-semibold">{room.name}</a>
             <ChevronDown className="h-5 w-5" />
           </div>
         </DropdownMenuTrigger>
@@ -92,14 +93,7 @@ export const SidebarMenu = ({
           {isAdmin && (
             <>
               <Item title="Setting" Icon={Settings} onSelect={openSetting} />
-              <Item
-                title="Ban User"
-                Icon={Ban}
-                Modal={BanModal}
-                onSelect={() =>
-                  onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers })
-                }
-              />
+              <Item title="Ban User" Icon={Ban} onSelect={openBan} />
             </>
           )}
           <Item

@@ -1,7 +1,7 @@
 "use client";
 
 import { banUser, unbanUser } from "@/app/lib/actions";
-import { useModal } from "@/app/lib/hooks/use-modal-store";
+import { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
 import { Avatar } from "@/app/ui/user/avatar";
 import {
   Dialog,
@@ -14,12 +14,26 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Ban, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export const BanModal = () => {
+export default function BanModal({
+  open,
+  setOpen,
+  roomId,
+  me,
+  allUsers,
+  bannedUsers,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  roomId: number;
+  me: UserOnRoomEntity;
+  allUsers: PublicUserEntity[];
+  bannedUsers: PublicUserEntity[];
+}) {
   const router = useRouter();
-  const { onOpen, isOpen, onClose, type, data } = useModal();
+  //const { onOpen, isOpen, onClose, type, data } = useModal();
 
-  const isModalOpen = isOpen && type === "ban";
-  const { roomId, roomName, me, allUsers, bannedUsers } = { ...data };
+  //const isModalOpen = isOpen && type === "ban";
+  //const { roomId, roomName, me, allUsers, bannedUsers } = { ...data };
 
   const UnbannedUsers = allUsers?.filter(
     (user) =>
@@ -36,7 +50,7 @@ export const BanModal = () => {
     if (bannedUser) {
       bannedUsers?.push(bannedUser);
       router.refresh();
-      onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers });
+      //onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers });
     }
   };
 
@@ -50,11 +64,11 @@ export const BanModal = () => {
       1,
     );
     router.refresh();
-    onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers });
+    //onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers });
   };
 
   return (
-    <Dialog open={isModalOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="bg-white text-black overflow-hidden">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2x1 text-center font-bold">
@@ -113,4 +127,4 @@ export const BanModal = () => {
       </DialogContent>
     </Dialog>
   );
-};
+}

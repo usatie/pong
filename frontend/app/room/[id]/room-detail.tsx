@@ -1,7 +1,7 @@
 import { getBannedUsers, getBlockingUsers } from "@/app/lib/actions";
 import type {
-  AccessLevel,
   PublicUserEntity,
+  RoomEntity,
   UserOnRoomEntity,
 } from "@/app/lib/dtos";
 import { getCurrentUserId } from "@/app/lib/session";
@@ -9,32 +9,24 @@ import { Stack } from "@/components/layout/stack";
 import SidebarItem from "./sidebar-item";
 import { SidebarMenu } from "./sidebar-menu";
 
-export default async function RoomDetail({
-  roomId,
-  roomName,
-  accessLevel,
-  users,
-  allUsers,
-}: {
-  roomId: number;
-  roomName: string;
-  accessLevel: AccessLevel;
+interface Props {
+  room: RoomEntity;
   users: UserOnRoomEntity[];
   allUsers: PublicUserEntity[];
-}) {
+}
+
+export default async function RoomDetail({ room, users, allUsers }: Props) {
   const currentUserId = await getCurrentUserId();
   const me = users.find((u) => u.userId === currentUserId);
   if (!me) {
     throw new Error("User not found");
   }
-  const bannedUsers = await getBannedUsers(roomId);
+  const bannedUsers = await getBannedUsers(room.id);
   const blockingUsers = await getBlockingUsers();
   return (
     <div className="overflow-y-auto shrink-0 basis-36 pb-4 flex flex-col gap-2">
       <SidebarMenu
-        roomId={roomId}
-        roomName={roomName}
-        accessLevel={accessLevel}
+        room={room}
         me={me}
         allUsers={allUsers}
         usersOnRoom={users}
@@ -43,7 +35,7 @@ export default async function RoomDetail({
       <Stack space="space-y-2">
         {users.map((user) => (
           <SidebarItem
-            roomId={roomId}
+            roomId={room.id}
             user={user}
             me={me}
             blockingUsers={blockingUsers}
