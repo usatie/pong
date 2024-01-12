@@ -9,7 +9,7 @@ import { Stack } from "@/components/layout/stack";
 import SidebarItem from "./sidebar-item";
 import { SidebarMenu } from "./sidebar-menu";
 
-export default async function UsersSidebar({
+export default async function RoomDetail({
   roomId,
   roomName,
   accessLevel,
@@ -30,7 +30,7 @@ export default async function UsersSidebar({
   const bannedUsers = await getBannedUsers(roomId);
   const blockingUsers = await getBlockingUsers();
   return (
-    <div className="overflow-y-auto shrink-0 basis-36 pb-4">
+    <div className="overflow-y-auto shrink-0 basis-36 pb-4 flex flex-col gap-2">
       <SidebarMenu
         roomId={roomId}
         roomName={roomName}
