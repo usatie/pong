@@ -8,8 +8,7 @@ import {
 } from "@/app/lib/dtos";
 import { useModal } from "@/app/lib/hooks/use-modal-store";
 import { BanModal } from "@/app/ui/room/ban-modal";
-import { SettingModal } from "@/app/ui/room/setting-modal";
-import { InviteModal } from "@/app/ui/room/invite-modal";
+import SettingModal from "@/app/ui/room/setting-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Ban, ChevronDown, LogOut, Settings, UserPlus } from "lucide-react";
+import { useState } from "react";
 
 interface ItemProps {
   title: string;
@@ -60,50 +60,56 @@ export const SidebarMenu = ({
 }) => {
   const { onOpen } = useModal();
 
-  const handleLeave = () => {
+  const isAdmin = me.role === "OWNER" || me.role === "ADMINISTRATOR";
+  const [isSettingOpen, setIsSettingOpen] = useState(false);
+  const leave = () => {
     leaveRoom(roomId);
   };
-  const isAdmin = me.role === "OWNER" || me.role === "ADMINISTRATOR";
+  const openSetting = () => {
+    setIsSettingOpen(true);
+  };
 
   const members = usersOnRoom.map((member) => member.user);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className="flex justify-between items-center h-10 border-b-2 mb-2 hover:bg-secondary cursor-pointer">
-          <a className="text-md font-semibold">{roomName}</a>
-          <ChevronDown className="h-5 w-5" />
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <Item title="Add User" Icon={UserPlus} />
-        {isAdmin && (
-          <>
-            <Item
-              title="Setting"
-              Icon={Settings}
-              Modal={SettingModal}
-              onSelect={() =>
-                onOpen("setting", { roomId, roomName, accessLevel })
-              }
-            />
-            <Item
-              title="Ban User"
-              Icon={Ban}
-              Modal={BanModal}
-              onSelect={() =>
-                onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers })
-              }
-            />
-          </>
-        )}
-        <Item
-          title="Leave"
-          variant="destructive"
-          Icon={LogOut}
-          onSelect={handleLeave}
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <SettingModal
+        open={isSettingOpen}
+        setOpen={setIsSettingOpen}
+        roomId={roomId}
+        roomName={roomName}
+        accessLevel={accessLevel}
+      />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="flex justify-between items-center h-10 border-b-2 mb-2 hover:bg-secondary cursor-pointer">
+            <a className="text-md font-semibold">{roomName}</a>
+            <ChevronDown className="h-5 w-5" />
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <Item title="Add User" Icon={UserPlus} />
+          {isAdmin && (
+            <>
+              <Item title="Setting" Icon={Settings} onSelect={openSetting} />
+              <Item
+                title="Ban User"
+                Icon={Ban}
+                Modal={BanModal}
+                onSelect={() =>
+                  onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers })
+                }
+              />
+            </>
+          )}
+          <Item
+            title="Leave"
+            variant="destructive"
+            Icon={LogOut}
+            onSelect={leave}
+          />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 };

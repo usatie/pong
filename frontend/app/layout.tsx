@@ -14,8 +14,6 @@ import { getMe } from "@/app/lib/actions";
 import { JwtPayload } from "@/app/lib/dtos";
 import Nav from "@/app/ui/nav";
 
-import { ModalProvider } from "@/app/lib/modal-provider";
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -52,7 +50,6 @@ export default async function RootLayout({
             </div>
             <Toaster />
           </AuthProvider>
-          <ModalProvider />
         </ThemeProvider>
       </body>
     </html>
