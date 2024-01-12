@@ -1,7 +1,7 @@
 "use client";
 
 import { inviteUserToRoom } from "@/app/lib/actions";
-import { useModal } from "@/app/lib/hooks/use-modal-store";
+import { PublicUserEntity, RoomEntity, UserOnRoomEntity } from "@/app/lib/dtos";
 import { Avatar } from "@/app/ui/user/avatar";
 import {
   Dialog,
@@ -11,15 +11,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LogIn, CheckCircle2 } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export const InviteModal = () => {
-  const router = useRouter();
-  const { onOpen, isOpen, onClose, type, data } = useModal();
+interface Props {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  room: RoomEntity;
+  me: UserOnRoomEntity;
+  members: PublicUserEntity[];
+  allUsers: PublicUserEntity[];
+  bannedUsers: PublicUserEntity[];
+}
 
-  const isModalOpen = isOpen && type === "invite";
-  const { roomId, roomName, me, allUsers, members, bannedUsers } = { ...data };
+export default function InviteModal({
+  open,
+  setOpen,
+  room,
+  me,
+  members,
+  allUsers,
+  bannedUsers,
+}: Props) {
+  const router = useRouter();
 
   const UnbannedUsers = allUsers?.filter(
     (user) =>
@@ -32,10 +46,10 @@ export const InviteModal = () => {
   );
 
   const onInvite = async (userId: number) => {
-    if (!roomId) {
+    if (!room.id) {
       throw new Error("not found room");
     }
-    const res = await inviteUserToRoom(roomId, userId);
+    const res = await inviteUserToRoom(room.id, userId);
     if (res !== "Success") {
       throw new Error("failed to invite");
     }
@@ -43,19 +57,11 @@ export const InviteModal = () => {
     if (newMember) {
       members?.push(newMember);
       router.refresh();
-      onOpen("invite", {
-        roomId,
-        roomName,
-        me,
-        allUsers,
-        members,
-        bannedUsers,
-      });
     }
   };
 
   return (
-    <Dialog open={isModalOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="bg-white text-black overflow-hidden">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2x1 text-center font-bold">
@@ -95,4 +101,4 @@ export const InviteModal = () => {
       </DialogContent>
     </Dialog>
   );
-};
+}

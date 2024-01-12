@@ -1,8 +1,7 @@
 "use client";
 
-import { AccessLevel } from "@/app/lib/dtos";
 import { updateRoom } from "@/app/lib/actions";
-import { useModal } from "@/app/lib/hooks/use-modal-store";
+import { AccessLevel, RoomEntity } from "@/app/lib/dtos";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,32 +32,36 @@ const settingSchema = z.discriminatedUnion("selectedAccessLevel", [
   }),
 ]);
 
-export const SettingModal = () => {
+export default function SettingModal({
+  open,
+  setOpen,
+  room,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  room: RoomEntity;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | undefined>(undefined);
-  const { isOpen, onClose, type, data } = useModal();
-
-  const isModalOpen = isOpen && type === "setting";
-  const { roomId, roomName, accessLevel } = { ...data };
 
   const onSubmit = async (e: z.infer<typeof settingSchema>) => {
-    if (!roomId || !accessLevel) {
+    if (!room.id || !room.accessLevel) {
       throw new Error("not found room");
     }
     let result;
-    if (e.selectedAccessLevel !== "PROTECTED") {
-      result = await updateRoom(e.roomName, roomId, e.selectedAccessLevel);
+    if (room.accessLevel !== "PROTECTED" && e.password === "") {
+      result = await updateRoom(e.roomName, room.id, room.accessLevel);
     } else {
       result = await updateRoom(
         e.roomName,
-        roomId,
-        e.selectedAccessLevel,
+        room.id,
+        room.accessLevel,
         e.password,
       );
     }
     if (result === "Success") {
       router.refresh();
-      onClose();
+      setOpen(false);
     } else {
       setError(result);
     }
@@ -72,16 +75,16 @@ export const SettingModal = () => {
   } = useForm({
     resolver: zodResolver(settingSchema),
     defaultValues: {
-      roomName: roomName as string,
-      selectedAccessLevel: accessLevel as AccessLevel,
+      roomName: room.name as string,
+      selectedAccessLevel: room.accessLevel as AccessLevel,
       password: "",
     },
   });
 
-  const selectedAccessLevel = watch("selectedAccessLevel", accessLevel);
+  const selectedAccessLevel = watch("selectedAccessLevel", room.accessLevel);
 
   return (
-    <Dialog open={isModalOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="bg-white text-black overflow-hidden">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2x1 text-center font-bold">
@@ -96,7 +99,7 @@ export const SettingModal = () => {
                 className="text-black dark:text-white"
                 id="roomName"
                 placeholder="Enter room name"
-                defaultValue={roomName}
+                defaultValue={room.name}
                 {...register("roomName")}
               />
               {errors.roomName?.message && (
@@ -106,7 +109,7 @@ export const SettingModal = () => {
             <Label htmlFor="accessLevel">Access Level</Label>
             <select
               className="bg-white text-black"
-              defaultValue={accessLevel}
+              defaultValue={room.accessLevel}
               {...register("selectedAccessLevel")}
             >
               <option value="PUBLIC">PUBLIC</option>
@@ -136,4 +139,4 @@ export const SettingModal = () => {
       </DialogContent>
     </Dialog>
   );
-};
+}
