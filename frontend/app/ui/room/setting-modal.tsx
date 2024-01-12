@@ -1,8 +1,7 @@
 "use client";
 
-import { AccessLevel } from "@/app/lib/dtos";
 import { updateRoom } from "@/app/lib/actions";
-import { RoomEntity } from "@/app/lib/dtos";
+import { AccessLevel, RoomEntity } from "@/app/lib/dtos";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -57,7 +56,7 @@ export default function SettingModal({
         e.roomName,
         room.id,
         room.accessLevel,
-        e.password
+        e.password,
       );
     }
     if (result === "Success") {

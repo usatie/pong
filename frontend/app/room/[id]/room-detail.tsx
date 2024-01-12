@@ -21,8 +21,8 @@ export default async function RoomDetail({ room, users, allUsers }: Props) {
   if (!me) {
     throw new Error("User not found");
   }
-  const bannedUsers = await getBannedUsers(room.id);
-  const blockingUsers = await getBlockingUsers();
+  const bannedUsers = (await getBannedUsers(room.id)) ?? [];
+  const blockingUsers = (await getBlockingUsers()) ?? [];
   return (
     <div className="overflow-y-auto shrink-0 basis-36 pb-4 flex flex-col gap-2">
       <SidebarMenu

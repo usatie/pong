@@ -3,6 +3,7 @@
 import { leaveRoom } from "@/app/lib/actions";
 import { PublicUserEntity, RoomEntity, UserOnRoomEntity } from "@/app/lib/dtos";
 import BanModal from "@/app/ui/room/ban-modal";
+import InviteModal from "@/app/ui/room/invite-modal";
 import SettingModal from "@/app/ui/room/setting-modal";
 import {
   DropdownMenu,
@@ -54,8 +55,12 @@ export const SidebarMenu = ({
   const isAdmin = me.role === "OWNER" || me.role === "ADMINISTRATOR";
   const [isSettingOpen, setIsSettingOpen] = useState(false);
   const [isBanOpen, setIsBanOpen] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
   const leave = () => {
     leaveRoom(room.id);
+  };
+  const openInvite = () => {
+    setIsInviteOpen(true);
   };
   const openSetting = () => {
     setIsSettingOpen(true);
@@ -68,19 +73,32 @@ export const SidebarMenu = ({
 
   return (
     <>
-      <SettingModal
-        open={isSettingOpen}
-        setOpen={setIsSettingOpen}
-        room={room}
-      />
-      <BanModal
-        open={isBanOpen}
-        setOpen={setIsBanOpen}
-        roomId={room.id}
-        me={me}
-        allUsers={allUsers}
-        bannedUsers={bannedUsers}
-      />
+      {isAdmin && (
+        <>
+          <SettingModal
+            open={isSettingOpen}
+            setOpen={setIsSettingOpen}
+            room={room}
+          />
+          <BanModal
+            open={isBanOpen}
+            setOpen={setIsBanOpen}
+            roomId={room.id}
+            me={me}
+            allUsers={allUsers}
+            bannedUsers={bannedUsers}
+          />
+          <InviteModal
+            open={isInviteOpen}
+            setOpen={setIsInviteOpen}
+            room={room}
+            me={me}
+            members={members}
+            allUsers={allUsers}
+            bannedUsers={bannedUsers}
+          />
+        </>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div className="flex justify-between items-center h-10 border-b-2 mb-2 hover:bg-secondary cursor-pointer">
@@ -89,9 +107,9 @@ export const SidebarMenu = ({
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <Item title="Add User" Icon={UserPlus} />
           {isAdmin && (
             <>
+              <Item title="Add User" Icon={UserPlus} onSelect={openInvite} />
               <Item title="Setting" Icon={Settings} onSelect={openSetting} />
               <Item title="Ban User" Icon={Ban} onSelect={openBan} />
             </>

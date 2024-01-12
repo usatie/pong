@@ -14,6 +14,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Ban, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+interface Props {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  roomId: number;
+  me: UserOnRoomEntity;
+  allUsers: PublicUserEntity[];
+  bannedUsers: PublicUserEntity[];
+}
 export default function BanModal({
   open,
   setOpen,
@@ -21,19 +29,8 @@ export default function BanModal({
   me,
   allUsers,
   bannedUsers,
-}: {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  roomId: number;
-  me: UserOnRoomEntity;
-  allUsers: PublicUserEntity[];
-  bannedUsers: PublicUserEntity[];
-}) {
+}: Props) {
   const router = useRouter();
-  //const { onOpen, isOpen, onClose, type, data } = useModal();
-
-  //const isModalOpen = isOpen && type === "ban";
-  //const { roomId, roomName, me, allUsers, bannedUsers } = { ...data };
 
   const UnbannedUsers = allUsers?.filter(
     (user) =>
