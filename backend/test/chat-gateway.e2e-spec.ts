@@ -466,6 +466,12 @@ describe('ChatGateway and ChatController (e2e)', () => {
       ]);
     });
 
+    it('user1 unblocks blockedUser2', async () => {
+      await app
+        .unblockUser(user1.id, blockedUser2.id, user1.accessToken)
+        .expect(200);
+    });
+
     it('user1 kicks kickedUser1', async () => {
       await app
         .kickFromRoom(room.id, kickedUser1.id, user1.accessToken)
@@ -495,12 +501,12 @@ describe('ChatGateway and ChatController (e2e)', () => {
       }, 3000);
     });
 
-    it('user1 should get all messages except from blockedUser2 in the room', async () => {
+    it('user1 should get all messages except from kickedUser1 in the room', async () => {
       const res = await app
         .getMessagesInRoom(room.id, user1.accessToken)
         .expect(200);
       const messages = res.body;
-      expect(messages).toHaveLength(5);
+      expect(messages).toHaveLength(6);
       expect(messages).toEqual([
         {
           user: {
@@ -527,6 +533,16 @@ describe('ChatGateway and ChatController (e2e)', () => {
             id: blockedUser1.id,
             name: blockedUser1.name,
             avatarURL: blockedUser1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: blockedUser2.id,
+            name: blockedUser2.name,
+            avatarURL: blockedUser2.avatarURL,
           },
           roomId: room.id,
           content: 'hello',
