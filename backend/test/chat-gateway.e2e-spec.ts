@@ -564,7 +564,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
       ws1.emit('message', helloMessage);
     });
 
-    it('kickUser1 should not receive message from user1', (done) => {
+    it('kickedUser1 should not receive message from user1', (done) => {
       const mockMessage = jest.fn();
       ws5.on('message', mockMessage);
       setTimeout(() => {
