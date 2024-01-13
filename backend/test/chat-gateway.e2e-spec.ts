@@ -554,6 +554,25 @@ describe('ChatGateway and ChatController (e2e)', () => {
         },
       ]);
     });
+
+    it('user1 sends message', () => {
+      const helloMessage = {
+        userId: user1.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws1.emit('message', helloMessage);
+    });
+
+    it('kickUser1 should not receive message from user1', (done) => {
+      const mockMessage = jest.fn();
+      ws5.on('message', mockMessage);
+      setTimeout(() => {
+        expect(mockMessage).not.toBeCalled();
+        ws5.off('message');
+        done();
+      }, 3000);
+    });
   });
 
   /*
