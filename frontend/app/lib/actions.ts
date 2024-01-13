@@ -410,7 +410,7 @@ export async function updatePassword(
   }
 }
 
-export async function getBlockingUsers() {
+export async function getBlockingUsers(): Promise<UserEntity[]> {
   const userId = await getCurrentUserId();
   const res = await fetch(`${process.env.API_URL}/user/${userId}/block`, {
     headers: {
@@ -441,6 +441,7 @@ export async function blockUser(blockedUserId: number) {
     console.error("blockUser error: ", await res.json());
     return "Error";
   } else {
+    revalidatePath(`/user/${blockedUserId}`);
     return "Success";
   }
 }
@@ -459,6 +460,7 @@ export async function unblockUser(blockedUserId: number) {
     console.error("unblockUser error: ", await res.json());
     return "Error";
   } else {
+    revalidatePath(`/user/${blockedUserId}`);
     return "Success";
   }
 }
