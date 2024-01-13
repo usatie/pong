@@ -77,7 +77,6 @@ export class ChatService {
     const client = this.clients.get(event.userId);
     if (client) {
       client.leave(event.roomId.toString());
-      console.log('leave success');
     }
   }
 
