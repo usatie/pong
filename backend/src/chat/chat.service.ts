@@ -7,6 +7,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
+import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { BlockEvent } from 'src/common/events/block.event';
 import { UnblockEvent } from 'src/common/events/unblock.event';
 import { Logger } from '@nestjs/common';
@@ -71,10 +72,11 @@ export class ChatService {
     await this.addUserToRoom(event.roomId, event.userId);
   }
 
-  removeUserFromRoom(roomId: number, user: User) {
-    const client = this.clients.get(user.id);
+  @OnEvent('room.leave', { async: true })
+  async removeUserFromRoom(event: RoomLeftEvent) {
+    const client = this.clients.get(event.userId);
     if (client) {
-      client.leave(roomId.toString());
+      client.leave(event.roomId.toString());
     }
   }
 

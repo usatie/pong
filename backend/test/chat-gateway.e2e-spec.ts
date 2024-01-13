@@ -21,7 +21,8 @@ describe('ChatGateway and ChatController (e2e)', () => {
   let ws2: Socket; // Client socket 2
   let ws3: Socket; // Client socket 3
   let ws4: Socket; // Client socket 4
-  let user1, user2, blockedUser1, blockedUser2;
+  let ws5: Socket; // Client socket 5
+  let user1, user2, blockedUser1, blockedUser2, kickedUser1;
 
   beforeAll(async () => {
     //app = await initializeApp();
@@ -48,10 +49,16 @@ describe('ChatGateway and ChatController (e2e)', () => {
       email: 'blocked2@test.com',
       password: 'test-password',
     };
+    const dto5 = {
+      name: 'kicked-user1',
+      email: 'kicked1@test.com',
+      password: 'test-password',
+    };
     user1 = await app.createAndLoginUser(dto1);
     user2 = await app.createAndLoginUser(dto2);
     blockedUser1 = await app.createAndLoginUser(dto3);
     blockedUser2 = await app.createAndLoginUser(dto4);
+    kickedUser1 = await app.createAndLoginUser(dto5);
     await app
       .blockUser(user1.id, blockedUser1.id, user1.accessToken)
       .expect(200);
@@ -65,11 +72,13 @@ describe('ChatGateway and ChatController (e2e)', () => {
     await app.deleteUser(user2.id, user2.accessToken).expect(204);
     await app.deleteUser(blockedUser1.id, blockedUser1.accessToken).expect(204);
     await app.deleteUser(blockedUser2.id, blockedUser2.accessToken).expect(204);
+    await app.deleteUser(kickedUser1.id, kickedUser1.accessToken).expect(204);
     await app.close();
     ws1.close();
     ws2.close();
     ws3.close();
     ws4.close();
+    ws5.close();
   });
 
   const connect = (ws: Socket) => {
@@ -122,16 +131,21 @@ describe('ChatGateway and ChatController (e2e)', () => {
       ws4 = io('ws://localhost:3000/chat', {
         extraHeaders: { cookie: 'token=' + blockedUser2.accessToken },
       });
+      ws5 = io('ws://localhost:3000/chat', {
+        extraHeaders: { cookie: 'token=' + kickedUser1.accessToken },
+      });
       expect(ws1).toBeDefined();
       expect(ws2).toBeDefined();
       expect(ws3).toBeDefined();
       expect(ws4).toBeDefined();
+      expect(ws5).toBeDefined();
 
       // Wait for connection
       await connect(ws1);
       await connect(ws2);
       await connect(ws3);
       await connect(ws4);
+      await connect(ws5);
     });
 
     // // Enter room by API call
@@ -146,6 +160,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
       await app.enterRoom(room.id, user2.accessToken).expect(201);
       await app.enterRoom(room.id, blockedUser1.accessToken).expect(201);
       await app.enterRoom(room.id, blockedUser2.accessToken).expect(201);
+      await app.enterRoom(room.id, kickedUser1.accessToken).expect(201);
     });
 
     // Setup promises to recv messages
@@ -449,6 +464,130 @@ describe('ChatGateway and ChatController (e2e)', () => {
           createdAt: expect.any(String),
         },
       ]);
+    });
+
+    it('user1 unblocks blockedUser2', async () => {
+      await app
+        .unblockUser(user1.id, blockedUser2.id, user1.accessToken)
+        .expect(200);
+    });
+
+    it('user1 kicks kickedUser1', async () => {
+      await app
+        .kickFromRoom(room.id, kickedUser1.id, user1.accessToken)
+        .expect(204);
+    });
+
+    it('kickedUser1 sends message', () => {
+      const helloMessage = {
+        userId: kickedUser1.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws5.emit('message', helloMessage);
+    });
+
+    it('user1 and user2 should not receive message from kickedUser1', (done) => {
+      const mockMessage = jest.fn();
+      const mockMessage2 = jest.fn();
+      ws1.on('message', mockMessage);
+      ws2.on('message', mockMessage2);
+      setTimeout(() => {
+        expect(mockMessage).not.toBeCalled();
+        expect(mockMessage2).not.toBeCalled();
+        ws1.off('message');
+        ws2.off('message');
+        done();
+      }, 3000);
+    });
+
+    it('user1 should get all messages except from kickedUser1 in the room', async () => {
+      const res = await app
+        .getMessagesInRoom(room.id, user1.accessToken)
+        .expect(200);
+      const messages = res.body;
+      expect(messages).toHaveLength(6);
+      expect(messages).toEqual([
+        {
+          user: {
+            id: user1.id,
+            name: user1.name,
+            avatarURL: user1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: user2.id,
+            name: user2.name,
+            avatarURL: user2.avatarURL,
+          },
+          roomId: room.id,
+          content: 'ACK: hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: blockedUser1.id,
+            name: blockedUser1.name,
+            avatarURL: blockedUser1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: blockedUser2.id,
+            name: blockedUser2.name,
+            avatarURL: blockedUser2.avatarURL,
+          },
+          roomId: room.id,
+          content: 'hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: blockedUser1.id,
+            name: blockedUser1.name,
+            avatarURL: blockedUser1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'hello',
+          createdAt: expect.any(String),
+        },
+        {
+          user: {
+            id: user1.id,
+            name: user1.name,
+            avatarURL: user1.avatarURL,
+          },
+          roomId: room.id,
+          content: 'ACK: hello',
+          createdAt: expect.any(String),
+        },
+      ]);
+    });
+
+    it('user1 sends message', () => {
+      const helloMessage = {
+        userId: user1.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws1.emit('message', helloMessage);
+    });
+
+    it('kickedUser1 should not receive message from user1', (done) => {
+      const mockMessage = jest.fn();
+      ws5.on('message', mockMessage);
+      setTimeout(() => {
+        expect(mockMessage).not.toBeCalled();
+        ws5.off('message');
+        done();
+      }, 3000);
     });
   });
 
