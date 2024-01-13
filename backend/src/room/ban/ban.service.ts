@@ -4,12 +4,17 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Role } from '@prisma/client';
+import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class BanService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   async create(roomId: number, userId: number) {
     await this.prisma.$transaction(async (prisma) => {
@@ -33,14 +38,22 @@ export class BanService {
         if (user.role === Role.OWNER) {
           throw new ForbiddenException('Cannot ban owner');
         }
-        await prisma.userOnRoom.delete({
-          where: {
-            userId_roomId_unique: {
-              userId: userId,
-              roomId: roomId,
+        await prisma.userOnRoom
+          .delete({
+            where: {
+              userId_roomId_unique: {
+                userId: userId,
+                roomId: roomId,
+              },
             },
-          },
-        });
+          })
+          .then(() => {
+            const event: RoomLeftEvent = {
+              roomId: roomId,
+              userId: userId,
+            };
+            this.eventEmitter.emit('room.leave', event);
+          });
       }
       await prisma.banUserOnRoom.create({
         data: {
