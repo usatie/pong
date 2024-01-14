@@ -39,9 +39,10 @@ const redirect_page = async () => {
 
     // // TODO accesstoken とる
     if (tokRes.status >= 200 && tokRes.status < 300) {
-      const body = tokRes.body;
-      console.log(tokRes);
-      console.log(body);
+	  const body = await tokRes.json();
+	  console.log(body);
+	  const access_token = body.access_token;
+      console.log('access token is ', access_token);
     } else console.log(tokRes.status);
     // TODO 保存する
     // TODO resource とる
