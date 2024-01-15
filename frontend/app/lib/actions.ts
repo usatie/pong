@@ -175,6 +175,23 @@ export async function getRoom(roomId: number): Promise<GetRoomResponse> {
   return room;
 }
 
+export async function getDirectRoom(userId: number) {
+  const res = await fetch(`${process.env.API_URL}/room/direct/${userId}`, {
+    cache: "no-cache",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  const room = await res.json();
+  if (res.status === 404) {
+    return room;
+  } else if (!res.ok) {
+    console.error("getDirectRoom error: ", room);
+    throw new Error("getDirectRoom error");
+  }
+  return room;
+}
+
 export async function createRoom(
   prevState: { error?: string },
   formData: FormData,
@@ -208,6 +225,28 @@ export async function createRoom(
   const data = await res.json();
   if (!res.ok) {
     console.error("createRoom error: ", data);
+    return { error: data.message };
+  } else {
+    redirect(`/room/${data.id}`, RedirectType.push);
+  }
+}
+
+export async function createDirectRoom(userId: number) {
+  const res = await fetch(`${process.env.API_URL}/room`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + getAccessToken(),
+    },
+    body: JSON.stringify({
+      name: "DM",
+      accessLevel: "DIRECT",
+      userIds: [userId],
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    console.error("createDirectRoom error: ", data);
     return { error: data.message };
   } else {
     redirect(`/room/${data.id}`, RedirectType.push);
