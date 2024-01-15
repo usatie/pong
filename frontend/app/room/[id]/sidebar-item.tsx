@@ -6,7 +6,11 @@ import {
   unblockUser,
   updateRoomUser,
 } from "@/app/lib/actions";
-import type { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
+import type {
+  PublicUserEntity,
+  RoomEntity,
+  UserOnRoomEntity,
+} from "@/app/lib/dtos";
 import { SmallAvatarSkeleton } from "@/app/ui/room/skeleton";
 import {
   ContextMenu,
@@ -36,12 +40,12 @@ function Avatar({ avatarURL }: { avatarURL?: string }) {
 }
 
 export default function SidebarItem({
-  roomId,
+  room,
   user,
   me,
   blockingUsers,
 }: {
-  roomId: number;
+  room: RoomEntity;
   user: UserOnRoomEntity;
   me: UserOnRoomEntity;
   blockingUsers: PublicUserEntity[];
@@ -74,10 +78,10 @@ export default function SidebarItem({
       setIsBlocked(false);
     }
   };
-  const kick = () => kickUserOnRoom(roomId, user.userId);
+  const kick = () => kickUserOnRoom(room.id, user.userId);
   const updateUserRole = isUserAdmin
-    ? () => updateRoomUser("MEMBER", roomId, user.userId)
-    : () => updateRoomUser("ADMINISTRATOR", roomId, user.userId);
+    ? () => updateRoomUser("MEMBER", room.id, user.userId)
+    : () => updateRoomUser("ADMINISTRATOR", room.id, user.userId);
   return (
     <>
       <ContextMenu>
@@ -85,8 +89,8 @@ export default function SidebarItem({
           <Avatar avatarURL={user.user.avatarURL} />
           <span className="text-muted-foreground text-sm whitespace-nowrap group-hover:text-primary">
             {truncateString(user.user.name, 15)}
-            {isUserOwner && " 👑"}
-            {isUserAdmin && " 🛡"}
+            {room.accessLevel !== "DIRECT" && isUserOwner && " 👑"}
+            {room.accessLevel !== "DIRECT" && isUserAdmin && " 🛡"}
           </span>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-56">
