@@ -71,6 +71,18 @@ export class RoomController {
     return new RoomEntity(await this.roomService.findRoom(roomId));
   }
 
+  @Get('direct/:userId')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: RoomEntity })
+  async findOneDirect(
+    @CurrentUser() user: User,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return new RoomEntity(
+      await this.roomService.findDirectRoom(user.id, userId),
+    );
+  }
+
   @Patch(':roomId')
   @UseGuards(OwnerGuard, UpdateRoomGuard)
   @ApiBearerAuth()

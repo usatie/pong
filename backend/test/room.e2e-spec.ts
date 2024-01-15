@@ -19,7 +19,7 @@ describe('RoomController (e2e)', () => {
     current: T;
   }
   let owner, admin, member, notMember: UserEntityWithAccessToken;
-  let user1, user2: UserEntityWithAccessToken;
+  let user1, user2, user3: UserEntityWithAccessToken;
   const ownerRef: Ref<UserEntityWithAccessToken> = new Ref();
   const adminRef: Ref<UserEntityWithAccessToken> = new Ref();
   const memberRef: Ref<UserEntityWithAccessToken> = new Ref();
@@ -112,6 +112,7 @@ describe('RoomController (e2e)', () => {
     {
       user1 = await app.createAndLoginUser(constants.user.test);
       user2 = await app.createAndLoginUser(constants.user.test2);
+      user3 = await app.createAndLoginUser(constants.user.test3);
       directRoom = await app
         .createRoom(
           { ...constants.room.directRoom, userIds: [user2.id] },
@@ -130,7 +131,7 @@ describe('RoomController (e2e)', () => {
     await app.deleteRoom(protectedRoom.id, owner.accessToken).expect(204);
     await app.deleteRoom(directRoom.id, user1.accessToken).expect(204);
     // Delete users
-    for (const user of [owner, admin, member, notMember, user1, user2]) {
+    for (const user of [owner, admin, member, notMember, user1, user2, user3]) {
       await app.deleteUser(user.id, user.accessToken).expect(204);
     }
   });
@@ -344,6 +345,51 @@ describe('RoomController (e2e)', () => {
     });
 
     it('invalid roomId should return 404 Not Found (403?)', async () => {});
+  });
+
+  describe('GET /room/direct/:userId (Get Direct Room)', () => {
+    describe('user1', () => {
+      it('should get direct room with user2 (200 OK)', () => {
+        return app
+          .getDirectRoom(user2.id, user1.accessToken)
+          .expect(200)
+          .expect((res) => {
+            const userIds = res.body.users.map((user) => user.userId);
+            expect(userIds).toContainEqual(user1.id);
+            expect(userIds).toContainEqual(user2.id);
+            expect(res.body.accessLevel).toEqual('DIRECT');
+          });
+      });
+      it('should not get direct room with user3 that has not created DM (404 Not Found)', () => {
+        return app.getDirectRoom(user3.id, user1.accessToken).expect(404);
+      });
+    });
+
+    describe('user2', () => {
+      it('should get direct room with user1 (200 OK)', () => {
+        return app
+          .getDirectRoom(user1.id, user2.accessToken)
+          .expect(200)
+          .expect((res) => {
+            const userIds = res.body.users.map((user) => user.userId);
+            expect(userIds).toContainEqual(user1.id);
+            expect(userIds).toContainEqual(user2.id);
+            expect(res.body.accessLevel).toEqual('DIRECT');
+          });
+      });
+      it('should not get direct room with user3 that has not created DM (404 Not Found)', () => {
+        return app.getDirectRoom(user3.id, user2.accessToken).expect(404);
+      });
+    });
+
+    describe('user3', () => {
+      it('should not get direct room with user1 that has not created DM (404 Not Found)', () => {
+        return app.getDirectRoom(user1.id, user3.accessToken).expect(404);
+      });
+      it('should not get direct room with user2 that has not created DM (404 Not Found)', () => {
+        return app.getDirectRoom(user2.id, user3.accessToken).expect(404);
+      });
+    });
   });
 
   describe('POST /room/:id (Enter Room)', () => {
