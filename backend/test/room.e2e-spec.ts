@@ -350,7 +350,15 @@ describe('RoomController (e2e)', () => {
   describe('GET /room/direct/:userId (Get Direct Room)', () => {
     describe('user1', () => {
       it('should get direct room with user2 (200 OK)', () => {
-        return app.getDirectRoom(user2.id, user1.accessToken).expect(200);
+        return app
+          .getDirectRoom(user2.id, user1.accessToken)
+          .expect(200)
+          .expect((res) => {
+            const userIds = res.body.users.map((user) => user.userId);
+            expect(userIds).toContainEqual(user1.id);
+            expect(userIds).toContainEqual(user2.id);
+            expect(res.body.accessLevel).toEqual('DIRECT');
+          });
       });
       it('should not get direct room with user3 that has not created DM (404 Not Found)', () => {
         return app.getDirectRoom(user3.id, user1.accessToken).expect(404);
@@ -359,7 +367,15 @@ describe('RoomController (e2e)', () => {
 
     describe('user2', () => {
       it('should get direct room with user1 (200 OK)', () => {
-        return app.getDirectRoom(user1.id, user2.accessToken).expect(200);
+        return app
+          .getDirectRoom(user1.id, user2.accessToken)
+          .expect(200)
+          .expect((res) => {
+            const userIds = res.body.users.map((user) => user.userId);
+            expect(userIds).toContainEqual(user1.id);
+            expect(userIds).toContainEqual(user2.id);
+            expect(res.body.accessLevel).toEqual('DIRECT');
+          });
       });
       it('should not get direct room with user3 that has not created DM (404 Not Found)', () => {
         return app.getDirectRoom(user3.id, user2.accessToken).expect(404);
