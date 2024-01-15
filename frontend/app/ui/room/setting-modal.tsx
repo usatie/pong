@@ -20,7 +20,7 @@ import * as z from "zod";
 const settingSchema = z.discriminatedUnion("selectedAccessLevel", [
   z.object({
     roomName: z.string().min(1, { message: "Please enter room name" }),
-    selectedAccessLevel: z.enum(["PUBLIC", "PRIVATE"]),
+    selectedAccessLevel: z.enum(["PUBLIC", "PRIVATE", "DIRECT"]),
     password: z.string().optional(),
   }),
   z.object({
