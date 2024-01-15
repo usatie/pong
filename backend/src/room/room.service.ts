@@ -88,6 +88,43 @@ export class RoomService {
     });
   }
 
+  findDirectRoom(userId: number, targetUserId: number) {
+    return this.prisma.room.findFirstOrThrow({
+      where: {
+        accessLevel: 'DIRECT',
+        AND: [
+          {
+            users: {
+              some: {
+                userId: userId,
+              },
+            },
+          },
+          {
+            users: {
+              some: {
+                userId: targetUserId,
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        users: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatarURL: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   findRoom(id: number) {
     return this.prisma.room.findUniqueOrThrow({
       where: { id },
