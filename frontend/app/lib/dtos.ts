@@ -1,4 +1,4 @@
-export type AccessLevel = "PUBLIC" | "PRIVATE" | "PROTECTED";
+export type AccessLevel = "PUBLIC" | "PRIVATE" | "PROTECTED" | "DIRECT";
 
 export type GetRoomResponse = {
   id: number;

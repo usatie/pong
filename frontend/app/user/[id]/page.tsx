@@ -10,6 +10,7 @@ import AddFriendButton from "@/app/ui/user/add-friend-button";
 import BlockButton from "@/app/ui/user/block-button";
 import { Avatar } from "@/app/ui/user/avatar";
 import CancelFriendRequestButton from "@/app/ui/user/cancel-friend-request-button";
+import DirectMessageButton from "@/app/ui/user/direct-message-button";
 import Friends from "@/app/ui/user/friends";
 import MatchHistory from "@/app/ui/user/match-history";
 import MatchRequestButton from "@/app/ui/user/match-request-button";
@@ -60,6 +61,7 @@ export default async function FindUser({
             {!isBlocking && <BlockButton id={userId} />}
             {isBlocking && <UnBlockButton id={userId} />}
           </div>
+          <DirectMessageButton id={userId} />
           <MatchRequestButton id={userId} />
         </>
       )}
