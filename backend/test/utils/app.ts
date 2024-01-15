@@ -94,6 +94,11 @@ export class TestApp {
       .get(`/room/${id}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
+  getDirectRoom = (userId: number, accessToken: string) =>
+    request(this.app.getHttpServer())
+      .get(`/room/direct/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
   updateRoom = (id: number, dto: UpdateRoomDto, accessToken: string) =>
     request(this.app.getHttpServer())
       .patch(`/room/${id}`)
