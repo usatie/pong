@@ -14,6 +14,9 @@ import { jwtConstants } from './auth.module';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { AuthEntity } from './entity/auth.entity';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { UserEntity } from 'src/user/entities/user.entity';
+import { OauthDto } from './dto/oauth.dto';
 
 @Injectable()
 export class AuthService {
@@ -75,6 +78,57 @@ export class AuthService {
       });
       return { secret, otpAuthUrl };
     });
+  }
+
+  async signupWith42(dto: OauthDto): Promise<UserEntity> {
+    // 1. Get access token
+    const client_id = process.env.OAUTH_42_CLIENT_ID;
+    const client_secret = process.env.OAUTH_42_CLIENT_SECRET;
+
+    const form = new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id,
+      client_secret,
+      code: dto.code,
+      redirect_uri: process.env.OAUTH_REDIRECT_URI,
+      state: '42', // TODO : state system (random string)
+    });
+
+    const token = await fetch('https://api.intra.42.fr/oauth/token', {
+      method: 'POST',
+      body: form,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }).then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
+      return res.json();
+    });
+    const { access_token } = token;
+    console.log('token', token);
+
+    // 2. Get user info
+    const userRes = await fetch('https://api.intra.42.fr/v2/me', {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    const userJson = await userRes.json();
+    const { email, login } = userJson;
+    console.log('userJson', userJson);
+
+    // 3. Create user
+    const hashedPassword = await bcrypt.hash(login, 10);
+    // TODO : random password? without password?
+    // TODO : save access_token in db
+    const userData: CreateUserDto = {
+      email,
+      password: hashedPassword,
+      name: login,
+    };
+    return this.prisma.user.create({ data: userData });
   }
 
   async pipeQrCodeStream(stream: Response, otpAuthUrl: string) {

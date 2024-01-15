@@ -13,6 +13,7 @@ import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { AuthEntity } from './entity/auth.entity';
 import { JwtGuardWithout2FA } from './jwt-auth.guard';
+import { OauthDto } from './dto/oauth.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -23,6 +24,12 @@ export class AuthController {
   @ApiOkResponse({ type: AuthEntity })
   login(@Body() { email, password }: LoginDto): Promise<AuthEntity> {
     return this.authService.login(email, password);
+  }
+
+  @Post('oauth2/signup/42')
+  @ApiCreatedResponse({ type: AuthEntity })
+  async signupWith42(@Body() dto: OauthDto) {
+    return this.authService.signupWith42(dto);
   }
 
   @Post('2fa/generate')

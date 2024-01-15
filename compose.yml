@@ -19,8 +19,6 @@ services:
       NEXT_PUBLIC_WEB_URL: ${PUBLIC_WEB_URL}
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
       JWT_SECRET: ${FRONTEND_JWT_SECRET}
-      OAUTH_GOOGLE_CLIENT_ID: ${OAUTH_GOOGLE_CLIENT_ID}
-      OAUTH_GOOGLE_CLIENT_SECRET: ${OAUTH_GOOGLE_CLIENT_SECRET}
     depends_on:
       backend:
         condition: service_healthy
@@ -38,6 +36,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       TWO_FACTOR_AUTHENTICATION_APP_NAME: ${TWO_FACTOR_AUTHENTICATION_APP_NAME}
+      OAUTH_42_CLIENT_ID: ${OAUTH_42_CLIENT_ID}
+      OAUTH_42_CLIENT_SECRET: ${OAUTH_42_CLIENT_SECRET}
+      OAUTH_REDIRECT_URI: ${OAUTH_REDIRECT_URI}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${BACKEND_PORT}/api"]
       interval: 5s
