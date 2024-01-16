@@ -13,8 +13,8 @@ const signupWithGoogle = () => {
     `&redirect_uri=${redirect_uri}` +
     `&response_type=${response_type}` +
     `&scope=${scope}` +
-	`&state=${state}`;
-    redirect(url);
+    `&state=${state}`;
+  redirect(url);
 };
 
 export default signupWithGoogle;

@@ -764,7 +764,7 @@ export async function leaveRoom(roomId: number) {
 
 export async function createUserWithOauth(
   code: string | string[] | undefined,
-  provider: string
+  provider: string,
 ) {
   if (!code) return;
   const url = `${process.env.API_URL}/auth/oauth2/signup/${provider}`;
