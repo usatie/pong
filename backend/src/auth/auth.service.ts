@@ -117,7 +117,9 @@ export class AuthService {
     });
     const userJson = await userRes.json();
     const { email, login } = userJson;
-    console.log('userJson', userJson);
+    if (!email || !login) {
+      throw new Error('Invalid user info');
+    }
 
     // 3. Create user
     const hashedPassword = await bcrypt.hash(login, 10);
