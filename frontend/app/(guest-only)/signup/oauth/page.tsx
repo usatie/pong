@@ -2,18 +2,19 @@ import { redirect } from "next/navigation";
 
 const signupWithGoogle = () => {
   const response_type = "code";
-  const client_id = process.env.OAUTH_GOOGLE_CLIENT_ID;
-  const client_secret = process.env.OAUTH_GOOGLE_CLIENT_SECRET;
-  const redirect_uri = "http://localhost:4242/signup/oauth/redirect";
-  const scope = "https://www.googleapis.com/auth/cloud-platform";
+  const client_id = process.env.OAUTH_42_CLIENT_ID;
+  const redirect_uri = process.env.OAUTH_REDIRECT_URI;
+  const scope = "public";
+  const state = "42";
 
   const url =
-    "https://accounts.google.com/o/oauth2/v2/auth?" +
+    "https://api.intra.42.fr/oauth/authorize?" +
     `&client_id=${client_id}` +
     `&redirect_uri=${redirect_uri}` +
-    `&response_type=code` +
-    `&scope=${scope}`;
-  redirect(url);
+    `&response_type=${response_type}` +
+    `&scope=${scope}` +
+	`&state=${state}`;
+    redirect(url);
 };
 
 export default signupWithGoogle;
