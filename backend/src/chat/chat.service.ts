@@ -72,7 +72,6 @@ export class ChatService {
     await this.addUserToRoom(event.roomId, event.userId);
   }
 
-  @OnEvent('room.leave', { async: true })
   async removeUserFromRoom(event: RoomLeftEvent) {
     const client = this.clients.get(event.userId);
     if (client) {

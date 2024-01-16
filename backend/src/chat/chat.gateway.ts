@@ -12,6 +12,8 @@ import { ChatService } from './chat.service';
 import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
+import { RoomLeftEvent } from 'src/common/events/room-left.event';
+import { OnEvent } from '@nestjs/event-emitter';
 
 //type PrivateMessage = {
 //  conversationId: string;
@@ -101,6 +103,12 @@ export class ChatGateway {
       'message',
       new MessageEntity(data, this.chatService.getUser(client)),
     );
+  }
+
+  @OnEvent('room.leave', { async: true })
+  async handleLeave(event: RoomLeftEvent) {
+    this.server.in(event.roomId.toString()).emit('left-room', event.userId);
+    await this.chatService.removeUserFromRoom(event);
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
