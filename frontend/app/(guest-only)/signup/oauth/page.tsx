@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-const signupWithGoogle = () => {
+const signupWith42 = () => {
   const response_type = "code";
   const client_id = process.env.OAUTH_42_CLIENT_ID;
   const redirect_uri = process.env.OAUTH_REDIRECT_URI;
@@ -17,4 +17,4 @@ const signupWithGoogle = () => {
   redirect(url);
 };
 
-export default signupWithGoogle;
+export default signupWith42;

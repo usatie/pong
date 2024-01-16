@@ -777,7 +777,7 @@ export async function createUserWithOauth(
   });
   if (!res.ok) {
     console.error("createUserWithOauth error: ", await res.json());
-    // TODO エラー表示 (signup しなければいけないことをユーザに伝える)
+    // TODO Implement user notification for signup requirement
     redirect("/signup");
   } else {
     redirect("/login");

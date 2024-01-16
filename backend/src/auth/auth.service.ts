@@ -91,7 +91,7 @@ export class AuthService {
       client_secret,
       code: dto.code,
       redirect_uri: process.env.OAUTH_REDIRECT_URI,
-      state: '42', // TODO : state system (random string)
+      state: '42', // TODO : implement state system for enhanced security
     });
 
     const token = await fetch('https://api.intra.42.fr/oauth/token', {
@@ -115,6 +115,9 @@ export class AuthService {
         Authorization: `Bearer ${access_token}`,
       },
     });
+    if (!userRes.ok) {
+      throw new Error(userRes.statusText);
+    }
     const userJson = await userRes.json();
     const { email, login } = userJson;
     if (!email || !login) {
