@@ -802,3 +802,25 @@ export async function leaveRoom(roomId: number) {
     return "Success";
   }
 }
+
+export async function createUserWithOauth(
+  code: string | string[] | undefined,
+  provider: string,
+) {
+  if (!code) return;
+  const url = `${process.env.API_URL}/auth/oauth2/signup/${provider}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) {
+    console.error("createUserWithOauth error: ", await res.json());
+    // TODO Implement user notification for signup requirement
+    redirect("/signup");
+  } else {
+    redirect("/login");
+  }
+}
