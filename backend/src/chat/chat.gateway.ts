@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,21 +8,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UserService } from '../user/user.service';
+import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { ChatService } from './chat.service';
-import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
-import { RoomLeftEvent } from 'src/common/events/room-left.event';
-import { OnEvent } from '@nestjs/event-emitter';
-
-//type PrivateMessage = {
-//  conversationId: string;
-//  from: string;
-//  to: string;
-//  userName: string;
-//  text: string;
-//};
 
 @WebSocketGateway({
   cors: {
@@ -31,48 +21,12 @@ import { OnEvent } from '@nestjs/event-emitter';
   cookie: true,
 })
 export class ChatGateway {
-  constructor(
-    private readonly chatService: ChatService,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly chatService: ChatService) {}
 
   @WebSocketServer()
   server: Server;
 
   private logger: Logger = new Logger('ChatGateway');
-
-  private userMap = new Map<number, string>();
-
-  private getValueToKey = (map, findValue): number | undefined => {
-    for (const [key, value] of map.entries()) {
-      if (value == findValue) {
-        return key;
-      }
-    }
-    return undefined;
-  };
-
-  @SubscribeMessage('privateMessage')
-  privateMessageToUser(
-    @MessageBody() data: CreateDirectMessageDto,
-    @ConnectedSocket() client: Socket,
-  ): void {
-    this.logger.log('private message received');
-    this.logger.log(data);
-
-    const userId = this.getValueToKey(this.userMap, client.id);
-    if (userId) {
-      const userName = 'hoge'; //TODO mapを増やすか、mapのvalueを増やすか user name取得関数実装
-      this.chatService.createDirectMessage(userId, data);
-      this.server
-        .except('block' + userId)
-        .to(client.id)
-        .to(this.userMap.get(data.receiverId)) //TODO receiverIdが見つからなかった時のvalidation
-        .emit('sendToUser', { ...data, senderId: userId, userName }, client.id);
-    } else {
-      this.logger.error('No user id was found for socket id');
-    }
-  }
 
   @SubscribeMessage('message')
   async handleMessage(
@@ -107,7 +61,7 @@ export class ChatGateway {
 
   @OnEvent('room.leave', { async: true })
   async handleLeave(event: RoomLeftEvent) {
-    this.server.in(event.roomId.toString()).emit('left-room', event.userId);
+    this.server.in(event.roomId.toString()).emit('leave', event);
     await this.chatService.removeUserFromRoom(event);
   }
 

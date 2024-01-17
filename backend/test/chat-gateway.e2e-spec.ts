@@ -487,43 +487,24 @@ describe('ChatGateway and ChatController (e2e)', () => {
         .expect(200);
     });
 
-    let ctx5, ctx6, ctx7, ctx8, ctx9: Promise<void>;
-    it('setup promises to recv left-room event with user id', async () => {
-      ctx5 = new Promise<void>((resolve) => {
-        ws1.on('left-room', (data) => {
-          expect(data).toEqual(kickedUser1.id);
-          ws1.off('left-room');
-          resolve();
-        });
-      });
-      ctx6 = new Promise<void>((resolve) => {
-        ws2.on('left-room', (data) => {
-          expect(data).toEqual(kickedUser1.id);
-          ws2.off('left-room');
-          resolve();
-        });
-      });
-      ctx7 = new Promise<void>((resolve) => {
-        ws3.on('left-room', (data) => {
-          expect(data).toEqual(kickedUser1.id);
-          ws3.off('left-room');
-          resolve();
-        });
-      });
-      ctx8 = new Promise<void>((resolve) => {
-        ws4.on('left-room', (data) => {
-          expect(data).toEqual(kickedUser1.id);
-          ws4.off('left-room');
-          resolve();
-        });
-      });
-      ctx9 = new Promise<void>((resolve) => {
-        ws6.on('left-room', (data) => {
-          expect(data).toEqual(kickedUser1.id);
-          ws6.off('left-room');
-          resolve();
-        });
-      });
+    let ctx5: Promise<void[]>;
+    it('setup promises to recv leave event with user id', async () => {
+      const expectedEvent = {
+        userId: kickedUser1.id,
+        roomId: room.id,
+      };
+      const promises = [ws1, ws2, ws3, ws4, ws5, ws6].map(
+        (ws) =>
+          new Promise<void>((resolve) => {
+            ws.on('leave', (data) => {
+              expect(data).toEqual(expectedEvent);
+              ws.off('leave');
+              resolve();
+            });
+          }),
+      );
+
+      ctx5 = Promise.all(promises);
     });
 
     it('user1 kicks kickedUser1', async () => {
@@ -532,12 +513,8 @@ describe('ChatGateway and ChatController (e2e)', () => {
         .expect(204);
     });
 
-    it('all users (except kickedUser1) should receive left-room event with kickedUser1 id', async () => {
+    it('all users (except kickedUser1) should receive leave event with kickedUser1 id', async () => {
       await ctx5;
-      await ctx6;
-      await ctx7;
-      await ctx8;
-      await ctx9;
     });
 
     it('kickedUser1 sends message', () => {

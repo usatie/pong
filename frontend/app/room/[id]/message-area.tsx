@@ -51,16 +51,16 @@ function MessageArea({
 
   // メッセージを取得
   useEffect(() => {
-    socket.connect();
-
     const handleMessage = (message: MessageEvent) => {
+      if (message.roomId !== roomId) {
+        return;
+      }
       setMessages((messages) => [...messages, message]);
     };
 
     socket.on("message", handleMessage);
     return () => {
       socket.off("message", handleMessage);
-      socket.disconnect();
     };
   }, [roomId]);
 

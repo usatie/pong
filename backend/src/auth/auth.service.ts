@@ -10,13 +10,13 @@ import * as bcrypt from 'bcrypt';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { UserEntity } from 'src/user/entities/user.entity';
 import { jwtConstants } from './auth.module';
+import { OauthDto } from './dto/oauth.dto';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { AuthEntity } from './entity/auth.entity';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { UserEntity } from 'src/user/entities/user.entity';
-import { OauthDto } from './dto/oauth.dto';
 
 @Injectable()
 export class AuthService {

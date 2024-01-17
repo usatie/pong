@@ -4,15 +4,13 @@ import { WebSocketGateway, WsException } from '@nestjs/websockets';
 import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
-import { UserService } from 'src/user/user.service';
+import { BlockEvent } from 'src/common/events/block.event';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 import { RoomLeftEvent } from 'src/common/events/room-left.event';
-import { BlockEvent } from 'src/common/events/block.event';
 import { UnblockEvent } from 'src/common/events/unblock.event';
-import { Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateDirectMessageDto } from './dto/create-direct-message.dto';
+import { UserService } from 'src/user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 
 @Injectable()
@@ -23,8 +21,6 @@ export class ChatService {
     private authService: AuthService,
     private userService: UserService,
   ) {}
-
-  private logger: Logger = new Logger('ChatService');
 
   // Map<User.id, Socket>
   private clients = new Map<User['id'], Socket>();
@@ -154,15 +150,6 @@ export class ChatService {
 
   handleDisconnect(client: Socket) {
     this.removeClient(client);
-  }
-
-  async createDirectMessage(senderId: number, dto: CreateDirectMessageDto) {
-    return this.prisma.directMessage.create({
-      data: {
-        senderId,
-        ...dto, //TODO receiverIdのvalidationどうする？
-      },
-    });
   }
 
   private async expectNotBlockedBy(blockerId: number, userId: number) {

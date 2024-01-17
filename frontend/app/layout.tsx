@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import AuthProvider from "@/app/lib/client-auth-provider";
+import SocketProvider from "@/app/lib/client-socket-provider";
 import { getAccessTokenPayload } from "@/app/lib/session";
 
 // components
@@ -48,6 +49,7 @@ export default async function RootLayout({
               <Nav />
               {children}
             </div>
+            <SocketProvider />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>

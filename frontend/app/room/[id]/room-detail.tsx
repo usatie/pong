@@ -6,9 +6,9 @@ import type {
 } from "@/app/lib/dtos";
 import { getCurrentUserId } from "@/app/lib/session";
 import { Stack } from "@/components/layout/stack";
+import { DmTitle } from "./dm-title";
 import SidebarItem from "./sidebar-item";
 import { SidebarMenu } from "./sidebar-menu";
-import { DmTitle } from "./dm-title";
 
 interface Props {
   room: RoomEntity;

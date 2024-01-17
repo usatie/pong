@@ -9,11 +9,11 @@ import type { User } from '@prisma/client';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { OauthDto } from './dto/oauth.dto';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { AuthEntity } from './entity/auth.entity';
 import { JwtGuardWithout2FA } from './jwt-auth.guard';
-import { OauthDto } from './dto/oauth.dto';
 
 @Controller('auth')
 @ApiTags('auth')
