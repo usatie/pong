@@ -59,6 +59,7 @@ export type JwtPayload = {
 export type MessageEvent = {
   user: PublicUserEntity;
   content: string;
+  roomId: number;
 };
 
 export type RoomEntity = { id: number; name: string; accessLevel: AccessLevel };

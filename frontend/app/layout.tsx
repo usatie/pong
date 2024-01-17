@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { getMe } from "@/app/lib/actions";
 import { JwtPayload } from "@/app/lib/dtos";
 import Nav from "@/app/ui/nav";
+import WSNotificationToaster from "./ws-notification-toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -48,6 +49,7 @@ export default async function RootLayout({
               <Nav />
               {children}
             </div>
+            <WSNotificationToaster />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
