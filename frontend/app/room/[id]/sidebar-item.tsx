@@ -59,7 +59,7 @@ export default function SidebarItem({
   useEffect(() => {
     const handleLeftEvent = (userId: string) => {
       if (Number(userId) === me.userId) {
-        router.push("/");
+        router.push("/room");
       }
       if (Number(userId) === user.userId) {
         setIsKicked(true);
