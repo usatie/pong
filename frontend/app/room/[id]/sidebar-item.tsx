@@ -19,9 +19,9 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { chatSocket as socket } from "@/socket";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { chatSocket as socket } from "@/socket";
 
 function truncateString(str: string | undefined, num: number): string {
   if (!str) {

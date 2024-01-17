@@ -7,8 +7,8 @@ import {
 import { getCurrentUserId } from "@/app/lib/session";
 import AcceptFriendButton from "@/app/ui/user/accept-friend-request-button";
 import AddFriendButton from "@/app/ui/user/add-friend-button";
-import BlockButton from "@/app/ui/user/block-button";
 import { Avatar } from "@/app/ui/user/avatar";
+import BlockButton from "@/app/ui/user/block-button";
 import CancelFriendRequestButton from "@/app/ui/user/cancel-friend-request-button";
 import DirectMessageButton from "@/app/ui/user/direct-message-button";
 import Friends from "@/app/ui/user/friends";

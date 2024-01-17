@@ -1,5 +1,5 @@
 "use client";
-import { getDirectRoom, createDirectRoom } from "@/app/lib/actions";
+import { createDirectRoom, getDirectRoom } from "@/app/lib/actions";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
