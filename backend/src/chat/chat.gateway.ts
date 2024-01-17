@@ -61,7 +61,7 @@ export class ChatGateway {
 
   @OnEvent('room.leave', { async: true })
   async handleLeave(event: RoomLeftEvent) {
-    this.server.in(event.roomId.toString()).emit('left-room', event.userId);
+    this.server.in(event.roomId.toString()).emit('leave', event);
     await this.chatService.removeUserFromRoom(event);
   }
 

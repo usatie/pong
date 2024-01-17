@@ -40,6 +40,11 @@ function Avatar({ avatarURL }: { avatarURL?: string }) {
   return <img className="rounded-full w-6 h-6 object-cover" src={avatarURL} />;
 }
 
+export interface LeaveEvent {
+  userId: number;
+  roomId: number;
+}
+
 export default function SidebarItem({
   room,
   user,
@@ -57,18 +62,18 @@ export default function SidebarItem({
   );
   const [isKicked, setIsKicked] = useState(false);
   useEffect(() => {
-    const handleLeftEvent = (userId: string) => {
-      if (Number(userId) === me.userId) {
+    const handleLeftEvent = (data: LeaveEvent) => {
+      if (Number(data.userId) === me.userId) {
         router.push("/room");
       }
-      if (Number(userId) === user.userId) {
+      if (Number(data.userId) === user.userId) {
         setIsKicked(true);
       }
     };
-    socket.on("left-room", handleLeftEvent);
+    socket.on("leave", handleLeftEvent);
 
     return () => {
-      socket.off("left-room", handleLeftEvent);
+      socket.off("leave", handleLeftEvent);
     };
   }, [user.userId, me.userId, router]);
 
