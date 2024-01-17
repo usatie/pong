@@ -4,13 +4,13 @@ import { WebSocketGateway, WsException } from '@nestjs/websockets';
 import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
-import { UserService } from 'src/user/user.service';
+import { BlockEvent } from 'src/common/events/block.event';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 import { RoomLeftEvent } from 'src/common/events/room-left.event';
-import { BlockEvent } from 'src/common/events/block.event';
 import { UnblockEvent } from 'src/common/events/unblock.event';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UserService } from 'src/user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 
 @Injectable()

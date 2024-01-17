@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,11 +8,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
-import { RoomLeftEvent } from 'src/common/events/room-left.event';
-import { OnEvent } from '@nestjs/event-emitter';
 
 @WebSocketGateway({
   cors: {
