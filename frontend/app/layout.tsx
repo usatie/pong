@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import AuthProvider from "@/app/lib/client-auth-provider";
+import SocketProvider from "@/app/lib/client-socket-provider";
 import { getAccessTokenPayload } from "@/app/lib/session";
 
 // components
@@ -13,7 +14,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { getMe } from "@/app/lib/actions";
 import { JwtPayload } from "@/app/lib/dtos";
 import Nav from "@/app/ui/nav";
-import WSNotificationToaster from "./ws-notification-toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -49,7 +49,7 @@ export default async function RootLayout({
               <Nav />
               {children}
             </div>
-            <WSNotificationToaster />
+            <SocketProvider />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
