@@ -11,7 +11,7 @@ import type {
   RoomEntity,
   UserOnRoomEntity,
 } from "@/app/lib/dtos";
-import { SmallAvatarSkeleton } from "@/app/ui/room/skeleton";
+import { Avatar } from "@/app/ui/user/avatar";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -31,13 +31,6 @@ function truncateString(str: string | undefined, num: number): string {
     return str;
   }
   return str.slice(0, num) + "...";
-}
-
-function Avatar({ avatarURL }: { avatarURL?: string }) {
-  if (!avatarURL) {
-    return <SmallAvatarSkeleton />;
-  }
-  return <img className="rounded-full w-6 h-6 object-cover" src={avatarURL} />;
 }
 
 export interface LeaveEvent {
@@ -110,7 +103,7 @@ export default function SidebarItem({
       {!isKicked && (
         <ContextMenu>
           <ContextMenuTrigger className="flex gap-2 items-center group hover:opacity-60">
-            <Avatar avatarURL={user.user.avatarURL} />
+            <Avatar avatarURL={user.user.avatarURL} size="small" />
             <span className="text-muted-foreground text-sm whitespace-nowrap group-hover:text-primary">
               {truncateString(user.user.name, 15)}
               {room.accessLevel !== "DIRECT" && isUserOwner && " 👑"}
