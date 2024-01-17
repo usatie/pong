@@ -49,13 +49,13 @@ export default function SettingModal({
       throw new Error("not found room");
     }
     let result;
-    if (room.accessLevel !== "PROTECTED" && e.password === "") {
-      result = await updateRoom(e.roomName, room.id, room.accessLevel);
+    if (e.selectedAccessLevel !== "PROTECTED") {
+      result = await updateRoom(e.roomName, room.id, e.selectedAccessLevel);
     } else {
       result = await updateRoom(
         e.roomName,
         room.id,
-        room.accessLevel,
+        e.selectedAccessLevel,
         e.password,
       );
     }
