@@ -26,6 +26,19 @@ export class AuthController {
     return this.authService.login(email, password);
   }
 
+  @Get('signup/oauth2/42')
+  @ApiOkResponse({ type: AuthEntity })
+  @Redirect('url', 302)
+  redirectToOauth42() {
+    return this.authService.redirectToOauth42('/signup/oauth2/42/callback');
+  }
+
+  @Get('signup/oauth2/42/callback')
+  @ApiOkResponse({ type: AuthEntity })
+  oauth42Callback(@Query('code') code: string) {
+    return this.authService.oauth42Callback(code);
+  }
+
   @Post('oauth2/signup/42')
   @ApiCreatedResponse({ type: AuthEntity })
   async signupWith42(@Body() dto: OauthDto) {

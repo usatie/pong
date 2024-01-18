@@ -80,21 +80,32 @@ export class AuthService {
     });
   }
 
-  async signupWith42(dto: OauthDto): Promise<UserEntity> {
-    // 1. Get access token
+  redirectToOauth42 = (callbackUri: string) => {
     const client_id = process.env.OAUTH_42_CLIENT_ID;
-    const client_secret = process.env.OAUTH_42_CLIENT_SECRET;
+    const redirect_uri = process.env.NEST_PUBLIC_API_URL + callbackUri;
+    // TODO : implement state system for enhanced security
+    const codeEndpointUrl = 'https://api.intra.42.fr/oauth/authorize';
+    return {
+      url: `${codeEndpointUrl}?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=code`,
+    };
+  };
 
+  getAccessTokenWith42 = async ({
+    code,
+    redirect_uri,
+  }: {
+    code: string;
+    redirect_uri;
+  }) => {
     const form = new URLSearchParams({
       grant_type: 'authorization_code',
-      client_id,
-      client_secret,
-      code: dto.code,
-      redirect_uri: process.env.OAUTH_REDIRECT_URI,
-      state: '42', // TODO : implement state system for enhanced security
+      client_id: process.env.OAUTH_42_CLIENT_ID,
+      client_secret: process.env.OAUTH_42_CLIENT_SECRET,
+      code: code,
+      redirect_uri: process.env.NEST_PUBLIC_API_URL + redirect_uri,
     });
 
-    const token = await fetch('https://api.intra.42.fr/oauth/token', {
+    return fetch('https://api.intra.42.fr/oauth/token', {
       method: 'POST',
       body: form,
       headers: {
@@ -102,39 +113,68 @@ export class AuthService {
       },
     }).then((res) => {
       if (!res.ok) {
-        throw new Error(res.statusText);
+        return Promise.reject(res.statusText);
       }
-      return res.json();
+      {
+        return res.json().then((data) => {
+          return data.access_token;
+        });
+      }
     });
-    const { access_token } = token;
-    console.log('token', token);
+  };
 
-    // 2. Get user info
-    const userRes = await fetch('https://api.intra.42.fr/v2/me', {
+  getUserInfoWith42 = async ({ access_token }: { access_token: string }) => {
+    return fetch('https://api.intra.42.fr/v2/me', {
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
+    }).then((res) => {
+      if (!res.ok) {
+        return Promise.reject(res.statusText);
+      }
+      return res.json();
     });
-    if (!userRes.ok) {
-      throw new Error(userRes.statusText);
-    }
-    const userJson = await userRes.json();
-    const { email, login } = userJson;
-    if (!email || !login) {
-      throw new Error('Invalid user info');
-    }
+  };
 
-    // 3. Create user
-    const hashedPassword = await bcrypt.hash(login, 10);
-    // TODO : random password? without password?
-    // TODO : save access_token in db
-    const userData: CreateUserDto = {
-      email,
-      password: hashedPassword,
-      name: login,
-    };
-    return this.prisma.user.create({ data: userData });
-  }
+  oauth42Callback = async (code: string): Promise<UserEntity> => {
+    return this.getAccessTokenWith42({
+      code,
+      redirect_uri: '/auth/oauth2/signup/42/callback',
+    })
+      .catch((err) => {
+        throw new Error(err);
+      })
+      .then((access_token) => {
+        return this.getUserInfoWith42({ access_token })
+          .catch(() => {
+            throw new Error('Invalid user info');
+          })
+          .then(({ email, login }) => {
+            if (!email || !login) {
+              throw new Error('Invalid user info');
+            }
+            return this.prisma.user
+              .findUnique({
+                where: { email },
+              })
+              .then((user) => {
+                if (user) {
+                  throw new Error('User already exists');
+                }
+                const hashedPassword = bcrypt.hashSync(login, 10);
+                // TODO : random password? without password?
+                // TODO : save access_token in db
+                const userData: CreateUserDto = {
+                  email,
+                  password: hashedPassword,
+                  name: login,
+                };
+                return this.prisma.user.create({ data: userData });
+              });
+          });
+      });
+  };
+
 
   async pipeQrCodeStream(stream: Response, otpAuthUrl: string) {
     return toFileStream(stream, otpAuthUrl);
