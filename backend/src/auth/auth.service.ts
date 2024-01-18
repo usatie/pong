@@ -11,7 +11,6 @@ import * as bcrypt from 'bcrypt';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { jwtConstants } from './auth.module';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
