@@ -3,6 +3,7 @@ import {
   Get,
   Put,
   Body,
+  Delete,
   Param,
   ParseIntPipe,
   UseGuards,
@@ -34,5 +35,14 @@ export class MuteController {
   @UseGuards(AdminGuard)
   findAll(@Param('roomId', ParseIntPipe) roomId: number) {
     return this.muteService.findAll(roomId);
+  }
+
+  @Delete(':userId')
+  @UseGuards(AdminGuard)
+  remove(
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.muteService.remove(roomId, userId);
   }
 }

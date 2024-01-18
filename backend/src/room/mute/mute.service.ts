@@ -72,4 +72,29 @@ export class MuteService {
     const users = tmp.map((item) => item.user);
     return users;
   }
+
+  async remove(roomId: number, userId: number) {
+    await this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.muteUserOnRoom.findUnique({
+        where: {
+          userId_roomId_unique: {
+            userId,
+            roomId,
+          },
+        },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found in the Mute list');
+      }
+      await prisma.muteUserOnRoom.delete({
+        where: {
+          userId_roomId_unique: {
+            userId,
+            roomId,
+          },
+        },
+      });
+      return { message: 'Unmute user successfully' };
+    });
+  }
 }
