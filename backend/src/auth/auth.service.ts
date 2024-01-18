@@ -13,7 +13,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { jwtConstants } from './auth.module';
-import { OauthDto } from './dto/oauth.dto';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { AuthEntity } from './entity/auth.entity';
@@ -175,6 +174,42 @@ export class AuthService {
       });
   };
 
+  loginWithOauth42 = async (code: string): Promise<AuthEntity> => {
+    return this.getAccessTokenWith42({
+      code,
+      redirect_uri: '/auth/login/oauth2/42/callback',
+    })
+      .catch((err) => {
+        throw new Error(err);
+      })
+      .then((access_token) => {
+        return this.getUserInfoWith42({ access_token })
+          .catch(() => {
+            throw new Error('Invalid user info');
+          })
+          .then(({ email }) => {
+            if (!email) {
+              throw new Error('Invalid user info');
+            }
+            return this.prisma.user
+              .findUnique({
+                where: { email },
+              })
+              .then((user) => {
+                if (!user) {
+                  throw new Error('User does not exist');
+                }
+                return {
+                  accessToken: this.jwtService.sign({
+                    userId: user.id,
+                    isTwoFactorEnabled: user.twoFactorEnabled,
+                    isTwoFactorAuthenticated: false,
+                  }),
+                };
+              });
+          });
+      });
+  };
 
   async pipeQrCodeStream(stream: Response, otpAuthUrl: string) {
     return toFileStream(stream, otpAuthUrl);
