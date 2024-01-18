@@ -10,6 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { ChatService } from './chat.service';
+import { MuteService } from 'src/room/mute/mute.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
 
@@ -21,7 +22,10 @@ import { MessageEntity } from './entities/message.entity';
   cookie: true,
 })
 export class ChatGateway {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly muteService: MuteService,
+  ) {}
 
   @WebSocketServer()
   server: Server;
@@ -43,6 +47,11 @@ export class ChatGateway {
     // Check if the userId is valid
     if (this.chatService.getUserId(client) !== data.userId) {
       this.logger.error('invalid userId');
+      return;
+    }
+
+    const MutedUsers = await this.muteService.findAll(data.roomId);
+    if (MutedUsers.some((user) => user.id === data.userId)) {
       return;
     }
 
