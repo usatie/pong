@@ -157,6 +157,11 @@ export class TestApp {
       .delete(`/room/${roomId}/mutes/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`);
 
+  getMutedUsers = (roomId: number, accessToken: string) =>
+    request(this.app.getHttpServer())
+      .get(`/room/${roomId}/mutes`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
   getMessagesInRoom = (roomId: number, accessToken: string) =>
     request(this.app.getHttpServer())
       .get(`/room/${roomId}/messages`)

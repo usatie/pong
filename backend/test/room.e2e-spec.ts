@@ -1902,10 +1902,10 @@ describe('RoomController (e2e)', () => {
       });
       it('owner should mute anyone in the room', async () => {
         await app
-          .muteUser(publicRoom.id, admin.id, 10, owner.accessToken)
+          .muteUser(_publicRoom.id, admin.id, duration, owner.accessToken)
           .expect(200);
         await app
-          .muteUser(publicRoom.id, member.id, 10, owner.accessToken)
+          .muteUser(_publicRoom.id, member.id, duration, owner.accessToken)
           .expect(200);
       });
     });
@@ -1949,6 +1949,7 @@ describe('RoomController (e2e)', () => {
         };
         _member2 = await app.createAndLoginUser(dto);
         _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _member2.id, admin.accessToken);
       });
       afterAll(async () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken);
@@ -2033,6 +2034,85 @@ describe('RoomController (e2e)', () => {
         await app
           .muteUser(_publicRoom.id, notMember.id, duration, admin.accessToken)
           .expect(404);
+      });
+    });
+  });
+
+  describe('GET /room/:id/mutes (Get muted users)', () => {
+    let _publicRoom: RoomEntity;
+    let mutedUser: UserEntityWithAccessToken;
+    beforeAll(async () => {
+      mutedUser = await app.createAndLoginUser({
+        name: 'MUTED USER',
+        email: 'muted@example.com',
+        password: '12345678',
+      });
+      _publicRoom = await setupRoom(constants.room.publicRoom);
+      await app.inviteRoom(_publicRoom.id, mutedUser.id, owner.accessToken);
+    });
+    afterAll(async () => {
+      await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+      await app.deleteUser(mutedUser.id, mutedUser.accessToken).expect(204);
+    });
+    describe('Owner', () => {
+      it('should get empty array when no muted users in the room (200 OK)', async () => {
+        const res = await app
+          .getMutedUsers(_publicRoom.id, owner.accessToken)
+          .expect(200);
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body).toHaveLength(0);
+      });
+      it('Mute user', async () => {
+        await app
+          .muteUser(_publicRoom.id, mutedUser.id, 1, owner.accessToken)
+          .expect(200);
+      });
+      it('should get muted users (200 OK)', async () => {
+        const res = await app
+          .getMutedUsers(_publicRoom.id, owner.accessToken)
+          .expect(200);
+        expect(res.body).toBeInstanceOf(Array);
+        res.body.forEach(expectPublicUser);
+        const publicMutedUser = {
+          id: mutedUser.id,
+          name: mutedUser.name,
+          avatarURL: mutedUser.avatarURL,
+        };
+        expect(res.body).toContainEqual(publicMutedUser);
+      });
+    });
+    describe('Admin', () => {
+      it('should get muted users (200 OK)', async () => {
+        await app.getMutedUsers(_publicRoom.id, admin.accessToken).expect(200);
+      });
+    });
+    describe('Member', () => {
+      it('should not get muted users (403 Forbidden)', async () => {
+        await app.getMutedUsers(_publicRoom.id, member.accessToken).expect(403);
+      });
+    });
+    describe('Non-member', () => {
+      it('should not get muted users (403 Forbidden)', async () => {
+        await app
+          .getMutedUsers(_publicRoom.id, notMember.accessToken)
+          .expect(403);
+      });
+    });
+    describe('Owner and Admin', () => {
+      it('should get empty array after the duration (200 OK)', (done) => {
+        setTimeout(async () => {
+          const res = await app
+            .getMutedUsers(_publicRoom.id, owner.accessToken)
+            .expect(200);
+          expect(res.body).toBeInstanceOf(Array);
+          expect(res.body).toHaveLength(0);
+          done();
+          //          const res2 = await app
+          //            .getMutedUsers(_publicRoom.id, admin.accessToken)
+          //            .expect(200);
+          //          expect(res2.body).toBeInstanceOf(Array);
+          //          expect(res2.body).toHaveLength(0);
+        }, 2000);
       });
     });
   });
