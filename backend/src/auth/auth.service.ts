@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -135,44 +136,36 @@ export class AuthService {
     });
   };
 
-  oauth42Callback = async (code: string): Promise<UserEntity> => {
-    return this.getAccessTokenWith42({
+  oauth42Callback = (code: string): Promise<UserEntity> =>
+    this.getAccessTokenWith42({
       code,
       redirect_uri: '/auth/oauth2/signup/42/callback',
-    })
-      .catch((err) => {
-        throw new Error(err);
-      })
-      .then((access_token) => {
-        return this.getUserInfoWith42({ access_token })
-          .catch(() => {
-            throw new Error('Invalid user info');
-          })
-          .then(({ email, login }) => {
-            if (!email || !login) {
-              throw new Error('Invalid user info');
-            }
-            return this.prisma.user
-              .findUnique({
-                where: { email },
-              })
-              .then((user) => {
-                if (user) {
-                  throw new Error('User already exists');
-                }
-                const hashedPassword = bcrypt.hashSync(login, 10);
-                // TODO : random password? without password?
-                // TODO : save access_token in db
-                const userData: CreateUserDto = {
-                  email,
-                  password: hashedPassword,
-                  name: login,
-                };
-                return this.prisma.user.create({ data: userData });
-              });
-          });
-      });
-  };
+    }).then((access_token) =>
+      this.getUserInfoWith42({ access_token }).then(
+        ({ email, login }) =>
+          email == undefined || login == undefined
+            ? Promise.reject(new HttpException('Invalid user info', 400))
+            : this.prisma.user
+                .findUnique({
+                  where: { email },
+                })
+                .then((user) =>
+                  user != undefined
+                    ? Promise.reject(
+                        new HttpException('User already exists', 409),
+                      )
+                    : this.prisma.user.create({
+                        data: {
+                          email,
+                          password: bcrypt.hashSync(login, 10),
+                          name: login,
+                        },
+                      }),
+                ),
+        // // TODO : random password? without password?
+        // // TODO : save access_token in db
+      ),
+    );
 
   loginWithOauth42 = async (code: string): Promise<AuthEntity> => {
     return this.getAccessTokenWith42({
