@@ -2106,23 +2106,154 @@ describe('RoomController (e2e)', () => {
             .expect(200);
           expect(res.body).toBeInstanceOf(Array);
           expect(res.body).toHaveLength(0);
+          const res2 = await app
+            .getMutedUsers(_publicRoom.id, admin.accessToken)
+            .expect(200);
+          expect(res2.body).toBeInstanceOf(Array);
+          expect(res2.body).toHaveLength(0);
           done();
-          //          const res2 = await app
-          //            .getMutedUsers(_publicRoom.id, admin.accessToken)
-          //            .expect(200);
-          //          expect(res2.body).toBeInstanceOf(Array);
-          //          expect(res2.body).toHaveLength(0);
         }, 2000);
       });
     });
   });
 
   describe('DELETE /room/:id/mutes/:userId (Unmute user)', () => {
-    it('owner should unmute anyone in the room', async () => {});
-    it('admin should unmute admin/member', async () => {});
-    it('member should not unmute anyone', async () => {});
-    it('notMember should not unmute anyone', async () => {});
+    describe('Owner', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app
+          .muteUser(_publicRoom.id, admin.id, 10, owner.accessToken)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, member.id, 10, owner.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+      });
+      it('should unmute anyone in the room', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, admin.id, owner.accessToken)
+          .expect(200);
+        await app
+          .unmuteUser(_publicRoom.id, member.id, owner.accessToken)
+          .expect(200);
+        await app
+          .unmuteUser(_publicRoom.id, notMember.id, owner.accessToken)
+          .expect(404);
+      });
+    });
+    describe('Admin', () => {
+      let _publicRoom: RoomEntity;
+      let _admin2: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        const dto = {
+          ...constants.user.admin,
+          name: 'admin2',
+          email: 'admin2@example.com',
+          password: '12345678',
+        };
+        _admin2 = await app.createAndLoginUser(dto);
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _admin2.id, admin.accessToken);
+        await app
+          .muteUser(_publicRoom.id, _admin2.id, 10, admin.accessToken)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, member.id, 10, admin.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_admin2.id, _admin2.accessToken).expect(204);
+      });
+      it('admin should unmute admin/member', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, owner.id, admin.accessToken)
+          .expect(404);
+        await app
+          .unmuteUser(_publicRoom.id, _admin2.id, admin.accessToken)
+          .expect(200);
+        await app
+          .unmuteUser(_publicRoom.id, member.id, admin.accessToken)
+          .expect(200);
+        await app
+          .unmuteUser(_publicRoom.id, notMember.id, admin.accessToken)
+          .expect(404);
+      });
+    });
+    describe('Member', () => {
+      let _publicRoom: RoomEntity;
+      let _member2: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        const dto = {
+          ...constants.user.member,
+          name: 'member3',
+          email: 'member3@example.com',
+          password: '12345678',
+        };
+        _member2 = await app.createAndLoginUser(dto);
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _member2.id, admin.accessToken);
+        await app
+          .muteUser(_publicRoom.id, admin.id, 10, owner.accessToken)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, _member2.id, 10, owner.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_member2.id, _member2.accessToken).expect(204);
+      });
+      it('member should not unmute anyone', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, owner.id, member.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, admin.id, member.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, _member2.id, member.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, notMember.id, member.accessToken)
+          .expect(403);
+      });
+    });
+    describe('Non-member', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app
+          .muteUser(_publicRoom.id, admin.id, 10, owner.accessToken)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, member.id, 10, owner.accessToken)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+      });
+      it('notMember should not unmute anyone', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, owner.id, notMember.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, admin.id, notMember.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, member.id, notMember.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, notMember.id, notMember.accessToken)
+          .expect(403);
+      });
+    });
 
-    it('unmuted user should be able to speak', async () => {});
+    it('unmuted user should be able to speak', async () => {
+      /* Do it with gateway.e2e-spec.ts */
+    });
   });
 });
