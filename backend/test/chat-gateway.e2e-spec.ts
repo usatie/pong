@@ -881,6 +881,67 @@ describe('ChatGateway and ChatController (e2e)', () => {
     it('all users should receive message from mutedUser1 after the duration', async () => {
       await ctx6;
     });
+
+    it('user1 unmutes mutedUser1', async () => {
+      await app
+        .unmuteUser(room.id, mutedUser1.id, user1.accessToken)
+        .expect(200);
+    });
+
+    it('user1 mute mutedUser1 again', async () => {
+      await app
+        .muteUser(room.id, mutedUser1.id, 10, user1.accessToken)
+        .expect(200);
+    });
+
+    it('mutedUser1 sends message', () => {
+      const helloMessage = {
+        userId: mutedUser1.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws7.emit('message', helloMessage);
+    });
+
+    it('all users should not receive message from mutedUser1', (done) => {
+      const mockMessage = jest.fn();
+      const mockMessage2 = jest.fn();
+      const mockMessage3 = jest.fn();
+      const mockMessage4 = jest.fn();
+      const mockMessage5 = jest.fn();
+      const mockMessage6 = jest.fn();
+      ws1.on('message', mockMessage);
+      ws2.on('message', mockMessage2);
+      ws3.on('message', mockMessage3);
+      ws4.on('message', mockMessage4);
+      ws5.on('message', mockMessage5);
+      ws6.on('message', mockMessage6);
+      setTimeout(() => {
+        expect(mockMessage).not.toBeCalled();
+        expect(mockMessage2).not.toBeCalled();
+        expect(mockMessage3).not.toBeCalled();
+        expect(mockMessage4).not.toBeCalled();
+        expect(mockMessage5).not.toBeCalled();
+        expect(mockMessage6).not.toBeCalled();
+        ws1.off('message');
+        ws2.off('message');
+        ws3.off('message');
+        ws4.off('message');
+        ws5.off('message');
+        ws6.off('message');
+        done();
+      }, 3000);
+    });
+
+    it('user1 unmutes mutedUser1', async () => {
+      await app
+        .unmuteUser(room.id, mutedUser1.id, user1.accessToken)
+        .expect(200);
+    });
+
+    it('all users should receive message from mutedUser1 after unmuting', async () => {
+      await ctx6;
+    });
   });
 
   /*
