@@ -1,0 +1,75 @@
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreateMuteDto } from './dto/create-mute.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+@Injectable()
+export class MuteService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(roomId: number, userId: number, createMuteDto: CreateMuteDto) {
+    await this.prisma.$transaction(async (prisma) => {
+      const room = await prisma.room.findUnique({
+        where: {
+          id: roomId,
+        },
+      });
+      if (room.accessLevel === 'DIRECT') {
+        throw new BadRequestException('Cannot mute user in DIRECT room');
+      }
+      const user = await prisma.userOnRoom.findUnique({
+        where: {
+          userId_roomId_unique: {
+            userId,
+            roomId,
+          },
+        },
+      });
+      if (!user) {
+        throw new NotFoundException('User does not exist in the room');
+      }
+      if (user.role === 'OWNER') {
+        throw new ForbiddenException('Cannot mute owner');
+      }
+      const expiresAt = new Date();
+      expiresAt.setSeconds(expiresAt.getSeconds() + createMuteDto.duration);
+      await prisma.muteUserOnRoom.create({
+        data: {
+          userId,
+          roomId,
+          expiresAt,
+        },
+      });
+    });
+    return {
+      message: 'Mute user successfully',
+    };
+  }
+
+  async findAll(roomId: number) {
+    const now = new Date();
+    const tmp = await this.prisma.muteUserOnRoom.findMany({
+      where: {
+        roomId,
+        expiresAt: {
+          gt: now,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarURL: true,
+          },
+        },
+      },
+    });
+    const users = tmp.map((item) => item.user);
+    return users;
+  }
+}
