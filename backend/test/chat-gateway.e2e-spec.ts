@@ -23,7 +23,14 @@ describe('ChatGateway and ChatController (e2e)', () => {
   let ws4: Socket; // Client socket 4
   let ws5: Socket; // Client socket 5
   let ws6: Socket; // Client socket 6
-  let user1, user2, blockedUser1, blockedUser2, kickedUser1, bannedUser1;
+  let ws7: Socket; // Client socket 7
+  let user1,
+    user2,
+    blockedUser1,
+    blockedUser2,
+    kickedUser1,
+    bannedUser1,
+    mutedUser1;
 
   beforeAll(async () => {
     //app = await initializeApp();
@@ -60,12 +67,18 @@ describe('ChatGateway and ChatController (e2e)', () => {
       email: 'banned@test.com',
       password: 'test-password',
     };
+    const dto7 = {
+      name: 'muted-user1',
+      email: 'muted1@test.com',
+      password: 'test-password',
+    };
     user1 = await app.createAndLoginUser(dto1);
     user2 = await app.createAndLoginUser(dto2);
     blockedUser1 = await app.createAndLoginUser(dto3);
     blockedUser2 = await app.createAndLoginUser(dto4);
     kickedUser1 = await app.createAndLoginUser(dto5);
     bannedUser1 = await app.createAndLoginUser(dto6);
+    mutedUser1 = await app.createAndLoginUser(dto7);
     await app
       .blockUser(user1.id, blockedUser1.id, user1.accessToken)
       .expect(200);
@@ -81,6 +94,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     await app.deleteUser(blockedUser2.id, blockedUser2.accessToken).expect(204);
     await app.deleteUser(kickedUser1.id, kickedUser1.accessToken).expect(204);
     await app.deleteUser(bannedUser1.id, bannedUser1.accessToken).expect(204);
+    await app.deleteUser(mutedUser1.id, mutedUser1.accessToken).expect(204);
     await app.close();
     ws1.close();
     ws2.close();
@@ -88,6 +102,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     ws4.close();
     ws5.close();
     ws6.close();
+    ws7.close();
   });
 
   const connect = (ws: Socket) => {
@@ -753,6 +768,118 @@ describe('ChatGateway and ChatController (e2e)', () => {
         ws6.off('message');
         done();
       }, 3000);
+    });
+  });
+
+  describe('Mute scenario', () => {
+    afterAll(async () => {
+      await app.deleteRoom(room.id, user1.accessToken).expect(204);
+    });
+    it('Connect to chat server as mutedUser1', async () => {
+      ws7 = io('ws://localhost:3000/chat', {
+        extraHeaders: { cookie: 'token=' + mutedUser1.accessToken },
+      });
+      expect(ws7).toBeDefined();
+      await connect(ws7);
+    });
+
+    let room;
+    it('Create and enter a room', async () => {
+      const res = await app
+        .createRoom(constants.room.publicRoom, user1.accessToken)
+        .expect(201);
+      room = res.body;
+      expect(room.id).toBeDefined();
+      // user2 (ws2) enters the room
+      await app.enterRoom(room.id, user2.accessToken).expect(201);
+      await app.enterRoom(room.id, blockedUser1.accessToken).expect(201);
+      await app.enterRoom(room.id, blockedUser2.accessToken).expect(201);
+      await app.enterRoom(room.id, kickedUser1.accessToken).expect(201);
+      await app.enterRoom(room.id, bannedUser1.accessToken).expect(201);
+      await app.enterRoom(room.id, mutedUser1.accessToken).expect(201);
+    });
+
+    it('user1 mutes mutedUser1', async () => {
+      await app
+        .muteUser(room.id, mutedUser1.id, 3, user1.accessToken)
+        .expect(200);
+    });
+
+    it('mutedUser1 sends message', () => {
+      const helloMessage = {
+        userId: mutedUser1.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws7.emit('message', helloMessage);
+    });
+
+    it('all users should not receive message from mutedUser1', (done) => {
+      const mockMessage = jest.fn();
+      const mockMessage2 = jest.fn();
+      const mockMessage3 = jest.fn();
+      const mockMessage4 = jest.fn();
+      const mockMessage5 = jest.fn();
+      const mockMessage6 = jest.fn();
+      ws1.on('message', mockMessage);
+      ws2.on('message', mockMessage2);
+      ws3.on('message', mockMessage3);
+      ws4.on('message', mockMessage4);
+      ws5.on('message', mockMessage5);
+      ws6.on('message', mockMessage6);
+      setTimeout(() => {
+        expect(mockMessage).not.toBeCalled();
+        expect(mockMessage2).not.toBeCalled();
+        expect(mockMessage3).not.toBeCalled();
+        expect(mockMessage4).not.toBeCalled();
+        expect(mockMessage5).not.toBeCalled();
+        expect(mockMessage6).not.toBeCalled();
+        ws1.off('message');
+        ws2.off('message');
+        ws3.off('message');
+        ws4.off('message');
+        ws5.off('message');
+        ws6.off('message');
+        done();
+      }, 3000);
+    });
+
+    let ctx6: Promise<void[]>;
+    it('setup promises to recv messages from mutedUser1 after the duration', async () => {
+      await new Promise((r) => setTimeout(r, 4000));
+      const expected: MessageEntity = {
+        user: {
+          id: mutedUser1.id,
+          name: mutedUser1.name,
+          avatarURL: mutedUser1.avatarURL,
+        },
+        roomId: room.id,
+        content: 'hello',
+      };
+      const promises = [ws1, ws2, ws3, ws4, ws5, ws6].map(
+        (ws) =>
+          new Promise<void>((resolve) => {
+            ws.on('message', (data) => {
+              expect(data).toEqual(expected);
+              ws.off('message');
+              resolve();
+            });
+          }),
+      );
+      ctx6 = Promise.all(promises);
+    });
+
+    it('mutedUser1 sends message after the duration', () => {
+      const helloMessage = {
+        userId: mutedUser1.id,
+        roomId: room.id,
+        content: 'hello',
+      };
+      ws7.emit('message', helloMessage);
+    });
+
+    it('all users should receive message from mutedUser1 after the duration', async () => {
+      await ctx6;
     });
   });
 
