@@ -135,72 +135,51 @@ export class AuthService {
     });
   };
 
-  oauth42Callback = (code: string): Promise<UserEntity> =>
+  signupWithOauth42 = (code: string): Promise<UserEntity> =>
     this.getAccessTokenWith42({
       code,
-      redirect_uri: '/auth/oauth2/signup/42/callback',
-    }).then((access_token) =>
-      this.getUserInfoWith42({ access_token }).then(
-        ({ email, login }) =>
+      redirect_uri: '/auth/signup/oauth2/42/callback',
+    }).then(
+      (access_token) =>
+        this.getUserInfoWith42({ access_token }).then(({ email, login }) =>
           email == undefined || login == undefined
             ? Promise.reject(new HttpException('Invalid user info', 400))
-            : this.prisma.user
-                .findUnique({
-                  where: { email },
-                })
-                .then((user) =>
-                  user != undefined
-                    ? Promise.reject(
-                        new HttpException('User already exists', 409),
-                      )
-                    : this.prisma.user.create({
-                        data: {
-                          email,
-                          password: bcrypt.hashSync(login, 10),
-                          name: login,
-                        },
-                      }),
-                ),
-        // // TODO : random password? without password?
-        // // TODO : save access_token in db
-      ),
+            : this.prisma.user.create({
+                data: {
+                  email,
+                  password: bcrypt.hashSync(login, 10),
+                  name: login,
+                },
+              }),
+        ),
+      // // TODO : random password? without password?
+      // // TODO : save access_token in db
     );
 
   loginWithOauth42 = async (code: string): Promise<AuthEntity> => {
     return this.getAccessTokenWith42({
       code,
       redirect_uri: '/auth/login/oauth2/42/callback',
-    })
-      .catch((err) => {
-        throw new Error(err);
-      })
-      .then((access_token) => {
-        return this.getUserInfoWith42({ access_token })
-          .catch(() => {
-            throw new Error('Invalid user info');
+    }).then((access_token) => {
+      return this.getUserInfoWith42({ access_token }).then(({ email }) => {
+        if (!email) {
+          throw new Error('Invalid user info');
+        }
+        return this.prisma.user
+          .findUniqueOrThrow({
+            where: { email },
           })
-          .then(({ email }) => {
-            if (!email) {
-              throw new Error('Invalid user info');
-            }
-            return this.prisma.user
-              .findUnique({
-                where: { email },
-              })
-              .then((user) => {
-                if (!user) {
-                  throw new Error('User does not exist');
-                }
-                return {
-                  accessToken: this.jwtService.sign({
-                    userId: user.id,
-                    isTwoFactorEnabled: user.twoFactorEnabled,
-                    isTwoFactorAuthenticated: false,
-                  }),
-                };
-              });
+          .then((user) => {
+            return {
+              accessToken: this.jwtService.sign({
+                userId: user.id,
+                isTwoFactorEnabled: user.twoFactorEnabled,
+                isTwoFactorAuthenticated: false,
+              }),
+            };
           });
       });
+    });
   };
 
   async pipeQrCodeStream(stream: Response, otpAuthUrl: string) {

@@ -38,15 +38,17 @@ export class AuthController {
 
   @Get('signup/oauth2/42')
   @ApiOkResponse({ type: AuthEntity })
-  @Redirect('url', 302)
+  @Redirect()
   redirectToOauth42() {
-    return this.authService.redirectToOauth42('/signup/oauth2/42/callback');
+    return this.authService.redirectToOauth42(
+      '/auth/signup/oauth2/42/callback',
+    );
   }
 
   @Get('signup/oauth2/42/callback')
   @ApiOkResponse({ type: AuthEntity })
-  oauth42Callback(@Query('code') code: string) {
-    return this.authService.oauth42Callback(code);
+  signupWithOauth42(@Query('code') code: string) {
+    return this.authService.signupWithOauth42(code);
   }
 
   @Get('login/oauth2/42')
