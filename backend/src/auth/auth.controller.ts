@@ -1,4 +1,14 @@
-import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Query,
+  Redirect,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -9,11 +19,11 @@ import type { User } from '@prisma/client';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { OauthDto } from './dto/oauth.dto';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { AuthEntity } from './entity/auth.entity';
 import { JwtGuardWithout2FA } from './jwt-auth.guard';
+import { Response } from 'express';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -26,10 +36,35 @@ export class AuthController {
     return this.authService.login(email, password);
   }
 
-  @Post('oauth2/signup/42')
-  @ApiCreatedResponse({ type: AuthEntity })
-  async signupWith42(@Body() dto: OauthDto) {
-    return this.authService.signupWith42(dto);
+  @Get('signup/oauth2/42')
+  @ApiOkResponse({ type: AuthEntity })
+  @Redirect()
+  redirectToOauth42() {
+    return this.authService.redirectToOauth42(
+      '/auth/signup/oauth2/42/callback',
+    );
+  }
+
+  @Get('signup/oauth2/42/callback')
+  @ApiOkResponse({ type: AuthEntity })
+  signupWithOauth42(@Query('code') code: string) {
+    return this.authService.signupWithOauth42(code);
+  }
+
+  @Get('login/oauth2/42')
+  @ApiOkResponse({ type: AuthEntity })
+  @Redirect()
+  redirectToOauth42ToLogin() {
+    return this.authService.redirectToOauth42('/auth/login/oauth2/42/callback');
+  }
+
+  @Get('login/oauth2/42/callback')
+  @ApiOkResponse({ type: AuthEntity })
+  loginWithOauth42(@Query('code') code: string, @Res() res: Response) {
+    return this.authService.loginWithOauth42(code).then((auth) => {
+      res.cookie('token', auth.accessToken);
+      res.redirect('/');
+    });
   }
 
   @Post('2fa/generate')
