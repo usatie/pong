@@ -6,6 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { RoomService } from '../room.service';
+import { compare } from 'bcrypt';
 
 @Injectable()
 export class EnterRoomGuard implements CanActivate {
@@ -32,7 +33,8 @@ export class EnterRoomGuard implements CanActivate {
         if (!req.body.password) {
           throw new BadRequestException('password is required');
         }
-        if (room.password !== req.body.password) {
+        const isPasswordValid = await compare(req.body.password, room.password);
+        if (!isPasswordValid) {
           throw new ForbiddenException('invalid password');
         }
         return true;

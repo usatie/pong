@@ -14,6 +14,7 @@ import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class RoomService {
@@ -22,10 +23,18 @@ export class RoomService {
     private eventEmitter: EventEmitter2,
   ) {}
 
+  hashPassword(password: string): Promise<string> {
+    const saltRounds = 10;
+    return hash(password, saltRounds);
+  }
+
   // room CRUD
 
   async create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
     const { userIds, ...rest } = createRoomDto;
+    if (rest.password) {
+      rest.password = await this.hashPassword(rest.password);
+    }
 
     // validate if there are only one userIds when accessLevel is DIRECT
     if (createRoomDto.accessLevel === 'DIRECT' && userIds.length !== 1) {
@@ -144,10 +153,13 @@ export class RoomService {
     });
   }
 
-  updateRoom(
+  async updateRoom(
     roomId: number,
     updateRoomDto: UpdateRoomDto,
   ): Promise<RoomEntity> {
+    if (updateRoomDto.password) {
+      updateRoomDto.password = await this.hashPassword(updateRoomDto.password);
+    }
     return this.prisma.room.update({
       where: { id: roomId },
       data: updateRoomDto,
