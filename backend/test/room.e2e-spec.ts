@@ -2001,13 +2001,6 @@ describe('RoomController (e2e)', () => {
       });
     });
 
-    it('muted user should not be able to speak', async () => {
-      /* Do it with gateway.e2e-spec.ts */
-    });
-    it('muted user should be able to speak again after the duration', async () => {
-      /* Do it with gateway.e2e-spec.ts */
-    });
-
     describe('Mute Scenario', () => {
       let _publicRoom: RoomEntity;
       beforeAll(async () => {
@@ -2258,10 +2251,6 @@ describe('RoomController (e2e)', () => {
           .unmuteUser(_publicRoom.id, notMember.id, notMember.accessToken)
           .expect(403);
       });
-    });
-
-    it('unmuted user should be able to speak', async () => {
-      /* Do it with gateway.e2e-spec.ts */
     });
   });
 });
