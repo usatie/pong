@@ -1900,7 +1900,7 @@ describe('RoomController (e2e)', () => {
       afterAll(async () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken);
       });
-      it('owner should mute anyone in the room (200 OK)', async () => {
+      it('should mute anyone in the room (200 OK)', async () => {
         await app
           .muteUser(_publicRoom.id, admin.id, duration, owner.accessToken)
           .expect(200);
@@ -1926,12 +1926,12 @@ describe('RoomController (e2e)', () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken);
         await app.deleteUser(_admin2.id, _admin2.accessToken).expect(204);
       });
-      it('admin should not mute owner (403 Forbidden)', async () => {
+      it('should not mute owner (403 Forbidden)', async () => {
         await app
           .muteUser(_publicRoom.id, owner.id, duration, admin.accessToken)
           .expect(403);
       });
-      it('admin should mute admin/member in the room (200 OK)', async () => {
+      it('should mute admin/member in the room (200 OK)', async () => {
         await app
           .muteUser(_publicRoom.id, _admin2.id, duration, admin.accessToken)
           .expect(200);
@@ -1957,7 +1957,7 @@ describe('RoomController (e2e)', () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken);
         await app.deleteUser(_member2.id, _member2.accessToken).expect(204);
       });
-      it('member should not mute anyone (403 Forbidden)', async () => {
+      it('should not mute anyone (403 Forbidden)', async () => {
         await app
           .muteUser(_publicRoom.id, owner.id, duration, member.accessToken)
           .expect(403);
@@ -1980,7 +1980,7 @@ describe('RoomController (e2e)', () => {
       afterAll(async () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken);
       });
-      it('notMember should not mute anyone (403 Forbidden)', async () => {
+      it('should not mute anyone (403 Forbidden)', async () => {
         await app
           .muteUser(_publicRoom.id, owner.id, duration, notMember.accessToken)
           .expect(403);
@@ -2057,7 +2057,7 @@ describe('RoomController (e2e)', () => {
         expect(res.body).toBeInstanceOf(Array);
         expect(res.body).toHaveLength(0);
       });
-      it('Mute user', async () => {
+      it('should mute user (200 OK)', async () => {
         await app
           .muteUser(_publicRoom.id, mutedUser.id, 1, owner.accessToken)
           .expect(200);
@@ -2127,7 +2127,7 @@ describe('RoomController (e2e)', () => {
       afterAll(async () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
       });
-      it('should unmute anyone in the room', async () => {
+      it('should unmute anyone in the room (200 OK)', async () => {
         await app
           .unmuteUser(_publicRoom.id, admin.id, owner.accessToken)
           .expect(200);
@@ -2135,7 +2135,7 @@ describe('RoomController (e2e)', () => {
           .unmuteUser(_publicRoom.id, member.id, owner.accessToken)
           .expect(200);
       });
-      it('should not unmute non-member', async () => {
+      it('should not unmute non-member (404 Not Found)', async () => {
         await app
           .unmuteUser(_publicRoom.id, notMember.id, owner.accessToken)
           .expect(404);
@@ -2165,12 +2165,12 @@ describe('RoomController (e2e)', () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
         await app.deleteUser(_admin2.id, _admin2.accessToken).expect(204);
       });
-      it('admin should not unmute owner in the room (403 Forbidden)', async () => {
+      it('should not unmute owner in the room (404 Not Found)', async () => {
         await app
           .unmuteUser(_publicRoom.id, owner.id, admin.accessToken)
           .expect(404);
       });
-      it('admin should unmute admin/member (200 OK)', async () => {
+      it('should unmute admin/member (200 OK)', async () => {
         await app
           .unmuteUser(_publicRoom.id, _admin2.id, admin.accessToken)
           .expect(200);
@@ -2178,7 +2178,7 @@ describe('RoomController (e2e)', () => {
           .unmuteUser(_publicRoom.id, member.id, admin.accessToken)
           .expect(200);
       });
-      it('admin should not unmute non-member (404 Not Found)', async () => {
+      it('should not unmute non-member (404 Not Found)', async () => {
         await app
           .unmuteUser(_publicRoom.id, notMember.id, admin.accessToken)
           .expect(404);
@@ -2208,7 +2208,7 @@ describe('RoomController (e2e)', () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
         await app.deleteUser(_member2.id, _member2.accessToken).expect(204);
       });
-      it('member should not unmute anyone (403 Forbidden)', async () => {
+      it('should not unmute anyone (403 Forbidden)', async () => {
         await app
           .unmuteUser(_publicRoom.id, owner.id, member.accessToken)
           .expect(403);
@@ -2237,7 +2237,7 @@ describe('RoomController (e2e)', () => {
       afterAll(async () => {
         await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
       });
-      it('notMember should not unmute anyone (403 Forbidden)', async () => {
+      it('should not unmute anyone (403 Forbidden)', async () => {
         await app
           .unmuteUser(_publicRoom.id, owner.id, notMember.accessToken)
           .expect(403);
