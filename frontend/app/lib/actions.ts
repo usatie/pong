@@ -739,8 +739,9 @@ export async function muteUser(
   userId: number,
   durationSec?: number,
 ) {
-  console.log("muteUser", durationSec);
-  console.log(typeof durationSec);
+  if (durationSec && durationSec < 0) {
+    throw new Error("Duration must be positive");
+  }
   const res = await fetch(
     `${process.env.API_URL}/room/${roomId}/mutes/${userId}`,
     {
