@@ -60,7 +60,7 @@ export class MuteService {
         await this.remove(roomId, userId);
       }
       let expiresAt;
-      if (createMuteDto.duration < 0) {
+      if (!createMuteDto.duration) {
         expiresAt = null;
       } else {
         expiresAt = new Date();
