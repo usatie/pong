@@ -2028,6 +2028,16 @@ describe('RoomController (e2e)', () => {
           .muteUser(_publicRoom.id, member.id, duration, owner.accessToken)
           .expect(200);
       }, 6000);
+      it('should mute user forever (200 OK)', async () => {
+        await app
+          .muteUser(_publicRoom.id, admin.id, -1, owner.accessToken)
+          .expect(200);
+      });
+      it('should not mute user who is already muted forever (409 Conflict)', async () => {
+        await app
+          .muteUser(_publicRoom.id, admin.id, -1, owner.accessToken)
+          .expect(409);
+      });
       it('should not mute user who is not in the room (404 Not Found)', async () => {
         await app
           .muteUser(_publicRoom.id, notMember.id, duration, owner.accessToken)
