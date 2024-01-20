@@ -11,6 +11,25 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class MuteService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async isExpired(roomId: number, userId: number) {
+    const now = new Date();
+    const mute = await this.prisma.muteUserOnRoom.findUnique({
+      where: {
+        userId_roomId_unique: {
+          userId,
+          roomId,
+        },
+      },
+    });
+    if (!mute) {
+      return false;
+    }
+    if (mute.expiresAt <= now) {
+      return true;
+    }
+    return false;
+  }
+
   async create(roomId: number, userId: number, createMuteDto: CreateMuteDto) {
     await this.prisma.$transaction(async (prisma) => {
       const room = await prisma.room.findUnique({
@@ -34,6 +53,9 @@ export class MuteService {
       }
       if (user.role === 'OWNER') {
         throw new ForbiddenException('Cannot mute owner');
+      }
+      if (await this.isExpired(roomId, userId)) {
+        await this.remove(roomId, userId);
       }
       const expiresAt = new Date();
       expiresAt.setSeconds(expiresAt.getSeconds() + createMuteDto.duration);
