@@ -23,11 +23,13 @@ export class MuteService {
     });
     if (!mute) {
       return false;
-    }
-    if (mute.expiresAt <= now) {
+    } else if (mute.expiresAt === null) {
+      return false;
+    } else if (mute.expiresAt <= now) {
       return true;
+    } else {
+      return false;
     }
-    return false;
   }
 
   async create(roomId: number, userId: number, createMuteDto: CreateMuteDto) {
@@ -57,8 +59,13 @@ export class MuteService {
       if (await this.isExpired(roomId, userId)) {
         await this.remove(roomId, userId);
       }
-      const expiresAt = new Date();
-      expiresAt.setSeconds(expiresAt.getSeconds() + createMuteDto.duration);
+      let expiresAt;
+      if (createMuteDto.duration < 0) {
+        expiresAt = null;
+      } else {
+        expiresAt = new Date();
+        expiresAt.setSeconds(expiresAt.getSeconds() + createMuteDto.duration);
+      }
       await prisma.muteUserOnRoom.create({
         data: {
           userId,
@@ -77,9 +84,16 @@ export class MuteService {
     const tmp = await this.prisma.muteUserOnRoom.findMany({
       where: {
         roomId,
-        expiresAt: {
-          gt: now,
-        },
+        OR: [
+          {
+            expiresAt: {
+              gt: now,
+            },
+          },
+          {
+            expiresAt: null,
+          },
+        ],
       },
       include: {
         user: {
