@@ -1891,7 +1891,7 @@ describe('RoomController (e2e)', () => {
   });
 
   describe('PUT /room/:id/mutes/:userId (Mute user)', () => {
-    const duration = 10;
+    const duration = 3;
     describe('Owner', () => {
       let _publicRoom: RoomEntity;
       beforeAll(async () => {
@@ -2022,6 +2022,12 @@ describe('RoomController (e2e)', () => {
           .muteUser(_publicRoom.id, member.id, duration, admin.accessToken)
           .expect(409);
       });
+      it('should mute user after the duration (200 OK)', async () => {
+        await new Promise((r) => setTimeout(r, 5000));
+        await app
+          .muteUser(_publicRoom.id, member.id, duration, owner.accessToken)
+          .expect(200);
+      }, 6000);
       it('should not mute user who is not in the room (404 Not Found)', async () => {
         await app
           .muteUser(_publicRoom.id, notMember.id, duration, owner.accessToken)
