@@ -734,6 +734,65 @@ export async function twoFactorAuthenticate(
   }
 }
 
+export async function muteUser(
+  roomId: number,
+  userId: number,
+  durationSec?: number,
+) {
+  console.log("muteUser", durationSec);
+  console.log(typeof durationSec);
+  const res = await fetch(
+    `${process.env.API_URL}/room/${roomId}/mutes/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ duration: durationSec }),
+    },
+  );
+  if (!res.ok) {
+    console.error("muteUser error: ", await res.json());
+    return "Error";
+  } else {
+    return "Success";
+  }
+}
+
+export async function getMutedUsers(roomId: number) {
+  const res = await fetch(`${process.env.API_URL}/room/${roomId}/mutes`, {
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  if (!res.ok) {
+    console.error("getMutedUsers error: ", await res.json());
+    return null;
+  } else {
+    const mutedUsers = res.json();
+    return mutedUsers;
+  }
+}
+
+export async function unmuteUser(roomId: number, userId: number) {
+  const res = await fetch(
+    `${process.env.API_URL}/room/${roomId}/mutes/${userId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + getAccessToken(),
+      },
+    },
+  );
+  if (!res.ok) {
+    console.error("unmuteUser error: ", await res.json());
+    return "Error";
+  } else {
+    return "Success";
+  }
+}
+
 export async function banUser(roomId: number, userId: number) {
   const res = await fetch(
     `${process.env.API_URL}/room/${roomId}/bans/${userId}`,
@@ -761,7 +820,7 @@ export async function getBannedUsers(roomId: number) {
   });
   if (!res.ok) {
     console.error("getBannedUsers error: ", await res.json());
-    return "Error";
+    return null;
   } else {
     const bannedUsers = res.json();
     return bannedUsers;
