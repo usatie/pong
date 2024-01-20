@@ -144,8 +144,8 @@ export class TestApp {
   muteUser = (
     roomId: number,
     userId: number,
-    duration: number,
     accessToken: string,
+    duration?: number,
   ) =>
     request(this.app.getHttpServer())
       .put(`/room/${roomId}/mutes/${userId}`)

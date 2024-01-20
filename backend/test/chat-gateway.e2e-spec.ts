@@ -811,7 +811,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
     it('user1 mutes mutedUser1', async () => {
       await app
-        .muteUser(room.id, mutedUser1.id, 3, user1.accessToken)
+        .muteUser(room.id, mutedUser1.id, user1.accessToken, 3)
         .expect(200);
     });
 
@@ -900,7 +900,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
     it('user1 mute mutedUser1 again', async () => {
       await app
-        .muteUser(room.id, mutedUser1.id, 10, user1.accessToken)
+        .muteUser(room.id, mutedUser1.id, user1.accessToken, 10)
         .expect(200);
     });
 

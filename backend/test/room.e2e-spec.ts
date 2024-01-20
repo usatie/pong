@@ -1902,10 +1902,10 @@ describe('RoomController (e2e)', () => {
       });
       it('should mute anyone in the room (200 OK)', async () => {
         await app
-          .muteUser(_publicRoom.id, admin.id, duration, owner.accessToken)
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken, duration)
           .expect(200);
         await app
-          .muteUser(_publicRoom.id, member.id, duration, owner.accessToken)
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, duration)
           .expect(200);
       });
     });
@@ -1928,15 +1928,15 @@ describe('RoomController (e2e)', () => {
       });
       it('should not mute owner (403 Forbidden)', async () => {
         await app
-          .muteUser(_publicRoom.id, owner.id, duration, admin.accessToken)
+          .muteUser(_publicRoom.id, owner.id, admin.accessToken, duration)
           .expect(403);
       });
       it('should mute admin/member in the room (200 OK)', async () => {
         await app
-          .muteUser(_publicRoom.id, _admin2.id, duration, admin.accessToken)
+          .muteUser(_publicRoom.id, _admin2.id, admin.accessToken, duration)
           .expect(200);
         await app
-          .muteUser(_publicRoom.id, member.id, duration, admin.accessToken)
+          .muteUser(_publicRoom.id, member.id, admin.accessToken, duration)
           .expect(200);
       });
     });
@@ -1959,16 +1959,16 @@ describe('RoomController (e2e)', () => {
       });
       it('should not mute anyone (403 Forbidden)', async () => {
         await app
-          .muteUser(_publicRoom.id, owner.id, duration, member.accessToken)
+          .muteUser(_publicRoom.id, owner.id, member.accessToken, duration)
           .expect(403);
         await app
-          .muteUser(_publicRoom.id, admin.id, duration, member.accessToken)
+          .muteUser(_publicRoom.id, admin.id, member.accessToken, duration)
           .expect(403);
         await app
-          .muteUser(_publicRoom.id, _member2.id, duration, member.accessToken)
+          .muteUser(_publicRoom.id, _member2.id, member.accessToken, duration)
           .expect(403);
         await app
-          .muteUser(_publicRoom.id, notMember.id, duration, member.accessToken)
+          .muteUser(_publicRoom.id, notMember.id, member.accessToken, duration)
           .expect(403);
       });
     });
@@ -1982,20 +1982,20 @@ describe('RoomController (e2e)', () => {
       });
       it('should not mute anyone (403 Forbidden)', async () => {
         await app
-          .muteUser(_publicRoom.id, owner.id, duration, notMember.accessToken)
+          .muteUser(_publicRoom.id, owner.id, notMember.accessToken, duration)
           .expect(403);
         await app
-          .muteUser(_publicRoom.id, admin.id, duration, notMember.accessToken)
+          .muteUser(_publicRoom.id, admin.id, notMember.accessToken, duration)
           .expect(403);
         await app
-          .muteUser(_publicRoom.id, member.id, duration, notMember.accessToken)
+          .muteUser(_publicRoom.id, member.id, notMember.accessToken, duration)
           .expect(403);
         await app
           .muteUser(
             _publicRoom.id,
             notMember.id,
-            duration,
             notMember.accessToken,
+            duration,
           )
           .expect(403);
       });
@@ -2011,39 +2011,39 @@ describe('RoomController (e2e)', () => {
       });
       it('should mute user (200 OK)', async () => {
         await app
-          .muteUser(_publicRoom.id, member.id, duration, owner.accessToken)
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, duration)
           .expect(200);
       });
       it('should not mute user who is already muted (409 Conflict)', async () => {
         await app
-          .muteUser(_publicRoom.id, member.id, duration, owner.accessToken)
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, duration)
           .expect(409);
         await app
-          .muteUser(_publicRoom.id, member.id, duration, admin.accessToken)
+          .muteUser(_publicRoom.id, member.id, admin.accessToken, duration)
           .expect(409);
       });
       it('should mute user after the duration (200 OK)', async () => {
         await new Promise((r) => setTimeout(r, 5000));
         await app
-          .muteUser(_publicRoom.id, member.id, duration, owner.accessToken)
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, duration)
           .expect(200);
       }, 6000);
       it('should mute user forever (200 OK)', async () => {
         await app
-          .muteUser(_publicRoom.id, admin.id, -1, owner.accessToken)
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken)
           .expect(200);
       });
       it('should not mute user who is already muted forever (409 Conflict)', async () => {
         await app
-          .muteUser(_publicRoom.id, admin.id, -1, owner.accessToken)
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken)
           .expect(409);
       });
       it('should not mute user who is not in the room (404 Not Found)', async () => {
         await app
-          .muteUser(_publicRoom.id, notMember.id, duration, owner.accessToken)
+          .muteUser(_publicRoom.id, notMember.id, owner.accessToken, duration)
           .expect(404);
         await app
-          .muteUser(_publicRoom.id, notMember.id, duration, admin.accessToken)
+          .muteUser(_publicRoom.id, notMember.id, admin.accessToken, duration)
           .expect(404);
       });
     });
@@ -2075,7 +2075,7 @@ describe('RoomController (e2e)', () => {
       });
       it('should mute user (200 OK)', async () => {
         await app
-          .muteUser(_publicRoom.id, mutedUser.id, 1, owner.accessToken)
+          .muteUser(_publicRoom.id, mutedUser.id, owner.accessToken, 1)
           .expect(200);
       });
       it('should get muted users (200 OK)', async () => {
@@ -2134,10 +2134,10 @@ describe('RoomController (e2e)', () => {
       beforeAll(async () => {
         _publicRoom = await setupRoom(constants.room.publicRoom);
         await app
-          .muteUser(_publicRoom.id, admin.id, 10, owner.accessToken)
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken, 10)
           .expect(200);
         await app
-          .muteUser(_publicRoom.id, member.id, 10, owner.accessToken)
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, 10)
           .expect(200);
       });
       afterAll(async () => {
@@ -2171,10 +2171,10 @@ describe('RoomController (e2e)', () => {
         _publicRoom = await setupRoom(constants.room.publicRoom);
         await app.inviteRoom(_publicRoom.id, _admin2.id, admin.accessToken);
         await app
-          .muteUser(_publicRoom.id, _admin2.id, 10, admin.accessToken)
+          .muteUser(_publicRoom.id, _admin2.id, admin.accessToken, 10)
           .expect(200);
         await app
-          .muteUser(_publicRoom.id, member.id, 10, admin.accessToken)
+          .muteUser(_publicRoom.id, member.id, admin.accessToken, 10)
           .expect(200);
       });
       afterAll(async () => {
@@ -2214,10 +2214,10 @@ describe('RoomController (e2e)', () => {
         _publicRoom = await setupRoom(constants.room.publicRoom);
         await app.inviteRoom(_publicRoom.id, _member2.id, admin.accessToken);
         await app
-          .muteUser(_publicRoom.id, admin.id, 10, owner.accessToken)
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken, 10)
           .expect(200);
         await app
-          .muteUser(_publicRoom.id, _member2.id, 10, owner.accessToken)
+          .muteUser(_publicRoom.id, _member2.id, owner.accessToken, 10)
           .expect(200);
       });
       afterAll(async () => {
@@ -2244,10 +2244,10 @@ describe('RoomController (e2e)', () => {
       beforeAll(async () => {
         _publicRoom = await setupRoom(constants.room.publicRoom);
         await app
-          .muteUser(_publicRoom.id, admin.id, 10, owner.accessToken)
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken, 10)
           .expect(200);
         await app
-          .muteUser(_publicRoom.id, member.id, 10, owner.accessToken)
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, 10)
           .expect(200);
       });
       afterAll(async () => {
