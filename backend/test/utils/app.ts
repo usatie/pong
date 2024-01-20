@@ -144,8 +144,8 @@ export class TestApp {
   muteUser = (
     roomId: number,
     userId: number,
-    duration: number,
     accessToken: string,
+    duration?: number,
   ) =>
     request(this.app.getHttpServer())
       .put(`/room/${roomId}/mutes/${userId}`)
@@ -155,6 +155,11 @@ export class TestApp {
   unmuteUser = (roomId: number, userId: number, accessToken: string) =>
     request(this.app.getHttpServer())
       .delete(`/room/${roomId}/mutes/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
+  getMutedUsers = (roomId: number, accessToken: string) =>
+    request(this.app.getHttpServer())
+      .get(`/room/${roomId}/mutes`)
       .set('Authorization', `Bearer ${accessToken}`);
 
   getMessagesInRoom = (roomId: number, accessToken: string) =>

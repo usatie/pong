@@ -10,6 +10,7 @@ import { FriendRequestModule } from './friend-request/friend-request.module';
 import { HistoryModule } from './history/history.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { BanModule } from './room/ban/ban.module';
+import { MuteModule } from './room/mute/mute.module';
 import { RoomModule } from './room/room.module';
 import { UserModule } from './user/user.module';
 
@@ -19,6 +20,7 @@ import { UserModule } from './user/user.module';
     PrismaModule,
     AuthModule,
     BanModule,
+    MuteModule,
     RoomModule,
     EventsModule,
     ChatModule,

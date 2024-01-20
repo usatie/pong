@@ -42,6 +42,7 @@ model User {
   twoFactorEnabled Boolean         @default(false)
   Message          Message[]
   BannedRooms      BanUserOnRoom[]
+  MutedRooms       MuteUserOnRoom[]
 }
 
 model Room {
@@ -52,6 +53,7 @@ model Room {
   accessLevel AccessLevel
   password    String?
   BannedUsers BanUserOnRoom[]
+  MutedUsers  MuteUserOnRoom[]
 }
 
 enum AccessLevel {
@@ -87,6 +89,19 @@ model BanUserOnRoom {
   roomId Int
 
   createdAt DateTime @default(now())
+
+  @@unique(fields: [userId, roomId], name: "userId_roomId_unique")
+}
+
+model MuteUserOnRoom {
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+
+  room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId Int
+
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
 
   @@unique(fields: [userId, roomId], name: "userId_roomId_unique")
 }

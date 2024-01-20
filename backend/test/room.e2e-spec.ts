@@ -1890,25 +1890,383 @@ describe('RoomController (e2e)', () => {
     it('notMember should not unban anyone', async () => {});
   });
 
-  describe('POST /room/:id/mutes/:userId (Mute user)', () => {
-    it('owner should mute anyone in the room', async () => {});
-    it('admin should mute admin/member', async () => {});
-    it('member should not mute anyone', async () => {});
-    it('notMember should not mute anyone', async () => {});
+  describe('PUT /room/:id/mutes/:userId (Mute user)', () => {
+    const duration = 3;
+    describe('Owner', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      });
+      it('should mute anyone in the room (200 OK)', async () => {
+        await app
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken, duration)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, duration)
+          .expect(200);
+      });
+    });
+    describe('Admin', () => {
+      let _publicRoom: RoomEntity;
+      let _admin2: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        const dto = {
+          ...constants.user.admin,
+          name: 'admin2',
+          email: 'admin2@example.com',
+        };
+        _admin2 = await app.createAndLoginUser(dto);
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _admin2.id, admin.accessToken);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken);
+        await app.deleteUser(_admin2.id, _admin2.accessToken).expect(204);
+      });
+      it('should not mute owner (403 Forbidden)', async () => {
+        await app
+          .muteUser(_publicRoom.id, owner.id, admin.accessToken, duration)
+          .expect(403);
+      });
+      it('should mute admin/member in the room (200 OK)', async () => {
+        await app
+          .muteUser(_publicRoom.id, _admin2.id, admin.accessToken, duration)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, member.id, admin.accessToken, duration)
+          .expect(200);
+      });
+    });
+    describe('Member', () => {
+      let _publicRoom: RoomEntity;
+      let _member2: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        const dto = {
+          ...constants.user.member,
+          name: 'member3',
+          email: 'member3@example.com',
+        };
+        _member2 = await app.createAndLoginUser(dto);
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _member2.id, admin.accessToken);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken);
+        await app.deleteUser(_member2.id, _member2.accessToken).expect(204);
+      });
+      it('should not mute anyone (403 Forbidden)', async () => {
+        await app
+          .muteUser(_publicRoom.id, owner.id, member.accessToken, duration)
+          .expect(403);
+        await app
+          .muteUser(_publicRoom.id, admin.id, member.accessToken, duration)
+          .expect(403);
+        await app
+          .muteUser(_publicRoom.id, _member2.id, member.accessToken, duration)
+          .expect(403);
+        await app
+          .muteUser(_publicRoom.id, notMember.id, member.accessToken, duration)
+          .expect(403);
+      });
+    });
+    describe('Non-member', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      });
+      it('should not mute anyone (403 Forbidden)', async () => {
+        await app
+          .muteUser(_publicRoom.id, owner.id, notMember.accessToken, duration)
+          .expect(403);
+        await app
+          .muteUser(_publicRoom.id, admin.id, notMember.accessToken, duration)
+          .expect(403);
+        await app
+          .muteUser(_publicRoom.id, member.id, notMember.accessToken, duration)
+          .expect(403);
+        await app
+          .muteUser(
+            _publicRoom.id,
+            notMember.id,
+            notMember.accessToken,
+            duration,
+          )
+          .expect(403);
+      });
+    });
 
-    it('muted user should not be able to speak', async () => {});
-    it('muted user should be able to speak again after the duration', async () => {});
+    describe('Mute Scenario', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken);
+      });
+      it('should mute user (200 OK)', async () => {
+        await app
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, duration)
+          .expect(200);
+      });
+      it('should not mute user who is already muted (409 Conflict)', async () => {
+        await app
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, duration)
+          .expect(409);
+        await app
+          .muteUser(_publicRoom.id, member.id, admin.accessToken, duration)
+          .expect(409);
+      });
+      it('should mute user after the duration (200 OK)', async () => {
+        await new Promise((r) => setTimeout(r, 5000));
+        await app
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, duration)
+          .expect(200);
+      }, 6000);
+      it('should mute user forever (200 OK)', async () => {
+        await app
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken)
+          .expect(200);
+      });
+      it('should not mute user who is already muted forever (409 Conflict)', async () => {
+        await app
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken)
+          .expect(409);
+      });
+      it('should not mute user who is not in the room (404 Not Found)', async () => {
+        await app
+          .muteUser(_publicRoom.id, notMember.id, owner.accessToken, duration)
+          .expect(404);
+        await app
+          .muteUser(_publicRoom.id, notMember.id, admin.accessToken, duration)
+          .expect(404);
+      });
+    });
+  });
 
-    it('should not mute user who is already muted', async () => {});
-    it('should not mute user who is not in the room', async () => {});
+  describe('GET /room/:id/mutes (Get muted users)', () => {
+    let _publicRoom: RoomEntity;
+    let mutedUser: UserEntityWithAccessToken;
+    beforeAll(async () => {
+      mutedUser = await app.createAndLoginUser({
+        name: 'MUTED USER',
+        email: 'muted@example.com',
+        password: '12345678',
+      });
+      _publicRoom = await setupRoom(constants.room.publicRoom);
+      await app.inviteRoom(_publicRoom.id, mutedUser.id, owner.accessToken);
+    });
+    afterAll(async () => {
+      await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+      await app.deleteUser(mutedUser.id, mutedUser.accessToken).expect(204);
+    });
+    describe('Owner', () => {
+      it('should get empty array when no muted users in the room (200 OK)', async () => {
+        const res = await app
+          .getMutedUsers(_publicRoom.id, owner.accessToken)
+          .expect(200);
+        expect(res.body).toBeInstanceOf(Array);
+        expect(res.body).toHaveLength(0);
+      });
+      it('should mute user (200 OK)', async () => {
+        await app
+          .muteUser(_publicRoom.id, mutedUser.id, owner.accessToken, 1)
+          .expect(200);
+      });
+      it('should get muted users (200 OK)', async () => {
+        const res = await app
+          .getMutedUsers(_publicRoom.id, owner.accessToken)
+          .expect(200);
+        expect(res.body).toBeInstanceOf(Array);
+        res.body.forEach(expectPublicUser);
+        const publicMutedUser = {
+          id: mutedUser.id,
+          name: mutedUser.name,
+          avatarURL: mutedUser.avatarURL,
+        };
+        expect(res.body).toContainEqual(publicMutedUser);
+      });
+    });
+    describe('Admin', () => {
+      it('should get muted users (200 OK)', async () => {
+        await app.getMutedUsers(_publicRoom.id, admin.accessToken).expect(200);
+      });
+    });
+    describe('Member', () => {
+      it('should not get muted users (403 Forbidden)', async () => {
+        await app.getMutedUsers(_publicRoom.id, member.accessToken).expect(403);
+      });
+    });
+    describe('Non-member', () => {
+      it('should not get muted users (403 Forbidden)', async () => {
+        await app
+          .getMutedUsers(_publicRoom.id, notMember.accessToken)
+          .expect(403);
+      });
+    });
+    describe('Owner and Admin', () => {
+      it('should get empty array after the duration (200 OK)', (done) => {
+        setTimeout(async () => {
+          const res = await app
+            .getMutedUsers(_publicRoom.id, owner.accessToken)
+            .expect(200);
+          expect(res.body).toBeInstanceOf(Array);
+          expect(res.body).toHaveLength(0);
+          const res2 = await app
+            .getMutedUsers(_publicRoom.id, admin.accessToken)
+            .expect(200);
+          expect(res2.body).toBeInstanceOf(Array);
+          expect(res2.body).toHaveLength(0);
+          done();
+        }, 2000);
+      });
+    });
   });
 
   describe('DELETE /room/:id/mutes/:userId (Unmute user)', () => {
-    it('owner should unmute anyone in the room', async () => {});
-    it('admin should unmute admin/member', async () => {});
-    it('member should not unmute anyone', async () => {});
-    it('notMember should not unmute anyone', async () => {});
-
-    it('unmuted user should be able to speak', async () => {});
+    describe('Owner', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken, 10)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, 10)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+      });
+      it('should unmute anyone in the room (200 OK)', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, admin.id, owner.accessToken)
+          .expect(200);
+        await app
+          .unmuteUser(_publicRoom.id, member.id, owner.accessToken)
+          .expect(200);
+      });
+      it('should not unmute non-member (404 Not Found)', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, notMember.id, owner.accessToken)
+          .expect(404);
+      });
+    });
+    describe('Admin', () => {
+      let _publicRoom: RoomEntity;
+      let _admin2: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        const dto = {
+          ...constants.user.admin,
+          name: 'admin2',
+          email: 'admin2@example.com',
+          password: '12345678',
+        };
+        _admin2 = await app.createAndLoginUser(dto);
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _admin2.id, admin.accessToken);
+        await app
+          .muteUser(_publicRoom.id, _admin2.id, admin.accessToken, 10)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, member.id, admin.accessToken, 10)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_admin2.id, _admin2.accessToken).expect(204);
+      });
+      it('should not unmute owner in the room (404 Not Found)', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, owner.id, admin.accessToken)
+          .expect(404);
+      });
+      it('should unmute admin/member (200 OK)', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, _admin2.id, admin.accessToken)
+          .expect(200);
+        await app
+          .unmuteUser(_publicRoom.id, member.id, admin.accessToken)
+          .expect(200);
+      });
+      it('should not unmute non-member (404 Not Found)', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, notMember.id, admin.accessToken)
+          .expect(404);
+      });
+    });
+    describe('Member', () => {
+      let _publicRoom: RoomEntity;
+      let _member2: UserEntityWithAccessToken;
+      beforeAll(async () => {
+        const dto = {
+          ...constants.user.member,
+          name: 'member3',
+          email: 'member3@example.com',
+          password: '12345678',
+        };
+        _member2 = await app.createAndLoginUser(dto);
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app.inviteRoom(_publicRoom.id, _member2.id, admin.accessToken);
+        await app
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken, 10)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, _member2.id, owner.accessToken, 10)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+        await app.deleteUser(_member2.id, _member2.accessToken).expect(204);
+      });
+      it('should not unmute anyone (403 Forbidden)', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, owner.id, member.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, admin.id, member.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, _member2.id, member.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, notMember.id, member.accessToken)
+          .expect(403);
+      });
+    });
+    describe('Non-member', () => {
+      let _publicRoom: RoomEntity;
+      beforeAll(async () => {
+        _publicRoom = await setupRoom(constants.room.publicRoom);
+        await app
+          .muteUser(_publicRoom.id, admin.id, owner.accessToken, 10)
+          .expect(200);
+        await app
+          .muteUser(_publicRoom.id, member.id, owner.accessToken, 10)
+          .expect(200);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(_publicRoom.id, owner.accessToken).expect(204);
+      });
+      it('should not unmute anyone (403 Forbidden)', async () => {
+        await app
+          .unmuteUser(_publicRoom.id, owner.id, notMember.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, admin.id, notMember.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, member.id, notMember.accessToken)
+          .expect(403);
+        await app
+          .unmuteUser(_publicRoom.id, notMember.id, notMember.accessToken)
+          .expect(403);
+      });
+    });
   });
 });
