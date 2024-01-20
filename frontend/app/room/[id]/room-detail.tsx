@@ -1,4 +1,8 @@
-import { getBannedUsers, getBlockingUsers } from "@/app/lib/actions";
+import {
+  getBannedUsers,
+  getBlockingUsers,
+  getMutedUsers,
+} from "@/app/lib/actions";
 import type {
   PublicUserEntity,
   RoomEntity,
@@ -24,6 +28,7 @@ export default async function RoomDetail({ room, users, allUsers }: Props) {
   }
   const bannedUsers = (await getBannedUsers(room.id)) ?? [];
   const blockingUsers = (await getBlockingUsers()) ?? [];
+  const mutedUsers = (await getMutedUsers(room.id)) ?? [];
   return (
     <div className="overflow-y-auto shrink-0 basis-36 pb-4 flex flex-col gap-2">
       {room.accessLevel !== "DIRECT" && (
@@ -43,6 +48,7 @@ export default async function RoomDetail({ room, users, allUsers }: Props) {
             user={user}
             me={me}
             blockingUsers={blockingUsers}
+            mutedUsers={mutedUsers}
             key={user.userId}
           />
         ))}

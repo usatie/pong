@@ -5,6 +5,8 @@ import {
   kickUserOnRoom,
   unblockUser,
   updateRoomUser,
+  muteUser,
+  unmuteUser,
 } from "@/app/lib/actions";
 import type {
   PublicUserEntity,
@@ -18,6 +20,9 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
 } from "@/components/ui/context-menu";
 import { chatSocket as socket } from "@/socket";
 import { useRouter } from "next/navigation";
@@ -50,17 +55,22 @@ export default function SidebarItem({
   user,
   me,
   blockingUsers,
+  mutedUsers,
 }: {
   room: RoomEntity;
   user: UserOnRoomEntity;
   me: UserOnRoomEntity;
   blockingUsers: PublicUserEntity[];
+  mutedUsers: PublicUserEntity[];
 }) {
   const router = useRouter();
   const [isBlocked, setIsBlocked] = useState(
     blockingUsers.some((u: PublicUserEntity) => u.id === user.userId),
   );
   const [isKicked, setIsKicked] = useState(false);
+  const [isMuted, setIsMuted] = useState(
+    mutedUsers?.some((u: PublicUserEntity) => u.id === user.userId),
+  );
   useEffect(() => {
     const handleLeftEvent = (data: LeaveEvent) => {
       if (Number(data.userId) === me.userId) {
@@ -101,6 +111,18 @@ export default function SidebarItem({
       setIsBlocked(false);
     }
   };
+  const mute = async (duration?: number) => {
+    const res = await muteUser(room.id, user.userId, duration);
+    if (res === "Success") {
+      setIsMuted(true);
+    }
+  };
+  const unmute = async () => {
+    const res = await unmuteUser(room.id, user.userId);
+    if (res === "Success") {
+      setIsMuted(false);
+    }
+  };
   const kick = () => kickUserOnRoom(room.id, user.userId);
   const updateUserRole = isUserAdmin
     ? () => updateRoomUser("MEMBER", room.id, user.userId)
@@ -130,7 +152,44 @@ export default function SidebarItem({
                 </ContextMenuItem>
                 {isMeAdminOrOwner && !isUserOwner && (
                   <>
-                    <ContextMenuItem disabled={isUserOwner} onSelect={kick}>
+                    {!isMuted && (
+                      <ContextMenuSub>
+                        <ContextMenuSubTrigger>Mute</ContextMenuSubTrigger>
+                        <ContextMenuSubContent className="w-46">
+                          <ContextMenuItem onSelect={() => mute(60)}>
+                            For 5 minutes
+                          </ContextMenuItem>
+                          <ContextMenuItem onSelect={() => mute(15 * 60)}>
+                            For 15 minutes
+                          </ContextMenuItem>
+                          <ContextMenuItem onSelect={() => mute(60 * 60)}>
+                            For 1 Hour
+                          </ContextMenuItem>
+                          <ContextMenuItem onSelect={() => mute(180 * 60)}>
+                            For 3 Hours
+                          </ContextMenuItem>
+                          <ContextMenuItem onSelect={() => mute(480 * 60)}>
+                            For 8 Hours
+                          </ContextMenuItem>
+                          <ContextMenuItem onSelect={() => mute(1440 * 60)}>
+                            For 24 Hours
+                          </ContextMenuItem>
+                          <ContextMenuItem onSelect={() => mute()}>
+                            Indefinite
+                          </ContextMenuItem>
+                        </ContextMenuSubContent>
+                      </ContextMenuSub>
+                    )}
+                    {isMuted && (
+                      <ContextMenuItem onSelect={unmute}>
+                        Unmute
+                      </ContextMenuItem>
+                    )}
+                    <ContextMenuItem
+                      className="text-primary"
+                      disabled={isUserOwner}
+                      onSelect={kick}
+                    >
                       Kick
                     </ContextMenuItem>
                     <ContextMenuItem onSelect={updateUserRole}>
