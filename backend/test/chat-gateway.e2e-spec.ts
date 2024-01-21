@@ -1078,11 +1078,11 @@ describe('ChatGateway and ChatController (e2e)', () => {
         invited = userAndSockets[1];
         notInvited = userAndSockets[2];
         ctx1 = new Promise<any>((resolve) =>
-          invited.ws.on('invitePong', (data) => resolve(data)),
+          invited.ws.on('invite-pong', (data) => resolve(data)),
         );
-        notInvited.ws.on('invitePong', mockCallback);
+        notInvited.ws.on('invite-pong', mockCallback);
 
-        invite.ws.emit('invitePong', {
+        invite.ws.emit('invite-pong', {
           userId: invited.user.id,
         });
         ctx1.then((data) => {

@@ -68,7 +68,7 @@ export class ChatGateway {
     );
   }
 
-  @SubscribeMessage('invitePong')
+  @SubscribeMessage('invite-pong')
   async handleInvitePong(
     @MessageBody() data: { userId: number },
     @ConnectedSocket() client: Socket,
@@ -80,7 +80,7 @@ export class ChatGateway {
     } else {
       this.server
         .to(invitedUserWsId)
-        .emit('invitePong', { userId: inviteUser.id });
+        .emit('invite-pong', { userId: inviteUser.id });
     }
   }
 
