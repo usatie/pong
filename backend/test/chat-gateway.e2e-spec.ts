@@ -1054,7 +1054,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     let userAndSockets: UserAndSocket[];
 
     beforeAll(() => {
-      const users = [user1, user2, mutedUser1];
+      const users = [user1, user2, mutedUser1, kickedUser1];
       userAndSockets = users.map((user) => ({
         user,
         ws: io('ws://localhost:3000/chat', {
@@ -1064,6 +1064,11 @@ describe('ChatGateway and ChatController (e2e)', () => {
     });
     afterAll(() => {
       userAndSockets.map((userAndSocket) => userAndSocket.ws.close());
+    });
+    afterEach(() => {
+      userAndSockets.map((userAndSocket) =>
+        userAndSocket.ws.removeAllListeners(),
+      );
     });
     describe('invite a user', () => {
       let invite: UserAndSocket;
@@ -1099,6 +1104,146 @@ describe('ChatGateway and ChatController (e2e)', () => {
             resolve();
           }, 1000),
         ));
+    });
+    describe('approve invite', () => {
+      // TODO: invite する前に approve 送られるケース
+      // TODO: 複数のuser から invite されるケース
+
+      describe('success case', () => {
+        let PromiseToMatchByInviter: Promise<any>;
+        let PromiseToMatchByInvited: Promise<any>;
+        let roomId;
+        const mockCallback1 = jest.fn();
+        beforeAll(() => {
+          const inviter = userAndSockets[0];
+          const invitee = userAndSockets[1];
+          const notInvited1 = userAndSockets[2];
+
+          const promiseToInvite = new Promise<any>((resolve) =>
+            invitee.ws.on('invite-pong', (data) => resolve(data)),
+          );
+          PromiseToMatchByInviter = new Promise<any>((resolve) =>
+            inviter.ws.on('match-pong', (data) => resolve(data)),
+          );
+          PromiseToMatchByInvited = new Promise<any>((resolve) =>
+            invitee.ws.on('match-pong', (data) => resolve(data)),
+          );
+
+          notInvited1.ws.on('invite-pong', mockCallback1);
+          notInvited1.ws.on('approve-pong', mockCallback1);
+          notInvited1.ws.on('match-pong', mockCallback1);
+
+          inviter.ws.emit('invite-pong', {
+            userId: invitee.user.id,
+          });
+          return promiseToInvite.then((data) => {
+            invitee.ws.emit('approve-pong', {
+              userId: data.userId,
+            });
+          });
+        });
+        it("invite user should receive room's id", () =>
+          PromiseToMatchByInviter.then((data) => {
+            expect(data).toHaveProperty('roomId');
+            roomId = data.roomId;
+          }));
+        it("approve user should receive room's id", () =>
+          PromiseToMatchByInvited.then((data) => {
+            expect(data).toHaveProperty('roomId');
+            expect(data.roomId).toEqual(roomId);
+          }));
+        it('unrelated user should not receive any messages', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback1).not.toBeCalled();
+              resolve();
+            }, 1000),
+          ));
+      });
+      describe('success case', () => {
+        let PromiseToMatchByInviter: Promise<any>;
+        let PromiseToMatchByInvited: Promise<any>;
+        let roomId;
+        const mockCallback1 = jest.fn();
+        beforeAll(() => {
+          const inviter = userAndSockets[0];
+          const invitee = userAndSockets[1];
+          const notInvited1 = userAndSockets[2];
+
+          const promiseToInvite = new Promise<any>((resolve) =>
+            invitee.ws.on('invite-pong', (data) => resolve(data)),
+          );
+          PromiseToMatchByInviter = new Promise<any>((resolve) =>
+            inviter.ws.on('match-pong', (data) => resolve(data)),
+          );
+          PromiseToMatchByInvited = new Promise<any>((resolve) =>
+            invitee.ws.on('match-pong', (data) => resolve(data)),
+          );
+
+          notInvited1.ws.on('invite-pong', mockCallback1);
+          notInvited1.ws.on('approve-pong', mockCallback1);
+          notInvited1.ws.on('match-pong', mockCallback1);
+
+          inviter.ws.emit('invite-pong', {
+            userId: invitee.user.id,
+          });
+          return promiseToInvite.then((data) => {
+            invitee.ws.emit('approve-pong', {
+              userId: data.userId,
+            });
+          });
+        });
+        it("invite user should receive room's id", () =>
+          PromiseToMatchByInviter.then((data) => {
+            expect(data).toHaveProperty('roomId');
+            roomId = data.roomId;
+          }));
+        it("approve user should receive room's id", () =>
+          PromiseToMatchByInvited.then((data) => {
+            expect(data).toHaveProperty('roomId');
+            expect(data.roomId).toEqual(roomId);
+          }));
+        it('unrelated user should not receive any messages', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback1).not.toBeCalled();
+              resolve();
+            }, 1000),
+          ));
+      });
+      describe('failure case', () => {
+        const mockCallback1 = jest.fn();
+        const mockCallback2 = jest.fn();
+
+        beforeAll(() => {
+          const emitter = userAndSockets[0];
+          const listener = userAndSockets[1];
+
+          emitter.ws.on('invite-pong', mockCallback1);
+          emitter.ws.on('approve-pong', mockCallback1);
+          emitter.ws.on('match-pong', mockCallback1);
+
+          listener.ws.on('invite-pong', mockCallback2);
+          listener.ws.on('approve-pong', mockCallback2);
+          listener.ws.on('match-pong', mockCallback2);
+
+          emitter.ws.emit('approve-pong', {
+            userId: listener.user.id,
+          });
+        });
+        it(
+          'user should not receive approve message from not invite user',
+          () =>
+            new Promise<void>((resolve) =>
+              setTimeout(() => {
+                expect(mockCallback1).not.toBeCalled();
+                expect(mockCallback2).not.toBeCalled();
+                resolve();
+              }, 1000),
+            ),
+          1300,
+        );
+      });
     });
   });
 });

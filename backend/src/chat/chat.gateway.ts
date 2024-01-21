@@ -13,6 +13,7 @@ import { ChatService } from './chat.service';
 import { MuteService } from 'src/room/mute/mute.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
+import { v4 } from 'uuid';
 
 @WebSocketGateway({
   cors: {
@@ -81,6 +82,28 @@ export class ChatGateway {
       this.server
         .to(invitedUserWsId)
         .emit('invite-pong', { userId: inviteUser.id });
+      this.chatService.addInvite(inviteUser.id, data.userId);
+    }
+  }
+
+  @SubscribeMessage('approve-pong')
+  async handleApprovePong(
+    @MessageBody() data: { userId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const approvedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
+    if (!approvedUserWsId) {
+      return;
+    } else {
+      if (
+        this.chatService.getInvite(data.userId) !==
+        this.chatService.getUserId(client)
+      )
+        return;
+      const emitData = { roomId: v4() };
+      this.server.to(client.id).emit('match-pong', emitData);
+      this.server.to(approvedUserWsId).emit('match-pong', emitData);
+      this.chatService.removeInvite(data.userId);
     }
   }
 

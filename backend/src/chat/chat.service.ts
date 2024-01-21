@@ -25,6 +25,8 @@ export class ChatService {
   // Map<User.id, Socket>
   private clients = new Map<User['id'], Socket>();
   private users = new Map<Socket['id'], User>();
+  // key: inviter, value: invitee
+  private invite = new Map<User['id'], User['id']>();
 
   getUser(client: Socket) {
     return this.users.get(client.id);
@@ -53,6 +55,18 @@ export class ChatService {
       this.clients.delete(user.id);
       this.users.delete(client.id);
     }
+  }
+
+  addInvite(inviterId: number, inviteeId: number) {
+    this.invite.set(inviterId, inviteeId);
+  }
+
+  getInvite(inviterId: number) {
+    return this.invite.get(inviterId);
+  }
+
+  removeInvite(inviterId: number) {
+    this.invite.delete(inviterId);
   }
 
   addUserToRoom(roomId: number, userId: number) {
