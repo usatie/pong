@@ -11,7 +11,6 @@ import * as bcrypt from 'bcrypt';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserEntity } from 'src/user/entities/user.entity';
 import { jwtConstants } from './auth.module';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
@@ -29,6 +28,12 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundException(`No user found for email: ${email}`);
+    }
+
+    if (user.oauthEnabled) {
+      throw new UnauthorizedException(
+        'This account is linked to an oauth provider',
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -135,22 +140,24 @@ export class AuthService {
     });
   };
 
-  signupWithOauth42 = (code: string): Promise<UserEntity> =>
+  signupWithOauth42 = (code: string): Promise<User> =>
     this.getAccessTokenWith42({
       code,
       redirect_uri: '/auth/signup/oauth2/42/callback',
     }).then(
       (access_token) =>
-        this.getUserInfoWith42({ access_token }).then(({ email, login }) =>
-          email == undefined || login == undefined
-            ? Promise.reject(new HttpException('Invalid user info', 400))
-            : this.prisma.user.create({
-                data: {
-                  email,
-                  password: bcrypt.hashSync(login, 10),
-                  name: login,
-                },
-              }),
+        this.getUserInfoWith42({ access_token }).then(
+          ({ email, login, image }) =>
+            email == undefined || login == undefined
+              ? Promise.reject(new HttpException('Invalid user info', 400))
+              : this.prisma.user.create({
+                  data: {
+                    email,
+                    name: login,
+                    avatarURL: image?.link,
+                    oauthEnabled: true,
+                  },
+                }),
         ),
       // // TODO : random password? without password?
       // // TODO : save access_token in db
@@ -170,6 +177,12 @@ export class AuthService {
             where: { email },
           })
           .then((user) => {
+            if (!user.oauthEnabled) {
+              throw new HttpException(
+                'This account is not linked to an oauth provider',
+                400,
+              );
+            }
             return {
               accessToken: this.jwtService.sign({
                 userId: user.id,

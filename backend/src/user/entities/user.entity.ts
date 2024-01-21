@@ -27,4 +27,7 @@ export class UserEntity implements User {
 
   @ApiProperty()
   twoFactorEnabled: boolean;
+
+  @Exclude()
+  oauthEnabled: boolean;
 }
