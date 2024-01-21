@@ -1,6 +1,8 @@
 import type { MessageEvent } from "@/app/lib/dtos";
 import { Avatar } from "@/app/ui/user/avatar";
 import { Stack } from "@/components/layout/stack";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
+import UserTooltip from "../user/user-tool-tip";
 
 export function MessageItem({
   message,
@@ -15,7 +17,9 @@ export function MessageItem({
     <div className="flex gap-4 group hover:opacity-60">
       {/* Left Side */}
       {withAvatar && (
-        <Avatar avatarURL={message.user.avatarURL} size="medium" />
+        <TooltipProvider>
+          <UserTooltip user={message.user} avatarSize="medium"></UserTooltip>
+        </TooltipProvider>
       )}
       {!withAvatar && (
         <div className="group-hover:text-muted-foreground flex-none text-background text-xs w-10 text-center">
