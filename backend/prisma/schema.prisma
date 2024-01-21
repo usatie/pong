@@ -14,7 +14,7 @@ model User {
   id        Int     @id @default(autoincrement())
   email     String  @unique
   name      String  @unique
-  password  String
+  password  String?
   avatarURL String?
 
   // Chat
@@ -43,6 +43,9 @@ model User {
   Message          Message[]
   BannedRooms      BanUserOnRoom[]
   MutedRooms       MuteUserOnRoom[]
+
+  // oauth
+  oauthEnabled Boolean @default(false)
 }
 
 model Room {
