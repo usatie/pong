@@ -27,4 +27,7 @@ export class PublicUserEntity implements User {
 
   @Exclude()
   twoFactorEnabled: boolean;
+
+  @Exclude()
+  oauthEnabled: boolean;
 }

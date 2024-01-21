@@ -47,7 +47,8 @@ export class AuthController {
 
   @Get('signup/oauth2/42/callback')
   @ApiOkResponse({ type: AuthEntity })
-  signupWithOauth42(@Query('code') code: string) {
+  @Redirect('/login')
+  async signupWithOauth42(@Query('code') code: string) {
     return this.authService.signupWithOauth42(code);
   }
 

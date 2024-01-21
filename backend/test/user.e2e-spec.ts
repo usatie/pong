@@ -76,6 +76,15 @@ describe('UserController (e2e)', () => {
       };
       return app.createUser(dto).expect(400);
     });
+
+    it('POST /user with empty password should return 400 Bad Request', () => {
+      const dto = {
+        name: constants.user.test.name,
+        email: constants.user.test.email,
+        password: '',
+      };
+      return app.createUser(dto).expect(400);
+    });
   });
 
   describe('Invalid authentication', () => {
