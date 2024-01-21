@@ -68,6 +68,22 @@ export class ChatGateway {
     );
   }
 
+  @SubscribeMessage('invitePong')
+  async handleInvitePong(
+    @MessageBody() data: { userId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const inviteUser = this.chatService.getUser(client);
+    const invitedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
+    if (!invitedUserWsId) {
+      return;
+    } else {
+      this.server
+        .to(invitedUserWsId)
+        .emit('invitePong', { userId: inviteUser.id });
+    }
+  }
+
   @OnEvent('room.leave', { async: true })
   async handleLeave(event: RoomLeftEvent) {
     this.server.in(event.roomId.toString()).emit('leave', event);

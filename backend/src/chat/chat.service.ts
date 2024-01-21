@@ -30,6 +30,10 @@ export class ChatService {
     return this.users.get(client.id);
   }
 
+  getWsFromUserId(userId: number): Socket | undefined {
+    return this.clients.get(userId);
+  }
+
   getUserId(client: Socket) {
     const user = this.users.get(client.id);
     if (user) {

@@ -1046,4 +1046,59 @@ describe('ChatGateway and ChatController (e2e)', () => {
   describe('[joinDM]', () => {
     // TODO
   });
+  describe('invite pong game', () => {
+    type UserAndSocket = {
+      user: any;
+      ws: Socket;
+    };
+    let userAndSockets: UserAndSocket[];
+
+    beforeAll(() => {
+      const users = [user1, user2, mutedUser1];
+      userAndSockets = users.map((user) => ({
+        user,
+        ws: io('ws://localhost:3000/chat', {
+          extraHeaders: { cookie: 'token=' + user.accessToken },
+        }),
+      }));
+    });
+    afterAll(() => {
+      userAndSockets.map((userAndSocket) => userAndSocket.ws.close());
+    });
+    describe('invite a user', () => {
+      let invite: UserAndSocket;
+      let invited: UserAndSocket;
+      let notInvited: UserAndSocket;
+
+      let ctx1: Promise<any>;
+      const mockCallback = jest.fn();
+
+      beforeAll(() => {
+        invite = userAndSockets[0];
+        invited = userAndSockets[1];
+        notInvited = userAndSockets[2];
+        ctx1 = new Promise<any>((resolve) =>
+          invited.ws.on('invitePong', (data) => resolve(data)),
+        );
+        notInvited.ws.on('invitePong', mockCallback);
+
+        invite.ws.emit('invitePong', {
+          userId: invited.user.id,
+        });
+        ctx1.then((data) => {
+          expect(data).toEqual({
+            userId: invite.user.id,
+          });
+        });
+      });
+      it('user who is invited should receive invite message', () => ctx1);
+      it("user who isn't invited should not receive invite message", () =>
+        new Promise<void>((resolve) =>
+          setTimeout(() => {
+            expect(mockCallback).not.toBeCalled();
+            resolve();
+          }, 1000),
+        ));
+    });
+  });
 });
