@@ -54,6 +54,7 @@ export class ChatService {
     if (user) {
       this.clients.delete(user.id);
       this.users.delete(client.id);
+      this.removeInvite(user.id);
     }
   }
 
