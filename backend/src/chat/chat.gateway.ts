@@ -79,11 +79,21 @@ export class ChatGateway {
     if (!invitedUserWsId) {
       return;
     } else {
+      const blockings = await this.chatService.getUsersBlockedBy(data.userId);
+      if (blockings.some((user) => user.id === inviteUser.id)) return;
+      const blocked = await this.chatService.getUsersBlockedBy(inviteUser.id);
+      if (blocked.some((user) => user.id === data.userId)) return;
       this.server
         .to(invitedUserWsId)
         .emit('invite-pong', { userId: inviteUser.id });
       this.chatService.addInvite(inviteUser.id, data.userId);
     }
+  }
+
+  @SubscribeMessage('invite-cancel-pong')
+  handleInviteCancelPong(@ConnectedSocket() client: Socket) {
+    const inviteUser = this.chatService.getUser(client);
+    this.chatService.removeInvite(inviteUser.id);
   }
 
   @SubscribeMessage('approve-pong')

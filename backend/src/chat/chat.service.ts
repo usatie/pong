@@ -77,6 +77,15 @@ export class ChatService {
     }
   }
 
+  getUsersBlockedBy(userId: number) {
+    return this.prisma.user
+      .findUniqueOrThrow({
+        where: { id: userId },
+        include: { blocking: true },
+      })
+      .then((user) => user.blocking);
+  }
+
   @OnEvent('room.created', { async: true })
   async handleRoomCreatedEvent(event: RoomCreatedEvent) {
     await this.addUserToRoom(event.roomId, event.userId);
