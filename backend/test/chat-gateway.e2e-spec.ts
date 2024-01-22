@@ -1139,6 +1139,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           ));
       });
     });
+    describe('approve invite', () => {
       describe('success case', () => {
         let PromiseToMatchByInviter: Promise<any>;
         let PromiseToMatchByInvited: Promise<any>;
@@ -1210,18 +1211,53 @@ describe('ChatGateway and ChatController (e2e)', () => {
             userId: listener.user.id,
           });
         });
-        it(
-          'user should not receive approve message from not invite user',
-          () =>
-            new Promise<void>((resolve) =>
-              setTimeout(() => {
-                expect(mockCallback1).not.toBeCalled();
-                expect(mockCallback2).not.toBeCalled();
-                resolve();
-              }, 1000),
-            ),
-          1300,
-        );
+        // TODO: 複数のuser から invite されるケース
+        it('user should not receive approve message from not invite user', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback1).not.toBeCalled();
+              expect(mockCallback2).not.toBeCalled();
+              resolve();
+            }, 1000),
+          ));
+      });
+      describe('invite -> cancel -> approve: dose not match', () => {
+        const mockToMatchByEmitter = jest.fn();
+        const mockToMatchByListener = jest.fn();
+
+        beforeAll(() => {
+          const emitter = userAndSockets[0];
+          const listener = userAndSockets[1];
+
+          emitter.ws.on('match-pong', mockToMatchByEmitter);
+
+          const PromiseToInvite = new Promise<any>((resolve) =>
+            listener.ws.on('invite-pong', (data) => resolve(data)),
+          );
+          listener.ws.on('match-pong', mockToMatchByListener);
+
+          emitter.ws.emit('invite-pong', {
+            userId: listener.user.id,
+          });
+          return PromiseToInvite.then((data) => {
+            emitter.ws.emit('invite-cancel-pong', {
+              userId: data.userId,
+            });
+            setTimeout(() => {
+              listener.ws.emit('approve-pong', {
+                userId: data.userId,
+              });
+            }, 100);
+          });
+        });
+        it('user should not receive match message from canceled invite user', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockToMatchByEmitter).not.toHaveBeenCalled();
+              expect(mockToMatchByListener).not.toHaveBeenCalled();
+              resolve();
+            }, 1000),
+          ));
       });
     });
   });
