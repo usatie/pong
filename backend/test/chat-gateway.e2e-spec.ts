@@ -1109,6 +1109,45 @@ describe('ChatGateway and ChatController (e2e)', () => {
             }, 1000),
           ));
       });
+      // TODO: block してるuser から invite されるケース
+      describe('failure case', () => {
+        let invitee;
+        let blocked;
+        let mockCallback: jest.Mock<any, any, any>;
+
+        beforeAll(async () => {
+          mockCallback = jest.fn();
+          invitee = userAndSockets[0];
+          blocked = userAndSockets[1];
+          await app
+            .blockUser(
+              invitee.user.id,
+              blocked.user.id,
+              invitee.user.accessToken,
+            )
+            .expect(200);
+          invitee.ws.on('invite-pong', mockCallback);
+          blocked.ws.emit('invite-pong', {
+            userId: invitee.user.id,
+          });
+        });
+        afterAll(async () => {
+          await app
+            .unblockUser(
+              invitee.user.id,
+              blocked.user.id,
+              invitee.user.accessToken,
+            )
+            .expect(200);
+        });
+        it('user should not receive invite message from blocking user', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(async () => {
+              expect(mockCallback).not.toHaveBeenCalled();
+              resolve();
+            }, 500),
+          ));
+      });
       describe('invite -> cancel -> invite', () => {
         let invitee;
         let inviter;
