@@ -1109,33 +1109,36 @@ describe('ChatGateway and ChatController (e2e)', () => {
             }, 1000),
           ));
       });
+      describe('invite -> cancel -> invite', () => {
+        let invitee;
+        let inviter;
+        let mockCallback;
+
+        beforeAll(() => {
+          mockCallback = jest.fn();
+          invitee = userAndSockets[0];
+          inviter = userAndSockets[1];
+
+          invitee.ws.on('invite-pong', mockCallback);
           inviter.ws.emit('invite-pong', {
             userId: invitee.user.id,
           });
-          return promiseToInvite.then((data) => {
-            invitee.ws.emit('approve-pong', {
-              userId: data.userId,
-            });
+          inviter.ws.emit('invite-cancel-pong', {
+            userId: invitee.user.id,
+          });
+          inviter.ws.emit('invite-pong', {
+            userId: invitee.user.id,
           });
         });
-        it("invite user should receive room's id", () =>
-          PromiseToMatchByInviter.then((data) => {
-            expect(data).toHaveProperty('roomId');
-            roomId = data.roomId;
-          }));
-        it("approve user should receive room's id", () =>
-          PromiseToMatchByInvited.then((data) => {
-            expect(data).toHaveProperty('roomId');
-            expect(data.roomId).toEqual(roomId);
-          }));
-        it('unrelated user should not receive any messages', () =>
+        it('user who is invited should receive invite message once per time', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
-              expect(mockCallback1).not.toBeCalled();
+              expect(mockCallback).toHaveBeenCalledTimes(2);
               resolve();
             }, 1000),
           ));
       });
+    });
       describe('success case', () => {
         let PromiseToMatchByInviter: Promise<any>;
         let PromiseToMatchByInvited: Promise<any>;
