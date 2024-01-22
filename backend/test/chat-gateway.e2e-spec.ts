@@ -1074,68 +1074,41 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
     });
     describe('invite a user', () => {
-      let invite: UserAndSocket;
-      let invited: UserAndSocket;
-      let notInvited: UserAndSocket;
+      describe('success case', () => {
+        let invite: UserAndSocket;
+        let invited: UserAndSocket;
+        let notInvited: UserAndSocket;
 
-      let ctx1: Promise<any>;
-      const mockCallback = jest.fn();
+        let ctx1: Promise<any>;
+        const mockCallback = jest.fn();
 
-      beforeAll(() => {
-        invite = userAndSockets[0];
-        invited = userAndSockets[1];
-        notInvited = userAndSockets[2];
-        ctx1 = new Promise<any>((resolve) =>
-          invited.ws.on('invite-pong', (data) => resolve(data)),
-        );
-        notInvited.ws.on('invite-pong', mockCallback);
+        beforeAll(() => {
+          invite = userAndSockets[0];
+          invited = userAndSockets[1];
+          notInvited = userAndSockets[2];
+          ctx1 = new Promise<any>((resolve) =>
+            invited.ws.on('invite-pong', (data) => resolve(data)),
+          );
+          notInvited.ws.on('invite-pong', mockCallback);
 
-        invite.ws.emit('invite-pong', {
-          userId: invited.user.id,
-        });
-        ctx1.then((data) => {
-          expect(data).toEqual({
-            userId: invite.user.id,
+          invite.ws.emit('invite-pong', {
+            userId: invited.user.id,
+          });
+          ctx1.then((data) => {
+            expect(data).toEqual({
+              userId: invite.user.id,
+            });
           });
         });
+        it('user who is invited should receive invite message', () => ctx1);
+        it("user who isn't invited should not receive invite message", () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback).not.toBeCalled();
+              resolve();
+            }, 1000),
+          ));
       });
-      it('user who is invited should receive invite message', () => ctx1);
-      it("user who isn't invited should not receive invite message", () =>
-        new Promise<void>((resolve) =>
-          setTimeout(() => {
-            expect(mockCallback).not.toBeCalled();
-            resolve();
-          }, 1000),
-        ));
-    });
-    describe('approve invite', () => {
-      // TODO: invite する前に approve 送られるケース
-      // TODO: 複数のuser から invite されるケース
-
-      describe('success case', () => {
-        let PromiseToMatchByInviter: Promise<any>;
-        let PromiseToMatchByInvited: Promise<any>;
-        let roomId;
-        const mockCallback1 = jest.fn();
-        beforeAll(() => {
-          const inviter = userAndSockets[0];
-          const invitee = userAndSockets[1];
-          const notInvited1 = userAndSockets[2];
-
-          const promiseToInvite = new Promise<any>((resolve) =>
-            invitee.ws.on('invite-pong', (data) => resolve(data)),
-          );
-          PromiseToMatchByInviter = new Promise<any>((resolve) =>
-            inviter.ws.on('match-pong', (data) => resolve(data)),
-          );
-          PromiseToMatchByInvited = new Promise<any>((resolve) =>
-            invitee.ws.on('match-pong', (data) => resolve(data)),
-          );
-
-          notInvited1.ws.on('invite-pong', mockCallback1);
-          notInvited1.ws.on('approve-pong', mockCallback1);
-          notInvited1.ws.on('match-pong', mockCallback1);
-
           inviter.ws.emit('invite-pong', {
             userId: invitee.user.id,
           });
