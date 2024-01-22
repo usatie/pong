@@ -1063,12 +1063,15 @@ describe('ChatGateway and ChatController (e2e)', () => {
       }));
     });
     afterAll(() => {
-      userAndSockets.map((userAndSocket) => userAndSocket.ws.close());
+      userAndSockets.map((userAndSocket) => {
+        userAndSocket.ws.close();
+      });
     });
     afterEach(() => {
-      userAndSockets.map((userAndSocket) =>
-        userAndSocket.ws.removeAllListeners(),
-      );
+      userAndSockets.map((us) => {
+        us.ws.disconnect();
+        us.ws.connect();
+      });
     });
     describe('invite a user', () => {
       let invite: UserAndSocket;
