@@ -63,10 +63,9 @@ export class ChatGateway {
     const room = this.server
       .to(data.roomId.toString())
       .except('block' + data.userId);
-    room.emit(
-      'message',
-      new MessageEntity(data, this.chatService.getUser(client)),
-    );
+    const msg = new MessageEntity(data, this.chatService.getUser(client));
+    console.log('msg: ', msg);
+    room.emit('message', msg);
   }
 
   @SubscribeMessage('invite-pong')
@@ -96,9 +95,7 @@ export class ChatGateway {
     const invitee = this.chatService.getInvite(inviteUser.id);
     const inviteeWsId = this.chatService.getWsFromUserId(invitee)?.id;
     this.chatService.removeInvite(inviteUser.id);
-    this.server
-      .to(inviteeWsId)
-      .emit('invite-cancel-pong', { ...new PublicUserEntity(inviteUser) });
+    this.server.to(inviteeWsId).emit('invite-cancel-pong', inviteUser);
   }
 
   @SubscribeMessage('approve-pong')

@@ -12,10 +12,10 @@ export class PublicUserEntity {
 }
 
 export class MessageEntity {
-  constructor(partial: Partial<MessageEntity>, user: User) {
+  constructor(partial: Partial<MessageEntity>, user: PublicUserEntity) {
     this.content = partial.content;
     this.roomId = partial.roomId;
-    this.user = new PublicUserEntity(user);
+    this.user = user;
   }
   content: string;
   roomId: number;
