@@ -121,6 +121,29 @@ export class ChatGateway {
     }
   }
 
+  @SubscribeMessage('deny-pong')
+  handleDenyPong(
+    @MessageBody() data: { userId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const deniedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
+    if (!deniedUserWsId) {
+      return;
+    } else {
+      if (
+        this.chatService.getInvite(data.userId) !==
+        this.chatService.getUserId(client)
+      ) {
+        this.server
+          .to(client.id)
+          .emit('error-pong', 'No pending invite found.');
+        return;
+      }
+      this.server.to(deniedUserWsId).emit('deny-pong');
+      this.chatService.removeInvite(data.userId);
+    }
+  }
+
   @OnEvent('room.leave', { async: true })
   async handleLeave(event: RoomLeftEvent) {
     this.server.in(event.roomId.toString()).emit('leave', event);
