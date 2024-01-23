@@ -20,7 +20,6 @@ services:
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
       JWT_SECRET: ${FRONTEND_JWT_SECRET}
       OAUTH_42_CLIENT_ID: ${OAUTH_42_CLIENT_ID}
-      OAUTH_REDIRECT_URI: ${OAUTH_REDIRECT_URI}
     depends_on:
       backend:
         condition: service_healthy
