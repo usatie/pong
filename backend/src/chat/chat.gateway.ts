@@ -12,7 +12,7 @@ import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { ChatService } from './chat.service';
 import { MuteService } from 'src/room/mute/mute.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { MessageEntity, PrivateUserEntity } from './entities/message.entity';
+import { MessageEntity, PublicUserEntity } from './entities/message.entity';
 import { v4 } from 'uuid';
 
 @WebSocketGateway({
@@ -98,7 +98,7 @@ export class ChatGateway {
     this.chatService.removeInvite(inviteUser.id);
     this.server
       .to(inviteeWsId)
-      .emit('invite-cancel-pong', { ...new PrivateUserEntity(inviteUser) });
+      .emit('invite-cancel-pong', { ...new PublicUserEntity(inviteUser) });
   }
 
   @SubscribeMessage('approve-pong')

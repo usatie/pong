@@ -70,10 +70,9 @@ export type MatchEvent = {
   roomId: string;
 };
 
-export type DenyEvent = {
-};
+export type DenyEvent = {};
 
-export type PrivateUserEntity = {
+export type PublicUserEntity = {
   id: number;
   name: string;
   avatarURL?: string;

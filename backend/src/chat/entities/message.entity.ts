@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 
-export class PrivateUserEntity {
-  constructor(partial: Partial<PrivateUserEntity>) {
+export class PublicUserEntity {
+  constructor(partial: Partial<PublicUserEntity>) {
     this.id = partial.id;
     this.name = partial.name;
     this.avatarURL = partial.avatarURL;
@@ -15,9 +15,9 @@ export class MessageEntity {
   constructor(partial: Partial<MessageEntity>, user: User) {
     this.content = partial.content;
     this.roomId = partial.roomId;
-    this.user = new PrivateUserEntity(user);
+    this.user = new PublicUserEntity(user);
   }
   content: string;
   roomId: number;
-  user: PrivateUserEntity;
+  user: PublicUserEntity;
 }

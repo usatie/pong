@@ -5,7 +5,13 @@ import { chatSocket } from "@/socket";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useAuthContext } from "./client-auth";
-import { DenyEvent, InviteEvent, MatchEvent, MessageEvent, PrivateUserEntity } from "./dtos";
+import {
+  DenyEvent,
+  InviteEvent,
+  MatchEvent,
+  MessageEvent,
+  PublicUserEntity,
+} from "./dtos";
 import { chatSocket as socket } from "@/socket";
 import { useRouter } from "next/navigation";
 
@@ -82,7 +88,7 @@ export default function SocketProvider() {
     });
   };
 
-  const showInviteCancelPongToast = (data: PrivateUserEntity) => {
+  const showInviteCancelPongToast = (data: PublicUserEntity) => {
     console.log(data);
     toast({
       title: `Invite canceled by ${data.name}`,
