@@ -31,6 +31,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     kickedUser1,
     bannedUser1,
     mutedUser1;
+  const waitTime = 1500;
 
   beforeAll(async () => {
     //app = await initializeApp();
@@ -307,7 +308,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           ws1.off('message');
           ws2.off('message');
           done();
-        }, 3000);
+        }, waitTime);
       });
 
       it('user1 and user2 block blockedUser2', async () => {
@@ -339,7 +340,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           ws1.off('message');
           ws2.off('message');
           done();
-        }, 3000);
+        }, waitTime);
       });
 
       it('user1 should get all messages except from blockedUser1 and blockedUser2 in the room', async () => {
@@ -558,7 +559,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           ws1.off('message');
           ws2.off('message');
           done();
-        }, 3000);
+        }, waitTime);
       });
 
       it('user1 should get all messages except from kickedUser1 in the room', async () => {
@@ -647,7 +648,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           expect(mockMessage).not.toBeCalled();
           ws5.off('message');
           done();
-        }, 3000);
+        }, waitTime);
       });
     });
 
@@ -678,7 +679,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           ws1.off('message');
           ws2.off('message');
           done();
-        }, 3000);
+        }, waitTime);
       });
 
       it('user1 should get all messages except from bannedUser1 in the room', async () => {
@@ -777,7 +778,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           expect(mockMessage).not.toBeCalled();
           ws6.off('message');
           done();
-        }, 3000);
+        }, waitTime);
       });
     });
   });
@@ -851,12 +852,12 @@ describe('ChatGateway and ChatController (e2e)', () => {
         ws5.off('message');
         ws6.off('message');
         done();
-      }, 3000);
+      }, waitTime);
     });
 
     let ctx6: Promise<void[]>;
     it('setup promises to recv messages from mutedUser1 after the duration', async () => {
-      await new Promise((r) => setTimeout(r, 4000));
+      await new Promise((r) => setTimeout(r, (waitTime * 4) / 3));
       const expected: MessageEntity = {
         user: {
           id: mutedUser1.id,
@@ -940,7 +941,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
         ws5.off('message');
         ws6.off('message');
         done();
-      }, 3000);
+      }, waitTime);
     });
 
     it('user1 unmutes mutedUser1', async () => {
@@ -1106,7 +1107,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
             setTimeout(() => {
               expect(mockCallback).not.toBeCalled();
               resolve();
-            }, 1000),
+            }, waitTime),
           ));
       });
       // TODO: block してるuser から invite されるケース
@@ -1145,7 +1146,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
             setTimeout(async () => {
               expect(mockCallback).not.toHaveBeenCalled();
               resolve();
-            }, 500),
+            }, waitTime),
           ));
       });
       describe('invite -> cancel -> invite', () => {
@@ -1174,7 +1175,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
             setTimeout(() => {
               expect(mockCallback).toHaveBeenCalledTimes(2);
               resolve();
-            }, 1000),
+            }, waitTime),
           ));
       });
     });
@@ -1227,7 +1228,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
             setTimeout(() => {
               expect(mockCallback1).not.toBeCalled();
               resolve();
-            }, 1000),
+            }, waitTime),
           ));
       });
       describe('failure case', () => {
@@ -1258,7 +1259,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
               expect(mockCallback1).not.toHaveBeenCalled();
               expect(mockCallback2).not.toHaveBeenCalled();
               resolve();
-            }, 1000),
+            }, waitTime),
           ));
       });
       describe('invite -> cancel -> approve: dose not match', () => {
@@ -1287,7 +1288,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
               listener.ws.emit('approve-pong', {
                 userId: data.userId,
               });
-            }, 100);
+            }, waitTime);
           });
         });
         it('user should not receive match message from canceled invite user', () =>
@@ -1296,7 +1297,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
               expect(mockToMatchByEmitter).not.toHaveBeenCalled();
               expect(mockToMatchByListener).not.toHaveBeenCalled();
               resolve();
-            }, 1000),
+            }, waitTime),
           ));
       });
     });
