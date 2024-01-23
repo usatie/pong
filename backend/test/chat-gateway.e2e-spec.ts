@@ -1300,5 +1300,73 @@ describe('ChatGateway and ChatController (e2e)', () => {
           ));
       });
     });
+    describe('deny invite', () => {
+      describe('success case', () => {
+        const mockCallback1 = jest.fn();
+        const mockCallback2 = jest.fn();
+        let ctxToDeny: Promise<any>;
+
+        beforeAll(() => {
+          const inviter = userAndSockets[0];
+          const invitee = userAndSockets[1];
+          const notInvited1 = userAndSockets[2];
+
+          notInvited1.ws.on('invite-pong', mockCallback1);
+          notInvited1.ws.on('deny-pong', mockCallback1);
+
+          const promiseToInvite = new Promise<any>((resolve) =>
+            invitee.ws.on('invite-pong', (data) => resolve(data)),
+          );
+          inviter.ws.emit('invite-pong', {
+            userId: invitee.user.id,
+          });
+          ctxToDeny = new Promise<any>((resolve) =>
+            inviter.ws.on('deny-pong', (data) => resolve(data)),
+          );
+          return promiseToInvite.then((data) => {
+            invitee.ws.emit('deny-pong', {
+              userId: data.userId,
+            });
+          });
+        });
+        it('invite user should receive an error', () => ctxToDeny);
+        it('unrelated user should not receive any messages', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback1).not.toHaveBeenCalled();
+              expect(mockCallback2).not.toHaveBeenCalled();
+              resolve();
+            }, waitTime),
+          ));
+      });
+      describe('failure case', () => {
+        const mockCallback1 = jest.fn();
+        const mockCallback2 = jest.fn();
+        let errorCtx: Promise<any>;
+
+        beforeAll(() => {
+          const emitter = userAndSockets[0];
+          const listener = userAndSockets[1];
+
+          listener.ws.on('error-pong', mockCallback2);
+          emitter.ws.emit('deny-pong', {
+            userId: listener.user.id,
+          });
+          errorCtx = new Promise<any>((resolve) =>
+            emitter.ws.on('error-pong', (data) => resolve(data)),
+          );
+        });
+        it('should receive an error when denying without an existing invite', () =>
+          errorCtx);
+        it('user should not receive deny message from not invite user', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback1).not.toHaveBeenCalled();
+              expect(mockCallback2).not.toHaveBeenCalled();
+              resolve();
+            }, waitTime),
+          ));
+      });
+    });
   });
 });
