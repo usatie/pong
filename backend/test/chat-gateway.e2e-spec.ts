@@ -31,7 +31,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     kickedUser1,
     bannedUser1,
     mutedUser1;
-  const waitTime = 1500;
+  const waitTime = 500;
 
   beforeAll(async () => {
     //app = await initializeApp();
@@ -810,9 +810,11 @@ describe('ChatGateway and ChatController (e2e)', () => {
       await app.enterRoom(room.id, mutedUser1.accessToken).expect(201);
     });
 
+    const muteTime = 1;
+
     it('user1 mutes mutedUser1', async () => {
       await app
-        .muteUser(room.id, mutedUser1.id, user1.accessToken, 3)
+        .muteUser(room.id, mutedUser1.id, user1.accessToken, muteTime)
         .expect(200);
     });
 
@@ -857,7 +859,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
     let ctx6: Promise<void[]>;
     it('setup promises to recv messages from mutedUser1 after the duration', async () => {
-      await new Promise((r) => setTimeout(r, (waitTime * 4) / 3));
+      await new Promise((r) => setTimeout(r, muteTime * 1000)); // Wait for mute duration
       const expected: MessageEntity = {
         user: {
           id: mutedUser1.id,
