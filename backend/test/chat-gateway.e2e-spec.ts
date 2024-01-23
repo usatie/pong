@@ -1332,7 +1332,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
             });
           });
         });
-        it('invite user should receive an error', () => ctxToDeny);
+        it('inviter should receive an deny message', () => ctxToDeny);
         it('unrelated user should not receive any messages', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
