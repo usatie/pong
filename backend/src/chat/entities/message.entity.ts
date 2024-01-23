@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
 
-class PrivateUserEntity {
+export class PrivateUserEntity {
   constructor(partial: Partial<PrivateUserEntity>) {
     this.id = partial.id;
     this.name = partial.name;

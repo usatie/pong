@@ -12,7 +12,7 @@ import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { ChatService } from './chat.service';
 import { MuteService } from 'src/room/mute/mute.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { MessageEntity } from './entities/message.entity';
+import { MessageEntity, PrivateUserEntity } from './entities/message.entity';
 import { v4 } from 'uuid';
 
 @WebSocketGateway({
@@ -93,7 +93,12 @@ export class ChatGateway {
   @SubscribeMessage('invite-cancel-pong')
   handleInviteCancelPong(@ConnectedSocket() client: Socket) {
     const inviteUser = this.chatService.getUser(client);
+    const invitee = this.chatService.getInvite(inviteUser.id);
+    const inviteeWsId = this.chatService.getWsFromUserId(invitee)?.id;
     this.chatService.removeInvite(inviteUser.id);
+    this.server
+      .to(inviteeWsId)
+      .emit('invite-cancel-pong', { ...new PrivateUserEntity(inviteUser) });
   }
 
   @SubscribeMessage('approve-pong')
