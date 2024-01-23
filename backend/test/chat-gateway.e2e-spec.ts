@@ -1250,7 +1250,8 @@ describe('ChatGateway and ChatController (e2e)', () => {
           });
         });
         // TODO: 複数のuser から invite されるケース
-        it('user should receive error message', () => errorCtx);
+        it('should receive an error when approving without an existing invite', () =>
+          errorCtx);
         it('user should not receive approve message from not invite user', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
