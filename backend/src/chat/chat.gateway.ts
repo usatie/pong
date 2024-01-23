@@ -12,7 +12,7 @@ import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { ChatService } from './chat.service';
 import { MuteService } from 'src/room/mute/mute.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { MessageEntity, PublicUserEntity } from './entities/message.entity';
+import { MessageEntity } from './entities/message.entity';
 import { v4 } from 'uuid';
 
 @WebSocketGateway({
@@ -63,9 +63,10 @@ export class ChatGateway {
     const room = this.server
       .to(data.roomId.toString())
       .except('block' + data.userId);
-    const msg = new MessageEntity(data, this.chatService.getUser(client));
-    console.log('msg: ', msg);
-    room.emit('message', msg);
+    room.emit(
+      'message',
+      new MessageEntity(data, this.chatService.getUser(client)),
+    );
   }
 
   @SubscribeMessage('invite-pong')
@@ -93,6 +94,10 @@ export class ChatGateway {
   handleInviteCancelPong(@ConnectedSocket() client: Socket) {
     const inviteUser = this.chatService.getUser(client);
     const invitee = this.chatService.getInvite(inviteUser.id);
+    if (!invitee) {
+      this.server.to(client.id).emit('error-pong', 'No pending invite found.');
+      return;
+    }
     const inviteeWsId = this.chatService.getWsFromUserId(invitee)?.id;
     this.chatService.removeInvite(inviteUser.id);
     this.server.to(inviteeWsId).emit('invite-cancel-pong', inviteUser);

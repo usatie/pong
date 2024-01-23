@@ -1,5 +1,3 @@
-import { User } from '@prisma/client';
-
 export class PublicUserEntity {
   constructor(partial: Partial<PublicUserEntity>) {
     this.id = partial.id;

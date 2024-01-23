@@ -65,11 +65,11 @@ export default function SidebarItem({
 }) {
   const router = useRouter();
   const [isBlocked, setIsBlocked] = useState(
-    blockingUsers.some((u: PublicUserEntity) => u.id === user.userId)
+    blockingUsers.some((u: PublicUserEntity) => u.id === user.userId),
   );
   const [isKicked, setIsKicked] = useState(false);
   const [isMuted, setIsMuted] = useState(
-    mutedUsers?.some((u: PublicUserEntity) => u.id === user.userId)
+    mutedUsers?.some((u: PublicUserEntity) => u.id === user.userId),
   );
   const [isInviting, setIsInviting] = useState(false);
   useEffect(() => {
