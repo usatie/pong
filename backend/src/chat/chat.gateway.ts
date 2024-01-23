@@ -109,7 +109,9 @@ export class ChatGateway {
         this.chatService.getInvite(data.userId) !==
         this.chatService.getUserId(client)
       ) {
-        client.emit('error-pong', 'No pending invite found.');
+        this.server
+          .to(client.id)
+          .emit('error-pong', 'No pending invite found.');
         return;
       }
       const emitData = { roomId: v4() };

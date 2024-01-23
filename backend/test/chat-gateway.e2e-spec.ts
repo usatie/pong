@@ -1241,7 +1241,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
           emitter.ws.on('match-pong', mockCallback1);
           errorCtx = new Promise<any>((resolve) =>
-            listener.ws.on('error-pong', (data) => resolve(data)),
+            emitter.ws.on('error-pong', (data) => resolve(data)),
           );
           listener.ws.on('match-pong', mockCallback2);
 
