@@ -93,7 +93,14 @@ export class ChatGateway {
   @SubscribeMessage('invite-cancel-pong')
   handleInviteCancelPong(@ConnectedSocket() client: Socket) {
     const inviteUser = this.chatService.getUser(client);
+    const invitee = this.chatService.getInvite(inviteUser.id);
+    if (!invitee) {
+      this.server.to(client.id).emit('error-pong', 'No pending invite found.');
+      return;
+    }
+    const inviteeWsId = this.chatService.getWsFromUserId(invitee)?.id;
     this.chatService.removeInvite(inviteUser.id);
+    this.server.to(inviteeWsId).emit('invite-cancel-pong', inviteUser);
   }
 
   @SubscribeMessage('approve-pong')

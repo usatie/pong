@@ -5,7 +5,7 @@ export default function SignUp() {
   return (
     <>
       <SignUpForm />
-      <a href="http://localhost:4242/api/auth/signup/oauth2/42">
+      <a href={`${process.env.NEXT_PUBLIC_API_URL}/auth/signup/oauth2/42`}>
         sign up with 42
       </a>
     </>
