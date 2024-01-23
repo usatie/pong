@@ -13,6 +13,7 @@ import { ChatService } from './chat.service';
 import { MuteService } from 'src/room/mute/mute.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
+import { v4 } from 'uuid';
 
 @WebSocketGateway({
   cors: {
@@ -66,6 +67,58 @@ export class ChatGateway {
       'message',
       new MessageEntity(data, this.chatService.getUser(client)),
     );
+  }
+
+  @SubscribeMessage('invite-pong')
+  async handleInvitePong(
+    @MessageBody() data: { userId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const inviteUser = this.chatService.getUser(client);
+    const invitedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
+    if (!invitedUserWsId) {
+      return;
+    } else {
+      const blockings = await this.chatService.getUsersBlockedBy(data.userId);
+      if (blockings.some((user) => user.id === inviteUser.id)) return;
+      const blocked = await this.chatService.getUsersBlockedBy(inviteUser.id);
+      if (blocked.some((user) => user.id === data.userId)) return;
+      this.server
+        .to(invitedUserWsId)
+        .emit('invite-pong', { userId: inviteUser.id });
+      this.chatService.addInvite(inviteUser.id, data.userId);
+    }
+  }
+
+  @SubscribeMessage('invite-cancel-pong')
+  handleInviteCancelPong(@ConnectedSocket() client: Socket) {
+    const inviteUser = this.chatService.getUser(client);
+    this.chatService.removeInvite(inviteUser.id);
+  }
+
+  @SubscribeMessage('approve-pong')
+  async handleApprovePong(
+    @MessageBody() data: { userId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const approvedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
+    if (!approvedUserWsId) {
+      return;
+    } else {
+      if (
+        this.chatService.getInvite(data.userId) !==
+        this.chatService.getUserId(client)
+      ) {
+        this.server
+          .to(client.id)
+          .emit('error-pong', 'No pending invite found.');
+        return;
+      }
+      const emitData = { roomId: v4() };
+      this.server.to(client.id).emit('match-pong', emitData);
+      this.server.to(approvedUserWsId).emit('match-pong', emitData);
+      this.chatService.removeInvite(data.userId);
+    }
   }
 
   @OnEvent('room.leave', { async: true })

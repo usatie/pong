@@ -1046,4 +1046,259 @@ describe('ChatGateway and ChatController (e2e)', () => {
   describe('[joinDM]', () => {
     // TODO
   });
+  describe('invite pong game', () => {
+    type UserAndSocket = {
+      user: any;
+      ws: Socket;
+    };
+    let userAndSockets: UserAndSocket[];
+
+    beforeAll(() => {
+      const users = [user1, user2, mutedUser1, kickedUser1];
+      userAndSockets = users.map((user) => ({
+        user,
+        ws: io('ws://localhost:3000/chat', {
+          extraHeaders: { cookie: 'token=' + user.accessToken },
+        }),
+      }));
+    });
+    afterAll(() => {
+      userAndSockets.map((userAndSocket) => {
+        userAndSocket.ws.close();
+      });
+    });
+    afterEach(() => {
+      userAndSockets.map((us) => {
+        us.ws.disconnect();
+        us.ws.connect();
+      });
+    });
+    describe('invite a user', () => {
+      describe('success case', () => {
+        let invite: UserAndSocket;
+        let invited: UserAndSocket;
+        let notInvited: UserAndSocket;
+
+        let ctx1: Promise<any>;
+        const mockCallback = jest.fn();
+
+        beforeAll(() => {
+          invite = userAndSockets[0];
+          invited = userAndSockets[1];
+          notInvited = userAndSockets[2];
+          ctx1 = new Promise<any>((resolve) =>
+            invited.ws.on('invite-pong', (data) => resolve(data)),
+          );
+          notInvited.ws.on('invite-pong', mockCallback);
+
+          invite.ws.emit('invite-pong', {
+            userId: invited.user.id,
+          });
+          ctx1.then((data) => {
+            expect(data).toEqual({
+              userId: invite.user.id,
+            });
+          });
+        });
+        it('user who is invited should receive invite message', () => ctx1);
+        it("user who isn't invited should not receive invite message", () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback).not.toBeCalled();
+              resolve();
+            }, 1000),
+          ));
+      });
+      // TODO: block してるuser から invite されるケース
+      describe('failure case', () => {
+        let invitee;
+        let blocked;
+        let mockCallback: jest.Mock<any, any, any>;
+
+        beforeAll(async () => {
+          mockCallback = jest.fn();
+          invitee = userAndSockets[0];
+          blocked = userAndSockets[1];
+          await app
+            .blockUser(
+              invitee.user.id,
+              blocked.user.id,
+              invitee.user.accessToken,
+            )
+            .expect(200);
+          invitee.ws.on('invite-pong', mockCallback);
+          blocked.ws.emit('invite-pong', {
+            userId: invitee.user.id,
+          });
+        });
+        afterAll(async () => {
+          await app
+            .unblockUser(
+              invitee.user.id,
+              blocked.user.id,
+              invitee.user.accessToken,
+            )
+            .expect(200);
+        });
+        it('user should not receive invite message from blocking user', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(async () => {
+              expect(mockCallback).not.toHaveBeenCalled();
+              resolve();
+            }, 500),
+          ));
+      });
+      describe('invite -> cancel -> invite', () => {
+        let invitee;
+        let inviter;
+        let mockCallback;
+
+        beforeAll(() => {
+          mockCallback = jest.fn();
+          invitee = userAndSockets[0];
+          inviter = userAndSockets[1];
+
+          invitee.ws.on('invite-pong', mockCallback);
+          inviter.ws.emit('invite-pong', {
+            userId: invitee.user.id,
+          });
+          inviter.ws.emit('invite-cancel-pong', {
+            userId: invitee.user.id,
+          });
+          inviter.ws.emit('invite-pong', {
+            userId: invitee.user.id,
+          });
+        });
+        it('user who is invited should receive invite message once per time', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback).toHaveBeenCalledTimes(2);
+              resolve();
+            }, 1000),
+          ));
+      });
+    });
+    describe('approve invite', () => {
+      describe('success case', () => {
+        let PromiseToMatchByInviter: Promise<any>;
+        let PromiseToMatchByInvited: Promise<any>;
+        let roomId;
+        const mockCallback1 = jest.fn();
+        beforeAll(() => {
+          const inviter = userAndSockets[0];
+          const invitee = userAndSockets[1];
+          const notInvited1 = userAndSockets[2];
+
+          const promiseToInvite = new Promise<any>((resolve) =>
+            invitee.ws.on('invite-pong', (data) => resolve(data)),
+          );
+          PromiseToMatchByInviter = new Promise<any>((resolve) =>
+            inviter.ws.on('match-pong', (data) => resolve(data)),
+          );
+          PromiseToMatchByInvited = new Promise<any>((resolve) =>
+            invitee.ws.on('match-pong', (data) => resolve(data)),
+          );
+
+          notInvited1.ws.on('invite-pong', mockCallback1);
+          notInvited1.ws.on('approve-pong', mockCallback1);
+          notInvited1.ws.on('match-pong', mockCallback1);
+
+          inviter.ws.emit('invite-pong', {
+            userId: invitee.user.id,
+          });
+          return promiseToInvite.then((data) => {
+            invitee.ws.emit('approve-pong', {
+              userId: data.userId,
+            });
+          });
+        });
+        it("invite user should receive room's id", () =>
+          PromiseToMatchByInviter.then((data) => {
+            expect(data).toHaveProperty('roomId');
+            roomId = data.roomId;
+          }));
+        it("approve user should receive room's id", () =>
+          PromiseToMatchByInvited.then((data) => {
+            expect(data).toHaveProperty('roomId');
+            expect(data.roomId).toEqual(roomId);
+          }));
+        it('unrelated user should not receive any messages', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback1).not.toBeCalled();
+              resolve();
+            }, 1000),
+          ));
+      });
+      describe('failure case', () => {
+        const mockCallback1 = jest.fn();
+        const mockCallback2 = jest.fn();
+        let errorCtx: Promise<any>;
+
+        beforeAll(() => {
+          const emitter = userAndSockets[0];
+          const listener = userAndSockets[1];
+
+          emitter.ws.on('match-pong', mockCallback1);
+          errorCtx = new Promise<any>((resolve) =>
+            emitter.ws.on('error-pong', (data) => resolve(data)),
+          );
+          listener.ws.on('match-pong', mockCallback2);
+
+          emitter.ws.emit('approve-pong', {
+            userId: listener.user.id,
+          });
+        });
+        // TODO: 複数のuser から invite されるケース
+        it('should receive an error when approving without an existing invite', () =>
+          errorCtx);
+        it('user should not receive approve message from not invite user', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockCallback1).not.toHaveBeenCalled();
+              expect(mockCallback2).not.toHaveBeenCalled();
+              resolve();
+            }, 1000),
+          ));
+      });
+      describe('invite -> cancel -> approve: dose not match', () => {
+        const mockToMatchByEmitter = jest.fn();
+        const mockToMatchByListener = jest.fn();
+
+        beforeAll(() => {
+          const emitter = userAndSockets[0];
+          const listener = userAndSockets[1];
+
+          emitter.ws.on('match-pong', mockToMatchByEmitter);
+
+          const PromiseToInvite = new Promise<any>((resolve) =>
+            listener.ws.on('invite-pong', (data) => resolve(data)),
+          );
+          listener.ws.on('match-pong', mockToMatchByListener);
+
+          emitter.ws.emit('invite-pong', {
+            userId: listener.user.id,
+          });
+          return PromiseToInvite.then((data) => {
+            emitter.ws.emit('invite-cancel-pong', {
+              userId: data.userId,
+            });
+            setTimeout(() => {
+              listener.ws.emit('approve-pong', {
+                userId: data.userId,
+              });
+            }, 100);
+          });
+        });
+        it('user should not receive match message from canceled invite user', () =>
+          new Promise<void>((resolve) =>
+            setTimeout(() => {
+              expect(mockToMatchByEmitter).not.toHaveBeenCalled();
+              expect(mockToMatchByListener).not.toHaveBeenCalled();
+              resolve();
+            }, 1000),
+          ));
+      });
+    });
+  });
 });
