@@ -1233,17 +1233,16 @@ describe('ChatGateway and ChatController (e2e)', () => {
       describe('failure case', () => {
         const mockCallback1 = jest.fn();
         const mockCallback2 = jest.fn();
+        let errorCtx: Promise<any>;
 
         beforeAll(() => {
           const emitter = userAndSockets[0];
           const listener = userAndSockets[1];
 
-          emitter.ws.on('invite-pong', mockCallback1);
-          emitter.ws.on('approve-pong', mockCallback1);
           emitter.ws.on('match-pong', mockCallback1);
-
-          listener.ws.on('invite-pong', mockCallback2);
-          listener.ws.on('approve-pong', mockCallback2);
+          errorCtx = new Promise<any>((resolve) =>
+            listener.ws.on('error-pong', (data) => resolve(data)),
+          );
           listener.ws.on('match-pong', mockCallback2);
 
           emitter.ws.emit('approve-pong', {
@@ -1251,11 +1250,12 @@ describe('ChatGateway and ChatController (e2e)', () => {
           });
         });
         // TODO: 複数のuser から invite されるケース
+        it('user should receive error message', () => errorCtx);
         it('user should not receive approve message from not invite user', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
-              expect(mockCallback1).not.toBeCalled();
-              expect(mockCallback2).not.toBeCalled();
+              expect(mockCallback1).not.toHaveBeenCalled();
+              expect(mockCallback2).not.toHaveBeenCalled();
               resolve();
             }, 1000),
           ));
