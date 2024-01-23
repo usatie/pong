@@ -65,12 +65,13 @@ export default function SidebarItem({
 }) {
   const router = useRouter();
   const [isBlocked, setIsBlocked] = useState(
-    blockingUsers.some((u: PublicUserEntity) => u.id === user.userId),
+    blockingUsers.some((u: PublicUserEntity) => u.id === user.userId)
   );
   const [isKicked, setIsKicked] = useState(false);
   const [isMuted, setIsMuted] = useState(
-    mutedUsers?.some((u: PublicUserEntity) => u.id === user.userId),
+    mutedUsers?.some((u: PublicUserEntity) => u.id === user.userId)
   );
+  const [isInviting, setIsInviting] = useState(false);
   useEffect(() => {
     const handleLeftEvent = (data: LeaveEvent) => {
       if (Number(data.userId) === me.userId) {
@@ -111,6 +112,14 @@ export default function SidebarItem({
       setIsBlocked(false);
     }
   };
+  const invite = () => {
+    socket.emit("invite-pong", { userId: user.userId });
+    setIsInviting(true);
+  };
+  const cancelInvite = () => {
+    socket.emit("invite-cancel-pong", { userId: user.userId });
+    setIsInviting(false);
+  };
   const mute = async (duration?: number) => {
     const res = await muteUser(room.id, user.userId, duration);
     if (res === "Success") {
@@ -150,6 +159,17 @@ export default function SidebarItem({
                 <ContextMenuItem disabled={!isBlocked} onSelect={unblock}>
                   Unblock
                 </ContextMenuItem>
+                {!isInviting && (
+                  <ContextMenuItem onSelect={invite}>
+                    {/* TODO: disabled when inviting */}
+                    Invite
+                  </ContextMenuItem>
+                )}
+                {isInviting && (
+                  <ContextMenuItem onSelect={cancelInvite}>
+                    Cancel invite
+                  </ContextMenuItem>
+                )}
                 {isMeAdminOrOwner && !isUserOwner && (
                   <>
                     {!isMuted && (

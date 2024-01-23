@@ -62,4 +62,21 @@ export type MessageEvent = {
   roomId: number;
 };
 
+export type InviteEvent = {
+  userId: number;
+};
+
+export type MatchEvent = {
+  roomId: string;
+};
+
+export type DenyEvent = {
+};
+
+export type PrivateUserEntity = {
+  id: number;
+  name: string;
+  avatarURL?: string;
+};
+
 export type RoomEntity = { id: number; name: string; accessLevel: AccessLevel };
