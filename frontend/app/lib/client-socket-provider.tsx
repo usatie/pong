@@ -89,7 +89,6 @@ export default function SocketProvider() {
   };
 
   const showInviteCancelPongToast = (data: PublicUserEntity) => {
-    console.log(data);
     toast({
       title: `Invite canceled by ${data.name}`,
     });

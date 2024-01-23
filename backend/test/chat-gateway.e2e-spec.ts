@@ -1399,7 +1399,9 @@ describe('ChatGateway and ChatController (e2e)', () => {
         });
         it('invitee should receive an invite-cancel message', () =>
           ctxToCancel.then((data) => {
-            expect(data).toHaveProperty('userId');
+            expect(data).toHaveProperty('id');
+            expect(data).toHaveProperty('avatarURL');
+            expect(data).toHaveProperty('name');
           }));
         it('unrelated user should not receive any messages', () =>
           new Promise<void>((resolve) =>

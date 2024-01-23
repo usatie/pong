@@ -72,10 +72,4 @@ export type MatchEvent = {
 
 export type DenyEvent = {};
 
-export type PublicUserEntity = {
-  id: number;
-  name: string;
-  avatarURL?: string;
-};
-
 export type RoomEntity = { id: number; name: string; accessLevel: AccessLevel };
