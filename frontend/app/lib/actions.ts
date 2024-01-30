@@ -48,7 +48,7 @@ export async function signIn({
 
 export async function authenticate(
   prevState: string | undefined,
-  formData: FormData,
+  formData: FormData
 ) {
   try {
     await signIn({
@@ -98,7 +98,7 @@ export async function getUser(id: number) {
 
 export async function updateUser(
   prevState: string | undefined,
-  formData: FormData,
+  formData: FormData
 ) {
   const { user_id, ...updateData } = Object.fromEntries(formData.entries());
   const res = await fetch(`${process.env.API_URL}/user/${user_id}`, {
@@ -121,7 +121,7 @@ export async function updateUser(
 
 export async function deleteUser(
   prevState: string | undefined,
-  formData: FormData,
+  formData: FormData
 ) {
   const { user_id } = Object.fromEntries(formData.entries());
   const res = await fetch(`${process.env.API_URL}/user/${user_id}`, {
@@ -194,7 +194,7 @@ export async function getDirectRoom(userId: number) {
 
 export async function createRoom(
   prevState: { error?: string },
-  formData: FormData,
+  formData: FormData
 ) {
   let payload;
   if (formData.get("accessLevel") === "PROTECTED") {
@@ -256,7 +256,7 @@ export async function createDirectRoom(userId: number) {
 export async function joinRoom(
   roomId: number,
   prevState: { error: string } | undefined,
-  formData: FormData,
+  formData: FormData
 ) {
   const payload = JSON.stringify({
     password: formData.get("password"),
@@ -288,7 +288,7 @@ export async function inviteUserToRoom(roomId: number, userId: number) {
       headers: {
         Authorization: "Bearer " + getAccessToken(),
       },
-    },
+    }
   );
   const data = await res.json();
   if (!res.ok) {
@@ -303,7 +303,7 @@ export async function updateRoom(
   roomName: string,
   roomId: number,
   accessLevel: AccessLevel,
-  password?: string,
+  password?: string
 ) {
   const res = await fetch(`${process.env.API_URL}/room/${roomId}`, {
     method: "PATCH",
@@ -324,7 +324,7 @@ export async function updateRoom(
 export async function updateRoomUser(
   role: string,
   roomId: number,
-  userId: number,
+  userId: number
 ) {
   const res = await fetch(`${process.env.API_URL}/room/${roomId}/${userId}`, {
     method: "PATCH",
@@ -353,7 +353,7 @@ export async function kickUserOnRoom(roomId: number, userId: number) {
       headers: {
         Authorization: "Bearer " + getAccessToken(),
       },
-    },
+    }
   );
   if (!res.ok) {
     console.error("kickUserOnRoom error: ", await res.json());
@@ -405,7 +405,7 @@ export async function getMessages(roomId: number) {
 
 export async function updatePassword(
   prevState: string | undefined,
-  formData: FormData,
+  formData: FormData
 ) {
   // Check if new password and confirm password match
   const newPassword = formData.get("new-password");
@@ -528,7 +528,7 @@ export async function addFriend(recipientId: number) {
       headers: {
         Authorization: "Bearer " + getAccessToken(),
       },
-    },
+    }
   );
   if (!res.ok) {
     console.error("addFriend error: ", await res.json());
@@ -547,7 +547,7 @@ export async function getFriendRequests(): Promise<FriendRequestsEntity> {
       headers: {
         Authorization: "Bearer " + getAccessToken(),
       },
-    },
+    }
   );
   if (!res.ok) {
     console.error("getFriendRequests error: ", await res.json());
@@ -567,7 +567,7 @@ export async function acceptFriendRequest(requesterId: number) {
       headers: {
         Authorization: "Bearer " + getAccessToken(),
       },
-    },
+    }
   );
   if (!res.ok) {
     console.error("acceptFriendRequest error: ", await res.json());
@@ -587,7 +587,7 @@ export async function rejectFriendRequest(requesterId: number) {
       headers: {
         Authorization: "Bearer " + getAccessToken(),
       },
-    },
+    }
   );
   if (!res.ok) {
     console.error("rejectFriendRequest error: ", await res.json());
@@ -607,7 +607,7 @@ export async function cancelFriendRequest(recipientId: number) {
       headers: {
         Authorization: "Bearer " + getAccessToken(),
       },
-    },
+    }
   );
   if (!res.ok) {
     console.error("cancelFriendRequest error: ", await res.json());
@@ -638,7 +638,7 @@ export async function unfriend(friendId: number) {
 }
 
 export async function getMatchHistory(
-  userId: number,
+  userId: number
 ): Promise<MatchHistoryEntity[]> {
   console.log(`${process.env.API_URL}/user/${userId}/history`);
   const res = await fetch(`${process.env.API_URL}/user/${userId}/history`, {
@@ -688,7 +688,7 @@ export async function generate2FASecret() {
 
 export async function enableTwoFactorAuthentication(
   prevState: string,
-  formData: FormData,
+  formData: FormData
 ) {
   const code = formData.get("code") as string;
   const res = await fetch(`${process.env.API_URL}/auth/2fa/enable`, {
@@ -712,7 +712,7 @@ export async function enableTwoFactorAuthentication(
 
 export async function twoFactorAuthenticate(
   prevState: string,
-  formData: FormData,
+  formData: FormData
 ) {
   const code = formData.get("code") as string;
   const res = await fetch(`${process.env.API_URL}/auth/2fa/authenticate`, {
@@ -742,7 +742,7 @@ export async function banUser(roomId: number, userId: number) {
       headers: {
         Authorization: "Bearer " + getAccessToken(),
       },
-    },
+    }
   );
   if (!res.ok) {
     console.error("banUser error: ", await res.json());
@@ -776,7 +776,7 @@ export async function unbanUser(roomId: number, userId: number) {
       headers: {
         Authorization: "Bearer " + getAccessToken(),
       },
-    },
+    }
   );
   if (!res.ok) {
     console.error("unbanUser error: ", await res.json());
@@ -805,7 +805,7 @@ export async function leaveRoom(roomId: number) {
 
 export async function createUserWithOauth(
   code: string | string[] | undefined,
-  provider: string,
+  provider: string
 ) {
   if (!code) return;
   const url = `${process.env.API_URL}/auth/oauth2/signup/${provider}`;
