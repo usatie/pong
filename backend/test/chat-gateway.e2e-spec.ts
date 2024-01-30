@@ -4,7 +4,7 @@ import { Socket, io } from 'socket.io-client';
 import { AppModule } from 'src/app.module';
 import { MessageEntity } from 'src/chat/entities/message.entity';
 import { constants } from './constants';
-import { TestApp } from './utils/app';
+import { TestApp, UserEntityWithAccessToken } from './utils/app';
 
 async function createNestApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -32,6 +32,10 @@ describe('ChatGateway and ChatController (e2e)', () => {
     bannedUser1,
     mutedUser1;
   const waitTime = 500;
+  type UserAndSocket = {
+    user: UserEntityWithAccessToken;
+    ws: Socket;
+  };
 
   beforeAll(async () => {
     //app = await initializeApp();
@@ -1050,10 +1054,6 @@ describe('ChatGateway and ChatController (e2e)', () => {
     // TODO
   });
   describe('invite pong game', () => {
-    type UserAndSocket = {
-      user: any;
-      ws: Socket;
-    };
     let userAndSockets: UserAndSocket[];
 
     beforeAll(() => {
@@ -1064,6 +1064,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           extraHeaders: { cookie: 'token=' + user.accessToken },
         }),
       }));
+      return userAndSockets.map((s) => connect(s.ws));
     });
     afterAll(() => {
       userAndSockets.map((userAndSocket) => {
@@ -1423,6 +1424,44 @@ describe('ChatGateway and ChatController (e2e)', () => {
         it('should receive an error when canceling without an existing invite', () =>
           errorCtx);
       });
+    });
+  });
+  describe('online status', () => {
+    let userAndSockets: UserAndSocket[];
+    beforeAll(async () => {
+      const users = [user1, user2];
+      userAndSockets = await users.map((user) => {
+        return {
+          user,
+          ws: io('ws://localhost:3000/chat', {
+            extraHeaders: { cookie: 'token=' + user.accessToken },
+          }),
+        };
+      });
+      userAndSockets[1].ws.close();
+      await connect(userAndSockets[0].ws);
+    });
+    afterAll(() => {
+      userAndSockets.map((userAndSocket) => {
+        userAndSocket.ws.close();
+      });
+    });
+
+    it('connected user should be online', async () => {
+      const u = userAndSockets[0];
+      const res = await app.isOnline(u.user.id, u.user.accessToken).expect(200);
+      const body = res.body;
+      expect(body.isOnline).toEqual(true);
+    });
+    it('disconnected user should be offline', async () => {
+      const u = userAndSockets[1];
+      const res = await app.isOnline(u.user.id, u.user.accessToken).expect(200);
+      const body = res.body;
+      expect(body.isOnline).toEqual(false);
+    });
+    it('check online status with invalid access token should be unauthorized', async () => {
+      const u = userAndSockets[0];
+      await app.isOnline(u.user.id, '').expect(401);
     });
   });
 });
