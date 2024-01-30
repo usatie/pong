@@ -69,8 +69,6 @@ export const SidebarMenu = ({
     setIsBanOpen(true);
   };
 
-  const members = usersOnRoom.map((member) => member.user);
-
   return (
     <>
       {isAdmin && (
@@ -85,6 +83,7 @@ export const SidebarMenu = ({
             setOpen={setIsBanOpen}
             roomId={room.id}
             me={me}
+            usersOnRoom={usersOnRoom}
             allUsers={allUsers}
             bannedUsers={bannedUsers}
           />
@@ -93,7 +92,7 @@ export const SidebarMenu = ({
             setOpen={setIsInviteOpen}
             room={room}
             me={me}
-            members={members}
+            usersOnRoom={usersOnRoom}
             allUsers={allUsers}
             bannedUsers={bannedUsers}
           />

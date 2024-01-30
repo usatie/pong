@@ -17,6 +17,7 @@ interface Props {
   setOpen: (open: boolean) => void;
   roomId: number;
   me: UserOnRoomEntity;
+  usersOnRoom: UserOnRoomEntity[];
   allUsers: PublicUserEntity[];
   bannedUsers: PublicUserEntity[];
 }
@@ -25,13 +26,16 @@ export default function BanModal({
   setOpen,
   roomId,
   me,
+  usersOnRoom,
   allUsers,
   bannedUsers,
 }: Props) {
+  const owner = usersOnRoom.find((user) => user.role === "OWNER");
   const UnbannedUsers = allUsers?.filter(
     (user) =>
       !bannedUsers?.some((bannedUser) => bannedUser.id === user.id) &&
-      user.id !== me?.userId,
+      user.id !== me?.userId &&
+      user.id !== owner?.userId,
   );
 
   return (
