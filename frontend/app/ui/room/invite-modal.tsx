@@ -17,7 +17,8 @@ interface Props {
   setOpen: (open: boolean) => void;
   room: RoomEntity;
   me: UserOnRoomEntity;
-  members: PublicUserEntity[];
+  usersOnRoom: UserOnRoomEntity[];
+
   allUsers: PublicUserEntity[];
   bannedUsers: PublicUserEntity[];
 }
@@ -27,7 +28,7 @@ export default function InviteModal({
   setOpen,
   room,
   me,
-  members,
+  usersOnRoom,
   allUsers,
   bannedUsers,
 }: Props) {
@@ -37,6 +38,7 @@ export default function InviteModal({
       user.id !== me?.userId,
   );
 
+  const members = usersOnRoom.map((member) => member.user);
   const OtherThanMembers = UnbannedUsers?.filter(
     (user) => !members?.some((member) => member.id === user.id),
   );

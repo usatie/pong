@@ -24,10 +24,53 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
 } from "@/components/ui/context-menu";
+import { toast } from "@/components/ui/use-toast";
 import { chatSocket as socket } from "@/socket";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import MuteMenu from "./mute-menu";
+
+const showKickErrorToast = () => {
+  toast({
+    title: "Error",
+    description: "failed to kick user",
+  });
+};
+
+const showMuteErrorToast = () => {
+  toast({
+    title: "Error",
+    description: "failed to mute user",
+  });
+};
+
+const showUnmuteErrorToast = () => {
+  toast({
+    title: "Error",
+    description: "failed to unmute user",
+  });
+};
+
+const showBlockErrorToast = () => {
+  toast({
+    title: "Error",
+    description: "failed to block user",
+  });
+};
+
+const showUnblockErrorToast = () => {
+  toast({
+    title: "Error",
+    description: "failed to unblock user",
+  });
+};
+
+const showUpdateRoleErrorToast = () => {
+  toast({
+    title: "Error",
+    description: "failed to update user role",
+  });
+};
 
 function truncateString(str: string | undefined, num: number): string {
   if (!str) {
@@ -111,6 +154,7 @@ export default function SidebarItem({
     if (res === "Success") {
       setBlockState({ isBlocked: true, isClicked: false });
     } else {
+      showBlockErrorToast();
       setBlockState({ ...blockState, isClicked: false });
     }
   };
@@ -120,6 +164,7 @@ export default function SidebarItem({
     if (res === "Success") {
       setBlockState({ isBlocked: false, isClicked: false });
     } else {
+      showUnblockErrorToast();
       setBlockState({ ...blockState, isClicked: false });
     }
   };
@@ -139,6 +184,7 @@ export default function SidebarItem({
     if (res === "Success") {
       setMuteState({ isMuted: true, isClicked: false });
     } else {
+      showMuteErrorToast();
       setMuteState({ ...muteState, isClicked: false });
     }
   };
@@ -148,6 +194,7 @@ export default function SidebarItem({
     if (res === "Success") {
       setMuteState({ isMuted: false, isClicked: false });
     } else {
+      showUnmuteErrorToast();
       setMuteState({ ...muteState, isClicked: false });
     }
   };
@@ -157,6 +204,7 @@ export default function SidebarItem({
     if (res === "Success") {
       setKickState({ isKicked: true, isClicked: false });
     } else {
+      showKickErrorToast();
       setKickState({ ...kickState, isClicked: false });
     }
   };
@@ -167,6 +215,9 @@ export default function SidebarItem({
       room.id,
       user.userId,
     );
+    if (res !== "Success") {
+      showUpdateRoleErrorToast();
+    }
     setIsUpdateRoleClicked(false);
   };
   return (
