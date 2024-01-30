@@ -20,14 +20,12 @@ export default function InviteItem({
 
   const onInvite = async (userId: number) => {
     setIsClicked(true);
-    if (!roomId) {
-      throw new Error("not found room");
-    }
     const res = await inviteUserToRoom(roomId, userId);
-    if (res !== "Success") {
-      throw new Error("failed to invite");
+    if (res === "Success") {
+      router.refresh();
+    } else {
+      setIsClicked(false);
     }
-    router.refresh();
   };
 
   return (

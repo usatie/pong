@@ -20,12 +20,11 @@ export default function UnbanItem({
 
   const onUnban = async (userId: number) => {
     setIsClicked(true);
-    if (!roomId) {
-      throw new Error("not found room");
-    }
     const result = await unbanUser(roomId, userId);
     if (result === "Success") {
       router.refresh();
+    } else {
+      setIsClicked(false);
     }
   };
 

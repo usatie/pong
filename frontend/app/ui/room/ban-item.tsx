@@ -20,12 +20,11 @@ export default function BanItem({
 
   const onBan = async (userId: number) => {
     setIsClicked(true);
-    if (!roomId) {
-      throw new Error("not found room");
-    }
     const result = await banUser(roomId, userId);
     if (result === "Success") {
       router.refresh();
+    } else {
+      setIsClicked(false);
     }
   };
 
