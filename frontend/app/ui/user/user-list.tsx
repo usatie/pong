@@ -14,7 +14,7 @@ export default function UserList({
   avatarSize: AvatarSize;
 }) {
   const [onlineStatus, setOnlineStatus] = useState<{ [key: string]: boolean }>(
-    {}
+    {},
   );
 
   const fetchOnlineStatus = async () => {
