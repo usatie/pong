@@ -26,7 +26,8 @@ import {
 } from "@/components/ui/context-menu";
 import { chatSocket as socket } from "@/socket";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import MuteMenu from "./mute-menu";
 
 function truncateString(str: string | undefined, num: number): string {
   if (!str) {
@@ -57,21 +58,33 @@ export default function SidebarItem({
   mutedUsers: PublicUserEntity[];
 }) {
   const router = useRouter();
-  const [isBlocked, setIsBlocked] = useState(
-    blockingUsers.some((u: PublicUserEntity) => u.id === user.userId),
-  );
-  const [isKicked, setIsKicked] = useState(false);
-  const [isMuted, setIsMuted] = useState(
-    mutedUsers?.some((u: PublicUserEntity) => u.id === user.userId),
-  );
-  const [isInviting, setIsInviting] = useState(false);
+  const [blockState, setBlockState] = useState({
+    isBlocked: blockingUsers.some(
+      (u: PublicUserEntity) => u.id === user.userId,
+    ),
+    isClicked: false,
+  });
+  const [kickState, setKickState] = useState({
+    isKicked: false,
+    isClicked: false,
+  });
+  const [muteState, setMuteState] = useState({
+    isMuted: mutedUsers?.some((u: PublicUserEntity) => u.id === user.userId),
+    isClicked: false,
+  });
+  const [inviteState, setInviteState] = useState({
+    isInviting: false,
+    isClicked: false,
+  });
+  const [isUpdateRoleClicked, setIsUpdateRoleClicked] = useState(false);
+
   useEffect(() => {
     const handleLeftEvent = (data: LeaveEvent) => {
       if (Number(data.userId) === me.userId) {
         router.push("/room");
       }
       if (Number(data.userId) === user.userId) {
-        setIsKicked(true);
+        setKickState({ ...kickState, isKicked: true });
       }
     };
     socket.on("leave", handleLeftEvent);
@@ -92,46 +105,73 @@ export default function SidebarItem({
       router.push(`/user/${user.userId}`);
     }
   };
-  //TODO: pending to implement
   const block = async () => {
+    setBlockState({ ...blockState, isClicked: true });
     const res = await blockUser(user.userId);
     if (res === "Success") {
-      setIsBlocked(true);
+      setBlockState({ isBlocked: true, isClicked: false });
+    } else {
+      setBlockState({ ...blockState, isClicked: false });
     }
   };
   const unblock = async () => {
+    setBlockState({ ...blockState, isClicked: true });
     const res = await unblockUser(user.userId);
     if (res === "Success") {
-      setIsBlocked(false);
+      setBlockState({ isBlocked: false, isClicked: false });
+    } else {
+      setBlockState({ ...blockState, isClicked: false });
     }
   };
   const invite = () => {
+    setInviteState({ ...inviteState, isClicked: true });
     socket.emit("invite-pong", { userId: user.userId });
-    setIsInviting(true);
+    setInviteState({ isInviting: true, isClicked: false });
   };
   const cancelInvite = () => {
+    setInviteState({ ...inviteState, isClicked: true });
     socket.emit("invite-cancel-pong", { userId: user.userId });
-    setIsInviting(false);
+    setInviteState({ isInviting: false, isClicked: false });
   };
   const mute = async (duration?: number) => {
+    setMuteState({ ...muteState, isClicked: true });
     const res = await muteUser(room.id, user.userId, duration);
     if (res === "Success") {
-      setIsMuted(true);
+      setMuteState({ isMuted: true, isClicked: false });
+    } else {
+      setMuteState({ ...muteState, isClicked: false });
     }
   };
   const unmute = async () => {
+    setMuteState({ ...muteState, isClicked: true });
     const res = await unmuteUser(room.id, user.userId);
     if (res === "Success") {
-      setIsMuted(false);
+      setMuteState({ isMuted: false, isClicked: false });
+    } else {
+      setMuteState({ ...muteState, isClicked: false });
     }
   };
-  const kick = () => kickUserOnRoom(room.id, user.userId);
-  const updateUserRole = isUserAdmin
-    ? () => updateRoomUser("MEMBER", room.id, user.userId)
-    : () => updateRoomUser("ADMINISTRATOR", room.id, user.userId);
+  const kick = async () => {
+    setKickState({ ...kickState, isClicked: true });
+    const res = await kickUserOnRoom(room.id, user.userId);
+    if (res === "Success") {
+      setKickState({ isKicked: true, isClicked: false });
+    } else {
+      setKickState({ ...kickState, isClicked: false });
+    }
+  };
+  const updateUserRole = async () => {
+    setIsUpdateRoleClicked(true);
+    const res = await updateRoomUser(
+      isUserAdmin ? "MEMBER" : "ADMINISTRATOR",
+      room.id,
+      user.userId,
+    );
+    setIsUpdateRoleClicked(false);
+  };
   return (
     <>
-      {!isKicked && (
+      {!kickState.isKicked && (
         <ContextMenu>
           <ContextMenuTrigger className="flex gap-2 items-center group hover:opacity-60">
             <Avatar avatarURL={user.user.avatarURL} size="small" />
@@ -146,66 +186,63 @@ export default function SidebarItem({
             {user.userId !== me.userId && (
               <>
                 <ContextMenuSeparator />
-                <ContextMenuItem disabled={isBlocked} onSelect={block}>
+                <ContextMenuItem
+                  disabled={blockState.isBlocked || blockState.isClicked}
+                  onSelect={block}
+                >
                   Block
                 </ContextMenuItem>
-                <ContextMenuItem disabled={!isBlocked} onSelect={unblock}>
+                <ContextMenuItem
+                  disabled={!blockState.isBlocked || blockState.isClicked}
+                  onSelect={unblock}
+                >
                   Unblock
                 </ContextMenuItem>
-                {!isInviting && (
-                  <ContextMenuItem onSelect={invite}>
-                    {/* TODO: disabled when inviting */}
+                {!inviteState.isInviting && (
+                  <ContextMenuItem
+                    disabled={inviteState.isClicked}
+                    onSelect={invite}
+                  >
                     Invite
                   </ContextMenuItem>
                 )}
-                {isInviting && (
-                  <ContextMenuItem onSelect={cancelInvite}>
+                {inviteState.isInviting && (
+                  <ContextMenuItem
+                    disabled={inviteState.isClicked}
+                    onSelect={cancelInvite}
+                  >
                     Cancel invite
                   </ContextMenuItem>
                 )}
                 {isMeAdminOrOwner && !isUserOwner && (
                   <>
-                    {!isMuted && (
-                      <ContextMenuSub>
-                        <ContextMenuSubTrigger>Mute</ContextMenuSubTrigger>
-                        <ContextMenuSubContent className="w-46">
-                          <ContextMenuItem onSelect={() => mute(60)}>
-                            For 5 minutes
-                          </ContextMenuItem>
-                          <ContextMenuItem onSelect={() => mute(15 * 60)}>
-                            For 15 minutes
-                          </ContextMenuItem>
-                          <ContextMenuItem onSelect={() => mute(60 * 60)}>
-                            For 1 Hour
-                          </ContextMenuItem>
-                          <ContextMenuItem onSelect={() => mute(180 * 60)}>
-                            For 3 Hours
-                          </ContextMenuItem>
-                          <ContextMenuItem onSelect={() => mute(480 * 60)}>
-                            For 8 Hours
-                          </ContextMenuItem>
-                          <ContextMenuItem onSelect={() => mute(1440 * 60)}>
-                            For 24 Hours
-                          </ContextMenuItem>
-                          <ContextMenuItem onSelect={() => mute()}>
-                            Indefinite
-                          </ContextMenuItem>
-                        </ContextMenuSubContent>
-                      </ContextMenuSub>
+                    {!muteState.isMuted && (
+                      <MuteMenu
+                        muteState={muteState}
+                        roomId={room.id}
+                        userId={user.userId}
+                        mute={mute}
+                      />
                     )}
-                    {isMuted && (
-                      <ContextMenuItem onSelect={unmute}>
+                    {muteState.isMuted && (
+                      <ContextMenuItem
+                        disabled={muteState.isClicked}
+                        onSelect={unmute}
+                      >
                         Unmute
                       </ContextMenuItem>
                     )}
                     <ContextMenuItem
                       className="text-primary"
-                      disabled={isUserOwner}
+                      disabled={isUserOwner || kickState.isClicked}
                       onSelect={kick}
                     >
                       Kick
                     </ContextMenuItem>
-                    <ContextMenuItem onSelect={updateUserRole}>
+                    <ContextMenuItem
+                      disabled={kickState.isKicked}
+                      onSelect={updateUserRole}
+                    >
                       {isUserAdmin ? "Remove admin role" : "Promote to Admin"}
                     </ContextMenuItem>
                   </>

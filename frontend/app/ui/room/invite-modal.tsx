@@ -1,8 +1,6 @@
 "use client";
 
-import { inviteUserToRoom } from "@/app/lib/actions";
 import { PublicUserEntity, RoomEntity, UserOnRoomEntity } from "@/app/lib/dtos";
-import { Avatar } from "@/app/ui/user/avatar";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LogIn } from "lucide-react";
-import { useRouter } from "next/navigation";
+import InviteItem from "./invite-item";
 
 interface Props {
   open: boolean;
@@ -33,8 +31,6 @@ export default function InviteModal({
   allUsers,
   bannedUsers,
 }: Props) {
-  const router = useRouter();
-
   const UnbannedUsers = allUsers?.filter(
     (user) =>
       !bannedUsers?.some((bannedUser) => bannedUser.id === user.id) &&
@@ -44,21 +40,6 @@ export default function InviteModal({
   const OtherThanMembers = UnbannedUsers?.filter(
     (user) => !members?.some((member) => member.id === user.id),
   );
-
-  const onInvite = async (userId: number) => {
-    if (!room.id) {
-      throw new Error("not found room");
-    }
-    const res = await inviteUserToRoom(room.id, userId);
-    if (res !== "Success") {
-      throw new Error("failed to invite");
-    }
-    const newMember = OtherThanMembers?.find((user) => user.id === userId);
-    if (newMember) {
-      members?.push(newMember);
-      router.refresh();
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -80,22 +61,7 @@ export default function InviteModal({
             </DialogDescription>
           )}
           {OtherThanMembers?.map((user) => (
-            <div
-              key={user.id}
-              onClick={() => onInvite(user.id)}
-              className="flex items-center gap-x-2 mb-6"
-            >
-              <Avatar avatarURL={user.avatarURL} size="medium" />
-              <div className="flex flex-col gap-y-1">
-                <div className="text-xs font-semibold flex items-center gap-x-1">
-                  {user.name}
-                </div>
-              </div>
-              <button className="text-indigo-500 ml-auto">
-                <LogIn className="h-4 w-4 ml-2" />
-                Add
-              </button>
-            </div>
+            <InviteItem key={user.id} roomId={room.id} user={user} />
           ))}
         </ScrollArea>
       </DialogContent>

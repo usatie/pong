@@ -1,8 +1,6 @@
 "use client";
 
-import { banUser, unbanUser } from "@/app/lib/actions";
 import { PublicUserEntity, UserOnRoomEntity } from "@/app/lib/dtos";
-import { Avatar } from "@/app/ui/user/avatar";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +9,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Ban, CheckCircle2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import BanItem from "./ban-item";
+import UnbanItem from "./unban-item";
 
 interface Props {
   open: boolean;
@@ -30,39 +28,11 @@ export default function BanModal({
   allUsers,
   bannedUsers,
 }: Props) {
-  const router = useRouter();
-
   const UnbannedUsers = allUsers?.filter(
     (user) =>
       !bannedUsers?.some((bannedUser) => bannedUser.id === user.id) &&
       user.id !== me?.userId,
   );
-
-  const onBan = async (userId: number) => {
-    if (!roomId) {
-      throw new Error("not found room");
-    }
-    banUser(roomId, userId);
-    const bannedUser = allUsers?.find((user) => user.id === userId);
-    if (bannedUser) {
-      bannedUsers?.push(bannedUser);
-      router.refresh();
-      //onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers });
-    }
-  };
-
-  const onUnban = async (userId: number) => {
-    if (!roomId) {
-      throw new Error("not found room");
-    }
-    unbanUser(roomId, userId);
-    bannedUsers?.splice(
-      bannedUsers.findIndex((user) => user.id === userId),
-      1,
-    );
-    router.refresh();
-    //onOpen("ban", { roomId, roomName, me, allUsers, bannedUsers });
-  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -79,23 +49,7 @@ export default function BanModal({
             </DialogDescription>
           )}
           {bannedUsers?.map((user) => (
-            <div
-              key={user.id}
-              onClick={() => onUnban(user.id)}
-              className="flex items-center gap-x-2 mb-6"
-            >
-              <Avatar avatarURL={user.avatarURL} size="medium" />
-              <div className="flex flex-col gap-y-1">
-                <div className="text-xs font-semibold flex items-center gap-x-1">
-                  {user.name}
-                  <div className="text-rose-500">Banned</div>
-                </div>
-              </div>
-              <button className="text-indigo-600 dark:text-indigo-400 ml-auto">
-                <CheckCircle2 className="h-4 w-4 ml-5" />
-                UNBAN
-              </button>
-            </div>
+            <UnbanItem key={user.id} roomId={roomId} user={user} />
           ))}
           {UnbannedUsers?.length !== 0 && (
             <DialogDescription className="text-center text-zinc-500">
@@ -103,22 +57,7 @@ export default function BanModal({
             </DialogDescription>
           )}
           {UnbannedUsers?.map((user) => (
-            <div
-              key={user.id}
-              onClick={() => onBan(user.id)}
-              className="flex items-center gap-x-2 mb-6"
-            >
-              <Avatar avatarURL={user.avatarURL} size="medium" />
-              <div className="flex flex-col gap-y-1">
-                <div className="text-xs font-semibold flex items-center gap-x-1">
-                  {user.name}
-                </div>
-              </div>
-              <button className="text-rose-500 ml-auto">
-                <Ban className="h-4 w-4 ml-2" />
-                BAN
-              </button>
-            </div>
+            <BanItem key={user.id} roomId={roomId} user={user} />
           ))}
         </ScrollArea>
       </DialogContent>
