@@ -2,7 +2,6 @@ import type { MessageEvent } from "@/app/lib/dtos";
 import { Avatar } from "@/app/ui/user/avatar";
 import { Stack } from "@/components/layout/stack";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import UserTooltip from "../user/user-tool-tip";
 
 export function MessageItem({
   message,
@@ -18,7 +17,11 @@ export function MessageItem({
       {/* Left Side */}
       {withAvatar && (
         <TooltipProvider>
-          <UserTooltip user={message.user} avatarSize="medium"></UserTooltip>
+          <Avatar
+            avatarURL={message.user.avatarURL}
+            size="medium"
+            href={`/user/${message.user.id}`}
+          ></Avatar>
         </TooltipProvider>
       )}
       {!withAvatar && (

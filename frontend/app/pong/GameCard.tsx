@@ -1,18 +1,24 @@
 "use client";
 
+import { Avatar } from "@/app/ui/user/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { useRouter } from "next/navigation";
 import { PublicUserEntity } from "../lib/dtos";
-import UserTooltip from "../ui/user/user-tool-tip";
 
 function UserCard({ user }: { user: PublicUserEntity }) {
   return (
     <>
       <div className="flex gap-4 items-center">
         {user.name}
-        <UserTooltip user={user} avatarSize="medium" />
+        <Avatar
+          avatarURL={user.avatarURL}
+          size="medium"
+          href={`/user/${user.id}`}
+          alt={user.name}
+          online={true}
+        />
       </div>
     </>
   );
