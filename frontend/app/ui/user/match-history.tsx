@@ -1,6 +1,5 @@
 import { getMatchHistory } from "@/app/lib/actions";
 import type { MatchDetailEntity } from "@/app/lib/dtos";
-import Link from "next/link";
 import { Avatar } from "./avatar";
 import ProfileItem from "./profile-item";
 
@@ -17,17 +16,19 @@ function MatchDetailItem({
       : "text-red-500"
     : "";
   return (
-    <Link href={`/user/${detail.user.id}`}>
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2 items-center">
-          <Avatar avatarURL={detail.user.avatarURL} size="medium" />
-          <div>{detail.user.name}</div>
-          <div className={`font-bold ${textColor}`}>
-            {detail.winLose} ({detail.score})
-          </div>
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2 items-center">
+        <Avatar
+          avatarURL={detail.user.avatarURL}
+          href={`/user/${detail.user.id}`}
+          size="medium"
+        />
+        <div>{detail.user.name}</div>
+        <div className={`font-bold ${textColor}`}>
+          {detail.winLose} ({detail.score})
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
