@@ -5,8 +5,16 @@ import { PublicUserEntity } from "@/app/lib/dtos";
 import { Avatar } from "@/app/ui/user/avatar";
 import Loader from "@/components/ui/loader";
 import { LogIn } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+const showInviteErrorToast = () => {
+  toast({
+    title: "Error",
+    description: "failed to add user",
+  });
+};
 
 export default function InviteItem({
   roomId,
@@ -24,6 +32,7 @@ export default function InviteItem({
     if (res === "Success") {
       router.refresh();
     } else {
+      showInviteErrorToast();
       setIsClicked(false);
     }
   };

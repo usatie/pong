@@ -337,7 +337,7 @@ export async function updateRoomUser(
   console.log(res.status);
   if (!res.ok) {
     console.error("updateRoomUser error: ", await res.json());
-    throw new Error("updateRoomUser error");
+    return "Error";
   } else {
     const update = await res.json();
     console.log(update);
@@ -357,7 +357,7 @@ export async function kickUserOnRoom(roomId: number, userId: number) {
   );
   if (!res.ok) {
     console.error("kickUserOnRoom error: ", await res.json());
-    throw new Error("kickUserOnRoom error");
+    return "Error";
   } else {
     revalidatePath(`/room/${roomId}`);
     return "Success";
