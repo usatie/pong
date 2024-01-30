@@ -1429,6 +1429,13 @@ describe('ChatGateway and ChatController (e2e)', () => {
   describe('online status', () => {
     let userAndSockets: UserAndSocket[];
     beforeAll(async () => {
+      ws1.close();
+      ws2.close();
+      ws3.close();
+      ws4.close();
+      ws5.close();
+      ws6.close();
+      ws7.close();
       const users = [user1, user2];
       userAndSockets = await users.map((user) => {
         return {
@@ -1440,6 +1447,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
       userAndSockets[1].ws.close();
       await connect(userAndSockets[0].ws);
+      return new Promise<void>((resolve) => setTimeout(resolve, waitTime));
     });
     afterAll(() => {
       userAndSockets.map((userAndSocket) => {
