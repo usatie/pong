@@ -20,7 +20,8 @@ export default function UserList({
   const fetchOnlineStatus = async () => {
     try {
       users.forEach(async (u) => {
-        const online = await isOnline(u.id);
+        const body = await isOnline(u.id);
+        const online = body.isOnline;
         setOnlineStatus((prev) => ({ ...prev, [u.name]: online }));
       });
     } catch (error) {

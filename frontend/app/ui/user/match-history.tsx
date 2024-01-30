@@ -38,6 +38,7 @@ export default async function MatchHistory({ userId }: { userId: number }) {
     <ProfileItem title="Match History">
       <div className="flex flex-col gap-2">
         {history.map((match) => {
+          // TODO: player2 が undefinedでerrorになる
           return (
             <div key={match.id} className="flex gap-8 items-center">
               <MatchDetailItem
