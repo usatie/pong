@@ -25,4 +25,11 @@ export class ChatController {
   ) {
     return this.chatService.findConversation(userId, user);
   }
+
+  @Get(':userId/online')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  isUserOnline(@Param('userId', ParseIntPipe) userId: number) {
+    return this.chatService.isOnline(userId);
+  }
 }

@@ -305,6 +305,11 @@ export class TestApp {
     user.accessToken = res2.body.accessToken;
     return user;
   };
+
+  isOnline = (userId: number, accessToken: string) =>
+    request(this.app.getHttpServer())
+      .get(`/chat/${userId}/online`)
+      .set('Authorization', `Bearer ${accessToken}`);
 }
 
 export type UserEntityWithAccessToken = UserEntity & { accessToken: string };

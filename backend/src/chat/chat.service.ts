@@ -211,4 +211,6 @@ export class ChatService {
       },
     });
   }
+
+  isOnline = (userId: number) => ({ isOnline: this.clients.has(userId) });
 }
