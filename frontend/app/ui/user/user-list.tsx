@@ -3,11 +3,8 @@
 import type { PublicUserEntity } from "@/app/lib/dtos";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Avatar, AvatarSize } from "./avatar";
-<<<<<<< Updated upstream
-=======
 import { useEffect, useState } from "react";
 import { isOnline } from "@/app/lib/actions";
->>>>>>> Stashed changes
 
 export default function UserList({
   users,
