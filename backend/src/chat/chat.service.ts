@@ -6,7 +6,6 @@ import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { BlockEvent } from 'src/common/events/block.event';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
-import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { UnblockEvent } from 'src/common/events/unblock.event';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -89,11 +88,6 @@ export class ChatService {
 
   @OnEvent('room.created', { async: true })
   async handleRoomCreatedEvent(event: RoomCreatedEvent) {
-    await this.addUserToRoom(event.roomId, event.userId);
-  }
-
-  @OnEvent('room.enter', { async: true })
-  async handleUserOnRoomCreatedEvent(event: RoomEnteredEvent) {
     await this.addUserToRoom(event.roomId, event.userId);
   }
 

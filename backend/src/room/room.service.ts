@@ -8,6 +8,7 @@ import { Role, User } from '@prisma/client';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 import { RoomLeftEvent } from 'src/common/events/room-left.event';
+import { RoomUpdateRoleEvent } from 'src/common/events/room-update-role.event';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
@@ -277,12 +278,12 @@ export class RoomService {
     });
   };
 
-  updateUserOnRoom = (
+  updateUserOnRoom = async (
     roomId: number,
     userId: number,
     dto: UpdateUserOnRoomDto,
   ): Promise<UserOnRoomEntity> => {
-    return this.prisma.userOnRoom.update({
+    const res = await this.prisma.userOnRoom.update({
       where: {
         userId_roomId_unique: {
           roomId: roomId,
@@ -291,6 +292,11 @@ export class RoomService {
       },
       data: dto,
     });
+    const event: RoomUpdateRoleEvent = {
+      roomId: roomId,
+    };
+    this.eventEmitter.emit('room.update.role', event);
+    return res;
   };
 
   async kickUser(roomId: number, userId: number): Promise<UserOnRoomEntity> {
