@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Socket, io } from 'socket.io-client';
@@ -958,6 +959,110 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
     it('all users should receive message from mutedUser1 after unmuting', async () => {
       await ctx6;
+    });
+  });
+
+  describe('Client notification on chat channel actions', () => {
+    describe('user enter notification', () => {
+      let room;
+      let ctx7: Promise<void[]>;
+      beforeAll(async () => {
+        const res = await app
+          .createRoom(constants.room.publicRoom, user1.accessToken)
+          .expect(201);
+        room = res.body;
+        expect(room.id).toBeDefined();
+
+        const expectedEvent = {
+          roomId: room.id,
+          userId: user2.id,
+        };
+        const promises = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('enter-room', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('enter-room');
+                resolve();
+              });
+            }),
+        );
+        ctx7 = Promise.all(promises);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(room.id, user1.accessToken).expect(204);
+      });
+
+      it('user2 enters room', async () => {
+        await app.enterRoom(room.id, user2.accessToken).expect(201);
+      });
+
+      it('Room members should receive notification when a user enters the room', async () => {
+        await ctx7;
+      });
+      it('not member user should not receive notification when a user enters the room', (done) => {
+        const mockEnterEventListener = jest.fn();
+        ws3.on('enter-room', mockEnterEventListener);
+        setTimeout(() => {
+          expect(mockEnterEventListener).not.toBeCalled();
+          ws3.off('enter-room');
+          done();
+        }, waitTime);
+      });
+    });
+    describe('update role notification', () => {
+      let room;
+      let ctx8: Promise<void[]>;
+      beforeAll(async () => {
+        const res = await app
+          .createRoom(constants.room.publicRoom, user1.accessToken)
+          .expect(201);
+        room = res.body;
+        expect(room.id).toBeDefined();
+        await app.enterRoom(room.id, user2.accessToken).expect(201);
+        const expectedEvent = {
+          roomId: room.id,
+        };
+        const promises = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('update-role', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('update-role');
+                resolve();
+              });
+            }),
+        );
+        ctx8 = Promise.all(promises);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(room.id, user1.accessToken).expect(204);
+      });
+
+      it('user1 updates user2 role to admin', async () => {
+        await app
+          .updateUserOnRoom(
+            room.id,
+            user2.id,
+            { role: Role.ADMINISTRATOR },
+            user1.accessToken,
+          )
+          .expect(200);
+      });
+
+      it('Room members should receive notification when a user updates role', async () => {
+        await ctx8;
+      });
+
+      it('not member user should not receive notification when a user updates role', (done) => {
+        const mockUpdateRoleEventListener = jest.fn();
+        ws3.on('update-role', mockUpdateRoleEventListener);
+        setTimeout(() => {
+          expect(mockUpdateRoleEventListener).not.toBeCalled();
+          ws3.off('update-role');
+          done();
+        }, waitTime);
+      });
     });
   });
 
