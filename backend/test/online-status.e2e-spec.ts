@@ -68,14 +68,14 @@ describe('ChatGateway and ChatController (e2e)', () => {
       onlineUserSocket.close();
     });
 
-    it('connected user should be online', async () => {
+    it('online user should be true (online)', async () => {
       const res = await app
         .isOnline(onlineUser.id, onlineUser.accessToken)
         .expect(200);
       const body = res.body;
       expect(body.isOnline).toEqual(true);
     });
-    it('disconnected user should be offline', async () => {
+    it('offline user should be false (offline)', async () => {
       const res = await app
         .isOnline(offlineUser.id, offlineUser.accessToken)
         .expect(200);
