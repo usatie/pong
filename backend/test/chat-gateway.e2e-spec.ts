@@ -1432,13 +1432,6 @@ describe('ChatGateway and ChatController (e2e)', () => {
     let offlineUser;
 
     beforeAll(async () => {
-      ws1.close();
-      ws2.close();
-      ws3.close();
-      ws4.close();
-      ws5.close();
-      ws6.close();
-      ws7.close();
       onlineUser = user1;
       onlineUserSocket = io('ws://localhost:3000/chat', {
         extraHeaders: { cookie: 'token=' + onlineUser.accessToken },
