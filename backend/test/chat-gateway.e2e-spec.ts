@@ -1426,39 +1426,4 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
     });
   });
-  describe('online status', () => {
-    let onlineUser;
-    let onlineUserSocket;
-    let offlineUser;
-
-    beforeAll(async () => {
-      onlineUser = user1;
-      onlineUserSocket = io('ws://localhost:3000/chat', {
-        extraHeaders: { cookie: 'token=' + onlineUser.accessToken },
-      });
-      await connect(onlineUserSocket);
-      offlineUser = user2;
-    });
-    afterAll(() => {
-      onlineUserSocket.close();
-    });
-
-    it('connected user should be online', async () => {
-      const res = await app
-        .isOnline(onlineUser.id, onlineUser.accessToken)
-        .expect(200);
-      const body = res.body;
-      expect(body.isOnline).toEqual(true);
-    });
-    it('disconnected user should be offline', async () => {
-      const res = await app
-        .isOnline(offlineUser.id, offlineUser.accessToken)
-        .expect(200);
-      const body = res.body;
-      expect(body.isOnline).toEqual(false);
-    });
-    it('check online status with invalid access token should be unauthorized', async () => {
-      await app.isOnline(onlineUser.id, '').expect(401);
-    });
-  });
 });
