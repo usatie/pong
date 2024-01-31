@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Socket, io } from 'socket.io-client';
 import { AppModule } from 'src/app.module';
-import { TestApp, UserEntityWithAccessToken } from './utils/app';
+import { TestApp } from './utils/app';
 
 async function createNestApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
