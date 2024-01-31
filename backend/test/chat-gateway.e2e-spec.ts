@@ -1427,7 +1427,10 @@ describe('ChatGateway and ChatController (e2e)', () => {
     });
   });
   describe('online status', () => {
-    let userAndSockets: UserAndSocket[];
+    let onlineUser;
+    let onlineUserSocket;
+    let offlineUser;
+
     beforeAll(async () => {
       ws1.close();
       ws2.close();
@@ -1436,40 +1439,33 @@ describe('ChatGateway and ChatController (e2e)', () => {
       ws5.close();
       ws6.close();
       ws7.close();
-      const users = [user1, user2];
-      userAndSockets = await users.map((user) => {
-        return {
-          user,
-          ws: io('ws://localhost:3000/chat', {
-            extraHeaders: { cookie: 'token=' + user.accessToken },
-          }),
-        };
+      onlineUser = user1;
+      onlineUserSocket = io('ws://localhost:3000/chat', {
+        extraHeaders: { cookie: 'token=' + onlineUser.accessToken },
       });
-      userAndSockets[1].ws.close();
-      await connect(userAndSockets[0].ws);
-      return new Promise<void>((resolve) => setTimeout(resolve, waitTime));
+      await connect(onlineUserSocket);
+      offlineUser = user2;
     });
     afterAll(() => {
-      userAndSockets.map((userAndSocket) => {
-        userAndSocket.ws.close();
-      });
+      onlineUserSocket.close();
     });
 
     it('connected user should be online', async () => {
-      const u = userAndSockets[0];
-      const res = await app.isOnline(u.user.id, u.user.accessToken).expect(200);
+      const res = await app
+        .isOnline(onlineUser.id, onlineUser.accessToken)
+        .expect(200);
       const body = res.body;
       expect(body.isOnline).toEqual(true);
     });
     it('disconnected user should be offline', async () => {
-      const u = userAndSockets[1];
-      const res = await app.isOnline(u.user.id, u.user.accessToken).expect(200);
+      const res = await app
+        .isOnline(offlineUser.id, offlineUser.accessToken)
+        .expect(200);
       const body = res.body;
       expect(body.isOnline).toEqual(false);
     });
     it('check online status with invalid access token should be unauthorized', async () => {
-      const u = userAndSockets[0];
-      await app.isOnline(u.user.id, '').expect(401);
+      await app.isOnline(onlineUser.id, '').expect(401);
     });
   });
 });
