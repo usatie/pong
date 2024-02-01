@@ -30,6 +30,23 @@ import { Response } from 'express';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  constants = {
+    loginUrl: ((): string => {
+      const clientId = process.env.OAUTH_42_CLIENT_ID;
+      const codeEndpointUrl = 'https://api.intra.42.fr/oauth/authorize';
+      const redirectUri =
+        process.env.NEST_PUBLIC_API_URL + '/auth/login/oauth2/42/callback';
+      return `${codeEndpointUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+    })(),
+    signupUrl: ((): string => {
+      const clientId = process.env.OAUTH_42_CLIENT_ID;
+      const codeEndpointUrl = 'https://api.intra.42.fr/oauth/authorize';
+      const redirectUri =
+        process.env.NEST_PUBLIC_API_URL + '/auth/signup/oauth2/42/callback';
+      return `${codeEndpointUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+    })(),
+  };
+
   @Post('login')
   @ApiOkResponse({ type: AuthEntity })
   login(@Body() { email, password }: LoginDto): Promise<AuthEntity> {
@@ -40,9 +57,8 @@ export class AuthController {
   @ApiOkResponse({ type: AuthEntity })
   @Redirect()
   redirectToOauth42() {
-    return this.authService.redirectToOauth42(
-      '/auth/signup/oauth2/42/callback',
-    );
+    // TODO : implement state system for enhanced security
+    return { url: this.constants.signupUrl };
   }
 
   @Get('signup/oauth2/42/callback')
@@ -56,7 +72,8 @@ export class AuthController {
   @ApiOkResponse({ type: AuthEntity })
   @Redirect()
   redirectToOauth42ToLogin() {
-    return this.authService.redirectToOauth42('/auth/login/oauth2/42/callback');
+    // TODO : implement state system for enhanced security
+    return { url: this.constants.loginUrl };
   }
 
   @Get('login/oauth2/42/callback')

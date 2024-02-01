@@ -84,16 +84,6 @@ export class AuthService {
     });
   }
 
-  redirectToOauth42 = (callbackUri: string) => {
-    const client_id = process.env.OAUTH_42_CLIENT_ID;
-    const redirect_uri = process.env.NEST_PUBLIC_API_URL + callbackUri;
-    // TODO : implement state system for enhanced security
-    const codeEndpointUrl = 'https://api.intra.42.fr/oauth/authorize';
-    return {
-      url: `${codeEndpointUrl}?client_id=${client_id}&redirect_uri=${redirect_uri}&response_type=code`,
-    };
-  };
-
   getAccessTokenWith42 = async ({
     code,
     redirect_uri,
