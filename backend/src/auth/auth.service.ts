@@ -84,13 +84,13 @@ export class AuthService {
     });
   }
 
-  getAccessTokenWith42 = async ({
+  async getAccessTokenWith42({
     code,
     redirect_uri,
   }: {
     code: string;
     redirect_uri;
-  }) => {
+  }) {
     const form = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: process.env.OAUTH_42_CLIENT_ID,
@@ -115,9 +115,9 @@ export class AuthService {
         });
       }
     });
-  };
+  }
 
-  getUserInfoWith42 = async ({ access_token }: { access_token: string }) => {
+  async getUserInfoWith42({ access_token }: { access_token: string }) {
     return fetch('https://api.intra.42.fr/v2/me', {
       headers: {
         Authorization: `Bearer ${access_token}`,
@@ -128,10 +128,10 @@ export class AuthService {
       }
       return res.json();
     });
-  };
+  }
 
-  signupWithOauth42 = (code: string): Promise<User> =>
-    this.getAccessTokenWith42({
+  signupWithOauth42(code: string): Promise<User> {
+    return this.getAccessTokenWith42({
       code,
       redirect_uri: '/auth/signup/oauth2/42/callback',
     }).then(
@@ -152,8 +152,9 @@ export class AuthService {
       // // TODO : random password? without password?
       // // TODO : save access_token in db
     );
+  }
 
-  loginWithOauth42 = async (code: string): Promise<AuthEntity> => {
+  async loginWithOauth42(code: string): Promise<AuthEntity> {
     return this.getAccessTokenWith42({
       code,
       redirect_uri: '/auth/login/oauth2/42/callback',
@@ -183,7 +184,7 @@ export class AuthService {
           });
       });
     });
-  };
+  }
 
   async pipeQrCodeStream(stream: Response, otpAuthUrl: string) {
     return toFileStream(stream, otpAuthUrl);
