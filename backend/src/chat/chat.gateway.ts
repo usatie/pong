@@ -9,6 +9,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
+import { RoomMuteEvent } from 'src/common/events/room-mute.event';
+import { RoomUnmuteEvent } from 'src/common/events/room-unmute.event';
 import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { RoomUpdateRoleEvent } from 'src/common/events/room-update-role.event';
 import { ChatService } from './chat.service';
@@ -168,6 +170,16 @@ export class ChatGateway {
   @OnEvent('room.update.role', { async: true })
   async handleUpdateRole(event: RoomUpdateRoleEvent) {
     this.server.in(event.roomId.toString()).emit('update-role', event);
+  }
+
+  @OnEvent('room.mute', { async: true })
+  async handleMute(event: RoomMuteEvent) {
+    this.server.in(event.roomId.toString()).emit('mute', event);
+  }
+
+  @OnEvent('room.unmute', { async: true })
+  async handleUnmute(event: RoomUnmuteEvent) {
+    this.server.in(event.roomId.toString()).emit('unmute', event);
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {

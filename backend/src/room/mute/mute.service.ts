@@ -5,11 +5,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateMuteDto } from './dto/create-mute.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { RoomMuteEvent } from 'src/common/events/room-mute.event';
+import { RoomUnmuteEvent } from 'src/common/events/room-unmute.event';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MuteService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async isExpired(roomId: number, userId: number) {
     const now = new Date();
@@ -66,13 +72,21 @@ export class MuteService {
         expiresAt = new Date();
         expiresAt.setSeconds(expiresAt.getSeconds() + createMuteDto.duration);
       }
-      await prisma.muteUserOnRoom.create({
-        data: {
-          userId,
-          roomId,
-          expiresAt,
-        },
-      });
+      await prisma.muteUserOnRoom
+        .create({
+          data: {
+            userId,
+            roomId,
+            expiresAt,
+          },
+        })
+        .then(() => {
+          const event: RoomMuteEvent = {
+            roomId: roomId,
+            userId: userId,
+          };
+          this.eventEmitter.emit('room.mute', event);
+        });
     });
     return {
       message: 'Mute user successfully',
@@ -122,14 +136,22 @@ export class MuteService {
       if (!user) {
         throw new NotFoundException('User not found in the Mute list');
       }
-      await prisma.muteUserOnRoom.delete({
-        where: {
-          userId_roomId_unique: {
-            userId,
-            roomId,
+      await prisma.muteUserOnRoom
+        .delete({
+          where: {
+            userId_roomId_unique: {
+              userId,
+              roomId,
+            },
           },
-        },
-      });
+        })
+        .then(() => {
+          const event: RoomUnmuteEvent = {
+            roomId: roomId,
+            userId: userId,
+          };
+          this.eventEmitter.emit('room.unmute', event);
+        });
       return { message: 'Unmute user successfully' };
     });
   }

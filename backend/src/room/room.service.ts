@@ -294,6 +294,8 @@ export class RoomService {
     });
     const event: RoomUpdateRoleEvent = {
       roomId: roomId,
+      userId: userId,
+      role: dto.role,
     };
     this.eventEmitter.emit('room.update.role', event);
     return res;
