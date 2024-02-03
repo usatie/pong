@@ -1022,6 +1022,8 @@ describe('ChatGateway and ChatController (e2e)', () => {
         await app.enterRoom(room.id, user2.accessToken).expect(201);
         const expectedEvent = {
           roomId: room.id,
+          userId: user2.id,
+          role: Role.ADMINISTRATOR,
         };
         const promises = [ws1, ws2].map(
           (ws) =>
@@ -1060,6 +1062,85 @@ describe('ChatGateway and ChatController (e2e)', () => {
         setTimeout(() => {
           expect(mockUpdateRoleEventListener).not.toBeCalled();
           ws3.off('update-role');
+          done();
+        }, waitTime);
+      });
+    });
+    describe('user mute notification', () => {
+      let room;
+      let ctx9: Promise<void[]>;
+      let ctx10: Promise<void[]>;
+      beforeAll(async () => {
+        const res = await app
+          .createRoom(constants.room.publicRoom, user1.accessToken)
+          .expect(201);
+        room = res.body;
+        expect(room.id).toBeDefined();
+        await app.enterRoom(room.id, user2.accessToken).expect(201);
+        const expectedEvent = {
+          roomId: room.id,
+          userId: user2.id,
+        };
+        const promises = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('mute', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('mute');
+                resolve();
+              });
+            }),
+        );
+        ctx9 = Promise.all(promises);
+
+        const promises2 = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('unmute', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('unmute');
+                resolve();
+              });
+            }),
+        );
+        ctx10 = Promise.all(promises2);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(room.id, user1.accessToken).expect(204);
+      });
+
+      it('user1 mutes user2', async () => {
+        await app.muteUser(room.id, user2.id, user1.accessToken).expect(200);
+      });
+
+      it('Room members should receive notification when a user mutes', async () => {
+        await ctx9;
+      });
+
+      it('not member user should not receive notification when a user mutes', (done) => {
+        const mockMuteEventListener = jest.fn();
+        ws3.on('mute', mockMuteEventListener);
+        setTimeout(() => {
+          expect(mockMuteEventListener).not.toBeCalled();
+          ws3.off('mute');
+          done();
+        }, waitTime);
+      });
+
+      it('user1 unmutes user2', async () => {
+        await app.unmuteUser(room.id, user2.id, user1.accessToken).expect(200);
+      });
+
+      it('Room members should receive notification when a user unmutes', async () => {
+        await ctx10;
+      });
+
+      it('not member user should not receive notification when a user unmutes', (done) => {
+        const mockUnmuteEventListener = jest.fn();
+        ws3.on('unmute', mockUnmuteEventListener);
+        setTimeout(() => {
+          expect(mockUnmuteEventListener).not.toBeCalled();
+          ws3.off('unmute');
           done();
         }, waitTime);
       });
