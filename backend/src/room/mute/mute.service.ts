@@ -17,7 +17,7 @@ export class MuteService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async isExpired(roomId: number, userId: number) {
+  async purgeExpiredMutesIfExists(roomId: number, userId: number) {
     const now = new Date();
     const mute = await this.prisma.muteUserOnRoom.findUnique({
       where: {
@@ -27,14 +27,8 @@ export class MuteService {
         },
       },
     });
-    if (!mute) {
-      return false;
-    } else if (mute.expiresAt === null) {
-      return false;
-    } else if (mute.expiresAt <= now) {
-      return true;
-    } else {
-      return false;
+    if (mute && mute.expiresAt && mute.expiresAt <= now) {
+      await this.remove(roomId, userId);
     }
   }
 
@@ -62,9 +56,7 @@ export class MuteService {
       if (user.role === 'OWNER') {
         throw new ForbiddenException('Cannot mute owner');
       }
-      if (await this.isExpired(roomId, userId)) {
-        await this.remove(roomId, userId);
-      }
+      await this.purgeExpiredMutesIfExists(roomId, userId);
       let expiresAt;
       if (!createMuteDto.duration) {
         expiresAt = null;
@@ -72,21 +64,18 @@ export class MuteService {
         expiresAt = new Date();
         expiresAt.setSeconds(expiresAt.getSeconds() + createMuteDto.duration);
       }
-      await prisma.muteUserOnRoom
-        .create({
-          data: {
-            userId,
-            roomId,
-            expiresAt,
-          },
-        })
-        .then(() => {
-          const event: RoomMuteEvent = {
-            roomId: roomId,
-            userId: userId,
-          };
-          this.eventEmitter.emit('room.mute', event);
-        });
+      await prisma.muteUserOnRoom.create({
+        data: {
+          userId,
+          roomId,
+          expiresAt,
+        },
+      });
+      const event: RoomMuteEvent = {
+        roomId: roomId,
+        userId: userId,
+      };
+      this.eventEmitter.emit('room.mute', event);
     });
     return {
       message: 'Mute user successfully',
@@ -136,22 +125,19 @@ export class MuteService {
       if (!user) {
         throw new NotFoundException('User not found in the Mute list');
       }
-      await prisma.muteUserOnRoom
-        .delete({
-          where: {
-            userId_roomId_unique: {
-              userId,
-              roomId,
-            },
+      await prisma.muteUserOnRoom.delete({
+        where: {
+          userId_roomId_unique: {
+            userId,
+            roomId,
           },
-        })
-        .then(() => {
-          const event: RoomUnmuteEvent = {
-            roomId: roomId,
-            userId: userId,
-          };
-          this.eventEmitter.emit('room.unmute', event);
-        });
+        },
+      });
+      const event: RoomUnmuteEvent = {
+        roomId: roomId,
+        userId: userId,
+      };
+      this.eventEmitter.emit('room.unmute', event);
       return { message: 'Unmute user successfully' };
     });
   }
