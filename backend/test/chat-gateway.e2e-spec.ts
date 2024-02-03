@@ -963,7 +963,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
   });
 
   describe('Client notification on chat channel actions', () => {
-    describe('user enter notification', () => {
+    describe('Notification that a user has entered', () => {
       let room;
       let ctx7: Promise<void[]>;
       beforeAll(async () => {
@@ -993,14 +993,14 @@ describe('ChatGateway and ChatController (e2e)', () => {
         await app.deleteRoom(room.id, user1.accessToken).expect(204);
       });
 
-      it('user2 enters room', async () => {
+      it('is sent when user2 enters the room', async () => {
         await app.enterRoom(room.id, user2.accessToken).expect(201);
       });
 
-      it('Room members should receive notification when a user enters the room', async () => {
+      it('should be received by room members', async () => {
         await ctx7;
       });
-      it('not member user should not receive notification when a user enters the room', (done) => {
+      it('should not be received by non-members', (done) => {
         const mockEnterEventListener = jest.fn();
         ws3.on('enter-room', mockEnterEventListener);
         setTimeout(() => {
@@ -1010,7 +1010,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
         }, waitTime);
       });
     });
-    describe('update role notification', () => {
+    describe('Notification that a user has updated role', () => {
       let room;
       let ctx8: Promise<void[]>;
       beforeAll(async () => {
@@ -1041,7 +1041,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
         await app.deleteRoom(room.id, user1.accessToken).expect(204);
       });
 
-      it('user1 updates user2 role to admin', async () => {
+      it('is sent when user1 updates user2 role to admin', async () => {
         await app
           .updateUserOnRoom(
             room.id,
@@ -1052,11 +1052,11 @@ describe('ChatGateway and ChatController (e2e)', () => {
           .expect(200);
       });
 
-      it('Room members should receive notification when a user updates role', async () => {
+      it('should be received by room members.', async () => {
         await ctx8;
       });
 
-      it('not member user should not receive notification when a user updates role', (done) => {
+      it('should not be received by non-members', (done) => {
         const mockUpdateRoleEventListener = jest.fn();
         ws3.on('update-role', mockUpdateRoleEventListener);
         setTimeout(() => {
@@ -1066,7 +1066,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
         }, waitTime);
       });
     });
-    describe('user mute notification', () => {
+    describe('Notification that a user has muted', () => {
       let room;
       let ctx9: Promise<void[]>;
       let ctx10: Promise<void[]>;
@@ -1109,15 +1109,15 @@ describe('ChatGateway and ChatController (e2e)', () => {
         await app.deleteRoom(room.id, user1.accessToken).expect(204);
       });
 
-      it('user1 mutes user2', async () => {
+      it('is sent when user1 mutes user2', async () => {
         await app.muteUser(room.id, user2.id, user1.accessToken).expect(200);
       });
 
-      it('Room members should receive notification when a user mutes', async () => {
+      it('should be received by room members', async () => {
         await ctx9;
       });
 
-      it('not member user should not receive notification when a user mutes', (done) => {
+      it('should not be received by non-members', (done) => {
         const mockMuteEventListener = jest.fn();
         ws3.on('mute', mockMuteEventListener);
         setTimeout(() => {
@@ -1126,23 +1126,26 @@ describe('ChatGateway and ChatController (e2e)', () => {
           done();
         }, waitTime);
       });
+      describe('Notification that a user has unmuted', () => {
+        it('is sent when user1 unmutes user2', async () => {
+          await app
+            .unmuteUser(room.id, user2.id, user1.accessToken)
+            .expect(200);
+        });
 
-      it('user1 unmutes user2', async () => {
-        await app.unmuteUser(room.id, user2.id, user1.accessToken).expect(200);
-      });
+        it('should be received by room members', async () => {
+          await ctx10;
+        });
 
-      it('Room members should receive notification when a user unmutes', async () => {
-        await ctx10;
-      });
-
-      it('not member user should not receive notification when a user unmutes', (done) => {
-        const mockUnmuteEventListener = jest.fn();
-        ws3.on('unmute', mockUnmuteEventListener);
-        setTimeout(() => {
-          expect(mockUnmuteEventListener).not.toBeCalled();
-          ws3.off('unmute');
-          done();
-        }, waitTime);
+        it('should not be received by non-members', (done) => {
+          const mockUnmuteEventListener = jest.fn();
+          ws3.on('unmute', mockUnmuteEventListener);
+          setTimeout(() => {
+            expect(mockUnmuteEventListener).not.toBeCalled();
+            ws3.off('unmute');
+            done();
+          }, waitTime);
+        });
       });
     });
   });
