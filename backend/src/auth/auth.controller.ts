@@ -25,27 +25,27 @@ import { AuthEntity } from './entity/auth.entity';
 import { JwtGuardWithout2FA } from './jwt-auth.guard';
 import { Response } from 'express';
 
+const constants = {
+  loginUrl: ((): string => {
+    const clientId = process.env.OAUTH_42_CLIENT_ID;
+    const codeEndpointUrl = 'https://api.intra.42.fr/oauth/authorize';
+    const redirectUri =
+      process.env.NEST_PUBLIC_API_URL + '/auth/login/oauth2/42/callback';
+    return `${codeEndpointUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+  })(),
+  signupUrl: ((): string => {
+    const clientId = process.env.OAUTH_42_CLIENT_ID;
+    const codeEndpointUrl = 'https://api.intra.42.fr/oauth/authorize';
+    const redirectUri =
+      process.env.NEST_PUBLIC_API_URL + '/auth/signup/oauth2/42/callback';
+    return `${codeEndpointUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+  })(),
+};
+
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  constants = {
-    loginUrl: ((): string => {
-      const clientId = process.env.OAUTH_42_CLIENT_ID;
-      const codeEndpointUrl = 'https://api.intra.42.fr/oauth/authorize';
-      const redirectUri =
-        process.env.NEST_PUBLIC_API_URL + '/auth/login/oauth2/42/callback';
-      return `${codeEndpointUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
-    })(),
-    signupUrl: ((): string => {
-      const clientId = process.env.OAUTH_42_CLIENT_ID;
-      const codeEndpointUrl = 'https://api.intra.42.fr/oauth/authorize';
-      const redirectUri =
-        process.env.NEST_PUBLIC_API_URL + '/auth/signup/oauth2/42/callback';
-      return `${codeEndpointUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
-    })(),
-  };
 
   @Post('login')
   @ApiOkResponse({ type: AuthEntity })
@@ -58,7 +58,7 @@ export class AuthController {
   @Redirect()
   redirectToOauth42() {
     // TODO : implement state system for enhanced security
-    return { url: this.constants.signupUrl };
+    return { url: constants.signupUrl };
   }
 
   @Get('signup/oauth2/42/callback')
@@ -73,7 +73,7 @@ export class AuthController {
   @Redirect()
   redirectToOauth42ToLogin() {
     // TODO : implement state system for enhanced security
-    return { url: this.constants.loginUrl };
+    return { url: constants.loginUrl };
   }
 
   @Get('login/oauth2/42/callback')
