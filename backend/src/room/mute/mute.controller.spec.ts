@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MuteController } from './mute.controller';
@@ -9,7 +10,7 @@ describe('MuteController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MuteController],
-      providers: [MuteService, PrismaService],
+      providers: [MuteService, PrismaService, EventEmitter2],
     }).compile();
 
     controller = module.get<MuteController>(MuteController);

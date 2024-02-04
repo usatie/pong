@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Socket, io } from 'socket.io-client';
@@ -958,6 +959,194 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
     it('all users should receive message from mutedUser1 after unmuting', async () => {
       await ctx6;
+    });
+  });
+
+  describe('Client notification on chat channel actions', () => {
+    describe('Notification that a user has entered', () => {
+      let room;
+      let ctx7: Promise<void[]>;
+      beforeAll(async () => {
+        const res = await app
+          .createRoom(constants.room.publicRoom, user1.accessToken)
+          .expect(201);
+        room = res.body;
+        expect(room.id).toBeDefined();
+
+        const expectedEvent = {
+          roomId: room.id,
+          userId: user2.id,
+        };
+        const promises = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('enter-room', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('enter-room');
+                resolve();
+              });
+            }),
+        );
+        ctx7 = Promise.all(promises);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(room.id, user1.accessToken).expect(204);
+      });
+
+      it('is sent when user2 enters the room', async () => {
+        await app.enterRoom(room.id, user2.accessToken).expect(201);
+      });
+
+      it('should be received by room members', async () => {
+        await ctx7;
+      });
+      it('should not be received by non-members', (done) => {
+        const mockEnterEventListener = jest.fn();
+        ws3.on('enter-room', mockEnterEventListener);
+        setTimeout(() => {
+          expect(mockEnterEventListener).not.toBeCalled();
+          ws3.off('enter-room');
+          done();
+        }, waitTime);
+      });
+    });
+    describe('Notification that a user has updated role', () => {
+      let room;
+      let ctx8: Promise<void[]>;
+      beforeAll(async () => {
+        const res = await app
+          .createRoom(constants.room.publicRoom, user1.accessToken)
+          .expect(201);
+        room = res.body;
+        expect(room.id).toBeDefined();
+        await app.enterRoom(room.id, user2.accessToken).expect(201);
+        const expectedEvent = {
+          roomId: room.id,
+          userId: user2.id,
+          role: Role.ADMINISTRATOR,
+        };
+        const promises = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('update-role', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('update-role');
+                resolve();
+              });
+            }),
+        );
+        ctx8 = Promise.all(promises);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(room.id, user1.accessToken).expect(204);
+      });
+
+      it('is sent when user1 updates user2 role to admin', async () => {
+        await app
+          .updateUserOnRoom(
+            room.id,
+            user2.id,
+            { role: Role.ADMINISTRATOR },
+            user1.accessToken,
+          )
+          .expect(200);
+      });
+
+      it('should be received by room members.', async () => {
+        await ctx8;
+      });
+
+      it('should not be received by non-members', (done) => {
+        const mockUpdateRoleEventListener = jest.fn();
+        ws3.on('update-role', mockUpdateRoleEventListener);
+        setTimeout(() => {
+          expect(mockUpdateRoleEventListener).not.toBeCalled();
+          ws3.off('update-role');
+          done();
+        }, waitTime);
+      });
+    });
+    describe('Notification that a user has muted', () => {
+      let room;
+      let ctx9: Promise<void[]>;
+      let ctx10: Promise<void[]>;
+      beforeAll(async () => {
+        const res = await app
+          .createRoom(constants.room.publicRoom, user1.accessToken)
+          .expect(201);
+        room = res.body;
+        expect(room.id).toBeDefined();
+        await app.enterRoom(room.id, user2.accessToken).expect(201);
+        const expectedEvent = {
+          roomId: room.id,
+          userId: user2.id,
+        };
+        const promises = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('mute', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('mute');
+                resolve();
+              });
+            }),
+        );
+        ctx9 = Promise.all(promises);
+
+        const promises2 = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('unmute', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('unmute');
+                resolve();
+              });
+            }),
+        );
+        ctx10 = Promise.all(promises2);
+      });
+      afterAll(async () => {
+        await app.deleteRoom(room.id, user1.accessToken).expect(204);
+      });
+
+      it('is sent when user1 mutes user2', async () => {
+        await app.muteUser(room.id, user2.id, user1.accessToken).expect(200);
+      });
+
+      it('should be received by room members', async () => {
+        await ctx9;
+      });
+
+      it('should not be received by non-members', (done) => {
+        const mockMuteEventListener = jest.fn();
+        ws3.on('mute', mockMuteEventListener);
+        setTimeout(() => {
+          expect(mockMuteEventListener).not.toBeCalled();
+          ws3.off('mute');
+          done();
+        }, waitTime);
+      });
+      describe('Notification that a user has unmuted', () => {
+        it('is sent when user1 unmutes user2', async () => {
+          await app
+            .unmuteUser(room.id, user2.id, user1.accessToken)
+            .expect(200);
+        });
+
+        it('should be received by room members', async () => {
+          await ctx10;
+        });
+
+        it('should not be received by non-members', (done) => {
+          const mockUnmuteEventListener = jest.fn();
+          ws3.on('unmute', mockUnmuteEventListener);
+          setTimeout(() => {
+            expect(mockUnmuteEventListener).not.toBeCalled();
+            ws3.off('unmute');
+            done();
+          }, waitTime);
+        });
+      });
     });
   });
 

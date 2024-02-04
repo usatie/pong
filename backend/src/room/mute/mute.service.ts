@@ -5,13 +5,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateMuteDto } from './dto/create-mute.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { RoomMuteEvent } from 'src/common/events/room-mute.event';
+import { RoomUnmuteEvent } from 'src/common/events/room-unmute.event';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MuteService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
-  async isExpired(roomId: number, userId: number) {
+  async purgeExpiredMutesIfExists(roomId: number, userId: number) {
     const now = new Date();
     const mute = await this.prisma.muteUserOnRoom.findUnique({
       where: {
@@ -21,14 +27,8 @@ export class MuteService {
         },
       },
     });
-    if (!mute) {
-      return false;
-    } else if (mute.expiresAt === null) {
-      return false;
-    } else if (mute.expiresAt <= now) {
-      return true;
-    } else {
-      return false;
+    if (mute && mute.expiresAt && mute.expiresAt <= now) {
+      await this.remove(roomId, userId);
     }
   }
 
@@ -56,9 +56,7 @@ export class MuteService {
       if (user.role === 'OWNER') {
         throw new ForbiddenException('Cannot mute owner');
       }
-      if (await this.isExpired(roomId, userId)) {
-        await this.remove(roomId, userId);
-      }
+      await this.purgeExpiredMutesIfExists(roomId, userId);
       let expiresAt;
       if (!createMuteDto.duration) {
         expiresAt = null;
@@ -73,6 +71,11 @@ export class MuteService {
           expiresAt,
         },
       });
+      const event: RoomMuteEvent = {
+        roomId: roomId,
+        userId: userId,
+      };
+      this.eventEmitter.emit('room.mute', event);
     });
     return {
       message: 'Mute user successfully',
@@ -130,6 +133,11 @@ export class MuteService {
           },
         },
       });
+      const event: RoomUnmuteEvent = {
+        roomId: roomId,
+        userId: userId,
+      };
+      this.eventEmitter.emit('room.unmute', event);
       return { message: 'Unmute user successfully' };
     });
   }
