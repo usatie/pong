@@ -83,6 +83,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     });
 
     describe('when a user logs in', () => {
+      const eventName = 'online-status';
       let firstLoginUser: UserAndSocket;
       let secondLoginUser: UserAndSocket;
 
@@ -97,20 +98,37 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
 
       it('should emit the online status of the user', (done) => {
-        firstLoginUser.ws.on('online-users', (users) => {
-		  expectOnlineStatusResponse(users);
+        firstLoginUser.ws.on(eventName, (users) => {
+          expectOnlineStatusResponse(users);
           expect(users).toHaveLength(1);
-		  expect(users.some((user) => user.userId === firstLoginUser.user.id)).toBe(true);
+          const filterd = users.filter(
+            (user) => user.userId === firstLoginUser.user.id,
+          );
+          expect(filterd).toHaveLength(1);
+          expect(filterd[0].status).toBe('online');
           done();
         });
       });
 
-      it('should emit the online status of the user', (done) => {
-        secondLoginUser.ws.on('online-users', (users) => {
-		  expectOnlineStatusResponse(users);
+       it('should emit the online status of the user', (done) => {
+        secondLoginUser.ws.on(eventName, (users) => {
+          expectOnlineStatusResponse(users);
           expect(users).toHaveLength(2);
-		  expect(users.some((user) => user.userId === firstLoginUser.user.id)).toBe(true);
-		  expect(users.some((user) => user.userId === secondLoginUser.user.id)).toBe(true);
+          {
+            const filterd = users.filter(
+              (user) => user.userId === firstLoginUser.user.id,
+            );
+            expect(filterd).toHaveLength(1);
+            expect(filterd[0].status).toBe('online');
+          }
+          {
+            const filterd = users.filter(
+              (user) => user.userId === secondLoginUser.user.id,
+            );
+            expect(filterd).toHaveLength(1);
+            expect(filterd[0].status).toBe('online');
+          }
+          done();
         });
       });
     });

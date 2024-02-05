@@ -128,9 +128,10 @@ export function expectPostGenerateTwoFactorAuthenticationSecretResponse(
 }
 
 export function expectOnlineStatusResponse(users: { userId: number }[]) {
-  type User = { userId: number };
-  const expected: User[] = users.map((user) => ({
+  type User = { userId: number; status: 'online' | 'offline' };
+  const expected: User[] = users.map(() => ({
     userId: expect.any(Number),
+    status: expect.stringMatching(/online|offline/),
   }));
   expect(users).toEqual(expected);
 }
