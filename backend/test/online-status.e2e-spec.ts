@@ -63,7 +63,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     beforeAll(() => {
       const users = [user1, user2];
       userAndSockets = users.map((user) => {
-        const ws = io('http://localhost:3000', {
+        const ws = io('http://localhost:3000/chat', {
           extraHeaders: {
             cookie: `token=${user.accessToken}`,
           },
@@ -73,12 +73,13 @@ describe('ChatGateway and ChatController (e2e)', () => {
       return Promise.all(userAndSockets.map((u) => connect(u.ws)));
     });
     afterAll(() => {
-      userAndSockets.forEach((u) => u.ws.disconnect());
+      userAndSockets.forEach((u) => u.ws.close());
     });
     afterEach(() => {
-      userAndSockets.forEach((u) => {
+      return userAndSockets.forEach((u) => {
         u.ws.disconnect();
         u.ws.connect();
+        return connect(u.ws);
       });
     });
 
@@ -90,11 +91,6 @@ describe('ChatGateway and ChatController (e2e)', () => {
       beforeAll(async () => {
         firstLoginUser = userAndSockets[0];
         secondLoginUser = userAndSockets[1];
-      });
-
-      afterAll(async () => {
-        firstLoginUser.ws.disconnect();
-        secondLoginUser.ws.disconnect();
       });
 
       it('should emit the online status of the user', (done) => {
@@ -110,7 +106,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
         });
       });
 
-       it('should emit the online status of the user', (done) => {
+      it('should emit the online status of the user', (done) => {
         secondLoginUser.ws.on(eventName, (users) => {
           expectOnlineStatusResponse(users);
           expect(users).toHaveLength(2);
