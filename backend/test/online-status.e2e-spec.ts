@@ -132,5 +132,34 @@ describe('ChatGateway and ChatController (e2e)', () => {
         });
       });
     });
+    describe('when a user logs out', () => {
+      const eventName = 'online-status';
+      let loginUser: UserAndSocket;
+      let logoutUser: UserAndSocket;
+
+      beforeAll(async () => {
+        loginUser = userAndSockets[0];
+        logoutUser = userAndSockets[1];
+      });
+
+      it('should emit the offline status when a user logs out', (done) => {
+        loginUser.ws.on(eventName, () => {
+          loginUser.ws.removeAllListeners();
+          loginUser.ws.on(eventName, (users) => {
+            expectOnlineStatusResponse(users);
+            expect(users).toHaveLength(1);
+            const filterd = users.filter(
+              (u) => u.userId === logoutUser.user.id,
+            );
+            expect(filterd).toHaveLength(1);
+            expect(filterd[0].status).toBe('offline');
+            done();
+          });
+          logoutUser.ws.disconnect();
+        });
+      });
+    });
+
+    describe('when a user start pong game', () => {});
   });
 });
