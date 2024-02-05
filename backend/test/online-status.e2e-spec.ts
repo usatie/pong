@@ -21,8 +21,8 @@ async function createNestApp(): Promise<INestApplication> {
 
 describe('ChatGateway and ChatController (e2e)', () => {
   let app: TestApp;
-  let user1;
-  let user2;
+  let user1: UserEntityWithAccessToken;
+  let user2: UserEntityWithAccessToken;
 
   beforeAll(async () => {
     //app = await initializeApp();
@@ -58,21 +58,37 @@ describe('ChatGateway and ChatController (e2e)', () => {
   };
 
   describe('online status', () => {
+    let userAndSockets: UserAndSocket[];
+
+    beforeAll(() => {
+      const users = [user1, user2];
+      userAndSockets = users.map((user) => {
+        const ws = io('http://localhost:3000', {
+          extraHeaders: {
+            cookie: `token=${user.accessToken}`,
+          },
+        });
+        return { user, ws };
+      });
+      return Promise.all(userAndSockets.map((u) => connect(u.ws)));
+    });
+    afterAll(() => {
+      userAndSockets.forEach((u) => u.ws.disconnect());
+    });
+    afterEach(() => {
+      userAndSockets.forEach((u) => {
+        u.ws.disconnect();
+        u.ws.connect();
+      });
+    });
+
     describe('when a user logs in', () => {
       let firstLoginUser: UserAndSocket;
       let secondLoginUser: UserAndSocket;
 
       beforeAll(async () => {
-        firstLoginUser.user = user1;
-        secondLoginUser.user = user2;
-        firstLoginUser.ws = io('http://localhost:3000', {
-          auth: { token: user1.accessToken },
-        });
-        secondLoginUser.ws = io('http://localhost:3000', {
-          auth: { token: user2.accessToken },
-        });
-        await connect(firstLoginUser.ws);
-        await connect(secondLoginUser.ws);
+        firstLoginUser = userAndSockets[0];
+        secondLoginUser = userAndSockets[1];
       });
 
       afterAll(async () => {
@@ -81,28 +97,20 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
 
       it('should emit the online status of the user', (done) => {
-        firstLoginUser.ws.on('online-status', (status) => {
-          expectOnlineStatusResponse(status);
-          expect(status).toHaveLength(2);
-          const [user1Status, user2Status] = status;
-          expect(user1Status.userId).toBe(user1.id);
-          expect(user1Status.online).toBe(true);
-          expect(user2Status.userId).toBe(user2.id);
-          expect(user2Status.online).toBe(false);
+        firstLoginUser.ws.on('online-users', (users) => {
+		  expectOnlineStatusResponse(users);
+          expect(users).toHaveLength(1);
+		  expect(users.some((user) => user.userId === firstLoginUser.user.id)).toBe(true);
           done();
         });
       });
 
       it('should emit the online status of the user', (done) => {
-        secondLoginUser.ws.on('online-status', (status) => {
-          expectOnlineStatusResponse(status);
-          expect(status).toHaveLength(2);
-          const [user1Status, user2Status] = status;
-          expect(user1Status.userId).toBe(user1.id);
-          expect(user1Status.online).toBe(true);
-          expect(user2Status.userId).toBe(user2.id);
-          expect(user2Status.online).toBe(true);
-          done();
+        secondLoginUser.ws.on('online-users', (users) => {
+		  expectOnlineStatusResponse(users);
+          expect(users).toHaveLength(2);
+		  expect(users.some((user) => user.userId === firstLoginUser.user.id)).toBe(true);
+		  expect(users.some((user) => user.userId === secondLoginUser.user.id)).toBe(true);
         });
       });
     });
