@@ -126,3 +126,17 @@ export function expectPostGenerateTwoFactorAuthenticationSecretResponse(
   };
   expect(res.body).toEqual(expected);
 }
+
+export function expectOnlineStatusResponse(res: request.Response) {
+  type onlineStatus = {
+    userId: number;
+    status: string;
+  };
+  const expected: onlineStatus[] = [
+    {
+      userId: expect.any(Number),
+      status: expect.any(String),
+    },
+  ];
+  expect(res.body).toEqual(expected);
+}
