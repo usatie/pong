@@ -166,6 +166,7 @@ export class ChatService {
         },
       });
       rooms.forEach((room) => this.addUserToRoom(room.id, user.id));
+      client.emit('online-status', this.getOnlineUsers());
     } catch (error) {
       console.log(error);
     }
@@ -173,6 +174,13 @@ export class ChatService {
 
   handleDisconnect(client: Socket) {
     this.removeClient(client);
+  }
+
+  getOnlineUsers(): { userId: number; status: 'online' | 'offline' }[] {
+    return Array.from(this.clients.keys()).map((userId) => ({
+      userId,
+      status: 'online',
+    }));
   }
 
   private async expectNotBlockedBy(blockerId: number, userId: number) {
