@@ -150,6 +150,59 @@ describe('ChatGateway and ChatController (e2e)', () => {
         secondLoginUser.ws.disconnect();
       });
     });
-    describe('when a user start pong game', () => {});
+  });
+  describe('online-status (pong)', () => {
+    let LoginUser: UserAndSocket;
+    let pongUser: UserAndSocket;
+
+    beforeAll(() => {
+      const users = [user1, user2];
+      LoginUser = {
+        user: users[0],
+        ws: io('http://localhost:3000/chat', {
+          extraHeaders: {
+            cookie: `token=${users[0].accessToken}`,
+          },
+          autoConnect: false,
+        }),
+      };
+      pongUser = {
+        user: users[1],
+        ws: io('http://localhost:3000/pong', {
+          extraHeaders: {
+            cookie: `token=${users[1].accessToken}`,
+          },
+          query: { game_id: 'test', is_player: true },
+          forceNew: true, // to avoid reusing the same connection. Otherwise, the query is not sent.
+          autoConnect: false,
+        }),
+      };
+      const myLogin = new Promise<void>((resolve) => {
+        LoginUser.ws.once('online-status', () => {
+          // it is my own online status
+          resolve();
+        });
+      });
+      LoginUser.ws.connect();
+      return myLogin;
+    });
+    afterEach(() => {
+      LoginUser.ws.removeAllListeners(); // otherwise, the listeners are accumulated
+      pongUser.ws.removeAllListeners();
+      LoginUser.ws.disconnect();
+      pongUser.ws.disconnect();
+    });
+    describe('when a user start pong game', () => {
+      it('should receive the pong status of the other user', (done) => {
+        LoginUser.ws.on('online-status', (users) => {
+          expectOnlineStatusResponse(users);
+          expect(users).toHaveLength(1);
+          expect(users[0].userId).toBe(pongUser.user.id);
+          expect(users[0].status).toBe('pong');
+          done();
+        });
+        pongUser.ws.connect();
+      });
+    });
   });
 });

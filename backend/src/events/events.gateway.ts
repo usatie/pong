@@ -13,6 +13,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { HistoryService } from 'src/history/history.service';
 import { UserGuardWs } from 'src/user/user.guard-ws';
 import { v4 } from 'uuid';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const POINT_TO_WIN = 3;
 
@@ -73,6 +74,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   constructor(
     private readonly authService: AuthService,
     private readonly historyService: HistoryService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @WebSocketServer()
@@ -110,6 +112,9 @@ export class EventsGateway implements OnGatewayDisconnect {
 
     // Both of viewers and players join the Socket.io room
     client.join(gameId);
+    this.eventEmitter.emit('online-status', [
+      { userId: user.id, status: 'pong' },
+    ]);
 
     if (!isPlayer) {
       this.emitUpdateStatus(client, 'joined-as-viewer');

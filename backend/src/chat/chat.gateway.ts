@@ -155,6 +155,11 @@ export class ChatGateway {
     }
   }
 
+  @OnEvent('online-status')
+  handleOnlineStatus(event: any) {
+    this.server.emit('online-status', event);
+  }
+
   @OnEvent('room.enter', { async: true })
   async handleEnter(event: RoomEnteredEvent) {
     await this.chatService.addUserToRoom(event.roomId, event.userId);
