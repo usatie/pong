@@ -35,6 +35,26 @@ export function useMute(
     mutedUsers.some((u: PublicUserEntity) => u.id === userId),
   );
 
+  useEffect(() => {
+    const handleMuteEvent = (data: MuteEvent) => {
+      if (Number(data.userId) === userId && data.roomId === roomId) {
+        setIsMuted(true);
+      }
+    };
+    const handleUnmuteEvent = (data: MuteEvent) => {
+      if (Number(data.userId) === userId && data.roomId === roomId) {
+        setIsMuted(false);
+      }
+    };
+    socket.on("mute", handleMuteEvent);
+    socket.on("unmute", handleUnmuteEvent);
+
+    return () => {
+      socket.off("mute", handleMuteEvent);
+      socket.off("unmute", handleUnmuteEvent);
+    };
+  }, [roomId, userId]);
+
   const mute = useCallback(
     async (duration?: number) => {
       setMutePending(true);

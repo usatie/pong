@@ -30,6 +30,20 @@ export function useUpdateRole(
   const [userRole, setUserRole] = useState(user.role);
   const [meRole, setMeRole] = useState(me.role);
   const isUserAdmin = userRole === "ADMINISTRATOR";
+  useEffect(() => {
+    const handleUpdateRoleEvent = (data: UpdateRoleEvent) => {
+      if (data.roomId === roomId && data.userId === user.userId) {
+        setUserRole(data.role);
+      } else if (data.roomId === roomId && data.userId === me.userId) {
+        setMeRole(data.role);
+      }
+    };
+    socket.on("update-role", handleUpdateRoleEvent);
+
+    return () => {
+      socket.off("update-role", handleUpdateRoleEvent);
+    };
+  }, [roomId, me.userId, user.userId]);
 
   const updateUserRole = useCallback(async () => {
     setUpdateRolePending(true);
