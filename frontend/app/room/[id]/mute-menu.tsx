@@ -9,18 +9,15 @@ import {
 } from "@/components/ui/context-menu";
 import { useState } from "react";
 
-type MuteState = {
-  isMuted: boolean;
-  isClicked: boolean;
-};
-
 export default function MuteMenu({
-  muteState,
+  isMuted,
+  mutePending,
   roomId,
   userId,
   mute,
 }: {
-  muteState: MuteState;
+  isMuted: boolean;
+  mutePending: boolean;
   roomId: number;
   userId: number;
   mute: (duration?: number) => void;
@@ -31,7 +28,7 @@ export default function MuteMenu({
         <ContextMenuSubTrigger>Mute</ContextMenuSubTrigger>
         <ContextMenuSubContent className="w-46">
           <ContextMenuItem
-            disabled={muteState.isClicked || muteState.isMuted}
+            disabled={mutePending || isMuted}
             onSelect={() => {
               mute(5 * 60);
             }}
@@ -39,7 +36,7 @@ export default function MuteMenu({
             For 5 minutes
           </ContextMenuItem>
           <ContextMenuItem
-            disabled={muteState.isClicked || muteState.isMuted}
+            disabled={mutePending || isMuted}
             onSelect={() => {
               mute(15 * 60);
             }}
@@ -47,7 +44,7 @@ export default function MuteMenu({
             For 15 minutes
           </ContextMenuItem>
           <ContextMenuItem
-            disabled={muteState.isClicked || muteState.isMuted}
+            disabled={mutePending || isMuted}
             onSelect={() => {
               mute(60 * 60);
             }}
@@ -55,7 +52,7 @@ export default function MuteMenu({
             For 1 Hour
           </ContextMenuItem>
           <ContextMenuItem
-            disabled={muteState.isClicked || muteState.isMuted}
+            disabled={mutePending || isMuted}
             onSelect={() => {
               mute(180 * 60);
             }}
@@ -63,7 +60,7 @@ export default function MuteMenu({
             For 3 Hours
           </ContextMenuItem>
           <ContextMenuItem
-            disabled={muteState.isClicked || muteState.isMuted}
+            disabled={mutePending || isMuted}
             onSelect={() => {
               mute(480 * 60);
             }}
@@ -71,7 +68,7 @@ export default function MuteMenu({
             For 8 Hours
           </ContextMenuItem>
           <ContextMenuItem
-            disabled={muteState.isClicked || muteState.isMuted}
+            disabled={mutePending || isMuted}
             onSelect={() => {
               mute(1440 * 60);
             }}
@@ -79,7 +76,7 @@ export default function MuteMenu({
             For 24 Hours
           </ContextMenuItem>
           <ContextMenuItem
-            disabled={muteState.isClicked || muteState.isMuted}
+            disabled={mutePending || isMuted}
             onSelect={() => {
               mute();
             }}
