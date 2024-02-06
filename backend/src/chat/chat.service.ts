@@ -177,7 +177,10 @@ export class ChatService {
 
   handleDisconnect(client: Socket) {
     const emitData = { userId: this.getUserId(client), status: 'offline' };
-    client.broadcast.emit('online-status', [emitData]);
+    if (emitData.userId) {
+      client.broadcast.emit('online-status', [emitData]);
+      return;
+    }
     this.removeClient(client);
   }
 

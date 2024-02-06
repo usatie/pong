@@ -112,9 +112,11 @@ export class EventsGateway implements OnGatewayDisconnect {
 
     // Both of viewers and players join the Socket.io room
     client.join(gameId);
-    this.eventEmitter.emit('online-status', [
-      { userId: user.id, status: 'pong' },
-    ]);
+    if (user) {
+      this.eventEmitter.emit('online-status', [
+        { userId: user.id, status: 'pong' },
+      ]);
+    }
 
     if (!isPlayer) {
       this.emitUpdateStatus(client, 'joined-as-viewer');
