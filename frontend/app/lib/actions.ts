@@ -22,6 +22,7 @@ import {
 export async function signOut() {
   cookies()?.delete("token");
   destroySession();
+  revalidatePath("/", "layout");
   redirect("/");
 }
 
@@ -55,6 +56,7 @@ export async function authenticate(
       email: formData.get("email") as string,
       password: formData.get("password") as string,
     });
+    revalidatePath("/", "layout");
     redirect("/");
   } catch (error) {
     if ((error as Error).message.includes("Authentication failed")) {
