@@ -49,7 +49,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     await app.close();
   });
 
-  describe('online status', () => {
+  describe('online status (login logoff) ', () => {
     let userAndSockets: UserAndSocket[];
 
     beforeAll(() => {
@@ -74,7 +74,6 @@ describe('ChatGateway and ChatController (e2e)', () => {
       it('should receive the online status of me', (done) => {
         const us = userAndSockets[0];
         us.ws.on('online-status', (users) => {
-          console.log('online-status!! ', users);
           expectOnlineStatusResponse(users);
           expect(users).toHaveLength(1);
           expect(users[0].userId).toBe(us.user.id);
@@ -92,14 +91,14 @@ describe('ChatGateway and ChatController (e2e)', () => {
       beforeAll(() => {
         firstLoginUser = userAndSockets[0];
         secondLoginUser = userAndSockets[1];
-        const myOnlineStatus = new Promise<void>((resolve) => {
+        const myLogin = new Promise<void>((resolve) => {
           firstLoginUser.ws.once('online-status', () => {
             // it is my own online status
             resolve();
           });
         });
         firstLoginUser.ws.connect();
-        return myOnlineStatus;
+        return myLogin;
       });
 
       it('should receive the online status of the other user', (done) => {
@@ -121,26 +120,26 @@ describe('ChatGateway and ChatController (e2e)', () => {
       beforeAll(() => {
         firstLoginUser = userAndSockets[0];
         secondLoginUser = userAndSockets[1];
-        const myOnlineStatus = new Promise<void>((resolve) => {
+        const myLogin = new Promise<void>((resolve) => {
           firstLoginUser.ws.once('online-status', () => {
             // it is my own online status
             resolve();
           });
         });
         firstLoginUser.ws.connect();
-        return myOnlineStatus.then(() => {
-          const otherUserOnlineStatus = new Promise<void>((resolve) => {
+        return myLogin.then(() => {
+          const otherLogin = new Promise<void>((resolve) => {
             firstLoginUser.ws.once('online-status', () => {
               // it is the other user's online status
               resolve();
             });
           });
           secondLoginUser.ws.connect();
-          return otherUserOnlineStatus;
+          return otherLogin;
         });
       });
 
-      it('should receive the online status of the other user', (done) => {
+      it('should receive the offline status of the other user', (done) => {
         firstLoginUser.ws.on('online-status', (users) => {
           expectOnlineStatusResponse(users);
           expect(users).toHaveLength(1);
