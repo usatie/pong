@@ -3,22 +3,60 @@ import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
 import { chatSocket } from "@/socket";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useAuthContext } from "./client-auth";
 import {
   DenyEvent,
+  EnterRoomEvent,
   InviteEvent,
+  LeaveRoomEvent,
   MatchEvent,
   MessageEvent,
   PublicUserEntity,
 } from "./dtos";
 import { chatSocket as socket } from "@/socket";
 import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export default function SocketProvider() {
   const { toast } = useToast();
   const { currentUser } = useAuthContext();
+  const pathName = usePathname();
   const router = useRouter();
+
+  const handleEnterRoomEvent = useCallback(
+    (data: EnterRoomEvent) => {
+      if (pathName === "/room/" + data.roomId.toString()) {
+        router.refresh();
+      } else if (
+        (pathName.startsWith("/room/") || pathName === "/room") &&
+        currentUser?.id === data.userId
+      ) {
+        router.refresh();
+      }
+    },
+    [currentUser, pathName, router],
+  );
+
+  const handleLeaveRoomEvent = useCallback(
+    (data: LeaveRoomEvent) => {
+      if (
+        pathName === "/room/" + data.roomId.toString() &&
+        data.userId === currentUser?.id
+      ) {
+        router.push("/room");
+        router.refresh();
+      } else if (pathName === "/room/" + data.roomId.toString()) {
+        router.refresh();
+      } else if (
+        (pathName.startsWith("/room/") || pathName === "/room") &&
+        currentUser?.id === data.userId
+      ) {
+        router.refresh();
+      }
+    },
+    [currentUser, pathName, router],
+  );
 
   const MatchPong = (data: MatchEvent) => {
     router.push(`/pong/${data.roomId}?mode=player`);
@@ -99,6 +137,10 @@ export default function SocketProvider() {
     const handler = (event: string, data: any) => {
       if (event === "message") {
         showMessageToast(data);
+      } else if (event === "enter-room") {
+        handleEnterRoomEvent(data);
+      } else if (event === "leave") {
+        handleLeaveRoomEvent(data);
       } else if (event === "invite-pong") {
         showInvitePongToast(data);
       } else if (event === "invite-cancel-pong") {
@@ -118,6 +160,6 @@ export default function SocketProvider() {
       chatSocket.offAny(handler);
       chatSocket.disconnect();
     };
-  }, [currentUser, toast]);
+  }, [currentUser, handleEnterRoomEvent, handleLeaveRoomEvent, toast]);
   return <></>;
 }

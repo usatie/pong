@@ -56,6 +56,16 @@ export type JwtPayload = {
   isTwoFactorAuthenticated: boolean;
 };
 
+export type EnterRoomEvent = {
+  roomId: number;
+  userId: number;
+};
+
+export type LeaveRoomEvent = {
+  roomId: number;
+  userId: number;
+};
+
 export type MessageEvent = {
   user: PublicUserEntity;
   content: string;
