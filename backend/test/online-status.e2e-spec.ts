@@ -49,137 +49,108 @@ describe('ChatGateway and ChatController (e2e)', () => {
     await app.close();
   });
 
-  const connect = (ws: Socket) => {
-    return new Promise<void>((resolve) => {
-      ws.on('connect', () => {
-        resolve();
-      });
-    });
-  };
-
   describe('online status', () => {
     let userAndSockets: UserAndSocket[];
 
     beforeAll(() => {
       const users = [user1, user2];
-      userAndSockets = users.map((user) => {
+      userAndSockets = users.map((u) => {
         const ws = io('http://localhost:3000/chat', {
           extraHeaders: {
-            cookie: `token=${user.accessToken}`,
+            cookie: `token=${u.accessToken}`,
           },
+          autoConnect: false,
         });
-        return { user, ws };
+        return { user: u, ws };
       });
-      return Promise.all(userAndSockets.map((u) => connect(u.ws)));
-    });
-    afterAll(() => {
-      userAndSockets.forEach((u) => u.ws.close());
     });
     afterEach(() => {
-      return userAndSockets.forEach((u) => {
-        u.ws.removeAllListeners();
+      userAndSockets.forEach((u) => {
+        u.ws.removeAllListeners(); // otherwise, the listeners are accumulated
         u.ws.disconnect();
-        u.ws.connect();
-        return connect(u.ws);
+      });
+    });
+    describe('when I log in', () => {
+      it('should receive the online status of me', (done) => {
+        const us = userAndSockets[0];
+        us.ws.on('online-status', (users) => {
+          console.log('online-status!! ', users);
+          expectOnlineStatusResponse(users);
+          expect(users).toHaveLength(1);
+          expect(users[0].userId).toBe(us.user.id);
+          expect(users[0].status).toBe('online');
+          done();
+        });
+        us.ws.connect();
       });
     });
 
-    describe('when a user logs in', () => {
-      const eventName = 'online-status';
+    describe('when other user logs in', () => {
       let firstLoginUser: UserAndSocket;
       let secondLoginUser: UserAndSocket;
 
-      beforeAll(async () => {
+      beforeAll(() => {
         firstLoginUser = userAndSockets[0];
         secondLoginUser = userAndSockets[1];
+        const myOnlineStatus = new Promise<void>((resolve) => {
+          firstLoginUser.ws.once('online-status', () => {
+            // it is my own online status
+            resolve();
+          });
+        });
+        firstLoginUser.ws.connect();
+        return myOnlineStatus;
       });
 
-      it('should emit the online status of the user (first login)', (done) => {
-        const makeOwnLoginListener = () => {
-          let count = 0;
-          const listener = (
-            users: [{ userId: number; status: 'online' | 'offline' }],
-          ) => {
-            count++;
-            console.log('count', count);
-            if (count == 1) {
-              console.log('first login');
-              expectOnlineStatusResponse(users);
-              expect(users).toHaveLength(1);
-              const filtered = users.filter(
-                (user) => user.userId === firstLoginUser.user.id,
-              );
-              expect(filtered).toHaveLength(1);
-              expect(filtered[0].status).toBe('online');
-            } else {
-              console.log('second login');
-              expectOnlineStatusResponse(users);
-              expect(users).toHaveLength(1);
-              const filtered = users.filter(
-                (user) => user.userId === secondLoginUser.user.id,
-              );
-              expect(filtered).toHaveLength(1);
-              expect(filtered[0].status).toBe('online');
-              done();
-            }
-          };
-          return listener;
-        };
-        const listener = makeOwnLoginListener();
-
-        firstLoginUser.ws.on(eventName, listener);
-      });
-
-      it('should emit the online status of the user (second user)', (done) => {
-        secondLoginUser.ws.on(eventName, (users) => {
+      it('should receive the online status of the other user', (done) => {
+        firstLoginUser.ws.on('online-status', (users) => {
           expectOnlineStatusResponse(users);
-          expect(users).toHaveLength(2);
-          {
-            const filtered = users.filter(
-              (user) => user.userId === firstLoginUser.user.id,
-            );
-            expect(filtered).toHaveLength(1);
-            expect(filtered[0].status).toBe('online');
-          }
-          {
-            const filtered = users.filter(
-              (user) => user.userId === secondLoginUser.user.id,
-            );
-            expect(filtered).toHaveLength(1);
-            expect(filtered[0].status).toBe('online');
-          }
+          expect(users).toHaveLength(1);
+          expect(users[0].userId).toBe(secondLoginUser.user.id);
+          expect(users[0].status).toBe('online');
           done();
         });
+        secondLoginUser.ws.connect();
       });
     });
-    describe('when a user logs out', () => {
-      const eventName = 'online-status';
-      let loginUser: UserAndSocket;
-      let logoutUser: UserAndSocket;
 
-      beforeAll(async () => {
-        loginUser = userAndSockets[0];
-        logoutUser = userAndSockets[1];
-      });
+    describe('when other user logs out', () => {
+      let firstLoginUser: UserAndSocket;
+      let secondLoginUser: UserAndSocket;
 
-      it('should emit the offline status when a user logs out', (done) => {
-        loginUser.ws.on(eventName, () => {
-          loginUser.ws.removeAllListeners();
-          loginUser.ws.on(eventName, (users) => {
-            expectOnlineStatusResponse(users);
-            expect(users).toHaveLength(1);
-            const filterd = users.filter(
-              (u) => u.userId === logoutUser.user.id,
-            );
-            expect(filterd).toHaveLength(1);
-            expect(filterd[0].status).toBe('offline');
-            done();
+      beforeAll(() => {
+        firstLoginUser = userAndSockets[0];
+        secondLoginUser = userAndSockets[1];
+        const myOnlineStatus = new Promise<void>((resolve) => {
+          firstLoginUser.ws.once('online-status', () => {
+            // it is my own online status
+            resolve();
           });
-          logoutUser.ws.disconnect();
+        });
+        firstLoginUser.ws.connect();
+        return myOnlineStatus.then(() => {
+          const otherUserOnlineStatus = new Promise<void>((resolve) => {
+            firstLoginUser.ws.once('online-status', () => {
+              // it is the other user's online status
+              resolve();
+            });
+          });
+          secondLoginUser.ws.connect();
+          return otherUserOnlineStatus;
         });
       });
-    });
 
+      it('should receive the online status of the other user', (done) => {
+        firstLoginUser.ws.on('online-status', (users) => {
+          expectOnlineStatusResponse(users);
+          expect(users).toHaveLength(1);
+          expect(users[0].userId).toBe(secondLoginUser.user.id);
+          expect(users[0].status).toBe('offline');
+          done();
+        });
+        secondLoginUser.ws.disconnect();
+      });
+    });
     describe('when a user start pong game', () => {});
   });
 });
