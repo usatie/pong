@@ -15,6 +15,7 @@ function RoomButton({
   const router = useRouter();
   const onClick = () => {
     router.push(`${room.id}`);
+    router.refresh();
   };
   return (
     <button
