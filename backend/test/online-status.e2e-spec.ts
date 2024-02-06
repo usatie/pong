@@ -77,6 +77,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
     });
     afterEach(() => {
       return userAndSockets.forEach((u) => {
+        u.ws.removeAllListeners();
         u.ws.disconnect();
         u.ws.connect();
         return connect(u.ws);
@@ -93,36 +94,59 @@ describe('ChatGateway and ChatController (e2e)', () => {
         secondLoginUser = userAndSockets[1];
       });
 
-      it('should emit the online status of the user', (done) => {
-        firstLoginUser.ws.on(eventName, (users) => {
-          expectOnlineStatusResponse(users);
-          expect(users).toHaveLength(1);
-          const filterd = users.filter(
-            (user) => user.userId === firstLoginUser.user.id,
-          );
-          expect(filterd).toHaveLength(1);
-          expect(filterd[0].status).toBe('online');
-          done();
-        });
+      it('should emit the online status of the user (first login)', (done) => {
+        const makeOwnLoginListener = () => {
+          let count = 0;
+          const listener = (
+            users: [{ userId: number; status: 'online' | 'offline' }],
+          ) => {
+            count++;
+            console.log('count', count);
+            if (count == 1) {
+              console.log('first login');
+              expectOnlineStatusResponse(users);
+              expect(users).toHaveLength(1);
+              const filtered = users.filter(
+                (user) => user.userId === firstLoginUser.user.id,
+              );
+              expect(filtered).toHaveLength(1);
+              expect(filtered[0].status).toBe('online');
+            } else {
+              console.log('second login');
+              expectOnlineStatusResponse(users);
+              expect(users).toHaveLength(1);
+              const filtered = users.filter(
+                (user) => user.userId === secondLoginUser.user.id,
+              );
+              expect(filtered).toHaveLength(1);
+              expect(filtered[0].status).toBe('online');
+              done();
+            }
+          };
+          return listener;
+        };
+        const listener = makeOwnLoginListener();
+
+        firstLoginUser.ws.on(eventName, listener);
       });
 
-      it('should emit the online status of the user', (done) => {
+      it('should emit the online status of the user (second user)', (done) => {
         secondLoginUser.ws.on(eventName, (users) => {
           expectOnlineStatusResponse(users);
           expect(users).toHaveLength(2);
           {
-            const filterd = users.filter(
+            const filtered = users.filter(
               (user) => user.userId === firstLoginUser.user.id,
             );
-            expect(filterd).toHaveLength(1);
-            expect(filterd[0].status).toBe('online');
+            expect(filtered).toHaveLength(1);
+            expect(filtered[0].status).toBe('online');
           }
           {
-            const filterd = users.filter(
+            const filtered = users.filter(
               (user) => user.userId === secondLoginUser.user.id,
             );
-            expect(filterd).toHaveLength(1);
-            expect(filterd[0].status).toBe('online');
+            expect(filtered).toHaveLength(1);
+            expect(filtered[0].status).toBe('online');
           }
           done();
         });

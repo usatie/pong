@@ -167,6 +167,9 @@ export class ChatService {
       });
       rooms.forEach((room) => this.addUserToRoom(room.id, user.id));
       client.emit('online-status', this.getOnlineUsers());
+      client.broadcast.emit('online-status', [
+        { userId: user.id, status: 'online' },
+      ]);
     } catch (error) {
       console.log(error);
     }
