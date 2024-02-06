@@ -1,11 +1,11 @@
 "use client";
 
-import { toast } from "@/components/ui/use-toast";
 import { kickUserOnRoom } from "@/app/lib/actions";
 import type { UserOnRoomEntity } from "@/app/lib/dtos";
-import { chatSocket as socket } from "@/socket";
+import { toast } from "@/components/ui/use-toast";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { chatSocket as socket } from "@/socket";
 
 const showKickErrorToast = () => {
   toast({
