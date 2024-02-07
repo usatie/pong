@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function JoinRoomForm({ disabled }: { disabled: boolean }) {
+export default function JoinRoomForm({}) {
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const handleSubmit = (event: React.SyntheticEvent) => {
@@ -22,7 +22,7 @@ export default function JoinRoomForm({ disabled }: { disabled: boolean }) {
   };
 
   return (
-    <Card className="w-[350px]">
+    <Card>
       <CardHeader>
         <CardTitle>Join room</CardTitle>
         <CardDescription>
@@ -40,7 +40,7 @@ export default function JoinRoomForm({ disabled }: { disabled: boolean }) {
                 onChange={(e) => setInputValue(e.target.value)}
               />
             </div>
-            <Button disabled={disabled}>Join</Button>
+            <Button>Join</Button>
           </div>
         </form>
       </CardContent>
