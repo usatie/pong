@@ -16,7 +16,6 @@ import { PublicUserEntity } from './entities/message.entity';
 export enum UserStatus {
   Offline = 0b0,
   Online = 0b1,
-  Pong = 0b10,
 }
 
 @Injectable()

@@ -13,8 +13,6 @@ import { AuthService } from 'src/auth/auth.service';
 import { HistoryService } from 'src/history/history.service';
 import { UserGuardWs } from 'src/user/user.guard-ws';
 import { v4 } from 'uuid';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserStatus } from 'src/chat/chat.service';
 
 const POINT_TO_WIN = 3;
 
@@ -75,7 +73,6 @@ export class EventsGateway implements OnGatewayDisconnect {
   constructor(
     private readonly authService: AuthService,
     private readonly historyService: HistoryService,
-    private eventEmitter: EventEmitter2,
   ) {}
 
   @WebSocketServer()
@@ -113,11 +110,6 @@ export class EventsGateway implements OnGatewayDisconnect {
 
     // Both of viewers and players join the Socket.io room
     client.join(gameId);
-    if (user) {
-      this.eventEmitter.emit('online-status', [
-        { userId: user.id, status: UserStatus.Pong },
-      ]);
-    }
 
     if (!isPlayer) {
       this.emitUpdateStatus(client, 'joined-as-viewer');
@@ -146,13 +138,6 @@ export class EventsGateway implements OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     this.logger.log(`disconnect: ${client.id} `);
-
-    const user = this.users[client.id];
-    if (user) {
-      this.eventEmitter.emit('online-status', [
-        { userId: user.id, status: UserStatus.Online }, // TODO: handle offline status
-      ]);
-    }
 
     const roomId = client.handshake.query['game_id'] as string;
     client.leave(roomId);

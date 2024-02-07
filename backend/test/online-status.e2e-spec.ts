@@ -20,14 +20,6 @@ async function createNestApp(): Promise<INestApplication> {
   return app;
 }
 
-const connect = (ws: Socket) => {
-  return new Promise<void>((resolve) => {
-    ws.on('connect', () => {
-      resolve();
-    });
-  });
-};
-
 describe('ChatGateway and ChatController (e2e)', () => {
   let app: TestApp;
   let user1: UserEntityWithAccessToken;
@@ -158,86 +150,6 @@ describe('ChatGateway and ChatController (e2e)', () => {
           done();
         });
         secondLoginUser.ws.disconnect();
-      });
-    });
-  });
-  describe('online-status (pong)', () => {
-    let LoginUser: UserAndSocket;
-    let pongUser: UserAndSocket;
-
-    beforeAll(() => {
-      const users = [user1, user2];
-      LoginUser = {
-        user: users[0],
-        ws: io('http://localhost:3000/chat', {
-          extraHeaders: {
-            cookie: `token=${users[0].accessToken}`,
-          },
-          autoConnect: false,
-        }),
-      };
-      pongUser = {
-        user: users[1],
-        ws: io('http://localhost:3000/pong', {
-          extraHeaders: {
-            cookie: `token=${users[1].accessToken}`,
-          },
-          query: { game_id: 'test', is_player: true },
-          forceNew: true, // to avoid reusing the same connection. Otherwise, the query is not sent.
-          autoConnect: false,
-        }),
-      };
-    });
-    afterEach(() => {
-      LoginUser.ws.removeAllListeners(); // otherwise, the listeners are accumulated
-      pongUser.ws.removeAllListeners();
-      LoginUser.ws.disconnect();
-      pongUser.ws.disconnect();
-    });
-    describe('when I login while a user start pong game', () => {
-      beforeAll(() => {
-        const pong = connect(pongUser.ws);
-        pongUser.ws.connect();
-        return pong;
-      });
-      it('should receive the pong status of the other user', (done) => {
-        LoginUser.ws.on('online-status', (users) => {
-          expectOnlineStatusResponse(users);
-          expect(users).toHaveLength(2);
-          {
-            const pong = users.filter((u) => u.userId === pongUser.user.id);
-            expect(pong).toHaveLength(1);
-            expect(pong[0].status).toBe(UserStatus.Pong);
-          }
-          {
-            const online = users.filter((u) => u.userId === LoginUser.user.id);
-            expect(online).toHaveLength(1);
-            expect(online[0].status).toBe(UserStatus.Online);
-          }
-          done();
-        });
-        LoginUser.ws.connect();
-      });
-    });
-    describe('when a user start pong game while I login', () => {
-      beforeAll(() => {
-        const myLoginStatus = new Promise<void>((resolve) => {
-          LoginUser.ws.once('online-status', () => {
-            resolve();
-          });
-        });
-        LoginUser.ws.connect();
-        return myLoginStatus;
-      });
-      it('should receive the pong status of the other user', (done) => {
-        LoginUser.ws.on('online-status', (users) => {
-          expectOnlineStatusResponse(users);
-          expect(users).toHaveLength(1);
-          expect(users[0].userId).toBe(pongUser.user.id);
-          expect(users[0].status).toBe(UserStatus.Pong);
-          done();
-        });
-        pongUser.ws.connect();
       });
     });
   });
