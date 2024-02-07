@@ -57,13 +57,17 @@ export async function authenticate(
       password: formData.get("password") as string,
     });
     revalidatePath("/", "layout");
-    redirect("/");
   } catch (error) {
     if ((error as Error).message.includes("Authentication failed")) {
       return "CredentialSignin";
     }
     throw error;
   }
+  // This is a temporary fix for the redirect issue. It seems that the redirect is not working as expected.
+  // Instead of redirecting from server action, router.refresh from client component is used.
+  // Maybe this is related?: https://github.com/vercel/next.js/issues/58263
+  // redirect('/', 'layout');
+  return "Authenticated";
 }
 
 function getAccessToken() {

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFormState, useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   return (
@@ -26,6 +27,10 @@ export default function LoginForm() {
 function Form() {
   const { currentUser } = useAuthContext();
   const [code, action] = useFormState(authenticate, undefined);
+  const router = useRouter();
+  if (code === "Authenticated") {
+    router.replace("/");
+  }
   return (
     <>
       <form action={action}>
