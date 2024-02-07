@@ -14,6 +14,7 @@ import { HistoryService } from 'src/history/history.service';
 import { UserGuardWs } from 'src/user/user.guard-ws';
 import { v4 } from 'uuid';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserStatus } from 'src/chat/chat.service';
 
 const POINT_TO_WIN = 3;
 
@@ -114,7 +115,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     client.join(gameId);
     if (user) {
       this.eventEmitter.emit('online-status', [
-        { userId: user.id, status: 'pong' },
+        { userId: user.id, status: UserStatus.Pong },
       ]);
     }
 
@@ -149,7 +150,7 @@ export class EventsGateway implements OnGatewayDisconnect {
     const user = this.users[client.id];
     if (user) {
       this.eventEmitter.emit('online-status', [
-        { userId: user.id, status: 'online' }, // TODO: handle offline status
+        { userId: user.id, status: UserStatus.Online }, // TODO: handle offline status
       ]);
     }
 

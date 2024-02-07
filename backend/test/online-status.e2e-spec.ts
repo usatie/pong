@@ -4,6 +4,7 @@ import { Socket, io } from 'socket.io-client';
 import { AppModule } from 'src/app.module';
 import { TestApp, UserEntityWithAccessToken } from './utils/app';
 import { expectOnlineStatusResponse } from './utils/matcher';
+import { UserStatus } from 'src/chat/chat.service';
 
 type UserAndSocket = {
   user: UserEntityWithAccessToken;
@@ -85,7 +86,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           expectOnlineStatusResponse(users);
           expect(users).toHaveLength(1);
           expect(users[0].userId).toBe(us.user.id);
-          expect(users[0].status).toBe('online');
+          expect(users[0].status).toBe(UserStatus.Online);
           done();
         });
         us.ws.connect();
@@ -114,7 +115,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           expectOnlineStatusResponse(users);
           expect(users).toHaveLength(1);
           expect(users[0].userId).toBe(secondLoginUser.user.id);
-          expect(users[0].status).toBe('online');
+          expect(users[0].status).toBe(UserStatus.Online);
           done();
         });
         secondLoginUser.ws.connect();
@@ -125,7 +126,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
       let firstLoginUser: UserAndSocket;
       let secondLoginUser: UserAndSocket;
 
-      beforeAll(() => {
+      beforeAll(async () => {
         firstLoginUser = userAndSockets[0];
         secondLoginUser = userAndSockets[1];
         const myLogin = new Promise<void>((resolve) => {
@@ -135,6 +136,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           });
         });
         firstLoginUser.ws.connect();
+        await myLogin;
         return myLogin.then(() => {
           const otherLogin = new Promise<void>((resolve) => {
             firstLoginUser.ws.once('online-status', () => {
@@ -152,7 +154,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           expectOnlineStatusResponse(users);
           expect(users).toHaveLength(1);
           expect(users[0].userId).toBe(secondLoginUser.user.id);
-          expect(users[0].status).toBe('offline');
+          expect(users[0].status).toBe(UserStatus.Offline);
           done();
         });
         secondLoginUser.ws.disconnect();
@@ -205,12 +207,12 @@ describe('ChatGateway and ChatController (e2e)', () => {
           {
             const pong = users.filter((u) => u.userId === pongUser.user.id);
             expect(pong).toHaveLength(1);
-            expect(pong[0].status).toBe('pong');
+            expect(pong[0].status).toBe(UserStatus.Pong);
           }
           {
             const online = users.filter((u) => u.userId === LoginUser.user.id);
             expect(online).toHaveLength(1);
-            expect(online[0].status).toBe('online');
+            expect(online[0].status).toBe(UserStatus.Online);
           }
           done();
         });
@@ -232,7 +234,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           expectOnlineStatusResponse(users);
           expect(users).toHaveLength(1);
           expect(users[0].userId).toBe(pongUser.user.id);
-          expect(users[0].status).toBe('pong');
+          expect(users[0].status).toBe(UserStatus.Pong);
           done();
         });
         pongUser.ws.connect();

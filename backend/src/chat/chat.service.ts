@@ -13,6 +13,12 @@ import { UserService } from 'src/user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { PublicUserEntity } from './entities/message.entity';
 
+export enum UserStatus {
+  Offline = 0b0,
+  Online = 0b1,
+  Pong = 0b10,
+}
+
 @Injectable()
 @WebSocketGateway()
 export class ChatService {
@@ -24,10 +30,10 @@ export class ChatService {
 
   // Map<User.id, Socket>
   private clients = new Map<User['id'], Socket>();
-  private users = new Map<Socket['id'], PublicUserEntity>();
   // key: inviter, value: invitee
+  private users = new Map<Socket['id'], PublicUserEntity>();
   private invite = new Map<User['id'], User['id']>();
-  private statuses = new Map<User['id'], 'online' | 'offline' | 'pong'>();
+  private statuses = new Map<User['id'], UserStatus>();
 
   getUser(client: Socket) {
     return this.users.get(client.id);
@@ -136,7 +142,7 @@ export class ChatService {
     roomId;
     event;
     data;
-    // TOOD: send to room
+    // TODO: send to room
     // this.server.to(roomId.toString()).emit(event, data);
   }
 
@@ -168,10 +174,10 @@ export class ChatService {
         },
       });
       rooms.forEach((room) => this.addUserToRoom(room.id, user.id));
-      this.statuses.set(user.id, 'online');
+      this.statuses.set(user.id, UserStatus.Online);
       client.emit('online-status', this.getUserStatuses());
       client.broadcast.emit('online-status', [
-        { userId: user.id, status: 'online' },
+        { userId: user.id, status: UserStatus.Online },
       ]);
     } catch (error) {
       console.log(error);
@@ -181,14 +187,25 @@ export class ChatService {
   handleOnlineStatus(
     event: {
       userId: number;
-      status: 'online' | 'offline' | 'pong';
+      status: UserStatus;
     }[],
   ) {
-    event.forEach((e) => this.statuses.set(e.userId, e.status));
+    event.forEach((e) => {
+      const state = this.statuses[e.userId]
+        ? (this.statuses[e.userId] |= e.status)
+        : e.status;
+      this.statuses.set(e.userId, state);
+      if (this.statuses[e.userId] === UserStatus.Offline) {
+        this.statuses.delete(e.userId);
+      }
+    });
   }
 
   handleDisconnect(client: Socket) {
-    const emitData = { userId: this.getUserId(client), status: 'offline' };
+    const emitData = {
+      userId: this.getUserId(client),
+      status: UserStatus.Offline,
+    };
     if (emitData.userId) {
       client.broadcast.emit('online-status', [emitData]);
     }
@@ -197,7 +214,7 @@ export class ChatService {
 
   getUserStatuses(): {
     userId: number;
-    status: 'online' | 'offline' | 'pong';
+    status: UserStatus;
   }[] {
     return Array.from(this.statuses).map(([userId, status]) => ({
       userId,
