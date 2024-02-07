@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { UserStatus } from 'src/chat/chat.service';
 import * as request from 'supertest';
 
 export const expectRoomWithUsers = (room) => {
@@ -125,4 +126,15 @@ export function expectPostGenerateTwoFactorAuthenticationSecretResponse(
     otpAuthUrl: expect.any(String),
   };
   expect(res.body).toEqual(expected);
+}
+
+export function expectOnlineStatusResponse(
+  users: { userId: number; status: UserStatus }[],
+) {
+  type User = { userId: number; status: UserStatus };
+  const expected: User[] = users.map(() => ({
+    userId: expect.any(Number),
+    status: expect.any(Number),
+  }));
+  expect(users).toEqual(expected);
 }

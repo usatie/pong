@@ -2,7 +2,14 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Socket, io } from 'socket.io-client';
 import { AppModule } from 'src/app.module';
-import { TestApp } from './utils/app';
+import { TestApp, UserEntityWithAccessToken } from './utils/app';
+import { expectOnlineStatusResponse } from './utils/matcher';
+import { UserStatus } from 'src/chat/chat.service';
+
+type UserAndSocket = {
+  user: UserEntityWithAccessToken;
+  ws: Socket;
+};
 
 async function createNestApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -15,8 +22,8 @@ async function createNestApp(): Promise<INestApplication> {
 
 describe('ChatGateway and ChatController (e2e)', () => {
   let app: TestApp;
-  let user1;
-  let user2;
+  let user1: UserEntityWithAccessToken;
+  let user2: UserEntityWithAccessToken;
 
   beforeAll(async () => {
     //app = await initializeApp();
@@ -43,47 +50,107 @@ describe('ChatGateway and ChatController (e2e)', () => {
     await app.close();
   });
 
-  const connect = (ws: Socket) => {
-    return new Promise<void>((resolve) => {
-      ws.on('connect', () => {
-        resolve();
+  describe('online status (login logoff) ', () => {
+    let userAndSockets: UserAndSocket[];
+
+    beforeAll(() => {
+      const users = [user1, user2];
+      userAndSockets = users.map((u) => {
+        const ws = io('http://localhost:3000/chat', {
+          extraHeaders: {
+            cookie: `token=${u.accessToken}`,
+          },
+          autoConnect: false,
+        });
+        return { user: u, ws };
       });
     });
-  };
-
-  describe('online status', () => {
-    let onlineUser;
-    let onlineUserSocket;
-    let offlineUser;
-
-    beforeAll(async () => {
-      onlineUser = user1;
-      onlineUserSocket = io('ws://localhost:3000/chat', {
-        extraHeaders: { cookie: 'token=' + onlineUser.accessToken },
+    afterEach(() => {
+      userAndSockets.forEach((u) => {
+        u.ws.removeAllListeners(); // otherwise, the listeners are accumulated
+        u.ws.disconnect();
       });
-      await connect(onlineUserSocket);
-      offlineUser = user2;
     });
-    afterAll(() => {
-      onlineUserSocket.close();
+    describe('when I log in', () => {
+      it('should receive the online status of me', (done) => {
+        const us = userAndSockets[0];
+        us.ws.on('online-status', (users) => {
+          expectOnlineStatusResponse(users);
+          expect(users).toHaveLength(1);
+          expect(users[0].userId).toBe(us.user.id);
+          expect(users[0].status).toBe(UserStatus.Online);
+          done();
+        });
+        us.ws.connect();
+      });
     });
 
-    it('online user should be true (online)', async () => {
-      const res = await app
-        .isOnline(onlineUser.id, onlineUser.accessToken)
-        .expect(200);
-      const body = res.body;
-      expect(body.isOnline).toEqual(true);
+    describe('when other user logs in', () => {
+      let firstLoginUser: UserAndSocket;
+      let secondLoginUser: UserAndSocket;
+
+      beforeAll(() => {
+        firstLoginUser = userAndSockets[0];
+        secondLoginUser = userAndSockets[1];
+        const myLogin = new Promise<void>((resolve) => {
+          firstLoginUser.ws.once('online-status', () => {
+            // it is my own online status
+            resolve();
+          });
+        });
+        firstLoginUser.ws.connect();
+        return myLogin;
+      });
+
+      it('should receive the online status of the other user', (done) => {
+        firstLoginUser.ws.on('online-status', (users) => {
+          expectOnlineStatusResponse(users);
+          expect(users).toHaveLength(1);
+          expect(users[0].userId).toBe(secondLoginUser.user.id);
+          expect(users[0].status).toBe(UserStatus.Online);
+          done();
+        });
+        secondLoginUser.ws.connect();
+      });
     });
-    it('offline user should be false (offline)', async () => {
-      const res = await app
-        .isOnline(offlineUser.id, offlineUser.accessToken)
-        .expect(200);
-      const body = res.body;
-      expect(body.isOnline).toEqual(false);
-    });
-    it('check online status with invalid access token should be unauthorized', async () => {
-      await app.isOnline(onlineUser.id, '').expect(401);
+
+    describe('when other user logs out', () => {
+      let firstLoginUser: UserAndSocket;
+      let secondLoginUser: UserAndSocket;
+
+      beforeAll(async () => {
+        firstLoginUser = userAndSockets[0];
+        secondLoginUser = userAndSockets[1];
+        const myLogin = new Promise<void>((resolve) => {
+          firstLoginUser.ws.once('online-status', () => {
+            // it is my own online status
+            resolve();
+          });
+        });
+        firstLoginUser.ws.connect();
+        await myLogin;
+        return myLogin.then(() => {
+          const otherLogin = new Promise<void>((resolve) => {
+            firstLoginUser.ws.once('online-status', () => {
+              // it is the other user's online status
+              resolve();
+            });
+          });
+          secondLoginUser.ws.connect();
+          return otherLogin;
+        });
+      });
+
+      it('should receive the offline status of the other user', (done) => {
+        firstLoginUser.ws.on('online-status', (users) => {
+          expectOnlineStatusResponse(users);
+          expect(users).toHaveLength(1);
+          expect(users[0].userId).toBe(secondLoginUser.user.id);
+          expect(users[0].status).toBe(UserStatus.Offline);
+          done();
+        });
+        secondLoginUser.ws.disconnect();
+      });
     });
   });
 });

@@ -13,7 +13,7 @@ import { RoomMuteEvent } from 'src/common/events/room-mute.event';
 import { RoomUnmuteEvent } from 'src/common/events/room-unmute.event';
 import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { RoomUpdateRoleEvent } from 'src/common/events/room-update-role.event';
-import { ChatService } from './chat.service';
+import { ChatService, UserStatus } from './chat.service';
 import { MuteService } from 'src/room/mute/mute.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
@@ -153,6 +153,17 @@ export class ChatGateway {
       this.server.to(deniedUserWsId).emit('deny-pong');
       this.chatService.removeInvite(data.userId);
     }
+  }
+
+  @OnEvent('online-status')
+  handleChangeOnlineStatus(
+    event: {
+      userId: number;
+      status: UserStatus;
+    }[],
+  ) {
+    this.chatService.handleChangeOnlineStatus(event);
+    this.server.emit('online-status', event);
   }
 
   @OnEvent('room.enter', { async: true })
