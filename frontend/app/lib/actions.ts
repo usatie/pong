@@ -886,10 +886,3 @@ export async function createUserWithOauth(
     redirect("/login");
   }
 }
-
-export const isOnline = async (userId: number) =>
-  fetch(`${process.env.API_URL}/chat/${userId}/online`, {
-    headers: {
-      Authorization: "Bearer " + getAccessToken(),
-    },
-  }).then((res) => (res.ok ? res.json() : Promise.reject(res)));

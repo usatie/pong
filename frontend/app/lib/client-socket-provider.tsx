@@ -3,7 +3,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
 import { chatSocket } from "@/socket";
 import Link from "next/link";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuthContext } from "./client-auth";
 import {
   DenyEvent,
@@ -93,6 +93,18 @@ export default function SocketProvider() {
     });
   };
 
+  const [onlineStatus, setOnlineStatus] = useState<{ [key: number]: number }>(
+    {},
+  );
+  const handleOnlineStatus = (users: { userId: number; status: number }[]) => {
+    console.log("users", users);
+    users.forEach((u) => {
+      console.log("FOO! u", u);
+      setOnlineStatus((prev) => ({ ...prev, [u.userId]: u.status }));
+    });
+    console.log("online-status", onlineStatus); // TODO: この時点では変更されていない?
+  };
+
   const showMessageToast = (message: MessageEvent) => {
     // TODO: If sender is me, don't show toast
     toast({
@@ -133,7 +145,6 @@ export default function SocketProvider() {
   };
 
   useEffect(() => {
-    chatSocket.connect();
     const handler = (event: string, data: any) => {
       if (event === "message") {
         showMessageToast(data);
@@ -151,11 +162,14 @@ export default function SocketProvider() {
         showDenyPongToast(data);
       } else if (event === "error-pong") {
         showErrorPongToast(data);
+      } else if (event === "online-status") {
+        handleOnlineStatus(data);
       } else {
         showNotificationToast(data);
       }
     };
     chatSocket.onAny(handler);
+    chatSocket.connect();
     return () => {
       chatSocket.offAny(handler);
       chatSocket.disconnect();
