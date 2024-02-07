@@ -3,22 +3,43 @@
 import { authenticate } from "@/app/lib/actions";
 import { useAuthContext } from "@/app/lib/client-auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFormState, useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Separator } from "@/components/ui/separator";
 
 export default function LoginForm() {
   return (
     <>
-      <Card className="w-[300px]">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-center">Pong</CardTitle>
+          <CardTitle>Log in</CardTitle>
         </CardHeader>
         <CardContent>
-          <Form />
+          <div className="flex flex-col gap-8">
+            <Form />
+            <div className="flex gap-4 w-full">
+              <Separator className="shrink self-center" />
+              OR
+              <Separator className="shrink self-center" />
+            </div>
+            <Button className="w-full" asChild>
+              <a
+                href={`${process.env.NEXT_PUBLIC_API_URL}/auth/login/oauth2/42`}
+              >
+                Login with 42
+              </a>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </>
@@ -59,15 +80,13 @@ function Form() {
           </div>
           <LoginButton />
         </div>
-        <div className="flex h-8 items-end space-x-1">
-          {code === "CredentialSignin" && (
-            <>
-              <p aria-live="polite" className="text-sm text-red-500">
-                Invalid credentials
-              </p>
-            </>
-          )}
-        </div>
+        {code === "CredentialSignin" && (
+          <div className="flex h-8 items-end space-x-1">
+            <p aria-live="polite" className="text-sm text-red-500">
+              Invalid credentials
+            </p>
+          </div>
+        )}
       </form>
     </>
   );

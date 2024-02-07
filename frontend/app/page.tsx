@@ -1,13 +1,10 @@
-import { Button } from "@/components/ui/button";
-
 export default function Home() {
   return (
     <>
-      <div className="text-muted-foreground">Hello</div>
-      <div className="flex gap-8">
-        <Button variant={"secondary"}>Learn More</Button>
-        <Button>Enroll</Button>
-      </div>
+      <h1 className="text-4xl font-bold">42 Transcendence Project</h1>
+      <p className="text-lg text-muted-foreground">
+        You can play classic pong game here.
+      </p>
     </>
   );
 }
