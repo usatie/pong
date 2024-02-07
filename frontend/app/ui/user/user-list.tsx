@@ -12,26 +12,6 @@ export default function UserList({
   users: PublicUserEntity[];
   avatarSize: AvatarSize;
 }) {
-  const [onlineStatus, setOnlineStatus] = useState<{ [key: string]: boolean }>(
-    {},
-  );
-
-  const fetchOnlineStatus = async () => {
-    try {
-      users.forEach(async (u) => {
-        const body = await isOnline(u.id);
-        const online = body.isOnline;
-        setOnlineStatus((prev) => ({ ...prev, [u.name]: online }));
-      });
-    } catch (error) {
-      console.error("Error fetching online status:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchOnlineStatus();
-  }, []);
-
   return (
     <TooltipProvider delayDuration={0}>
       <div className="flex flex-wrap gap-2">
@@ -42,7 +22,7 @@ export default function UserList({
             size={avatarSize}
             href={`/user/${u.id}`}
             alt={u.name}
-            online={onlineStatus[u.name]}
+            online={true}
             key={u.id}
           />
         ))}
