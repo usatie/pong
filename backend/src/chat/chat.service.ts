@@ -179,7 +179,6 @@ export class ChatService {
     const emitData = { userId: this.getUserId(client), status: 'offline' };
     if (emitData.userId) {
       client.broadcast.emit('online-status', [emitData]);
-      return;
     }
     this.removeClient(client);
   }
