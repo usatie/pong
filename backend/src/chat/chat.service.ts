@@ -27,6 +27,7 @@ export class ChatService {
   private users = new Map<Socket['id'], PublicUserEntity>();
   // key: inviter, value: invitee
   private invite = new Map<User['id'], User['id']>();
+  private statuses = new Map<User['id'], 'online' | 'offline' | 'pong'>();
 
   getUser(client: Socket) {
     return this.users.get(client.id);
@@ -52,6 +53,7 @@ export class ChatService {
   removeClient(client: Socket) {
     const user = this.users.get(client.id);
     if (user) {
+      this.statuses.delete(user.id);
       this.clients.delete(user.id);
       this.users.delete(client.id);
       this.removeInvite(user.id);
@@ -166,13 +168,23 @@ export class ChatService {
         },
       });
       rooms.forEach((room) => this.addUserToRoom(room.id, user.id));
-      client.emit('online-status', this.getOnlineUsers());
+      this.statuses.set(user.id, 'online');
+      client.emit('online-status', this.getUserStatuses());
       client.broadcast.emit('online-status', [
         { userId: user.id, status: 'online' },
       ]);
     } catch (error) {
       console.log(error);
     }
+  }
+
+  handleOnlineStatus(
+    event: {
+      userId: number;
+      status: 'online' | 'offline' | 'pong';
+    }[],
+  ) {
+    event.forEach((e) => this.statuses.set(e.userId, e.status));
   }
 
   handleDisconnect(client: Socket) {
@@ -183,10 +195,13 @@ export class ChatService {
     this.removeClient(client);
   }
 
-  getOnlineUsers(): { userId: number; status: 'online' | 'offline' }[] {
-    return Array.from(this.clients.keys()).map((userId) => ({
+  getUserStatuses(): {
+    userId: number;
+    status: 'online' | 'offline' | 'pong';
+  }[] {
+    return Array.from(this.statuses).map(([userId, status]) => ({
       userId,
-      status: 'online',
+      status,
     }));
   }
 

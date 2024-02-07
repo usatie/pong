@@ -145,6 +145,14 @@ export class EventsGateway implements OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     this.logger.log(`disconnect: ${client.id} `);
+
+    const user = this.users[client.id];
+    if (user) {
+      this.eventEmitter.emit('online-status', [
+        { userId: user.id, status: 'online' }, // TODO: handle offline status
+      ]);
+    }
+
     const roomId = client.handshake.query['game_id'] as string;
     client.leave(roomId);
     delete this.users[client.id];

@@ -157,6 +157,7 @@ export class ChatGateway {
 
   @OnEvent('online-status')
   handleOnlineStatus(event: any) {
+    this.chatService.handleOnlineStatus(event);
     this.server.emit('online-status', event);
   }
 

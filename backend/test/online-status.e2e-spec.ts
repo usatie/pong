@@ -19,6 +19,14 @@ async function createNestApp(): Promise<INestApplication> {
   return app;
 }
 
+const connect = (ws: Socket) => {
+  return new Promise<void>((resolve) => {
+    ws.on('connect', () => {
+      resolve();
+    });
+  });
+};
+
 describe('ChatGateway and ChatController (e2e)', () => {
   let app: TestApp;
   let user1: UserEntityWithAccessToken;
@@ -177,14 +185,6 @@ describe('ChatGateway and ChatController (e2e)', () => {
           autoConnect: false,
         }),
       };
-      const myLogin = new Promise<void>((resolve) => {
-        LoginUser.ws.once('online-status', () => {
-          // it is my own online status
-          resolve();
-        });
-      });
-      LoginUser.ws.connect();
-      return myLogin;
     });
     afterEach(() => {
       LoginUser.ws.removeAllListeners(); // otherwise, the listeners are accumulated
@@ -192,7 +192,41 @@ describe('ChatGateway and ChatController (e2e)', () => {
       LoginUser.ws.disconnect();
       pongUser.ws.disconnect();
     });
-    describe('when a user start pong game', () => {
+    describe('when I login while a user start pong game', () => {
+      beforeAll(() => {
+        const pong = connect(pongUser.ws);
+        pongUser.ws.connect();
+        return pong;
+      });
+      it('should receive the pong status of the other user', (done) => {
+        LoginUser.ws.on('online-status', (users) => {
+          expectOnlineStatusResponse(users);
+          expect(users).toHaveLength(2);
+          {
+            const pong = users.filter((u) => u.userId === pongUser.user.id);
+            expect(pong).toHaveLength(1);
+            expect(pong[0].status).toBe('pong');
+          }
+          {
+            const online = users.filter((u) => u.userId === LoginUser.user.id);
+            expect(online).toHaveLength(1);
+            expect(online[0].status).toBe('online');
+          }
+          done();
+        });
+        LoginUser.ws.connect();
+      });
+    });
+    describe('when a user start pong game while I login', () => {
+      beforeAll(() => {
+        const myLoginStatus = new Promise<void>((resolve) => {
+          LoginUser.ws.once('online-status', () => {
+            resolve();
+          });
+        });
+        LoginUser.ws.connect();
+        return myLoginStatus;
+      });
       it('should receive the pong status of the other user', (done) => {
         LoginUser.ws.on('online-status', (users) => {
           expectOnlineStatusResponse(users);
