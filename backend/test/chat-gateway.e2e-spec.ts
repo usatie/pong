@@ -1148,6 +1148,92 @@ describe('ChatGateway and ChatController (e2e)', () => {
         });
       });
     });
+    describe('Notification that deleted a room', () => {
+      let room;
+      let ctx11: Promise<void[]>;
+      beforeAll(async () => {
+        const res = await app
+          .createRoom(constants.room.publicRoom, user1.accessToken)
+          .expect(201);
+        room = res.body;
+        expect(room.id).toBeDefined();
+        await app.enterRoom(room.id, user2.accessToken).expect(201);
+        const expectedEvent = {
+          roomId: room.id,
+        };
+        const promises = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('delete-room', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('delete-room');
+                resolve();
+              });
+            }),
+        );
+        ctx11 = Promise.all(promises);
+      });
+
+      it('is sent when user1 deletes the room', async () => {
+        await app.deleteRoom(room.id, user1.accessToken).expect(204);
+      });
+
+      it('should be received by room members', async () => {
+        await ctx11;
+      });
+
+      it('should not be received by non-members', (done) => {
+        const mockKickEventListener = jest.fn();
+        ws3.on('delete-room', mockKickEventListener);
+        setTimeout(() => {
+          expect(mockKickEventListener).not.toBeCalled();
+          ws3.off('delete-room');
+          done();
+        }, waitTime);
+      });
+    });
+    describe('Notification that owner has left the room (delete-room)', () => {
+      let room;
+      let ctx12: Promise<void[]>;
+      beforeAll(async () => {
+        const res = await app
+          .createRoom(constants.room.publicRoom, user1.accessToken)
+          .expect(201);
+        room = res.body;
+        expect(room.id).toBeDefined();
+        await app.enterRoom(room.id, user2.accessToken).expect(201);
+        const expectedEvent = {
+          roomId: room.id,
+        };
+        const promises = [ws1, ws2].map(
+          (ws) =>
+            new Promise<void>((resolve) => {
+              ws.on('delete-room', (data) => {
+                expect(data).toEqual(expectedEvent);
+                ws.off('delete-room');
+                resolve();
+              });
+            }),
+        );
+        ctx12 = Promise.all(promises);
+      });
+
+      it('is sent when OWENER(user1) leaves the room', async () => {
+        await app.leaveRoom(room.id, user1.accessToken).expect(204);
+      });
+      it('should be received by room members', async () => {
+        await ctx12;
+      });
+      it('should not be received by non-members', (done) => {
+        const mockKickEventListener = jest.fn();
+        ws3.on('delete-room', mockKickEventListener);
+        setTimeout(() => {
+          expect(mockKickEventListener).not.toBeCalled();
+          ws3.off('delete-room');
+          done();
+        }, waitTime);
+      });
+    });
   });
 
   /*
