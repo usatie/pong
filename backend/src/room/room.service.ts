@@ -326,6 +326,9 @@ export class RoomService {
       },
     });
     // TODO: If owner leaves the room, the room should be deleted or a new owner should be assigned
+    if (deletedUserOnRoom.role === Role.OWNER) {
+      await this.removeRoom(roomId);
+    }
     const event: RoomLeftEvent = {
       roomId: roomId,
       userId: userId,
