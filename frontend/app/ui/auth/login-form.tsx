@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFormState, useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LoginForm() {
   return (
@@ -28,9 +29,11 @@ function Form() {
   const { currentUser } = useAuthContext();
   const [code, action] = useFormState(authenticate, undefined);
   const router = useRouter();
-  if (code === "Authenticated") {
-    router.replace("/");
-  }
+  useEffect(() => {
+    if (code === "Authenticated") {
+      router.replace("/");
+    }
+  }, [code, router]);
   return (
     <>
       <form action={action}>
