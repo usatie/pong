@@ -183,7 +183,7 @@ export class ChatService {
     }
   }
 
-  handleOnlineStatus(
+  handleChangeOnlineStatus(
     event: {
       userId: number;
       status: UserStatus;
