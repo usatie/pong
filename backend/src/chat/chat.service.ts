@@ -6,7 +6,7 @@ import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { BlockEvent } from 'src/common/events/block.event';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
-import { RoomLeftEvent } from 'src/common/events/room-left.event';
+import { RoomDeletedEvent } from 'src/common/events/room-deleted.event';
 import { UnblockEvent } from 'src/common/events/unblock.event';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
@@ -77,6 +77,13 @@ export class ChatService {
     }
   }
 
+  removeUserFromRoom(roomId: number, userId: number) {
+    const client = this.clients.get(userId);
+    if (client) {
+      client.leave(roomId.toString());
+    }
+  }
+
   getUsersBlockedBy(userId: number) {
     return this.prisma.user
       .findUniqueOrThrow({
@@ -89,13 +96,6 @@ export class ChatService {
   @OnEvent('room.created', { async: true })
   async handleRoomCreatedEvent(event: RoomCreatedEvent) {
     await this.addUserToRoom(event.roomId, event.userId);
-  }
-
-  async removeUserFromRoom(event: RoomLeftEvent) {
-    const client = this.clients.get(event.userId);
-    if (client) {
-      client.leave(event.roomId.toString());
-    }
   }
 
   @OnEvent('block', { async: true })
@@ -124,8 +124,11 @@ export class ChatService {
     });
   }
 
-  deleteRoom(roomId: number) {
-    roomId;
+  deleteSocketRoom(event: RoomDeletedEvent) {
+    event.userIds.forEach((userId) =>
+      this.removeUserFromRoom(event.roomId, userId),
+    );
+
     // TODO: delete room
     // this.server.socketsLeave(roomId.toString());
   }
