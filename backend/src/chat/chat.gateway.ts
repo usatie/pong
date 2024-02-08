@@ -8,6 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { RoomDeletedEvent } from 'src/common/events/room-deleted.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 import { RoomMuteEvent } from 'src/common/events/room-mute.event';
 import { RoomUnmuteEvent } from 'src/common/events/room-unmute.event';
@@ -166,16 +167,28 @@ export class ChatGateway {
     this.server.emit('online-status', event);
   }
 
+  @OnEvent('room.delete', { async: true })
+  async handleDelete(event: RoomDeletedEvent) {
+    if (event.accessLevel === 'PUBLIC' || event.accessLevel === 'PROTECTED') {
+      this.server.emit('delete-room', { roomId: event.roomId });
+    } else {
+      this.server
+        .in(event.roomId.toString())
+        .emit('delete-room', { roomId: event.roomId });
+    }
+    this.chatService.deleteSocketRoom(event);
+  }
+
   @OnEvent('room.enter', { async: true })
   async handleEnter(event: RoomEnteredEvent) {
-    await this.chatService.addUserToRoom(event.roomId, event.userId);
+    this.chatService.addUserToRoom(event.roomId, event.userId);
     this.server.in(event.roomId.toString()).emit('enter-room', event);
   }
 
   @OnEvent('room.leave', { async: true })
   async handleLeave(event: RoomLeftEvent) {
     this.server.in(event.roomId.toString()).emit('leave', event);
-    await this.chatService.removeUserFromRoom(event);
+    this.chatService.removeUserFromRoom(event.roomId, event.userId);
   }
 
   @OnEvent('room.update.role', { async: true })

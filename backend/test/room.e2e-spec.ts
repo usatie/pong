@@ -966,7 +966,6 @@ describe('RoomController (e2e)', () => {
     describe('owner', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
-      // TODO: What if owner leaves the room?
       test('should leave public room (204 No Content)', async () => {
         await app.leaveRoom(_publicRoom.id, owner.accessToken).expect(204);
       });
@@ -975,6 +974,17 @@ describe('RoomController (e2e)', () => {
       });
       test('should leave protected room (204 No Content)', async () => {
         await app.leaveRoom(_protectedRoom.id, owner.accessToken).expect(204);
+      });
+      test('should not get public room after owner leaves (404 Not Found)', async () => {
+        return app.getRoom(_publicRoom.id, owner.accessToken).expect(404);
+      });
+      test('should not get private room after owner leaves (404 Not Found)', async () => {
+        await app.getRoom(_privateRoom.id, member.accessToken).expect(404);
+        await app.getRoom(_privateRoom.id, admin.accessToken).expect(404);
+        return app.getRoom(_privateRoom.id, owner.accessToken).expect(404);
+      });
+      test('should not get protected room after owner leaves (404 Not Found)', async () => {
+        return app.getRoom(_protectedRoom.id, owner.accessToken).expect(404);
       });
     });
     describe('admin', () => {

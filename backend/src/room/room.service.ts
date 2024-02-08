@@ -6,6 +6,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Role, User } from '@prisma/client';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
+import { RoomDeletedEvent } from 'src/common/events/room-deleted.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
 import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { RoomUpdateRoleEvent } from 'src/common/events/room-update-role.event';
@@ -65,6 +66,7 @@ export class RoomService {
     const event: RoomCreatedEvent = {
       roomId: room.id,
       userId: user.id,
+      userIds,
     };
     this.eventEmitter.emit('room.created', event);
     return room;
@@ -197,10 +199,19 @@ export class RoomService {
     });
   }
 
-  removeRoom(roomId: number): Promise<RoomEntity> {
-    return this.prisma.room.delete({
+  async removeRoom(roomId: number): Promise<RoomEntity> {
+    const users = await this.findAllUserOnRoom(roomId);
+    const deletedRoom = await this.prisma.room.delete({
       where: { id: roomId },
     });
+    const memberIds = users.map((member) => member.userId);
+    const event: RoomDeletedEvent = {
+      roomId: roomId,
+      userIds: memberIds,
+      accessLevel: deletedRoom.accessLevel,
+    };
+    this.eventEmitter.emit('room.delete', event);
+    return deletedRoom;
   }
 
   // UserOnRoom CRUD
@@ -316,7 +327,9 @@ export class RoomService {
         },
       },
     });
-    // TODO: If owner leaves the room, the room should be deleted or a new owner should be assigned
+    if (deletedUserOnRoom.role === Role.OWNER) {
+      await this.removeRoom(roomId);
+    }
     const event: RoomLeftEvent = {
       roomId: roomId,
       userId: userId,
