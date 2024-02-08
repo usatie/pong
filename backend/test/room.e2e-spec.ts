@@ -979,6 +979,8 @@ describe('RoomController (e2e)', () => {
         return app.getRoom(_publicRoom.id, owner.accessToken).expect(404);
       });
       test('should not get private room after owner leaves (404 Not Found)', async () => {
+        await app.getRoom(_privateRoom.id, member.accessToken).expect(404);
+        await app.getRoom(_privateRoom.id, admin.accessToken).expect(404);
         return app.getRoom(_privateRoom.id, owner.accessToken).expect(404);
       });
       test('should not get protected room after owner leaves (404 Not Found)', async () => {
