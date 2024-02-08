@@ -30,7 +30,7 @@ export default function GameList() {
 
   return (
     <>
-      <Card className="flex flex-col items-center">
+      <Card className="basis-1/3 flex flex-col items-center">
         <CardHeader>
           <CardTitle>Ongoing games</CardTitle>
         </CardHeader>

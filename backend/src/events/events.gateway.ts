@@ -138,6 +138,7 @@ export class EventsGateway implements OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     this.logger.log(`disconnect: ${client.id} `);
+
     const roomId = client.handshake.query['game_id'] as string;
     client.leave(roomId);
     delete this.users[client.id];

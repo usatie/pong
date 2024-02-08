@@ -6,7 +6,7 @@ import Link from "next/link";
 
 function AuthorizedMenu() {
   return (
-    <li className="flex gap-8 items-center">
+    <li className="flex flex-wrap gap-x-4 items-center whitespace-nowrap">
       <Link href="/user">User List</Link>
       <Link href="/room">Chat</Link>
       <Link href="/pong">Game</Link>
@@ -21,7 +21,7 @@ function AuthorizedMenu() {
 
 function UnauthorizedMenu() {
   return (
-    <li className="flex gap-8 items-center">
+    <li className="flex flex-wrap gap-x-4 items-center whitespace-nowrap">
       <Link href="/signup">Sign Up</Link>
       <Link href="/login">Log In</Link>
       {process.env.NODE_ENV === "development" && (
@@ -39,7 +39,7 @@ export default async function Nav() {
   const isAuthorized = await isLoggedIn();
   return (
     <nav className="py-4">
-      <ul className="flex items-center justify-between">
+      <ul className="flex flex-wrap items-center justify-between">
         <Link href="/" className="font-black">
           Pong
         </Link>
