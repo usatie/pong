@@ -166,7 +166,7 @@ export class ChatGateway {
     this.chatService.handleChangeOnlineStatus(event);
     this.server.emit('online-status', event);
   }
-  
+
   @OnEvent('room.delete', { async: true })
   async handleDelete(event: RoomDeletedEvent) {
     if (event.accessLevel === 'PUBLIC' || event.accessLevel === 'PROTECTED') {
