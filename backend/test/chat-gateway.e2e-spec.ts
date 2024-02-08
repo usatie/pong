@@ -6,6 +6,7 @@ import { AppModule } from 'src/app.module';
 import { MessageEntity } from 'src/chat/entities/message.entity';
 import { constants } from './constants';
 import { TestApp, UserEntityWithAccessToken } from './utils/app';
+import { CreateRoomDto } from 'src/room/dto/create-room.dto';
 
 async function createNestApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -1149,63 +1150,130 @@ describe('ChatGateway and ChatController (e2e)', () => {
       });
     });
     describe('Notification that deleted a room', () => {
-      let room;
-      let ctx11: Promise<void[]>;
-      beforeAll(async () => {
-        const res = await app
-          .createRoom(constants.room.publicRoom, user1.accessToken)
-          .expect(201);
-        room = res.body;
+      const setupRoom = async (createRoomDto: CreateRoomDto) => {
+        const dto = { ...createRoomDto, userIds: [user2.id] };
+        const res = await app.createRoom(dto, user1.accessToken).expect(201);
+        const room = res.body;
         expect(room.id).toBeDefined();
-        await app.enterRoom(room.id, user2.accessToken).expect(201);
-        const expectedEvent = {
-          roomId: room.id,
-        };
-        const promises = [ws1, ws2].map(
-          (ws) =>
-            new Promise<void>((resolve) => {
-              ws.on('delete-room', (data) => {
-                expect(data).toEqual(expectedEvent);
-                ws.off('delete-room');
-                resolve();
-              });
-            }),
-        );
-        ctx11 = Promise.all(promises);
-      });
+        return room;
+      };
 
-      it('is sent when user1 deletes the room', async () => {
-        await app.deleteRoom(room.id, user1.accessToken).expect(204);
-      });
+      //
+      describe('Notification that deleted a public room', () => {
+        let _publicRoom;
+        let ctx11: Promise<void[]>;
+        beforeAll(async () => {
+          _publicRoom = await setupRoom(constants.room.publicRoom);
 
-      it('should be received by room members', async () => {
-        await ctx11;
-      });
+          const expectedEvent = {
+            roomId: _publicRoom.id,
+          };
+          const promises = [ws1, ws2, ws3, ws4, ws5, ws6].map(
+            (ws) =>
+              new Promise<void>((resolve) => {
+                ws.on('delete-room', (data) => {
+                  expect(data).toEqual(expectedEvent);
+                  ws.off('delete-room');
+                  resolve();
+                });
+              }),
+          );
+          ctx11 = Promise.all(promises);
+        });
+        it('is sent when user1 deletes the public room', async () => {
+          await app.deleteRoom(_publicRoom.id, user1.accessToken).expect(204);
+        });
 
-      it('should not be received by non-members', (done) => {
-        const mockKickEventListener = jest.fn();
-        ws3.on('delete-room', mockKickEventListener);
-        setTimeout(() => {
-          expect(mockKickEventListener).not.toBeCalled();
-          ws3.off('delete-room');
-          done();
-        }, waitTime);
+        it('should be received by all users', async () => {
+          await ctx11;
+        });
+      });
+      describe('Notification that deleted a protected room', () => {
+        let _protectedRoom;
+        let ctx12: Promise<void[]>;
+        beforeAll(async () => {
+          _protectedRoom = await setupRoom(constants.room.protectedRoom);
+
+          const expectedEvent = {
+            roomId: _protectedRoom.id,
+          };
+          const promises = [ws1, ws2, ws3, ws4, ws5, ws6].map(
+            (ws) =>
+              new Promise<void>((resolve) => {
+                ws.on('delete-room', (data) => {
+                  expect(data).toEqual(expectedEvent);
+                  ws.off('delete-room');
+                  resolve();
+                });
+              }),
+          );
+          ctx12 = Promise.all(promises);
+        });
+        it('is sent when user1 deletes the protected room', async () => {
+          await app
+            .deleteRoom(_protectedRoom.id, user1.accessToken)
+            .expect(204);
+        });
+
+        it('should be received by all users', async () => {
+          await ctx12;
+        });
+      });
+      describe('Notification that deleted a private room', () => {
+        let _privateRoom;
+        let ctx13: Promise<void[]>;
+        beforeAll(async () => {
+          _privateRoom = await setupRoom(constants.room.privateRoom);
+
+          const expectedEvent = {
+            roomId: _privateRoom.id,
+          };
+          const promises = [ws1, ws2].map(
+            (ws) =>
+              new Promise<void>((resolve) => {
+                ws.on('delete-room', (data) => {
+                  expect(data).toEqual(expectedEvent);
+                  ws.off('delete-room');
+                  resolve();
+                });
+              }),
+          );
+          ctx13 = Promise.all(promises);
+        });
+        it('is sent when user1 deletes the private room', async () => {
+          await app.deleteRoom(_privateRoom.id, user1.accessToken).expect(204);
+        });
+        it('should be received by room members', async () => {
+          await ctx13;
+        });
+
+        it('should not be received by non-members', (done) => {
+          const mockDeleteRoomEventListener = jest.fn();
+          ws3.on('delete-room', mockDeleteRoomEventListener);
+          setTimeout(() => {
+            expect(mockDeleteRoomEventListener).not.toBeCalled();
+            ws3.off('delete-room');
+            done();
+          }, waitTime);
+        });
       });
     });
     describe('Notification that owner has left the room (delete-room)', () => {
       let room;
-      let ctx12: Promise<void[]>;
-      beforeAll(async () => {
-        const res = await app
-          .createRoom(constants.room.publicRoom, user1.accessToken)
-          .expect(201);
-        room = res.body;
+      let ctx14: Promise<void[]>;
+      const setupRoom = async (createRoomDto: CreateRoomDto) => {
+        const dto = { ...createRoomDto, userIds: [user2.id] };
+        const res = await app.createRoom(dto, user1.accessToken).expect(201);
+        const room = res.body;
         expect(room.id).toBeDefined();
-        await app.enterRoom(room.id, user2.accessToken).expect(201);
+        return room;
+      };
+      beforeAll(async () => {
+        room = await setupRoom(constants.room.publicRoom);
         const expectedEvent = {
           roomId: room.id,
         };
-        const promises = [ws1, ws2].map(
+        const promises = [ws1, ws2, ws3, ws4, ws5, ws6].map(
           (ws) =>
             new Promise<void>((resolve) => {
               ws.on('delete-room', (data) => {
@@ -1215,15 +1283,17 @@ describe('ChatGateway and ChatController (e2e)', () => {
               });
             }),
         );
-        ctx12 = Promise.all(promises);
+        ctx14 = Promise.all(promises);
       });
 
-      it('is sent when OWENER(user1) leaves the room', async () => {
+      it('is sent when OWENER(user1) leaves the public room', async () => {
         await app.leaveRoom(room.id, user1.accessToken).expect(204);
       });
-      it('should be received by room members', async () => {
-        await ctx12;
+
+      it('should be received by all users', async () => {
+        await ctx14;
       });
+
       it('should not be received by non-members', (done) => {
         const mockKickEventListener = jest.fn();
         ws3.on('delete-room', mockKickEventListener);
