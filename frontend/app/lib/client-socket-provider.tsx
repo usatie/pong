@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuthContext } from "./client-auth";
 import {
   DenyEvent,
+  DeleteRoomEvent,
   EnterRoomEvent,
   InviteEvent,
   LeaveRoomEvent,
@@ -23,6 +24,21 @@ export default function SocketProvider() {
   const { currentUser } = useAuthContext();
   const pathName = usePathname();
   const router = useRouter();
+
+  const handleDeleteRoomEvent = useCallback(
+    (data: DeleteRoomEvent) => {
+      if (pathName === "/room/" + data.roomId.toString()) {
+        router.push("/room");
+        router.refresh();
+      } else if (
+        pathName.startsWith("/room/") ||
+        pathName === "/explore-rooms"
+      ) {
+        router.refresh();
+      }
+    },
+    [pathName, router],
+  );
 
   const handleEnterRoomEvent = useCallback(
     (data: EnterRoomEvent) => {
@@ -148,6 +164,8 @@ export default function SocketProvider() {
     const handler = (event: string, data: any) => {
       if (event === "message") {
         showMessageToast(data);
+      } else if (event === "delete-room") {
+        handleDeleteRoomEvent(data);
       } else if (event === "enter-room") {
         handleEnterRoomEvent(data);
       } else if (event === "leave") {
@@ -174,6 +192,12 @@ export default function SocketProvider() {
       chatSocket.offAny(handler);
       chatSocket.disconnect();
     };
-  }, [currentUser, handleEnterRoomEvent, handleLeaveRoomEvent, toast]);
+  }, [
+    currentUser,
+    handleDeleteRoomEvent,
+    handleEnterRoomEvent,
+    handleLeaveRoomEvent,
+    toast,
+  ]);
   return <></>;
 }

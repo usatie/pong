@@ -56,6 +56,10 @@ export type JwtPayload = {
   isTwoFactorAuthenticated: boolean;
 };
 
+export type DeleteRoomEvent = {
+  roomId: number;
+};
+
 export type EnterRoomEvent = {
   roomId: number;
   userId: number;
