@@ -1158,7 +1158,6 @@ describe('ChatGateway and ChatController (e2e)', () => {
         return room;
       };
 
-      //
       describe('Notification that deleted a public room', () => {
         let _publicRoom;
         let ctx11: Promise<void[]>;
@@ -1180,6 +1179,10 @@ describe('ChatGateway and ChatController (e2e)', () => {
           );
           ctx11 = Promise.all(promises);
         });
+        afterAll(async () => {
+          await app.deleteRoom(_publicRoom.id, user1.accessToken);
+        });
+
         it('is sent when user1 deletes the public room', async () => {
           await app.deleteRoom(_publicRoom.id, user1.accessToken).expect(204);
         });
@@ -1209,6 +1212,10 @@ describe('ChatGateway and ChatController (e2e)', () => {
           );
           ctx12 = Promise.all(promises);
         });
+        afterAll(async () => {
+          await app.deleteRoom(_protectedRoom.id, user1.accessToken);
+        });
+
         it('is sent when user1 deletes the protected room', async () => {
           await app
             .deleteRoom(_protectedRoom.id, user1.accessToken)
@@ -1240,6 +1247,10 @@ describe('ChatGateway and ChatController (e2e)', () => {
           );
           ctx13 = Promise.all(promises);
         });
+        afterAll(async () => {
+          await app.deleteRoom(_privateRoom.id, user1.accessToken);
+        });
+
         it('is sent when user1 deletes the private room', async () => {
           await app.deleteRoom(_privateRoom.id, user1.accessToken).expect(204);
         });
@@ -1285,8 +1296,11 @@ describe('ChatGateway and ChatController (e2e)', () => {
         );
         ctx14 = Promise.all(promises);
       });
+      afterAll(async () => {
+        await app.deleteRoom(room.id, user1.accessToken);
+      });
 
-      it('is sent when OWENER(user1) leaves the public room', async () => {
+      it('is sent when owner(user1) leaves the public room', async () => {
         await app.leaveRoom(room.id, user1.accessToken).expect(204);
       });
 
