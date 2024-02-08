@@ -25,9 +25,17 @@ export default function SocketProvider() {
   const pathName = usePathname();
   const router = useRouter();
 
+  const showDeleteRoomNotificationToast = () => {
+    toast({
+      title: "Notification",
+      description: "The chat room has been deleted",
+    });
+  };
+
   const handleDeleteRoomEvent = useCallback(
     (data: DeleteRoomEvent) => {
       if (pathName === "/room/" + data.roomId.toString()) {
+        showDeleteRoomNotificationToast();
         router.push("/room");
         router.refresh();
       } else if (
