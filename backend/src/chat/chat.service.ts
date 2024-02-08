@@ -96,6 +96,11 @@ export class ChatService {
   @OnEvent('room.created', { async: true })
   async handleRoomCreatedEvent(event: RoomCreatedEvent) {
     await this.addUserToRoom(event.roomId, event.userId);
+    if (event.userIds) {
+      event.userIds.forEach((userId) =>
+        this.addUserToRoom(event.roomId, userId),
+      );
+    }
   }
 
   @OnEvent('block', { async: true })

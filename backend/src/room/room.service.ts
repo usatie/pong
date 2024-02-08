@@ -66,6 +66,7 @@ export class RoomService {
     const event: RoomCreatedEvent = {
       roomId: room.id,
       userId: user.id,
+      userIds,
     };
     this.eventEmitter.emit('room.created', event);
     return room;
@@ -207,6 +208,7 @@ export class RoomService {
     const event: RoomDeletedEvent = {
       roomId: roomId,
       userIds: memberIds,
+      accessLevel: deletedRoom.accessLevel,
     };
     this.eventEmitter.emit('room.delete', event);
     return deletedRoom;

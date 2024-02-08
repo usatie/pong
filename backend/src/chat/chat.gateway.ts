@@ -158,9 +158,13 @@ export class ChatGateway {
 
   @OnEvent('room.delete', { async: true })
   async handleDelete(event: RoomDeletedEvent) {
-    this.server
-      .in(event.roomId.toString())
-      .emit('delete-room', { roomId: event.roomId });
+    if (event.accessLevel === 'PUBLIC' || event.accessLevel === 'PROTECTED') {
+      this.server.emit('delete-room', { roomId: event.roomId });
+    } else {
+      this.server
+        .in(event.roomId.toString())
+        .emit('delete-room', { roomId: event.roomId });
+    }
     this.chatService.deleteSocketRoom(event);
   }
 
