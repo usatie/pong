@@ -1149,6 +1149,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
         });
       });
     });
+
     describe('Notification that deleted a room', () => {
       const setupRoom = async (createRoomDto: CreateRoomDto) => {
         const dto = { ...createRoomDto, userIds: [user2.id] };
@@ -1182,15 +1183,14 @@ describe('ChatGateway and ChatController (e2e)', () => {
         afterAll(async () => {
           await app.deleteRoom(_publicRoom.id, user1.accessToken);
         });
-
         it('is sent when user1 deletes the public room', async () => {
           await app.deleteRoom(_publicRoom.id, user1.accessToken).expect(204);
         });
-
         it('should be received by all users', async () => {
           await ctx11;
         });
       });
+
       describe('Notification that deleted a protected room', () => {
         let _protectedRoom;
         let ctx12: Promise<void[]>;
@@ -1215,17 +1215,16 @@ describe('ChatGateway and ChatController (e2e)', () => {
         afterAll(async () => {
           await app.deleteRoom(_protectedRoom.id, user1.accessToken);
         });
-
         it('is sent when user1 deletes the protected room', async () => {
           await app
             .deleteRoom(_protectedRoom.id, user1.accessToken)
             .expect(204);
         });
-
         it('should be received by all users', async () => {
           await ctx12;
         });
       });
+
       describe('Notification that deleted a private room', () => {
         let _privateRoom;
         let ctx13: Promise<void[]>;
@@ -1250,14 +1249,12 @@ describe('ChatGateway and ChatController (e2e)', () => {
         afterAll(async () => {
           await app.deleteRoom(_privateRoom.id, user1.accessToken);
         });
-
         it('is sent when user1 deletes the private room', async () => {
           await app.deleteRoom(_privateRoom.id, user1.accessToken).expect(204);
         });
         it('should be received by room members', async () => {
           await ctx13;
         });
-
         it('should not be received by non-members', (done) => {
           const mockDeleteRoomEventListener = jest.fn();
           ws3.on('delete-room', mockDeleteRoomEventListener);
@@ -1269,6 +1266,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
         });
       });
     });
+
     describe('Notification that owner has left the room (delete-room)', () => {
       let room;
       let ctx14: Promise<void[]>;
@@ -1299,23 +1297,11 @@ describe('ChatGateway and ChatController (e2e)', () => {
       afterAll(async () => {
         await app.deleteRoom(room.id, user1.accessToken);
       });
-
       it('is sent when owner(user1) leaves the public room', async () => {
         await app.leaveRoom(room.id, user1.accessToken).expect(204);
       });
-
       it('should be received by all users', async () => {
         await ctx14;
-      });
-
-      it('should not be received by non-members', (done) => {
-        const mockKickEventListener = jest.fn();
-        ws3.on('delete-room', mockKickEventListener);
-        setTimeout(() => {
-          expect(mockKickEventListener).not.toBeCalled();
-          ws3.off('delete-room');
-          done();
-        }, waitTime);
       });
     });
   });

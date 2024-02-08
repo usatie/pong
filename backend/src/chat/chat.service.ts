@@ -140,9 +140,6 @@ export class ChatService {
     event.userIds.forEach((userId) =>
       this.removeUserFromRoom(event.roomId, userId),
     );
-
-    // TODO: delete room
-    // this.server.socketsLeave(roomId.toString());
   }
 
   sendToRoom(roomId: number, event: string, data: any) {

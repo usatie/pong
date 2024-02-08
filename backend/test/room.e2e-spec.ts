@@ -966,7 +966,6 @@ describe('RoomController (e2e)', () => {
     describe('owner', () => {
       beforeAll(setupRooms);
       afterAll(teardownRooms);
-      // TODO: What if owner leaves the room?
       test('should leave public room (204 No Content)', async () => {
         await app.leaveRoom(_publicRoom.id, owner.accessToken).expect(204);
       });
