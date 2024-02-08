@@ -122,16 +122,17 @@ export default function SocketProvider() {
   };
 
   const showMessageToast = (message: MessageEvent) => {
-    // TODO: If sender is me, don't show toast
-    toast({
-      title: `${message.user.name}`,
-      description: ` ${message.content}`,
-      action: (
-        <ToastAction altText="Open" asChild>
-          <Link href={`/room/${message.roomId}`}>Open</Link>
-        </ToastAction>
-      ),
-    });
+    if (message.user.id !== currentUser?.id) {
+      toast({
+        title: `${message.user.name}`,
+        description: ` ${message.content}`,
+        action: (
+          <ToastAction altText="Open" asChild>
+            <Link href={`/room/${message.roomId}`}>Open</Link>
+          </ToastAction>
+        ),
+      });
+    }
   };
 
   const showNotificationToast = (data: any) => {
