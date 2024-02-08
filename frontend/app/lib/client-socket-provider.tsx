@@ -171,6 +171,12 @@ export default function SocketProvider() {
         handleEnterRoomEvent(data);
       } else if (event === "leave") {
         handleLeaveRoomEvent(data);
+      } else if (
+        event === "mute" ||
+        event === "unmute" ||
+        event === "update-role"
+      ) {
+        /* Nothing to do here */
       } else if (event === "invite-pong") {
         showInvitePongToast(data);
       } else if (event === "invite-cancel-pong") {
