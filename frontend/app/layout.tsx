@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { getMe } from "@/app/lib/actions";
 import { JwtPayload } from "@/app/lib/dtos";
 import { OnlineProviders } from "./onlineProviders";
+import Nav from "./ui/nav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -45,7 +46,10 @@ export default async function RootLayout({
         >
           <AuthProvider payload={payload as JwtPayload} user={user}>
             <Toaster />
-            <OnlineProviders>{children}</OnlineProviders>
+            <div className="flex flex-col px-16 h-[100vh]">
+              <Nav />
+              <OnlineProviders>{children}</OnlineProviders>
+            </div>
           </AuthProvider>
         </ThemeProvider>
       </body>
