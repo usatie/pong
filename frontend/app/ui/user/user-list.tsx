@@ -3,7 +3,8 @@
 import type { PublicUserEntity } from "@/app/lib/dtos";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Avatar, AvatarSize } from "./avatar";
-import { useEffect, useState } from "react";
+import { OnlineContext } from "@/app/lib/client-socket-provider";
+import { useContext } from "react";
 
 export default function UserList({
   users,
@@ -12,6 +13,7 @@ export default function UserList({
   users: PublicUserEntity[];
   avatarSize: AvatarSize;
 }) {
+  const onlineStatus = useContext(OnlineContext);
   return (
     <TooltipProvider delayDuration={0}>
       <div className="flex flex-wrap gap-2">
@@ -22,7 +24,7 @@ export default function UserList({
             size={avatarSize}
             href={`/user/${u.id}`}
             alt={u.name}
-            online={true}
+            online={onlineStatus[u.id] === 1}
             key={u.id}
           />
         ))}
