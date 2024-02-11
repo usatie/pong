@@ -3,7 +3,14 @@ import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
 import { chatSocket } from "@/socket";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  createContext,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useAuthContext } from "./client-auth";
 import {
   DenyEvent,
@@ -19,7 +26,13 @@ import { chatSocket as socket } from "@/socket";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 
-export default function SocketProvider() {
+export const OnlineContext = createContext<{ [key: number]: number }>({});
+
+export default function SocketProvider({
+  setOnlineStatus,
+}: {
+  setOnlineStatus: Dispatch<SetStateAction<{ [key: number]: number }>>;
+}) {
   const { toast } = useToast();
   const { currentUser } = useAuthContext();
   const pathName = usePathname();
@@ -117,16 +130,14 @@ export default function SocketProvider() {
     });
   };
 
-  const [onlineStatus, setOnlineStatus] = useState<{ [key: number]: number }>(
-    {},
-  );
   const handleOnlineStatus = (users: { userId: number; status: number }[]) => {
-    console.log("users", users);
     users.forEach((u) => {
-      console.log("FOO! u", u);
       setOnlineStatus((prev) => ({ ...prev, [u.userId]: u.status }));
     });
-    console.log("online-status", onlineStatus); // TODO: この時点では変更されていない?
+    toast({
+      title: "online-status",
+      description: JSON.stringify(users),
+    });
   };
 
   const showMessageToast = (message: MessageEvent) => {

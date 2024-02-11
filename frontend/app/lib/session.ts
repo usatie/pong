@@ -1,3 +1,4 @@
+"use server";
 import * as jose from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -10,7 +11,7 @@ export type Session = {};
 const secret = jose.base64url.decode(process.env.JWT_SECRET!);
 const spki = process.env.JWT_PUBLIC_KEY!;
 
-export function setAccessToken(token: string) {
+export async function setAccessToken(token: string) {
   cookies()?.set("token", token, {
     httpOnly: true, // JS cannot access
     secure: process.env.NODE_ENV === "production", // HTTPS only
@@ -112,7 +113,7 @@ export async function getSession(): Promise<Session | null> {
   }
 }
 
-export function destroySession() {
+export async function destroySession() {
   console.log("destroySession");
   cookies()?.delete("session");
 }

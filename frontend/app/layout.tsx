@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import AuthProvider from "@/app/lib/client-auth-provider";
-import SocketProvider from "@/app/lib/client-socket-provider";
 import { getAccessTokenPayload } from "@/app/lib/session";
 
 // components
@@ -13,7 +12,8 @@ import { Toaster } from "@/components/ui/toaster";
 // ui
 import { getMe } from "@/app/lib/actions";
 import { JwtPayload } from "@/app/lib/dtos";
-import Nav from "@/app/ui/nav";
+import { OnlineProviders } from "./onlineProviders";
+import Nav from "./ui/nav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -45,12 +45,11 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider payload={payload as JwtPayload} user={user}>
+            <Toaster />
             <div className="flex flex-col px-16 h-[100vh]">
               <Nav />
-              {children}
+              <OnlineProviders>{children}</OnlineProviders>
             </div>
-            <SocketProvider />
-            <Toaster />
           </AuthProvider>
         </ThemeProvider>
       </body>
