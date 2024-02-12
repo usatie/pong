@@ -297,7 +297,9 @@ export async function inviteUserToRoom(roomId: number, userId: number) {
     },
   );
   const data = await res.json();
-  if (!res.ok) {
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (!res.ok) {
     console.error("inviteUserToRoom error: ", data);
     return "Error";
   } else {
@@ -319,7 +321,9 @@ export async function updateRoom(
     },
     body: JSON.stringify({ name: roomName, accessLevel, password }),
   });
-  if (!res.ok) {
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (!res.ok) {
     console.error("updateRoom error: ", await res.json());
     return "Error";
   } else {
@@ -341,7 +345,9 @@ export async function updateRoomUser(
     body: JSON.stringify({ role }),
   });
   console.log(res.status);
-  if (!res.ok) {
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (!res.ok) {
     console.error("updateRoomUser error: ", await res.json());
     return "Error";
   } else {
@@ -361,7 +367,9 @@ export async function kickUserOnRoom(roomId: number, userId: number) {
       },
     },
   );
-  if (!res.ok) {
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (!res.ok) {
     console.error("kickUserOnRoom error: ", await res.json());
     return "Error";
   } else {
@@ -759,7 +767,9 @@ export async function muteUser(
       body: JSON.stringify({ duration: durationSec }),
     },
   );
-  if (!res.ok) {
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (!res.ok) {
     console.error("muteUser error: ", await res.json());
     return "Error";
   } else {
@@ -792,7 +802,9 @@ export async function unmuteUser(roomId: number, userId: number) {
       },
     },
   );
-  if (!res.ok) {
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (!res.ok) {
     console.error("unmuteUser error: ", await res.json());
     return "Error";
   } else {
@@ -810,7 +822,9 @@ export async function banUser(roomId: number, userId: number) {
       },
     },
   );
-  if (!res.ok) {
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (!res.ok) {
     console.error("banUser error: ", await res.json());
     return "Error";
   } else {
@@ -844,7 +858,9 @@ export async function unbanUser(roomId: number, userId: number) {
       },
     },
   );
-  if (!res.ok) {
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (!res.ok) {
     console.error("unbanUser error: ", await res.json());
     return "Error";
   } else {
@@ -860,11 +876,13 @@ export async function leaveRoom(roomId: number) {
       Authorization: "Bearer " + getAccessToken(),
     },
   });
-  if (!res.ok) {
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (!res.ok) {
     console.error("leaveRoom error: ", await res.json());
     return "Error";
   } else {
-    redirect(`/room`, RedirectType.push);
+    redirect("/room");
     return "Success";
   }
 }
