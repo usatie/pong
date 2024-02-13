@@ -229,6 +229,9 @@ export async function createRoom(
     body: payload,
   });
   const data = await res.json();
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("createRoom error: ", data);
     return { error: data.message };
@@ -251,6 +254,9 @@ export async function createDirectRoom(userId: number) {
     }),
   });
   const data = await res.json();
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("createDirectRoom error: ", data);
     return { error: data.message };
@@ -276,6 +282,9 @@ export async function joinRoom(
     body: payload,
   });
   const data = await res.json();
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (res.status === 409) {
     redirect(`/room/${roomId}`, RedirectType.push);
   } else if (!res.ok) {
@@ -297,6 +306,9 @@ export async function inviteUserToRoom(roomId: number, userId: number) {
     },
   );
   const data = await res.json();
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("inviteUserToRoom error: ", data);
     return "Error";
@@ -319,6 +331,9 @@ export async function updateRoom(
     },
     body: JSON.stringify({ name: roomName, accessLevel, password }),
   });
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("updateRoom error: ", await res.json());
     return "Error";
@@ -341,6 +356,9 @@ export async function updateRoomUser(
     body: JSON.stringify({ role }),
   });
   console.log(res.status);
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("updateRoomUser error: ", await res.json());
     return "Error";
@@ -361,6 +379,9 @@ export async function kickUserOnRoom(roomId: number, userId: number) {
       },
     },
   );
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("kickUserOnRoom error: ", await res.json());
     return "Error";
@@ -389,6 +410,9 @@ export async function uploadAvatar(formData: FormData) {
     body: payload,
   });
   const data = await res.json();
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("uploadAvatar error: ", data);
     return "Error";
@@ -421,6 +445,10 @@ export async function updatePassword(
   }
   const currentPassword = formData.get("current-password");
   const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+    return "Error";
+  }
 
   // Check if current password is correct
   const res1 = await fetch(`${process.env.API_URL}/auth/login`, {
@@ -759,6 +787,9 @@ export async function muteUser(
       body: JSON.stringify({ duration: durationSec }),
     },
   );
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("muteUser error: ", await res.json());
     return "Error";
@@ -792,6 +823,9 @@ export async function unmuteUser(roomId: number, userId: number) {
       },
     },
   );
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("unmuteUser error: ", await res.json());
     return "Error";
@@ -810,6 +844,9 @@ export async function banUser(roomId: number, userId: number) {
       },
     },
   );
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("banUser error: ", await res.json());
     return "Error";
@@ -844,6 +881,9 @@ export async function unbanUser(roomId: number, userId: number) {
       },
     },
   );
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("unbanUser error: ", await res.json());
     return "Error";
@@ -860,11 +900,14 @@ export async function leaveRoom(roomId: number) {
       Authorization: "Bearer " + getAccessToken(),
     },
   });
+  if (res.status === 401) {
+    redirect("/login");
+  }
   if (!res.ok) {
     console.error("leaveRoom error: ", await res.json());
     return "Error";
   } else {
-    redirect(`/room`, RedirectType.push);
+    redirect("/room");
     return "Success";
   }
 }

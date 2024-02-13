@@ -110,6 +110,7 @@ export default function SettingModal({
             <select
               className="bg-white text-black"
               defaultValue={room.accessLevel}
+              id="accessLevel"
               {...register("selectedAccessLevel")}
             >
               <option value="PUBLIC">PUBLIC</option>
