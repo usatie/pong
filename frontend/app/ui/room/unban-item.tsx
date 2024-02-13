@@ -26,9 +26,9 @@ export default function UnbanItem({
   const router = useRouter();
   const [isClicked, setIsClicked] = useState(false);
 
-  const onUnban = async (userId: number) => {
+  const unban = async () => {
     setIsClicked(true);
-    const result = await unbanUser(roomId, userId);
+    const result = await unbanUser(roomId, user.id);
     if (result === "Success") {
       router.refresh();
     } else {
@@ -49,7 +49,7 @@ export default function UnbanItem({
       {isClicked && <Loader className="ml-auto" />}
       {!isClicked && (
         <button
-          onClick={() => onUnban(user.id)}
+          onClick={unban}
           disabled={isClicked}
           className="text-indigo-500 ml-auto"
         >

@@ -26,9 +26,9 @@ export default function BanItem({
   const router = useRouter();
   const [isClicked, setIsClicked] = useState(false);
 
-  const onBan = async (userId: number) => {
+  const ban = async () => {
     setIsClicked(true);
-    const result = await banUser(roomId, userId);
+    const result = await banUser(roomId, user.id);
     if (result === "Success") {
       router.refresh();
     } else {
@@ -48,7 +48,7 @@ export default function BanItem({
       {isClicked && <Loader className="ml-auto" />}
       {!isClicked && (
         <button
-          onClick={() => onBan(user.id)}
+          onClick={ban}
           disabled={isClicked}
           className="text-rose-500 ml-auto"
         >
