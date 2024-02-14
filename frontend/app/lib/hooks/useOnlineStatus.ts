@@ -7,11 +7,11 @@ export const OnlineContext = createContext<{ [key: number]: number }>({});
 
 export function useOnlineStatus(): { [key: number]: number } {
   const [onlineStatus, setOnlineStatus] = useState<{ [key: number]: number }>(
-    {}
+    {},
   );
   useEffect(() => {
     const handleOnlineStatus = (
-      users: { userId: number; status: number }[]
+      users: { userId: number; status: number }[],
     ) => {
       users.forEach((u) => {
         setOnlineStatus((prev) => ({ ...prev, [u.userId]: u.status }));

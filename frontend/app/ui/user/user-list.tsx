@@ -3,7 +3,7 @@
 import type { PublicUserEntity } from "@/app/lib/dtos";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Avatar, AvatarSize } from "./avatar";
-import { OnlineContext } from "@/app/lib/client-socket-provider";
+import { OnlineContext } from "@/app/lib/hooks/useOnlineStatus";
 import { useContext } from "react";
 
 export default function UserList({
