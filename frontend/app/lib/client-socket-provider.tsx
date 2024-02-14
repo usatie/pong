@@ -3,14 +3,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
 import { chatSocket } from "@/socket";
 import Link from "next/link";
-import {
-  Dispatch,
-  SetStateAction,
-  createContext,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect } from "react";
 import { useAuthContext } from "./client-auth";
 import {
   DenyEvent,
@@ -26,13 +19,7 @@ import { chatSocket as socket } from "@/socket";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 
-export const OnlineContext = createContext<{ [key: number]: number }>({});
-
-export default function SocketProvider({
-  setOnlineStatus,
-}: {
-  setOnlineStatus: Dispatch<SetStateAction<{ [key: number]: number }>>;
-}) {
+export default function SocketProvider() {
   const { toast } = useToast();
   const { currentUser } = useAuthContext();
   const pathName = usePathname();
@@ -131,9 +118,6 @@ export default function SocketProvider({
   };
 
   const handleOnlineStatus = (users: { userId: number; status: number }[]) => {
-    users.forEach((u) => {
-      setOnlineStatus((prev) => ({ ...prev, [u.userId]: u.status }));
-    });
     toast({
       title: "online-status",
       description: JSON.stringify(users),
