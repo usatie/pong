@@ -1,10 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { createContext, useEffect, useState } from "react";
+import { chatSocket } from "@/socket";
 
-export function useOnlineStatus() {
+export const OnlineContext = createContext<{ [key: number]: number }>({});
+
+export function useOnlineStatus(): { [key: number]: number } {
   const [onlineStatus, setOnlineStatus] = useState<{ [key: number]: number }>(
-    {},
+    {}
   );
-  return { onlineStatus, setOnlineStatus };
+  useEffect(() => {
+    const handleOnlineStatus = (
+      users: { userId: number; status: number }[]
+    ) => {
+      users.forEach((u) => {
+        setOnlineStatus((prev) => ({ ...prev, [u.userId]: u.status }));
+      });
+    };
+    chatSocket.on("online-status", handleOnlineStatus);
+    return () => {
+      chatSocket.off("online-status", handleOnlineStatus);
+    };
+  });
+  return onlineStatus;
 }
