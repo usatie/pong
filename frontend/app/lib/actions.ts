@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { redirect, RedirectType } from "next/navigation";
+import { redirect } from "next/navigation";
 import {
   AccessLevel,
   FriendRequestsEntity,
@@ -236,7 +236,7 @@ export async function createRoom(
     console.error("createRoom error: ", data);
     return { error: data.message };
   } else {
-    redirect(`/room/${data.id}`, RedirectType.push);
+    redirect(`/room/${data.id}`);
   }
 }
 
@@ -261,7 +261,7 @@ export async function createDirectRoom(userId: number) {
     console.error("createDirectRoom error: ", data);
     return { error: data.message };
   } else {
-    redirect(`/room/${data.id}`, RedirectType.push);
+    redirect(`/room/${data.id}`);
   }
 }
 
@@ -286,12 +286,12 @@ export async function joinRoom(
     redirect("/login");
   }
   if (res.status === 409) {
-    redirect(`/room/${roomId}`, RedirectType.push);
+    redirect(`/room/${roomId}`);
   } else if (!res.ok) {
     console.error("joinRoom error: ", data);
     return { error: data.message };
   } else {
-    redirect(`/room/${roomId}`, RedirectType.push);
+    redirect(`/room/${roomId}`);
   }
 }
 
