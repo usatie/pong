@@ -7,10 +7,7 @@ import { useCallback, useEffect } from "react";
 import { useAuthContext } from "./client-auth";
 import {
   DenyEvent,
-  DeleteRoomEvent,
-  EnterRoomEvent,
   InviteEvent,
-  LeaveRoomEvent,
   MatchEvent,
   MessageEvent,
   PublicUserEntity,
@@ -31,56 +28,6 @@ export default function SocketProvider() {
       description: "The chat room has been deleted",
     });
   };
-
-  const handleDeleteRoomEvent = useCallback(
-    (data: DeleteRoomEvent) => {
-      if (pathName === "/room/" + data.roomId.toString()) {
-        showDeleteRoomNotificationToast();
-        router.push("/room");
-        router.refresh();
-      } else if (
-        pathName.startsWith("/room/") ||
-        pathName === "/explore-rooms"
-      ) {
-        router.refresh();
-      }
-    },
-    [pathName, router],
-  );
-
-  const handleEnterRoomEvent = useCallback(
-    (data: EnterRoomEvent) => {
-      if (pathName === "/room/" + data.roomId.toString()) {
-        router.refresh();
-      } else if (
-        (pathName.startsWith("/room/") || pathName === "/room") &&
-        currentUser?.id === data.userId
-      ) {
-        router.refresh();
-      }
-    },
-    [currentUser, pathName, router],
-  );
-
-  const handleLeaveRoomEvent = useCallback(
-    (data: LeaveRoomEvent) => {
-      if (
-        pathName === "/room/" + data.roomId.toString() &&
-        data.userId === currentUser?.id
-      ) {
-        router.push("/room");
-        router.refresh();
-      } else if (pathName === "/room/" + data.roomId.toString()) {
-        router.refresh();
-      } else if (
-        (pathName.startsWith("/room/") || pathName === "/room") &&
-        currentUser?.id === data.userId
-      ) {
-        router.refresh();
-      }
-    },
-    [currentUser, pathName, router],
-  );
 
   const MatchPong = (data: MatchEvent) => {
     router.push(`/pong/${data.roomId}?mode=player`);
@@ -168,13 +115,10 @@ export default function SocketProvider() {
     const handler = (event: string, data: any) => {
       if (event === "message") {
         showMessageToast(data);
-      } else if (event === "delete-room") {
-        handleDeleteRoomEvent(data);
-      } else if (event === "enter-room") {
-        handleEnterRoomEvent(data);
-      } else if (event === "leave") {
-        handleLeaveRoomEvent(data);
       } else if (
+        event === "delete-room" ||
+        event === "enter-room" ||
+        event === "leave" ||
         event === "mute" ||
         event === "unmute" ||
         event === "update-role"
@@ -202,12 +146,6 @@ export default function SocketProvider() {
       chatSocket.offAny(handler);
       chatSocket.disconnect();
     };
-  }, [
-    currentUser,
-    handleDeleteRoomEvent,
-    handleEnterRoomEvent,
-    handleLeaveRoomEvent,
-    toast,
-  ]);
+  }, [currentUser, toast]);
   return <></>;
 }

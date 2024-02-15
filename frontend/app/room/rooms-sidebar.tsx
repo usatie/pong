@@ -1,9 +1,12 @@
 "use client";
-import type { RoomEntity } from "@/app/lib/dtos";
+import type { EnterRoomEvent, RoomEntity } from "@/app/lib/dtos";
 import { Stack } from "@/components/layout/stack";
 import Link from "next/link";
+import { useCallback, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import CreateRoomDialog from "./create-room-dialog";
+import { useAuthContext } from "@/app/lib/client-auth";
+import { chatSocket as socket } from "@/socket";
 
 function RoomButton({
   room,
@@ -42,10 +45,28 @@ function ExploreButton() {
 
 export default function RoomsSidebar({ rooms }: { rooms: RoomEntity[] }) {
   const pathname = usePathname();
+  const { currentUser } = useAuthContext();
+  const router = useRouter();
   let selectedRoomId: number | undefined;
   if (pathname.startsWith("/room/")) {
     selectedRoomId = parseInt(pathname.split("/")[2], 10);
   }
+
+  const handleEnterRoomEvent = useCallback(
+    (data: EnterRoomEvent) => {
+      if (currentUser?.id === data.userId) {
+        router.refresh();
+      }
+    },
+    [currentUser, router],
+  );
+  useEffect(() => {
+    socket.on("enter-room", handleEnterRoomEvent);
+    return () => {
+      socket.off("enter-room", handleEnterRoomEvent);
+    };
+  }, [handleEnterRoomEvent]);
+
   return (
     <div className="overflow-y-auto shrink-0 basis-48 pb-4">
       <div className="flex justify-between">

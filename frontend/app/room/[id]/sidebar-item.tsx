@@ -1,6 +1,8 @@
 "use client";
 
 import type {
+  DeleteRoomEvent,
+  EnterRoomEvent,
   PublicUserEntity,
   RoomEntity,
   UserOnRoomEntity,
@@ -13,6 +15,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useBlock } from "@/app/lib/hooks/useBlock";
 import { useInviteToGame } from "@/app/lib/hooks/useInviteToGame";
@@ -20,6 +23,7 @@ import { useKick } from "@/app/lib/hooks/useKick";
 import { useMute } from "@/app/lib/hooks/useMute";
 import { useUpdateRole } from "@/app/lib/hooks/useUpdateRole";
 import MuteMenu from "./mute-menu";
+import { chatSocket as socket } from "@/socket";
 
 function truncateString(str: string | undefined, num: number): string {
   if (!str) {
@@ -51,7 +55,7 @@ export default function SidebarItem({
   );
   const { invitePending, isInvitingToGame, inviteToGame, cancelInviteToGame } =
     useInviteToGame(user.userId);
-  const { kickPending, kick } = useKick(room.id, user.userId);
+  const { kickPending, kick } = useKick(room.id, user.userId, me.userId);
   const { mutePending, isMuted, mute, unmute } = useMute(
     room.id,
     user.userId,
@@ -73,6 +77,35 @@ export default function SidebarItem({
       router.push(`/user/${user.userId}`);
     }
   };
+  const handleEnterRoomEvent = useCallback(
+    (data: EnterRoomEvent) => {
+      if (room.id === data.roomId) {
+        router.refresh();
+      }
+    },
+    [router, room.id],
+  );
+  const handleDeleteRoomEvent = useCallback(
+    (data: DeleteRoomEvent) => {
+      if (room.id === data.roomId) {
+        router.push("/room");
+        router.refresh();
+      } else {
+        router.refresh();
+      }
+    },
+    [room.id, router],
+  );
+
+  useEffect(() => {
+    socket.on("enter-room", handleEnterRoomEvent);
+    socket.on("delete-room", handleDeleteRoomEvent);
+    return () => {
+      socket.off("enter-room", handleEnterRoomEvent);
+      socket.off("delete-room", handleDeleteRoomEvent);
+    };
+  }, [handleEnterRoomEvent, handleDeleteRoomEvent]);
+
   return (
     <>
       <ContextMenu>
