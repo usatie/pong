@@ -7,7 +7,8 @@ function isPathProtected(path: string) {
   return (
     path.startsWith("/user") ||
     path.startsWith("/room") ||
-    path.startsWith("/settings")
+    path.startsWith("/settings") ||
+    path.startsWith("/explore-rooms")
   );
 }
 
