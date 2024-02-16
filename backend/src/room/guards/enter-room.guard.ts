@@ -5,8 +5,8 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { RoomService } from '../room.service';
 import { compare } from 'bcrypt';
+import { RoomService } from '../room.service';
 
 @Injectable()
 export class EnterRoomGuard implements CanActivate {

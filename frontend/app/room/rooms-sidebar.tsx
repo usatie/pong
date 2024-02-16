@@ -1,12 +1,12 @@
 "use client";
+import { useAuthContext } from "@/app/lib/client-auth";
 import type { EnterRoomEvent, RoomEntity } from "@/app/lib/dtos";
 import { Stack } from "@/components/layout/stack";
-import Link from "next/link";
-import { useCallback, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import CreateRoomDialog from "./create-room-dialog";
-import { useAuthContext } from "@/app/lib/client-auth";
 import { chatSocket as socket } from "@/socket";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect } from "react";
+import CreateRoomDialog from "./create-room-dialog";
 
 function RoomButton({
   room,

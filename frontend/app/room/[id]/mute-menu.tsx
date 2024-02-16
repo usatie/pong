@@ -1,13 +1,11 @@
 "use client";
 
-import { muteUser, unmuteUser } from "@/app/lib/actions";
 import {
   ContextMenuItem,
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
 } from "@/components/ui/context-menu";
-import { useState } from "react";
 
 export default function MuteMenu({
   isMuted,

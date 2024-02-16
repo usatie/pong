@@ -1,7 +1,7 @@
 "use client";
 
-import { OnlineContext, useOnlineStatus } from "./lib/hooks/useOnlineStatus";
 import SocketProvider from "./lib/client-socket-provider";
+import { OnlineContext, useOnlineStatus } from "./lib/hooks/useOnlineStatus";
 
 export function OnlineProviders({ children }: { children: React.ReactNode }) {
   const onlineStatus = useOnlineStatus();

@@ -10,12 +10,12 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import MatchButton from "./MatchButton";
 import { v4 } from "uuid";
-import { Separator } from "@/components/ui/separator";
+import MatchButton from "./MatchButton";
 
 export default function JoinRoomForm({}) {
   return (
