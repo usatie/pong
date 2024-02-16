@@ -180,14 +180,14 @@ function PongBoard({ id }: PongBoardProps) {
     const game = getGame();
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key == "ArrowDown" || event.key == "ArrowLeft") {
+      if (event.key == "ArrowDown" || event.key == "ArrowUp") {
         game.setMovingDirection("none");
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key == "ArrowDown") {
         game.setMovingDirection("right");
-      } else if (event.key == "ArrowLeft") {
+      } else if (event.key == "ArrowUp") {
         game.setMovingDirection("left");
       }
     };
