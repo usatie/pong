@@ -33,7 +33,7 @@ export class Paddle {
     ctx.fillRect(this.x, this.y, this.width, this.height);
   };
 
-  move_left = () => {
+  move_top = () => {
     this.x -= (CANVAS_WIDTH / 100) * 3;
     this.x = Math.round(this.x);
     this.x = clamp(this.x, 0, CANVAS_WIDTH - this.width);
