@@ -180,12 +180,12 @@ function PongBoard({ id }: PongBoardProps) {
     const game = getGame();
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key == "ArrowRight" || event.key == "ArrowLeft") {
+      if (event.key == "ArrowDown" || event.key == "ArrowLeft") {
         game.setMovingDirection("none");
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key == "ArrowRight") {
+      if (event.key == "ArrowDown") {
         game.setMovingDirection("right");
       } else if (event.key == "ArrowLeft") {
         game.setMovingDirection("left");
@@ -310,8 +310,7 @@ function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"
-      ></canvas>
+        className="border flex-grow"></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
@@ -319,14 +318,12 @@ function PongBoard({ id }: PongBoardProps) {
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_battle_mode()}
-            disabled={battleDisabled}
-          >
+            disabled={battleDisabled}>
             Battle
           </Button>
           <Button
             onClick={() => gameRef.current?.switch_practice_mode()}
-            disabled={practiceDisabled}
-          >
+            disabled={practiceDisabled}>
             Practice
           </Button>
         </div>
