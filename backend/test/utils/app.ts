@@ -29,6 +29,11 @@ export class TestApp {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({ code });
 
+  disableTwoFactorAuthentication = (accessToken: string) =>
+    request(this.app.getHttpServer())
+      .delete('/auth/2fa/disable')
+      .set('Authorization', `Bearer ${accessToken}`);
+
   twoFactorAuthenticate = (code: string, accessToken: string) =>
     request(this.app.getHttpServer())
       .post('/auth/2fa/authenticate')

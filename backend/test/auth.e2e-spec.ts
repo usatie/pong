@@ -77,5 +77,16 @@ describe('AuthController (e2e)', () => {
     it('[GET /user/me] should return 200 if 2FA is enabled and code is provided', async () => {
       await app.getMe(user.accessToken).expect(200);
     });
+
+    it('[DELETE /auth/2fa/disable] should disable 2FA', async () => {
+      await app.disableTwoFactorAuthentication(user.accessToken).expect(200);
+    });
+
+    it('[POST /auth/2fa/enable] should re-enable 2FA', async () => {
+      const code = authenticator.generate(secret);
+      await app
+        .enableTwoFactorAuthentication(code, user.accessToken)
+        .expect(200);
+    });
   });
 });
