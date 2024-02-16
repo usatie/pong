@@ -157,7 +157,7 @@ export class PongGame {
         this.onAction && this.onAction("left");
       } else if (this.movingDirection === "right") {
         this.player1.clear(this.ctx);
-        this.player1.move_right();
+        this.player1.move_down();
         this.player1.draw(this.ctx);
         this.onAction && this.onAction("right");
       }
@@ -262,7 +262,7 @@ export class PongGame {
 
   movePlayer1Right = () => {
     this.player1.clear(this.ctx);
-    this.player1.move_right();
+    this.player1.move_down();
     this.player1.draw(this.ctx);
   };
 
@@ -274,7 +274,7 @@ export class PongGame {
 
   movePlayer2Right = () => {
     this.player2.clear(this.ctx);
-    this.player2.move_right();
+    this.player2.move_down();
     this.player2.draw(this.ctx);
   };
 
