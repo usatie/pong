@@ -33,7 +33,7 @@ export default function ProfileForm() {
         <Stack space="space-y-4">
           <ProfileItem type="text" title="name" value={currentUser?.name} />
           <ProfileItem type="email" title="email" value={currentUser?.email} />
-          {code && code !== "Success" && ErrorText({ text: code })}
+          {code && code !== "Success" && <ErrorText text={code} />}
           <Button
             type="submit"
             aria-disabled={pending}
