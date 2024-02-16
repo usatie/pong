@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Post,
@@ -16,14 +17,14 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { User } from '@prisma/client';
+import { Response } from 'express';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { AuthEntity } from './entity/auth.entity';
-import { JwtGuardWithout2FA } from './jwt-auth.guard';
-import { Response } from 'express';
+import { JwtAuthGuard, JwtGuardWithout2FA } from './jwt-auth.guard';
 
 const constants = {
   loginUrl: ((): string => {
@@ -120,5 +121,14 @@ export class AuthController {
     @CurrentUser() user: User,
   ) {
     return this.authService.twoFactorAuthenticate(dto, user.id);
+  }
+
+  @Delete('2fa/disable')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse()
+  async disable2FA(@CurrentUser() user: User) {
+    return this.authService.disableTwoFactorAuthentication(user.id);
   }
 }
