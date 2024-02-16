@@ -104,7 +104,7 @@ export class Ball {
     return this.x < 0 || this.x + this.radius * 2 > this.canvasWidth;
   };
 
-  bounce_off_side = () => {
+  bounce_off_top_bottom = () => {
     this.x = clamp(this.x, 0, this.canvasWidth - this.radius * 2);
     this.vx = -this.vx;
   };

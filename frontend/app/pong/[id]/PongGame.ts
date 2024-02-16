@@ -125,7 +125,7 @@ export class PongGame {
         this.onAction && this.onAction("collide");
       }
     } else if (this.ball.collide_with_top_bottom()) {
-      this.ball.bounce_off_side();
+      this.ball.bounce_off_top_bottom();
     }
     this.ball.draw(this.ctx);
     this.player1.draw(this.ctx);
