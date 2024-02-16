@@ -100,7 +100,7 @@ export class Ball {
     // this.fluctuate_velocity_vector();
   };
 
-  collide_with_side = () => {
+  collide_with_top_bottom = () => {
     return this.x < 0 || this.x + this.radius * 2 > this.canvasWidth;
   };
 
