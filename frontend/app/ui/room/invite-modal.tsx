@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LogIn } from "lucide-react";
 import InviteItem from "./invite-item";
 
 interface Props {

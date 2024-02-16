@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useEffect, useState } from "react";
 import { chatSocket } from "@/socket";
+import { createContext, useEffect, useState } from "react";
 
 export const OnlineContext = createContext<{ [key: number]: number }>({});
 

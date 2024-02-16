@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Role, User } from '@prisma/client';
+import { hash } from 'bcrypt';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomDeletedEvent } from 'src/common/events/room-deleted.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
@@ -16,7 +17,6 @@ import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 import { RoomEntity } from './entities/room.entity';
-import { hash } from 'bcrypt';
 
 @Injectable()
 export class RoomService {

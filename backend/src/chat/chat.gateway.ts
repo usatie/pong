@@ -10,15 +10,15 @@ import {
 import { Server, Socket } from 'socket.io';
 import { RoomDeletedEvent } from 'src/common/events/room-deleted.event';
 import { RoomEnteredEvent } from 'src/common/events/room-entered.event';
+import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { RoomMuteEvent } from 'src/common/events/room-mute.event';
 import { RoomUnmuteEvent } from 'src/common/events/room-unmute.event';
-import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { RoomUpdateRoleEvent } from 'src/common/events/room-update-role.event';
-import { ChatService, UserStatus } from './chat.service';
 import { MuteService } from 'src/room/mute/mute.service';
+import { v4 } from 'uuid';
+import { ChatService, UserStatus } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
-import { v4 } from 'uuid';
 
 @WebSocketGateway({
   cors: {

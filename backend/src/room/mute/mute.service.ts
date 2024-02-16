@@ -4,11 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateMuteDto } from './dto/create-mute.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RoomMuteEvent } from 'src/common/events/room-mute.event';
 import { RoomUnmuteEvent } from 'src/common/events/room-unmute.event';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateMuteDto } from './dto/create-mute.dto';
 
 @Injectable()
 export class MuteService {

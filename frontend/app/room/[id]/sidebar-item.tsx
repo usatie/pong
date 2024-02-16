@@ -7,6 +7,11 @@ import type {
   RoomEntity,
   UserOnRoomEntity,
 } from "@/app/lib/dtos";
+import { useBlock } from "@/app/lib/hooks/useBlock";
+import { useInviteToGame } from "@/app/lib/hooks/useInviteToGame";
+import { useKick } from "@/app/lib/hooks/useKick";
+import { useMute } from "@/app/lib/hooks/useMute";
+import { useUpdateRole } from "@/app/lib/hooks/useUpdateRole";
 import { Avatar } from "@/app/ui/user/avatar";
 import {
   ContextMenu,
@@ -15,15 +20,10 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useBlock } from "@/app/lib/hooks/useBlock";
-import { useInviteToGame } from "@/app/lib/hooks/useInviteToGame";
-import { useKick } from "@/app/lib/hooks/useKick";
-import { useMute } from "@/app/lib/hooks/useMute";
-import { useUpdateRole } from "@/app/lib/hooks/useUpdateRole";
-import MuteMenu from "./mute-menu";
 import { chatSocket as socket } from "@/socket";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect } from "react";
+import MuteMenu from "./mute-menu";
 
 function truncateString(str: string | undefined, num: number): string {
   if (!str) {

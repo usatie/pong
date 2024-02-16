@@ -1,12 +1,12 @@
-import { Role } from '@prisma/client';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Role } from '@prisma/client';
 import { Socket, io } from 'socket.io-client';
 import { AppModule } from 'src/app.module';
 import { MessageEntity } from 'src/chat/entities/message.entity';
+import { CreateRoomDto } from 'src/room/dto/create-room.dto';
 import { constants } from './constants';
 import { TestApp, UserEntityWithAccessToken } from './utils/app';
-import { CreateRoomDto } from 'src/room/dto/create-room.dto';
 
 async function createNestApp(): Promise<INestApplication> {
   const moduleFixture: TestingModule = await Test.createTestingModule({

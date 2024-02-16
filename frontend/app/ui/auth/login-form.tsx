@@ -3,19 +3,13 @@
 import { authenticate } from "@/app/lib/actions";
 import { useAuthContext } from "@/app/lib/client-auth";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useFormState, useFormStatus } from "react-dom";
+import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Separator } from "@/components/ui/separator";
+import { useFormState, useFormStatus } from "react-dom";
 
 export default function LoginForm() {
   return (

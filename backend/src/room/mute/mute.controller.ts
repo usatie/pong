@@ -1,17 +1,17 @@
 import {
-  Controller,
-  Get,
-  Put,
   Body,
+  Controller,
   Delete,
+  Get,
   Param,
   ParseIntPipe,
+  Put,
   UseGuards,
 } from '@nestjs/common';
-import { CreateMuteDto } from './dto/create-mute.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AdminGuard } from '../guards/admin.guard';
+import { CreateMuteDto } from './dto/create-mute.dto';
 import { MuteService } from './mute.service';
 
 @ApiTags('mute')
