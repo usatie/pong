@@ -4,9 +4,9 @@ import { useAuthContext } from "@/app/lib/client-auth";
 import { Stack } from "@/components/layout/stack";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { useFormState, useFormStatus } from "react-dom";
 import AvatarForm from "./avatar-form";
 import { ProfileItem } from "./profile-item-form";
-import { useFormState, useFormStatus } from "react-dom";
 
 function ErrorText({ text }: { text: string }) {
   return (
