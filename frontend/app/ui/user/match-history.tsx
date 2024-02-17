@@ -22,6 +22,7 @@ function MatchDetailItem({
           avatarURL={detail.user.avatarURL}
           href={`/user/${detail.user.id}`}
           size="medium"
+          id={detail.user.id}
         />
         <div>{detail.user.name}</div>
         <div className={`font-bold ${textColor}`}>

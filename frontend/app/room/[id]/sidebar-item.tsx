@@ -110,7 +110,11 @@ export default function SidebarItem({
     <>
       <ContextMenu>
         <ContextMenuTrigger className="flex gap-2 items-center group hover:opacity-60">
-          <Avatar avatarURL={user.user.avatarURL} size="small" />
+          <Avatar
+            avatarURL={user.user.avatarURL}
+            size="small"
+            id={user.userId}
+          />
           <span className="text-muted-foreground text-sm whitespace-nowrap group-hover:text-primary">
             {truncateString(user.user.name, 15)}
             {room.accessLevel !== "DIRECT" && isUserOwner && " 👑"}

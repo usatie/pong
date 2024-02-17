@@ -17,7 +17,7 @@ function UserCard({ user }: { user: PublicUserEntity }) {
           size="medium"
           href={`/user/${user.id}`}
           alt={user.name}
-          online={true}
+          id={user.id}
         />
       </div>
     </>
