@@ -21,6 +21,7 @@ export function MessageItem({
             avatarURL={message.user.avatarURL}
             size="medium"
             href={`/user/${message.user.id}`}
+            id={message.user.id}
           ></Avatar>
         </TooltipProvider>
       )}

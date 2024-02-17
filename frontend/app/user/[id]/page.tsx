@@ -47,7 +47,7 @@ export default async function FindUser({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <Avatar avatarURL={user.avatarURL} size="large" />
+        <Avatar avatarURL={user.avatarURL} size="large" id={user.id} />
       </div>
       <div className="text-3xl font-bold">{user.name}</div>
       {user.id !== currentUserId && (

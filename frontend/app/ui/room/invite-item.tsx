@@ -39,7 +39,7 @@ export default function InviteItem({
 
   return (
     <div key={user.id} className="flex items-center gap-x-2 mb-6">
-      <Avatar avatarURL={user.avatarURL} size="medium" />
+      <Avatar avatarURL={user.avatarURL} size="medium" id={user.id} />
       <div className="flex flex-col gap-y-1">
         <div className="text-xs font-semibold flex items-center gap-x-1">
           {user.name}

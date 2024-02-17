@@ -13,7 +13,6 @@ export default function UserList({
   users: PublicUserEntity[];
   avatarSize: AvatarSize;
 }) {
-  const onlineStatus = useContext(OnlineContext);
   return (
     <TooltipProvider delayDuration={0}>
       <div className="flex flex-wrap gap-2">
@@ -24,7 +23,7 @@ export default function UserList({
             size={avatarSize}
             href={`/user/${u.id}`}
             alt={u.name}
-            online={onlineStatus[u.id] === 1}
+            id={u.id}
             key={u.id}
           />
         ))}

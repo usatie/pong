@@ -1,3 +1,5 @@
+"use client";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -6,6 +8,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { useContext } from "react";
+import { OnlineContext } from "@/app/lib/hooks/useOnlineStatus";
 
 export type AvatarSize = "small" | "medium" | "large";
 
@@ -14,11 +18,16 @@ export interface Props {
   size: AvatarSize;
   href?: string;
   alt?: string;
-  online?: boolean;
+  id?: number;
 }
 
-export function Avatar({ avatarURL, size, href, alt, online }: Props) {
+export function Avatar({ avatarURL, size, href, alt, id }: Props) {
+  const onlineStatuses = useContext(OnlineContext);
+  const online = id ? onlineStatuses[id] : false;
   let sizeClass = "";
+  if (!avatarURL) {
+    return <Skeleton className={`flex-none rounded-full ${sizeClass}`} />;
+  }
   let onlineStatusClass = online ? "bg-green-500 " : "bg-gray-500 ";
   switch (size) {
     case "small":
