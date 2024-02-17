@@ -28,7 +28,7 @@ export default function ProfileForm() {
   // Profile : the rest
   return (
     <>
-      <AvatarForm avatarURL={currentUser?.avatarURL} />
+      <AvatarForm avatarURL={currentUser?.avatarURL} id={currentUser?.id} />
       <form action={action}>
         <Stack space="space-y-4">
           <ProfileItem type="text" title="name" value={currentUser?.name} />

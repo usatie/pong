@@ -18,12 +18,12 @@ export interface Props {
   size: AvatarSize;
   href?: string;
   alt?: string;
-  id: number;
+  id?: number;
 }
 
 export function Avatar({ avatarURL, size, href, alt, id }: Props) {
   const onlineStatuses = useContext(OnlineContext);
-  const online = onlineStatuses[id];
+  const online = id ? onlineStatuses[id] : false;
   let sizeClass = "";
   if (!avatarURL) {
     return <Skeleton className={`flex-none rounded-full ${sizeClass}`} />;
