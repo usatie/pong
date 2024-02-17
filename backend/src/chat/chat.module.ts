@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from 'src/auth/auth.module';
-import { MuteService } from 'src/room/mute/mute.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { MuteService } from 'src/room/mute/mute.service';
 import { UserService } from '../user/user.service';
 import { ChatController } from './chat.controller';
 import { ChatGateway } from './chat.gateway';

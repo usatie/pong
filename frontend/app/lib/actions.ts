@@ -106,21 +106,30 @@ export async function updateUser(
   prevState: string | undefined,
   formData: FormData,
 ) {
-  const { user_id, ...updateData } = Object.fromEntries(formData.entries());
-  const res = await fetch(`${process.env.API_URL}/user/${user_id}`, {
+  const userId = await getCurrentUserId();
+  const newNickname = formData.get("name");
+  const newEmail = formData.get("email");
+  const res = await fetch(`${process.env.API_URL}/user/${userId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + getAccessToken(),
     },
-    body: JSON.stringify(updateData),
+    body: JSON.stringify({ name: newNickname, email: newEmail }),
   });
   const data = await res.json();
+  if (res.status === 401) {
+    redirect("/login");
+  } else if (res.status === 409) {
+    console.error("updateUser error: ", data);
+    return "The name or email is already in use";
+  }
   if (!res.ok) {
-    return "Error";
+    console.error("updateUser error: ", data);
+    return data.message;
   } else {
     revalidatePath("/user");
-    revalidatePath(`/user/${user_id}`);
+    revalidatePath(`/user/${userId}`);
     return "Success";
   }
 }

@@ -1,9 +1,10 @@
 "use client";
 import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
-import { chatSocket } from "@/socket";
+import { chatSocket, chatSocket as socket } from "@/socket";
 import Link from "next/link";
-import { useCallback, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useAuthContext } from "./client-auth";
 import {
   DenyEvent,
@@ -12,9 +13,6 @@ import {
   MessageEvent,
   PublicUserEntity,
 } from "./dtos";
-import { chatSocket as socket } from "@/socket";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
 
 export default function SocketProvider() {
   const { toast } = useToast();

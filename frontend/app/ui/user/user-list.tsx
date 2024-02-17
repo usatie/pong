@@ -1,7 +1,9 @@
 "use client";
 
 import type { PublicUserEntity } from "@/app/lib/dtos";
+import { OnlineContext } from "@/app/lib/hooks/useOnlineStatus";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useContext } from "react";
 import { Avatar, AvatarSize } from "./avatar";
 
 export default function UserList({

@@ -2,9 +2,9 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Socket, io } from 'socket.io-client';
 import { AppModule } from 'src/app.module';
+import { UserStatus } from 'src/chat/chat.service';
 import { TestApp, UserEntityWithAccessToken } from './utils/app';
 import { expectOnlineStatusResponse } from './utils/matcher';
-import { UserStatus } from 'src/chat/chat.service';
 
 type UserAndSocket = {
   user: UserEntityWithAccessToken;

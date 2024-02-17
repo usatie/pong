@@ -1,10 +1,10 @@
 "use client";
 
-import RoomCard from "./room-card";
-import { useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { DeleteRoomEvent, RoomEntity } from "@/app/lib/dtos";
 import { chatSocket as socket } from "@/socket";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect } from "react";
+import RoomCard from "./room-card";
 
 export function ExploreRooms({ rooms }: { rooms: RoomEntity[] }) {
   const router = useRouter();

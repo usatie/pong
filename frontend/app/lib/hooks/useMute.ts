@@ -3,8 +3,8 @@
 import { muteUser, unmuteUser } from "@/app/lib/actions";
 import type { PublicUserEntity } from "@/app/lib/dtos";
 import { toast } from "@/components/ui/use-toast";
-import { useCallback, useEffect, useState } from "react";
 import { chatSocket as socket } from "@/socket";
+import { useCallback, useEffect, useState } from "react";
 
 interface MuteEvent {
   userId: number;

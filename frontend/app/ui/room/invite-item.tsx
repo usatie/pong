@@ -4,8 +4,8 @@ import { inviteUserToRoom } from "@/app/lib/actions";
 import { PublicUserEntity } from "@/app/lib/dtos";
 import { Avatar } from "@/app/ui/user/avatar";
 import Loader from "@/components/ui/loader";
-import { LogIn } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 

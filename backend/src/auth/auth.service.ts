@@ -224,6 +224,21 @@ export class AuthService {
     });
   }
 
+  disableTwoFactorAuthentication(userId: number) {
+    return this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user.twoFactorEnabled) {
+        throw new ConflictException('2FA secret is not enabled');
+      }
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          twoFactorEnabled: false,
+        },
+      });
+    });
+  }
+
   async twoFactorAuthenticate(dto: TwoFactorAuthenticationDto, userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user.twoFactorEnabled) {
