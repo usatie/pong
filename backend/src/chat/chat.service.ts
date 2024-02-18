@@ -18,6 +18,12 @@ export enum UserStatus {
   Online = 0b1,
 }
 
+type OnlineStatus = {
+  name: string;
+  userId: number;
+  status: UserStatus;
+};
+
 @Injectable()
 @WebSocketGateway()
 export class ChatService {
@@ -181,7 +187,7 @@ export class ChatService {
       this.statuses.set(user.id, UserStatus.Online);
       client.emit('online-status', this.getUserStatuses());
       client.broadcast.emit('online-status', [
-        { userId: user.id, status: UserStatus.Online },
+        { userId: user.id, status: UserStatus.Online, name: user.name },
       ]);
     } catch (error) {
       console.log(error);
@@ -209,6 +215,7 @@ export class ChatService {
     const emitData = {
       userId: this.getUserId(client),
       status: UserStatus.Offline,
+      name: this.getUser(client).name,
     };
     if (emitData.userId) {
       client.broadcast.emit('online-status', [emitData]);
@@ -216,14 +223,15 @@ export class ChatService {
     this.removeClient(client);
   }
 
-  getUserStatuses(): {
-    userId: number;
-    status: UserStatus;
-  }[] {
-    return Array.from(this.statuses).map(([userId, status]) => ({
-      userId,
-      status,
-    }));
+  getUserStatuses(): OnlineStatus[] {
+    return Array.from(this.users).map(([id, user]) => {
+      id; // TODO : remove this
+      return {
+        userId: user.id,
+        name: user.name,
+        status: this.statuses.get(user.id) || UserStatus.Offline,
+      };
+    });
   }
 
   private async expectNotBlockedBy(blockerId: number, userId: number) {
