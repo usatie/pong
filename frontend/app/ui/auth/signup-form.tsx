@@ -18,7 +18,7 @@ export default function SignUpForm() {
             <Separator className="shrink self-center" />
           </div>
           <Button className="w-full" asChild>
-            <a href={`${process.env.NEXT_PUBLIC_API_URL}/auth/login/oauth2/42`}>
+            <a href={`${process.env.NEXT_PUBLIC_API_URL}/auth/signup/oauth2/42`}>
               Sign up with 42
             </a>
           </Button>
