@@ -63,7 +63,7 @@ export default function SocketProvider() {
   };
 
   const handleOnlineStatus = (
-    users: { userId: number; status: number; name: string }[]
+    users: { userId: number; status: number; name: string }[],
   ) => {
     const description = users.map((u) => {
       return `[${u.name} has logged ${u.status === 1 ? "in" : "out"}] `;
