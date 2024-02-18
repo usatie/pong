@@ -62,10 +62,15 @@ export default function SocketProvider() {
     });
   };
 
-  const handleOnlineStatus = (users: { userId: number; status: number }[]) => {
+  const handleOnlineStatus = (
+    users: { userId: number; status: number; name: string }[]
+  ) => {
+    const description = users.map((u) => {
+      return `[${u.name} has logged ${u.status === 1 ? "in" : "out"}] `;
+    });
     toast({
       title: "online-status",
-      description: JSON.stringify(users),
+      description,
     });
   };
 
