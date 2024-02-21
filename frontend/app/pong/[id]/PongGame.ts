@@ -118,14 +118,14 @@ export class PongGame {
         this.ball.bounce_off_paddle(this.player1);
         this.onAction && this.onAction("bounce");
       }
-    } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
+    } else if (this.ball.x <= 0) {
       if (this.userMode === "player") {
         this.ball.reset();
         this.score.player2++;
         this.onAction && this.onAction("collide");
       }
-    } else if (this.ball.collide_with_side()) {
-      this.ball.bounce_off_side();
+    } else if (this.ball.collide_with_top_bottom()) {
+      this.ball.bounce_off_top_bottom();
     }
     this.ball.draw(this.ctx);
     this.player1.draw(this.ctx);
@@ -152,12 +152,12 @@ export class PongGame {
     if (this.userMode === "player") {
       if (this.movingDirection === "left") {
         this.player1.clear(this.ctx);
-        this.player1.move_left();
+        this.player1.move_top();
         this.player1.draw(this.ctx);
         this.onAction && this.onAction("left");
       } else if (this.movingDirection === "right") {
         this.player1.clear(this.ctx);
-        this.player1.move_right();
+        this.player1.move_down();
         this.player1.draw(this.ctx);
         this.onAction && this.onAction("right");
       }
@@ -196,32 +196,6 @@ export class PongGame {
     this.is_playing = false;
   };
 
-  switch_battle_mode = () => {
-    // Make the left player a paddle
-    this.player2.clear(this.ctx);
-    this.player2 = new Paddle(
-      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
-      0,
-      PADDLE_WIDTH,
-      PADDLE_HEIGHT,
-      this.paddleColor,
-    );
-    this.player2.draw(this.ctx);
-  };
-
-  switch_practice_mode = () => {
-    // Make the left player a wall
-    this.player2.clear(this.ctx);
-    this.player2 = new Paddle(
-      0,
-      0,
-      CANVAS_WIDTH,
-      PADDLE_HEIGHT,
-      this.paddleColor,
-    );
-    this.player2.draw(this.ctx);
-  };
-
   resetPlayerPosition = () => {
     this.player1 = this.initPlayer1();
     this.player2 = this.initPlayer2();
@@ -230,8 +204,8 @@ export class PongGame {
 
   initPlayer1 = () =>
     new Paddle(
-      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
-      CANVAS_HEIGHT - PADDLE_HEIGHT,
+      0,
+      CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
       this.paddleColor,
@@ -239,8 +213,8 @@ export class PongGame {
 
   initPlayer2 = () =>
     new Paddle(
-      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
-      0,
+      CANVAS_WIDTH - PADDLE_WIDTH,
+      CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
       this.paddleColor,
@@ -256,25 +230,25 @@ export class PongGame {
 
   movePlayer1Left = () => {
     this.player1.clear(this.ctx);
-    this.player1.move_left();
+    this.player1.move_top();
     this.player1.draw(this.ctx);
   };
 
   movePlayer1Right = () => {
     this.player1.clear(this.ctx);
-    this.player1.move_right();
+    this.player1.move_down();
     this.player1.draw(this.ctx);
   };
 
   movePlayer2Left = () => {
     this.player2.clear(this.ctx);
-    this.player2.move_left();
+    this.player2.move_top();
     this.player2.draw(this.ctx);
   };
 
   movePlayer2Right = () => {
     this.player2.clear(this.ctx);
-    this.player2.move_right();
+    this.player2.move_down();
     this.player2.draw(this.ctx);
   };
 

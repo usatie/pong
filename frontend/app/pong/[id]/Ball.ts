@@ -76,8 +76,8 @@ export class Ball {
     let speed = this.speed();
     speed = clamp(
       speed * this.generate_random_scale(),
-      this.canvasHeight / 100,
-      this.canvasHeight / 10,
+      this.canvasWidth / 100,
+      this.canvasWidth / 10,
     );
     this.vx = speed * Math.cos(radian);
     this.vy = speed * Math.sin(radian);
@@ -91,22 +91,22 @@ export class Ball {
   };
 
   bounce_off_paddle = (paddle: Paddle) => {
-    this.y = clamp(
-      this.y,
-      paddle.height,
-      this.canvasHeight - paddle.height - this.radius * 2,
+    this.x = clamp(
+      this.x,
+      paddle.width,
+      this.canvasWidth - paddle.width - this.radius * 2,
     );
-    this.vy = -this.vy;
+    this.vx = -this.vx;
     // this.fluctuate_velocity_vector();
   };
 
-  collide_with_side = () => {
-    return this.x < 0 || this.x + this.radius * 2 > this.canvasWidth;
+  collide_with_top_bottom = () => {
+    return this.y < 0 || this.y + this.radius * 2 > this.canvasHeight;
   };
 
-  bounce_off_side = () => {
-    this.x = clamp(this.x, 0, this.canvasWidth - this.radius * 2);
-    this.vx = -this.vx;
+  bounce_off_top_bottom = () => {
+    this.y = clamp(this.y, 0, this.canvasHeight - this.radius * 2);
+    this.vy = -this.vy;
   };
 
   move = (elapsed: number) => {
