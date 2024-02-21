@@ -118,7 +118,7 @@ export class PongGame {
         this.ball.bounce_off_paddle(this.player1);
         this.onAction && this.onAction("bounce");
       }
-    } else if (this.ball.y + this.ball.radius * 2 >= CANVAS_HEIGHT) {
+    } else if (this.ball.x <= 0) {
       if (this.userMode === "player") {
         this.ball.reset();
         this.score.player2++;
@@ -204,8 +204,8 @@ export class PongGame {
 
   initPlayer1 = () =>
     new Paddle(
-      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
-      CANVAS_HEIGHT - PADDLE_HEIGHT,
+      0,
+      CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
       this.paddleColor,
@@ -213,8 +213,8 @@ export class PongGame {
 
   initPlayer2 = () =>
     new Paddle(
-      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
-      0,
+      CANVAS_WIDTH - PADDLE_WIDTH,
+      CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
       this.paddleColor,

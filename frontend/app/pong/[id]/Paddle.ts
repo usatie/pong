@@ -1,6 +1,6 @@
 import { clamp } from "@/lib/utils";
 import { Ball } from "./Ball";
-import { CANVAS_WIDTH } from "./const";
+import { CANVAS_HEIGHT } from "./const";
 
 export class Paddle {
   x: number;
@@ -34,24 +34,25 @@ export class Paddle {
   };
 
   move_top = () => {
-    this.x -= (CANVAS_WIDTH / 100) * 3;
-    this.x = Math.round(this.x);
-    this.x = clamp(this.x, 0, CANVAS_WIDTH - this.width);
+    this.y -= (CANVAS_HEIGHT / 100) * 3;
+    this.y = Math.round(this.y);
+    this.y = clamp(this.y, 0, CANVAS_HEIGHT - this.height);
   };
 
   move_down = () => {
-    this.x += (CANVAS_WIDTH / 100) * 3;
-    this.x = Math.round(this.x);
-    this.x = clamp(this.x, 0, CANVAS_WIDTH - this.width);
+    this.y += (CANVAS_HEIGHT / 100) * 3;
+    this.y = Math.round(this.y);
+    this.y = clamp(this.y, 0, CANVAS_HEIGHT - this.height);
   };
 
   collide_with = (ball: Ball) => {
-    // Ball is in the same x-axis
-    if (ball.x >= this.x && ball.x + ball.radius * 2 <= this.x + this.width) {
+    // Ball is in the same y-axis
+    if (ball.y >= this.y && ball.y + ball.radius * 2 <= this.y + this.height) {
       // Ball is actually colliding with paddle
+      const isLeftPaddle = this.x == 0;
       if (
-        (ball.y <= this.height && this.y == 0) ||
-        (ball.y + ball.radius * 2 >= this.y && this.y != 0)
+        (ball.x <= this.width && isLeftPaddle) ||
+        (ball.x + ball.radius * 2 >= this.x && !isLeftPaddle)
       ) {
         return true;
       }
