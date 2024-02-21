@@ -196,32 +196,6 @@ export class PongGame {
     this.is_playing = false;
   };
 
-  switch_battle_mode = () => {
-    // Make the left player a paddle
-    this.player2.clear(this.ctx);
-    this.player2 = new Paddle(
-      CANVAS_WIDTH / 2 - PADDLE_WIDTH / 2,
-      0,
-      PADDLE_WIDTH,
-      PADDLE_HEIGHT,
-      this.paddleColor,
-    );
-    this.player2.draw(this.ctx);
-  };
-
-  switch_practice_mode = () => {
-    // Make the left player a wall
-    this.player2.clear(this.ctx);
-    this.player2 = new Paddle(
-      0,
-      0,
-      CANVAS_WIDTH,
-      PADDLE_HEIGHT,
-      this.paddleColor,
-    );
-    this.player2.draw(this.ctx);
-  };
-
   resetPlayerPosition = () => {
     this.player1 = this.initPlayer1();
     this.player2 = this.initPlayer2();

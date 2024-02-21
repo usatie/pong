@@ -316,16 +316,6 @@ function PongBoard({ id }: PongBoardProps) {
           <Button onClick={start} disabled={startDisabled}>
             Start
           </Button>
-          <Button
-            onClick={() => gameRef.current?.switch_battle_mode()}
-            disabled={battleDisabled}>
-            Battle
-          </Button>
-          <Button
-            onClick={() => gameRef.current?.switch_practice_mode()}
-            disabled={practiceDisabled}>
-            Practice
-          </Button>
         </div>
         <PongInformationBoard
           fps={fps}
