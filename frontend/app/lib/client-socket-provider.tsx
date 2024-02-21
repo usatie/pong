@@ -121,7 +121,7 @@ export default function SocketProvider() {
       } else if (
         event === "delete-room" ||
         event === "enter-room" ||
-        event === "leave" ||
+        event === "leave-room" ||
         event === "mute" ||
         event === "unmute" ||
         event === "update-role"

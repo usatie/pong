@@ -40,9 +40,9 @@ export function useKick(roomId: number, userId: number, meId: number) {
   );
 
   useEffect(() => {
-    socket.on("leave", handleLeaveRoomEvent);
+    socket.on("leave-room", handleLeaveRoomEvent);
     return () => {
-      socket.off("leave", handleLeaveRoomEvent);
+      socket.off("leave-room", handleLeaveRoomEvent);
     };
   }, [handleLeaveRoomEvent]);
 
