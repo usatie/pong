@@ -310,7 +310,8 @@ function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"></canvas>
+        className="border flex-grow"
+      ></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
