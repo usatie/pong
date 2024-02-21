@@ -226,16 +226,23 @@ export class AuthService {
 
   disableTwoFactorAuthentication(userId: number) {
     return this.prisma.$transaction(async (prisma) => {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      let user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user.twoFactorEnabled) {
         throw new ConflictException('2FA secret is not enabled');
       }
-      await prisma.user.update({
+      user = await prisma.user.update({
         where: { id: user.id },
         data: {
           twoFactorEnabled: false,
         },
       });
+      return {
+        accessToken: this.jwtService.sign({
+          userId: user.id,
+          isTwoFactorEnabled: user.twoFactorEnabled,
+          isTwoFactorAuthenticated: false,
+        }),
+      };
     });
   }
 
