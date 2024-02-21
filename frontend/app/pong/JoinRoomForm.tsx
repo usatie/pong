@@ -45,7 +45,7 @@ function CreateRoomButton() {
   const randomRoomId = v4();
   return (
     <Button asChild>
-      <Link href={`/pong/${randomRoomId}`}>Create a new room</Link>
+      <Link href={`/pong/${randomRoomId}?mode=player`}>Create a new room</Link>
     </Button>
   );
 }
