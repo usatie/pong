@@ -121,15 +121,15 @@ export default function SocketProvider() {
       } else if (
         event === "delete-room" ||
         event === "enter-room" ||
-        event === "leave" ||
+        event === "leave-room" ||
         event === "mute" ||
         event === "unmute" ||
         event === "update-role"
       ) {
         /* Nothing to do here */
-      } else if (event === "invite-pong") {
+      } else if (event === "request-match") {
         showInvitePongToast(data);
-      } else if (event === "invite-cancel-pong") {
+      } else if (event === "cancel-request-match") {
         showInviteCancelPongToast(data);
       } else if (event === "match-pong") {
         MatchPong(data);
