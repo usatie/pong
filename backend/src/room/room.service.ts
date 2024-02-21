@@ -13,8 +13,8 @@ import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { RoomUpdateRoleEvent } from 'src/common/events/room-update-role.event';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { UpdateUserOnRoomDto } from './dto/update-user-on-room.dto';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
 
 @Injectable()
