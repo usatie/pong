@@ -1,6 +1,10 @@
-import { generate2FASecret } from "@/app/lib/actions";
+import {
+  disableTwoFactorAuthentication,
+  generate2FASecret,
+} from "@/app/lib/actions";
 import { getAccessTokenPayload } from "@/app/lib/session";
 import TwoFactorAuthVerifyForm from "@/app/ui/auth/verify-form";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { toDataURL } from "qrcode";
@@ -8,11 +12,10 @@ import { toDataURL } from "qrcode";
 export default async function TwoFactorAuthPage() {
   const payload = await getAccessTokenPayload({ ignoreExpiration: true });
   if (payload?.isTwoFactorEnabled) {
-    // TODO: Disable 2FA button
     return (
-      <div className="flex flex-col items-center">
-        <p className="my-4">&#9989; 2FA is already enabled.</p>
-      </div>
+      <form action={disableTwoFactorAuthentication}>
+        <Button type="submit">Disable 2FA</Button>
+      </form>
     );
   }
   const { otpAuthUrl } = await generate2FASecret();

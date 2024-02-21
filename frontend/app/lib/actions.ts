@@ -753,6 +753,23 @@ export async function enableTwoFactorAuthentication(
   }
 }
 
+export async function disableTwoFactorAuthentication() {
+  const res = await fetch(`${process.env.API_URL}/auth/2fa/disable`, {
+    method: "DELETE",
+    headers: {
+      Authorization: "Bearer " + getAccessToken(),
+    },
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    console.error("disableTwoFactorAuthentication error: ", data);
+    return "Error";
+  } else {
+    setAccessToken(data.accessToken);
+    return "Success";
+  }
+}
+
 export async function twoFactorAuthenticate(
   prevState: string,
   formData: FormData,
