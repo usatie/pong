@@ -34,7 +34,6 @@ export class PongGame {
   setPlayer2Position: setFunction<number>;
   onAction: onActionType | undefined;
   private paddleColor: string;
-  private ballColor: string;
   private userMode: userModeType;
 
   constructor(
@@ -51,7 +50,6 @@ export class PongGame {
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
     this.paddleColor = paddleColor;
-    this.ballColor = ballColor;
     this.player1 = this.initPlayer1();
     this.player2 = this.initPlayer2();
 
@@ -64,7 +62,7 @@ export class PongGame {
       0,
       0,
       BALL_RADIUS,
-      this.ballColor,
+      ballColor,
     );
     this.score = {
       player1: 0,
@@ -271,7 +269,6 @@ export class PongGame {
 
   setColor(color: string) {
     this.paddleColor = color;
-    this.ballColor = color;
     this.ball.color = color;
     this.player1.color = color;
     this.player2.color = color;
