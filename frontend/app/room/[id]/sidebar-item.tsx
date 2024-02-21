@@ -8,9 +8,9 @@ import type {
   UserOnRoomEntity,
 } from "@/app/lib/dtos";
 import { useBlock } from "@/app/lib/hooks/useBlock";
-import { useInviteToGame } from "@/app/lib/hooks/useInviteToGame";
 import { useKick } from "@/app/lib/hooks/useKick";
 import { useMute } from "@/app/lib/hooks/useMute";
+import { useRequestMatch } from "@/app/lib/hooks/useRequestMatch";
 import { useUpdateRole } from "@/app/lib/hooks/useUpdateRole";
 import { Avatar } from "@/app/ui/user/avatar";
 import {
@@ -53,8 +53,12 @@ export default function SidebarItem({
     user.userId,
     blockingUsers,
   );
-  const { invitePending, isInvitingToGame, inviteToGame, cancelInviteToGame } =
-    useInviteToGame(user.userId);
+  const {
+    sendRequestPending,
+    isRequestingMatch,
+    requestMatch,
+    cancelRequestMatch,
+  } = useRequestMatch(user.userId);
   const { kickPending, kick } = useKick(room.id, user.userId, me.userId);
   const { mutePending, isMuted, mute, unmute } = useMute(
     room.id,
@@ -138,20 +142,20 @@ export default function SidebarItem({
               >
                 Unblock
               </ContextMenuItem>
-              {!isInvitingToGame && (
+              {!isRequestingMatch && (
                 <ContextMenuItem
-                  disabled={invitePending}
-                  onSelect={inviteToGame}
+                  disabled={sendRequestPending}
+                  onSelect={requestMatch}
                 >
-                  Invite
+                  Request Match
                 </ContextMenuItem>
               )}
-              {isInvitingToGame && (
+              {isRequestingMatch && (
                 <ContextMenuItem
-                  disabled={invitePending}
-                  onSelect={cancelInviteToGame}
+                  disabled={sendRequestPending}
+                  onSelect={cancelRequestMatch}
                 >
-                  Cancel invite
+                  Cancel Request
                 </ContextMenuItem>
               )}
               {isMeAdminOrOwner && !isUserOwner && (
