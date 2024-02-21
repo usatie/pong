@@ -35,9 +35,9 @@ export class ChatService {
 
   // Map<User.id, Socket>
   private clients = new Map<User['id'], Socket>();
-  // key: inviter, value: invitee
   private users = new Map<Socket['id'], WsPublicUserEntity>();
-  private invite = new Map<User['id'], User['id']>();
+  // key: requestingUserId, value: requestedUserId
+  private matchRequests = new Map<User['id'], User['id']>();
   private statuses = new Map<User['id'], UserStatus>();
 
   getUser(client: Socket) {
@@ -67,20 +67,20 @@ export class ChatService {
       this.statuses.delete(user.id);
       this.clients.delete(user.id);
       this.users.delete(client.id);
-      this.removeInvite(user.id);
+      this.removeMatchRequest(user.id);
     }
   }
 
-  addInvite(inviterId: number, inviteeId: number) {
-    this.invite.set(inviterId, inviteeId);
+  addMatchRequest(requestingUserId: number, requestedUserId: number) {
+    this.matchRequests.set(requestingUserId, requestedUserId);
   }
 
-  getInvite(inviterId: number) {
-    return this.invite.get(inviterId);
+  getMatchRequest(requestingUserId: number) {
+    return this.matchRequests.get(requestingUserId);
   }
 
-  removeInvite(inviterId: number) {
-    this.invite.delete(inviterId);
+  removeMatchRequest(requestingUserId: number) {
+    this.matchRequests.delete(requestingUserId);
   }
 
   addUserToRoom(roomId: number, userId: number) {
