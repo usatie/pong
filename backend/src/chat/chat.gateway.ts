@@ -16,7 +16,7 @@ import { RoomUnmuteEvent } from 'src/common/events/room-unmute.event';
 import { RoomUpdateRoleEvent } from 'src/common/events/room-update-role.event';
 import { MuteService } from 'src/room/mute/mute.service';
 import { v4 } from 'uuid';
-import { ChatService } from './chat.service';
+import { ChatService, UserStatus } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
 
@@ -187,7 +187,7 @@ export class ChatGateway {
 
   @OnEvent('room.leave', { async: true })
   async handleLeave(event: RoomLeftEvent) {
-    this.server.in(event.roomId.toString()).emit('leave', event);
+    this.server.in(event.roomId.toString()).emit('leave-room', event);
     this.chatService.removeUserFromRoom(event.roomId, event.userId);
   }
 

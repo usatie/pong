@@ -516,7 +516,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
     describe('Kick scenario', () => {
       let ctx5: Promise<void[]>;
-      it('setup promises to recv leave event with user id', async () => {
+      it('setup promises to recv leave-room event with user id', async () => {
         const expectedEvent = {
           userId: kickedUser1.id,
           roomId: room.id,
@@ -524,9 +524,9 @@ describe('ChatGateway and ChatController (e2e)', () => {
         const promises = [ws1, ws2, ws3, ws4, ws5, ws6].map(
           (ws) =>
             new Promise<void>((resolve) => {
-              ws.on('leave', (data) => {
+              ws.on('leave-room', (data) => {
                 expect(data).toEqual(expectedEvent);
-                ws.off('leave');
+                ws.off('leave-room');
                 resolve();
               });
             }),
@@ -541,7 +541,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           .expect(204);
       });
 
-      it('all users (except kickedUser1) should receive leave event with kickedUser1 id', async () => {
+      it('all users (except kickedUser1) should receive leave-room event with kickedUser1 id', async () => {
         await ctx5;
       });
 
