@@ -11,7 +11,7 @@ import { UnblockEvent } from 'src/common/events/unblock.event';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { PublicUserEntity } from './entities/message.entity';
+import { WsPublicUserEntity } from './entities/message.entity';
 
 export enum UserStatus {
   Offline = 0b0,
@@ -36,7 +36,7 @@ export class ChatService {
   // Map<User.id, Socket>
   private clients = new Map<User['id'], Socket>();
   // key: inviter, value: invitee
-  private users = new Map<Socket['id'], PublicUserEntity>();
+  private users = new Map<Socket['id'], WsPublicUserEntity>();
   private invite = new Map<User['id'], User['id']>();
   private statuses = new Map<User['id'], UserStatus>();
 
@@ -58,7 +58,7 @@ export class ChatService {
 
   addClient(user: User, client: Socket) {
     this.clients.set(user.id, client);
-    this.users.set(client.id, new PublicUserEntity(user));
+    this.users.set(client.id, new WsPublicUserEntity(user));
   }
 
   removeClient(client: Socket) {
