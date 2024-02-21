@@ -33,6 +33,9 @@ export class EnterRoomGuard implements CanActivate {
         if (!req.body.password) {
           throw new BadRequestException('password is required');
         }
+        if (!room.password) {
+          throw new Error('room.password should be defined');
+        }
         const isPasswordValid = await compare(req.body.password, room.password);
         if (!isPasswordValid) {
           throw new ForbiddenException('invalid password');
