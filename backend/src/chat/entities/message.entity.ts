@@ -1,5 +1,5 @@
 export class PublicUserEntity {
-  constructor(partial: Partial<PublicUserEntity>) {
+  constructor(partial: PublicUserEntity) {
     this.id = partial.id;
     this.name = partial.name;
     this.avatarURL = partial.avatarURL;
@@ -10,7 +10,7 @@ export class PublicUserEntity {
 }
 
 export class MessageEntity {
-  constructor(partial: Partial<MessageEntity>, user: PublicUserEntity) {
+  constructor(partial: Omit<MessageEntity, 'user'>, user: PublicUserEntity) {
     this.content = partial.content;
     this.roomId = partial.roomId;
     this.user = user;

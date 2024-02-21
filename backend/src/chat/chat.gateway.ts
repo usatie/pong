@@ -55,6 +55,11 @@ export class ChatGateway {
       this.logger.error('invalid userId');
       return;
     }
+    const user = this.chatService.getUser(client);
+    if (!user) {
+      this.logger.error('invalid user');
+      return;
+    }
 
     const MutedUsers = await this.muteService.findAll(data.roomId);
     if (MutedUsers.some((user) => user.id === data.userId)) {
@@ -68,10 +73,7 @@ export class ChatGateway {
     const room = this.server
       .to(data.roomId.toString())
       .except('block' + data.userId);
-    room.emit(
-      'message',
-      new MessageEntity(data, this.chatService.getUser(client)),
-    );
+    room.emit('message', new MessageEntity(data, user));
   }
 
   @SubscribeMessage('request-match')
