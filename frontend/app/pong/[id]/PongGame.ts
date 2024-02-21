@@ -272,6 +272,7 @@ export class PongGame {
   setColor(color: string) {
     this.paddleColor = color;
     this.ballColor = color;
+    this.ball.color = color;
     this.player1.color = color;
     this.player2.color = color;
   }
