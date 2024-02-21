@@ -16,7 +16,7 @@ import { RoomUnmuteEvent } from 'src/common/events/room-unmute.event';
 import { RoomUpdateRoleEvent } from 'src/common/events/room-update-role.event';
 import { MuteService } from 'src/room/mute/mute.service';
 import { v4 } from 'uuid';
-import { ChatService, UserStatus } from './chat.service';
+import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessageEntity } from './entities/message.entity';
 
@@ -74,8 +74,8 @@ export class ChatGateway {
     );
   }
 
-  @SubscribeMessage('invite-pong')
-  async handleInvitePong(
+  @SubscribeMessage('request-match')
+  async handleRequestMatch(
     @MessageBody() data: { userId: number },
     @ConnectedSocket() client: Socket,
   ) {
@@ -90,13 +90,13 @@ export class ChatGateway {
       if (blocked.some((user) => user.id === data.userId)) return;
       this.server
         .to(invitedUserWsId)
-        .emit('invite-pong', { userId: inviteUser.id });
+        .emit('request-match', { userId: inviteUser.id });
       this.chatService.addInvite(inviteUser.id, data.userId);
     }
   }
 
-  @SubscribeMessage('invite-cancel-pong')
-  handleInviteCancelPong(@ConnectedSocket() client: Socket) {
+  @SubscribeMessage('cancel-request-match')
+  handleCancelRequestMatch(@ConnectedSocket() client: Socket) {
     const inviteUser = this.chatService.getUser(client);
     const invitee = this.chatService.getInvite(inviteUser.id);
     if (!invitee) {
@@ -105,7 +105,7 @@ export class ChatGateway {
     }
     const inviteeWsId = this.chatService.getWsFromUserId(invitee)?.id;
     this.chatService.removeInvite(inviteUser.id);
-    this.server.to(inviteeWsId).emit('invite-cancel-pong', inviteUser);
+    this.server.to(inviteeWsId).emit('cancel-request-match', inviteUser);
   }
 
   @SubscribeMessage('approve-pong')
