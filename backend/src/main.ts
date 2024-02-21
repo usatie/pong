@@ -4,6 +4,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import { AppModule } from './app.module';
 
+const constants = {
+  port: process.env.PORT || 3000,
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors(); // enable CORS
@@ -25,6 +29,6 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
-  await app.listen(process.env.PORT);
+  await app.listen(constants.port);
 }
 bootstrap();
