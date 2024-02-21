@@ -11,7 +11,7 @@ import { UnblockEvent } from 'src/common/events/unblock.event';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { PublicUserEntity } from './entities/message.entity';
+import { WsPublicUserEntity } from './entities/message.entity';
 
 export enum UserStatus {
   Offline = 0b0,
@@ -35,9 +35,9 @@ export class ChatService {
 
   // Map<User.id, Socket>
   private clients = new Map<User['id'], Socket>();
-  // key: inviter, value: invitee
-  private users = new Map<Socket['id'], PublicUserEntity>();
-  private invite = new Map<User['id'], User['id']>();
+  private users = new Map<Socket['id'], WsPublicUserEntity>();
+  // key: requestingUserId, value: requestedUserId
+  private matchRequests = new Map<User['id'], User['id']>();
   private statuses = new Map<User['id'], UserStatus>();
 
   getUser(client: Socket) {
@@ -58,7 +58,7 @@ export class ChatService {
 
   addClient(user: User, client: Socket) {
     this.clients.set(user.id, client);
-    this.users.set(client.id, new PublicUserEntity(user));
+    this.users.set(client.id, new WsPublicUserEntity(user));
   }
 
   removeClient(client: Socket) {
@@ -67,20 +67,20 @@ export class ChatService {
       this.statuses.delete(user.id);
       this.clients.delete(user.id);
       this.users.delete(client.id);
-      this.removeInvite(user.id);
+      this.removeMatchRequest(user.id);
     }
   }
 
-  addInvite(inviterId: number, inviteeId: number) {
-    this.invite.set(inviterId, inviteeId);
+  addMatchRequest(requestingUserId: number, requestedUserId: number) {
+    this.matchRequests.set(requestingUserId, requestedUserId);
   }
 
-  getInvite(inviterId: number) {
-    return this.invite.get(inviterId);
+  getMatchRequest(requestingUserId: number) {
+    return this.matchRequests.get(requestingUserId);
   }
 
-  removeInvite(inviterId: number) {
-    this.invite.delete(inviterId);
+  removeMatchRequest(requestingUserId: number) {
+    this.matchRequests.delete(requestingUserId);
   }
 
   addUserToRoom(roomId: number, userId: number) {
@@ -215,7 +215,7 @@ export class ChatService {
     const emitData = {
       userId: this.getUserId(client),
       status: UserStatus.Offline,
-      name: this.getUser(client).name,
+      name: this.getUser(client)?.name,
     };
     if (emitData.userId) {
       client.broadcast.emit('online-status', [emitData]);

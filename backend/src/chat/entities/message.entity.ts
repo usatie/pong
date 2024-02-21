@@ -1,21 +1,23 @@
-export class PublicUserEntity {
-  constructor(partial: Partial<PublicUserEntity>) {
-    this.id = partial.id;
-    this.name = partial.name;
-    this.avatarURL = partial.avatarURL;
+import { User } from '@prisma/client';
+
+export class WsPublicUserEntity {
+  constructor(user: User) {
+    this.id = user.id;
+    this.name = user.name;
+    this.avatarURL = user.avatarURL;
   }
   id: number;
   name: string;
-  avatarURL?: string;
+  avatarURL: string | null;
 }
 
 export class MessageEntity {
-  constructor(partial: Partial<MessageEntity>, user: PublicUserEntity) {
-    this.content = partial.content;
-    this.roomId = partial.roomId;
+  constructor(message: Omit<MessageEntity, 'user'>, user: WsPublicUserEntity) {
+    this.content = message.content;
+    this.roomId = message.roomId;
     this.user = user;
   }
   content: string;
   roomId: number;
-  user: PublicUserEntity;
+  user: WsPublicUserEntity;
 }

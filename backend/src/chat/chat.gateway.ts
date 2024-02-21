@@ -55,6 +55,11 @@ export class ChatGateway {
       this.logger.error('invalid userId');
       return;
     }
+    const user = this.chatService.getUser(client);
+    if (!user) {
+      this.logger.error('invalid user');
+      return;
+    }
 
     const MutedUsers = await this.muteService.findAll(data.roomId);
     if (MutedUsers.some((user) => user.id === data.userId)) {
@@ -68,10 +73,7 @@ export class ChatGateway {
     const room = this.server
       .to(data.roomId.toString())
       .except('block' + data.userId);
-    room.emit(
-      'message',
-      new MessageEntity(data, this.chatService.getUser(client)),
-    );
+    room.emit('message', new MessageEntity(data, user));
   }
 
   @SubscribeMessage('request-match')
@@ -79,33 +81,59 @@ export class ChatGateway {
     @MessageBody() data: { userId: number },
     @ConnectedSocket() client: Socket,
   ) {
-    const inviteUser = this.chatService.getUser(client);
-    const invitedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
-    if (!invitedUserWsId) {
+    // Check if the requesting user is valid
+    const requestingUser = this.chatService.getUser(client);
+    if (!requestingUser) {
+      this.logger.error('invalid requesting user');
       return;
-    } else {
-      const blockings = await this.chatService.getUsersBlockedBy(data.userId);
-      if (blockings.some((user) => user.id === inviteUser.id)) return;
-      const blocked = await this.chatService.getUsersBlockedBy(inviteUser.id);
-      if (blocked.some((user) => user.id === data.userId)) return;
-      this.server
-        .to(invitedUserWsId)
-        .emit('request-match', { userId: inviteUser.id });
-      this.chatService.addInvite(inviteUser.id, data.userId);
     }
+    // Check if the requested user is connected
+    const requestedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
+    if (!requestedUserWsId) {
+      this.logger.error('invalid requested user');
+      return;
+    }
+    // Check if the requesting user is blocked by the requested user
+    const blockings = await this.chatService.getUsersBlockedBy(data.userId);
+    if (blockings.some((user) => user.id === requestingUser.id)) return;
+    // Check if the requested user is blocked by the requesting user
+    const blocked = await this.chatService.getUsersBlockedBy(requestingUser.id);
+    if (blocked.some((user) => user.id === data.userId)) return;
+    // Send the request
+    this.server
+      .to(requestedUserWsId)
+      .emit('request-match', { userId: requestingUser.id });
+    // Save the request
+    this.chatService.addMatchRequest(requestingUser.id, data.userId);
   }
 
   @SubscribeMessage('cancel-request-match')
   handleCancelRequestMatch(@ConnectedSocket() client: Socket) {
-    const inviteUser = this.chatService.getUser(client);
-    const invitee = this.chatService.getInvite(inviteUser.id);
-    if (!invitee) {
+    // Check if the requesting user is valid
+    const requestingUser = this.chatService.getUser(client);
+    if (!requestingUser) {
+      this.logger.error('invalid requesting user');
+      return;
+    }
+    // Check if the request exists
+    const requestedUser = this.chatService.getMatchRequest(requestingUser.id);
+    if (!requestedUser) {
+      this.logger.error('invalid requested user');
       this.server.to(client.id).emit('error-pong', 'No pending invite found.');
       return;
     }
-    const inviteeWsId = this.chatService.getWsFromUserId(invitee)?.id;
-    this.chatService.removeInvite(inviteUser.id);
-    this.server.to(inviteeWsId).emit('cancel-request-match', inviteUser);
+    // Cancel the request
+    this.chatService.removeMatchRequest(requestingUser.id);
+    // Check if the requested user is connected
+    const requestedUserWsId =
+      this.chatService.getWsFromUserId(requestedUser)?.id;
+    if (!requestedUserWsId) {
+      return;
+    }
+    // Send the cancel request
+    this.server
+      .to(requestedUserWsId)
+      .emit('cancel-request-match', requestingUser);
   }
 
   @SubscribeMessage('approve-pong')
@@ -118,7 +146,7 @@ export class ChatGateway {
       return;
     } else {
       if (
-        this.chatService.getInvite(data.userId) !==
+        this.chatService.getMatchRequest(data.userId) !==
         this.chatService.getUserId(client)
       ) {
         this.server
@@ -129,7 +157,7 @@ export class ChatGateway {
       const emitData = { roomId: v4() };
       this.server.to(client.id).emit('match-pong', emitData);
       this.server.to(approvedUserWsId).emit('match-pong', emitData);
-      this.chatService.removeInvite(data.userId);
+      this.chatService.removeMatchRequest(data.userId);
     }
   }
 
@@ -143,7 +171,7 @@ export class ChatGateway {
       return;
     } else {
       if (
-        this.chatService.getInvite(data.userId) !==
+        this.chatService.getMatchRequest(data.userId) !==
         this.chatService.getUserId(client)
       ) {
         this.server
@@ -152,7 +180,7 @@ export class ChatGateway {
         return;
       }
       this.server.to(deniedUserWsId).emit('deny-pong');
-      this.chatService.removeInvite(data.userId);
+      this.chatService.removeMatchRequest(data.userId);
     }
   }
 

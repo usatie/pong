@@ -17,7 +17,7 @@ export class PublicUserEntity implements User {
   name: string;
 
   @Exclude()
-  password: string;
+  password: string | null;
 
   @ApiProperty({ required: false, nullable: true })
   avatarURL: string | null;

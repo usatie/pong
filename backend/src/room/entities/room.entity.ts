@@ -16,5 +16,5 @@ export class RoomEntity implements Room {
   accessLevel: 'PUBLIC' | 'PRIVATE' | 'PROTECTED' | 'DIRECT';
 
   @Exclude()
-  password: string;
+  password: string | null;
 }

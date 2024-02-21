@@ -16,6 +16,13 @@ import { TwoFactorAuthenticationDto } from './dto/twoFactorAuthentication.dto';
 import { TwoFactorAuthenticationEnableDto } from './dto/twoFactorAuthenticationEnable.dto';
 import { AuthEntity } from './entity/auth.entity';
 
+const constants = {
+  appName: process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME || 'Pong API',
+  clientId: process.env.OAUTH_42_CLIENT_ID || 'You need to set this',
+  clientSecret: process.env.OAUTH_42_CLIENT_SECRET || 'You need to set this',
+  publicURL: process.env.NEST_PUBLIC_API_URL || 'http://localhost:3000/api',
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -24,7 +31,7 @@ export class AuthService {
   ) {}
 
   async login(email: string, password: string): Promise<AuthEntity> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { email } });
 
     if (!user) {
       throw new NotFoundException(`No user found for email: ${email}`);
@@ -34,6 +41,11 @@ export class AuthService {
       throw new UnauthorizedException(
         'This account is linked to an oauth provider',
       );
+    }
+
+    // This should not happen : password should be set for all users except oauth users
+    if (!user.password) {
+      throw new UnauthorizedException('Password is not set for this user');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -66,14 +78,16 @@ export class AuthService {
 
   async generateTwoFactorAuthenticationSecret(userId: number) {
     return this.prisma.$transaction(async (prisma) => {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+      });
       if (user.twoFactorEnabled) {
         throw new ConflictException('2FA secret is already enabled');
       }
       const secret = authenticator.generateSecret();
       const otpAuthUrl = authenticator.keyuri(
         user.email,
-        process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME,
+        constants.appName,
         secret,
       );
       await prisma.user.update({
@@ -93,10 +107,10 @@ export class AuthService {
   }) {
     const form = new URLSearchParams({
       grant_type: 'authorization_code',
-      client_id: process.env.OAUTH_42_CLIENT_ID,
-      client_secret: process.env.OAUTH_42_CLIENT_SECRET,
+      client_id: constants.clientId,
+      client_secret: constants.clientSecret,
       code: code,
-      redirect_uri: process.env.NEST_PUBLIC_API_URL + redirect_uri,
+      redirect_uri: constants.publicURL + redirect_uri,
     });
 
     return fetch('https://api.intra.42.fr/oauth/token', {
@@ -190,23 +204,24 @@ export class AuthService {
     return toFileStream(stream, otpAuthUrl);
   }
 
-  isTwoFactorAuthenticationCodeValid(code: string, user: User) {
-    return authenticator.verify({ token: code, secret: user.twoFactorSecret });
-  }
-
   enableTwoFactorAuthentication(
     dto: TwoFactorAuthenticationEnableDto,
     userId: number,
   ) {
     return this.prisma.$transaction(async (prisma) => {
-      let user = await prisma.user.findUnique({ where: { id: userId } });
+      let user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
       if (user.twoFactorEnabled) {
         throw new ConflictException('2FA secret is already enabled');
       }
-      const isCodeValid = this.isTwoFactorAuthenticationCodeValid(
-        dto.code,
-        user,
-      );
+      if (!user.twoFactorSecret) {
+        throw new ConflictException(
+          '2FA secret is not generated for this user',
+        );
+      }
+      const isCodeValid = authenticator.verify({
+        token: dto.code,
+        secret: user.twoFactorSecret,
+      });
       if (!isCodeValid) {
         throw new UnauthorizedException('Invalid 2FA code');
       }
@@ -226,7 +241,7 @@ export class AuthService {
 
   disableTwoFactorAuthentication(userId: number) {
     return this.prisma.$transaction(async (prisma) => {
-      let user = await prisma.user.findUnique({ where: { id: userId } });
+      let user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
       if (!user.twoFactorEnabled) {
         throw new ConflictException('2FA secret is not enabled');
       }
@@ -247,11 +262,19 @@ export class AuthService {
   }
 
   async twoFactorAuthenticate(dto: TwoFactorAuthenticationDto, userId: number) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+    });
     if (!user.twoFactorEnabled) {
       throw new ConflictException('2FA secret is not enabled');
     }
-    const isCodeValid = this.isTwoFactorAuthenticationCodeValid(dto.code, user);
+    if (!user.twoFactorSecret) {
+      throw new ConflictException('2FA secret is not generated for this user');
+    }
+    const isCodeValid = authenticator.verify({
+      token: dto.code,
+      secret: user.twoFactorSecret,
+    });
     if (!isCodeValid) {
       throw new UnauthorizedException('Invalid 2FA code');
     }

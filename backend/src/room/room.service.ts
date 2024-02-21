@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Role, User } from '@prisma/client';
+import { Role, Room, User } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { RoomCreatedEvent } from 'src/common/events/room-created.event';
 import { RoomDeletedEvent } from 'src/common/events/room-deleted.event';
@@ -13,10 +13,9 @@ import { RoomLeftEvent } from 'src/common/events/room-left.event';
 import { RoomUpdateRoleEvent } from 'src/common/events/room-update-role.event';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateRoomDto } from './dto/create-room.dto';
-import { UpdateUserOnRoomDto } from './dto/update-UserOnRoom.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { UpdateUserOnRoomDto } from './dto/update-user-on-room.dto';
 import { UserOnRoomEntity } from './entities/UserOnRoom.entity';
-import { RoomEntity } from './entities/room.entity';
 
 @Injectable()
 export class RoomService {
@@ -32,7 +31,7 @@ export class RoomService {
 
   // room CRUD
 
-  async create(createRoomDto: CreateRoomDto, user: User): Promise<RoomEntity> {
+  async create(createRoomDto: CreateRoomDto, user: User): Promise<Room> {
     const { userIds, ...rest } = createRoomDto;
     if (rest.password) {
       rest.password = await this.hashPassword(rest.password);
@@ -72,7 +71,7 @@ export class RoomService {
     return room;
   }
 
-  findAllRoom(userId: number, joined?: boolean): Promise<RoomEntity[]> {
+  findAllRoom(userId: number, joined?: boolean): Promise<Room[]> {
     let users;
     if (joined) {
       users = { some: { userId: userId } };
@@ -159,7 +158,7 @@ export class RoomService {
   async updateRoom(
     roomId: number,
     updateRoomDto: UpdateRoomDto,
-  ): Promise<RoomEntity> {
+  ): Promise<Room> {
     if (updateRoomDto.password) {
       updateRoomDto.password = await this.hashPassword(updateRoomDto.password);
     }
@@ -199,7 +198,7 @@ export class RoomService {
     });
   }
 
-  async removeRoom(roomId: number): Promise<RoomEntity> {
+  async removeRoom(roomId: number): Promise<Room> {
     const users = await this.findAllUserOnRoom(roomId);
     const deletedRoom = await this.prisma.room.delete({
       where: { id: roomId },

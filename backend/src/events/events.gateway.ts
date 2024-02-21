@@ -159,7 +159,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   async start(
     @MessageBody() data: { vx: number; vy: number },
     @ConnectedSocket() client: Socket,
-  ): Promise<string> {
+  ): Promise<void> {
     const roomId = client.handshake.query['game_id'] as string;
     if (!isPlayer(this.players, roomId, client.id)) return;
 
@@ -173,7 +173,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   async left(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
-  ): Promise<string> {
+  ): Promise<void> {
     const roomId = client.handshake.query['game_id'] as string;
     if (!isPlayer(this.players, roomId, client.id)) return;
 
@@ -190,7 +190,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   async right(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
-  ): Promise<string> {
+  ): Promise<void> {
     const roomId = client.handshake.query['game_id'] as string;
     if (!isPlayer(this.players, roomId, client.id)) return;
 
@@ -205,7 +205,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   async bounce(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
-  ): Promise<string> {
+  ): Promise<void> {
     const roomId = client.handshake.query['game_id'] as string;
     if (!isPlayer(this.players, roomId, client.id)) return;
 
@@ -220,7 +220,7 @@ export class EventsGateway implements OnGatewayDisconnect {
   async collide(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
-  ): Promise<string> {
+  ): Promise<void> {
     const roomId = client.handshake.query['game_id'] as string;
     if (!isPlayer(this.players, roomId, client.id)) return;
 
@@ -233,6 +233,11 @@ export class EventsGateway implements OnGatewayDisconnect {
       client.emit('finish');
 
       const opponent = getOpponent(this.players, roomId, client.id);
+      // TODO: handle invalid game. The opponent must have been disconnected.
+      if (!opponent) {
+        this.logger.error('opponent not found');
+        return;
+      }
       this.emitUpdateStatus(client, 'lost');
       this.emitUpdateStatusToRoomId(client, opponent, 'won');
       this.emitUpdateStatusToRoomId(client, roomId, 'finish');

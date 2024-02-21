@@ -163,19 +163,16 @@ async function seedMatchHistory() {
 }
 
 async function seedFriends(users) {
-  let promises = [];
-  for (let i = 0; i < users.length - 1; i++) {
-    promises.push(
-      prisma.user.update({
-        where: { id: users[users.length - 1].id },
-        data: {
-          friends: {
-            connect: { id: users[i].id },
-          },
+  const promises = users.map((user) => {
+    return prisma.user.update({
+      where: { id: users[users.length - 1].id },
+      data: {
+        friends: {
+          connect: { id: user.id },
         },
-      }),
-    );
-  }
+      },
+    });
+  });
   await Promise.all(promises);
 }
 
