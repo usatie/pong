@@ -33,8 +33,6 @@ export class PongGame {
   setPlayer1Position: setFunction<number>;
   setPlayer2Position: setFunction<number>;
   onAction: onActionType | undefined;
-  private paddleColor: string;
-  private ballColor: string;
   private userMode: userModeType;
 
   constructor(
@@ -50,10 +48,8 @@ export class PongGame {
     this.ctx = ctx;
     this.ctx.textAlign = "center";
     this.ctx.font = "48px serif";
-    this.paddleColor = paddleColor;
-    this.ballColor = ballColor;
-    this.player1 = this.initPlayer1();
-    this.player2 = this.initPlayer2();
+    this.player1 = this.initPlayer1(paddleColor);
+    this.player2 = this.initPlayer2(paddleColor);
 
     this.ball = new Ball(
       CANVAS_HEIGHT,
@@ -64,7 +60,7 @@ export class PongGame {
       0,
       0,
       BALL_RADIUS,
-      this.ballColor,
+      ballColor,
     );
     this.score = {
       player1: 0,
@@ -197,27 +193,28 @@ export class PongGame {
   };
 
   resetPlayerPosition = () => {
-    this.player1 = this.initPlayer1();
-    this.player2 = this.initPlayer2();
+    const color = this.player1.color;
+    this.player1 = this.initPlayer1(color);
+    this.player2 = this.initPlayer2(color);
     this.draw_canvas();
   };
 
-  initPlayer1 = () =>
+  initPlayer1 = (paddleColor: string) =>
     new Paddle(
       0,
       CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
-      this.paddleColor,
+      paddleColor,
     );
 
-  initPlayer2 = () =>
+  initPlayer2 = (paddleColor: string) =>
     new Paddle(
       CANVAS_WIDTH - PADDLE_WIDTH,
       CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       PADDLE_WIDTH,
       PADDLE_HEIGHT,
-      this.paddleColor,
+      paddleColor,
     );
 
   bounceOffPaddlePlayer1 = () => {
@@ -270,8 +267,7 @@ export class PongGame {
   };
 
   setColor(color: string) {
-    this.paddleColor = color;
-    this.ballColor = color;
+    this.ball.color = color;
     this.player1.color = color;
     this.player2.color = color;
   }
