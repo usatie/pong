@@ -34,7 +34,7 @@ export class MuteService {
 
   async create(roomId: number, userId: number, createMuteDto: CreateMuteDto) {
     await this.prisma.$transaction(async (prisma) => {
-      const room = await prisma.room.findUnique({
+      const room = await prisma.room.findUniqueOrThrow({
         where: {
           id: roomId,
         },

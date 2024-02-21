@@ -18,7 +18,7 @@ export class BanService {
 
   async create(roomId: number, userId: number) {
     await this.prisma.$transaction(async (prisma) => {
-      const room = await prisma.room.findUnique({
+      const room = await prisma.room.findUniqueOrThrow({
         where: {
           id: roomId,
         },
