@@ -233,6 +233,11 @@ export class EventsGateway implements OnGatewayDisconnect {
       client.emit('finish');
 
       const opponent = getOpponent(this.players, roomId, client.id);
+      // TODO: handle invalid game. The opponent must have been disconnected.
+      if (!opponent) {
+        this.logger.error('opponent not found');
+        return;
+      }
       this.emitUpdateStatus(client, 'lost');
       this.emitUpdateStatusToRoomId(client, opponent, 'won');
       this.emitUpdateStatusToRoomId(client, roomId, 'finish');
