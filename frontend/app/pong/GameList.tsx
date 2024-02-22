@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IoRefresh } from "react-icons/io5";
 import { io } from "socket.io-client";
-import { GameCard } from "./GameCard";
+import { GameCard } from "../ui/pong/GameCard";
 import { useRouter } from "next/navigation";
 
 export default function GameList() {
