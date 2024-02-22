@@ -45,11 +45,15 @@ export default function GameList() {
           ) : (
             games.map((game: any, index: number) => (
               <div key={game.roomID} className="flex flex-col align-middle">
-                <GameCard players={game.players} />
+                <GameCard
+                  leftPlayer={game.players[0]}
+                  rightPlayer={game.players[1]}
+                />
                 <Button
                   onClick={() =>
                     router.push(`/pong/${game.roomId}?mode=viewer`)
-                  }>
+                  }
+                >
                   View
                 </Button>
               </div>

@@ -23,14 +23,20 @@ function UserCard({ user }: { user: PublicUserEntity }) {
   );
 }
 
-export function GameCard({ players }: { players: PublicUserEntity[] }) {
+export function GameCard({
+  leftPlayer,
+  rightPlayer,
+}: {
+  leftPlayer: PublicUserEntity;
+  rightPlayer: PublicUserEntity;
+}) {
   return (
     <Card className="w-[350px] p-4 flex flex-col gap-2 items-center">
       <div className="flex gap-10 items-center justify-evenly">
         <TooltipProvider delayDuration={0}>
-          <UserCard user={players[0]} />
+          <UserCard user={leftPlayer} />
           {" vs "}
-          <UserCard user={players[1]} />
+          <UserCard user={rightPlayer} />
         </TooltipProvider>
       </div>
     </Card>
