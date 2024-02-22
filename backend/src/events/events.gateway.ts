@@ -127,7 +127,10 @@ export class EventsGateway implements OnGatewayDisconnect {
       return;
     }
     addPlayer(this.players, gameId, client.id);
-    this.emitUpdateStatusToRoomId(client, gameId, 'friend-joined');
+    this.emitUpdateStatusToRoomId(client, gameId, 'friend-joined', {
+      playerNumber: this.players[gameId][client.id],
+      user,
+    });
     this.emitUpdateStatus(client, 'joined-as-player');
     if (Object.keys(this.players[gameId]).length == 2) {
       this.emitUpdateStatus(client, 'ready');

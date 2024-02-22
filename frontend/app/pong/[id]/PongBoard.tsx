@@ -10,6 +10,7 @@ import { io } from "socket.io-client";
 import { PongGame } from "./PongGame";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
+import { PublicUserEntity } from "@/app/lib/dtos";
 
 type Status =
   | "too-many-players"
@@ -89,6 +90,13 @@ function PongBoard({ id }: PongBoardProps) {
 
   const { currentUser } = useAuthContext();
 
+  const [leftPlayer, setLeftPlayer] = useState<PublicUserEntity | undefined>(
+    () => (userMode === "player" ? currentUser : undefined),
+  );
+  const [rightPlayer, setRightPlayer] = useState<PublicUserEntity | undefined>(
+    undefined,
+  );
+
   const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) {
@@ -125,7 +133,7 @@ function PongBoard({ id }: PongBoardProps) {
   }, [getGame, userMode]);
 
   const runSideEffectForStatusUpdate = useCallback(
-    (status: Status) => {
+    (status: Status, payload: any) => {
       const game = getGame();
 
       switch (status) {
@@ -138,6 +146,14 @@ function PongBoard({ id }: PongBoardProps) {
           setUserMode("viewer");
           break;
         case "friend-joined":
+          const { playerNumber, user } = payload;
+          const setter =
+            userMode == "player"
+              ? setRightPlayer
+              : playerNumber == 1
+                ? setLeftPlayer
+                : setRightPlayer;
+          setter(user);
           currentUser && setStartDisabled(false);
           game.resetPlayerPosition();
           break;
@@ -146,7 +162,7 @@ function PongBoard({ id }: PongBoardProps) {
           break;
       }
     },
-    [currentUser, setUserMode, getGame],
+    [currentUser, setUserMode, getGame, userMode],
   );
 
   useEffect(() => {
@@ -210,11 +226,12 @@ function PongBoard({ id }: PongBoardProps) {
 
     const handleUpdateStatus = ({
       status,
+      payload,
     }: {
       status: Status;
       payload: any;
     }) => {
-      runSideEffectForStatusUpdate(status);
+      runSideEffectForStatusUpdate(status, payload);
       const log = getLogFromStatus(status);
       setLogs((logs) => [...logs, log]);
     };
@@ -311,7 +328,8 @@ function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"></canvas>
+        className="border flex-grow"
+      ></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
@@ -325,6 +343,8 @@ function PongBoard({ id }: PongBoardProps) {
           player2Position={player2Position}
           logs={logs}
           userMode={userMode}
+          leftPlayer={leftPlayer}
+          rightPlayer={rightPlayer}
         />
       </div>
     </div>
