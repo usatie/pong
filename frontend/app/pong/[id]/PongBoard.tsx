@@ -84,8 +84,6 @@ function PongBoard({ id }: PongBoardProps) {
   const gameRef = useRef<PongGame | null>(null); // only initialized once
   const socketRef = useRef<Socket | null>(null); // updated on `id` change
   const [startDisabled, setStartDisabled] = useState(true);
-  const [practiceDisabled, setPracticeDisabled] = useState(true);
-  const [battleDisabled] = useState(true);
   const { resolvedTheme } = useTheme();
   const defaultColor = "hsl(0, 0%, 0%)";
 
@@ -141,12 +139,10 @@ function PongBoard({ id }: PongBoardProps) {
           break;
         case "friend-joined":
           currentUser && setStartDisabled(false);
-          setPracticeDisabled(true);
           game.resetPlayerPosition();
           break;
         case "friend-left":
           setStartDisabled(true);
-          setPracticeDisabled(false);
           break;
       }
     },
@@ -310,8 +306,7 @@ function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"
-      ></canvas>
+        className="border flex-grow"></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
