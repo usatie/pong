@@ -180,6 +180,13 @@ function PongBoard({ id }: PongBoardProps) {
             });
           }
           break;
+        case "ready": {
+          {
+            const { user } = payload;
+            setRightPlayer(user);
+          }
+          break;
+        }
       }
     },
     [currentUser, setUserMode, getGame, getPlayerSetterFromPlayerNumber],

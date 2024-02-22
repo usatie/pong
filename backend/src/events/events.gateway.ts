@@ -139,8 +139,11 @@ export class EventsGateway implements OnGatewayDisconnect {
       user,
     });
     this.emitUpdateStatus(client, 'joined-as-player');
-    if (Object.keys(this.players[gameId]).length == 2) {
-      this.emitUpdateStatus(client, 'ready');
+    const opponent = getOpponent(this.players, gameId, client.id);
+    if (opponent) {
+      this.emitUpdateStatus(client, 'ready', {
+        user: this.users[opponent],
+      });
     }
     this.lostPoints[client.id] = 0;
     return;
