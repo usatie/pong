@@ -7,9 +7,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { IoRefresh } from "react-icons/io5";
 import { io } from "socket.io-client";
 import { GameCard } from "./GameCard";
+import { useRouter } from "next/navigation";
 
 export default function GameList() {
   const socket = useMemo(() => io("/pong", { forceNew: true }), []);
+  const router = useRouter();
 
   const [games, setGames] = useState([]);
   const { toast } = useToast();
@@ -34,7 +36,7 @@ export default function GameList() {
         <CardHeader>
           <CardTitle>Ongoing games</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col items-center">
+        <CardContent className="flex flex-col items-center gap-5">
           <Button variant="ghost" onClick={requestListingGames}>
             <IoRefresh />
           </Button>
@@ -42,11 +44,15 @@ export default function GameList() {
             <p>No ongoing games</p>
           ) : (
             games.map((game: any, index: number) => (
-              <GameCard
-                key={game.roomId}
-                roomId={game.roomId}
-                players={game.players}
-              />
+              <div key={game.roomID} className="flex flex-col align-middle">
+                <GameCard players={game.players} />
+                <Button
+                  onClick={() =>
+                    router.push(`/pong/${game.roomId}?mode=viewer`)
+                  }>
+                  View
+                </Button>
+              </div>
             ))
           )}
         </CardContent>
