@@ -147,7 +147,9 @@ export class EventsGateway implements OnGatewayDisconnect {
     delete this.users[client.id];
 
     if (isPlayer(this.players, roomId, client.id)) {
-      this.emitUpdateStatusToRoomId(client, roomId, 'friend-left');
+      this.emitUpdateStatusToRoomId(client, roomId, 'friend-left', {
+        playerNumber: this.players[roomId][client.id],
+      });
       removePlayer(this.players, roomId, client.id);
       delete this.lostPoints[client.id];
     }

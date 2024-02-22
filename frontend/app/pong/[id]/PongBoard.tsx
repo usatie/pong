@@ -97,6 +97,17 @@ function PongBoard({ id }: PongBoardProps) {
     undefined,
   );
 
+  const getPlayerSetterFromPlayerNumber = useCallback(
+    (playerNumber: number) => {
+      return userMode == "player"
+        ? setRightPlayer
+        : playerNumber == 1
+          ? setLeftPlayer
+          : setRightPlayer;
+    },
+    [userMode],
+  );
+
   const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) {
@@ -147,22 +158,22 @@ function PongBoard({ id }: PongBoardProps) {
           break;
         case "friend-joined":
           const { playerNumber, user } = payload;
-          const setter =
-            userMode == "player"
-              ? setRightPlayer
-              : playerNumber == 1
-                ? setLeftPlayer
-                : setRightPlayer;
+          const setter = getPlayerSetterFromPlayerNumber(playerNumber);
           setter(user);
           currentUser && setStartDisabled(false);
           game.resetPlayerPosition();
           break;
         case "friend-left":
-          setStartDisabled(true);
+          {
+            const { playerNumber } = payload;
+            const setter = getPlayerSetterFromPlayerNumber(playerNumber);
+            setter(undefined);
+            setStartDisabled(true);
+          }
           break;
       }
     },
-    [currentUser, setUserMode, getGame, userMode],
+    [currentUser, setUserMode, getGame, getPlayerSetterFromPlayerNumber],
   );
 
   useEffect(() => {
