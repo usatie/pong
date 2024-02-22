@@ -171,6 +171,15 @@ function PongBoard({ id }: PongBoardProps) {
             setStartDisabled(true);
           }
           break;
+        case "joined-as-viewer":
+          {
+            const { players } = payload;
+            players.forEach(({ playerNumber, user }: any) => {
+              const setter = getPlayerSetterFromPlayerNumber(playerNumber);
+              setter(user);
+            });
+          }
+          break;
       }
     },
     [currentUser, setUserMode, getGame, getPlayerSetterFromPlayerNumber],

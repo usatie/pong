@@ -112,7 +112,14 @@ export class EventsGateway implements OnGatewayDisconnect {
     client.join(gameId);
 
     if (!isPlayer) {
-      this.emitUpdateStatus(client, 'joined-as-viewer');
+      this.emitUpdateStatus(client, 'joined-as-viewer', {
+        players: Object.keys(this.players[gameId] || {}).map(
+          (socketId, playerNumber) => ({
+            playerNumber,
+            user: this.users[socketId],
+          }),
+        ),
+      });
       return;
     }
 
