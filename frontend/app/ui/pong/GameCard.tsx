@@ -4,20 +4,23 @@ import { Avatar } from "@/app/ui/user/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { useRouter } from "next/navigation";
-import { PublicUserEntity } from "../lib/dtos";
+import { PublicUserEntity } from "../../lib/dtos";
 
-function UserCard({ user }: { user: PublicUserEntity }) {
+function UserCard({ user }: { user?: PublicUserEntity }) {
+  const name = user?.name || "";
+  const avatarUrl = user?.avatarURL || "/avatar/undefined.jpg";
+  const href = user ? `/user/${user.id}` : undefined;
+  const id = user?.id;
   return (
     <>
       <div className="flex gap-4 items-center">
-        {user.name}
+        {name}
         <Avatar
-          avatarURL={user.avatarURL}
+          avatarURL={avatarUrl}
           size="medium"
-          href={`/user/${user.id}`}
-          alt={user.name}
-          id={user.id}
+          href={href}
+          alt={name}
+          id={id}
         />
       </div>
     </>
@@ -25,28 +28,21 @@ function UserCard({ user }: { user: PublicUserEntity }) {
 }
 
 export function GameCard({
-  roomId,
-  players,
+  leftPlayer,
+  rightPlayer,
 }: {
-  roomId: string;
-  players: PublicUserEntity[];
+  leftPlayer?: PublicUserEntity;
+  rightPlayer?: PublicUserEntity;
 }) {
-  const router = useRouter();
-
-  const handleView = () => {
-    router.push(`/pong/${roomId}?mode=viewer`);
-  };
-
   return (
     <Card className="w-[350px] p-4 flex flex-col gap-2 items-center">
       <div className="flex gap-10 items-center justify-evenly">
         <TooltipProvider delayDuration={0}>
-          <UserCard user={players[0]} />
+          <UserCard user={leftPlayer} />
           {" vs "}
-          <UserCard user={players[1]} />
+          <UserCard user={rightPlayer} />
         </TooltipProvider>
       </div>
-      <Button onClick={handleView}>View</Button>
     </Card>
   );
 }

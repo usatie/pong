@@ -10,6 +10,7 @@ import { io } from "socket.io-client";
 import { PongGame } from "./PongGame";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
+import { PublicUserEntity } from "@/app/lib/dtos";
 
 type Status =
   | "too-many-players"
@@ -84,12 +85,28 @@ function PongBoard({ id }: PongBoardProps) {
   const gameRef = useRef<PongGame | null>(null); // only initialized once
   const socketRef = useRef<Socket | null>(null); // updated on `id` change
   const [startDisabled, setStartDisabled] = useState(true);
-  const [practiceDisabled, setPracticeDisabled] = useState(true);
-  const [battleDisabled] = useState(true);
   const { resolvedTheme } = useTheme();
   const defaultColor = "hsl(0, 0%, 0%)";
 
   const { currentUser } = useAuthContext();
+
+  const [leftPlayer, setLeftPlayer] = useState<PublicUserEntity | undefined>(
+    () => (userMode === "player" ? currentUser : undefined),
+  );
+  const [rightPlayer, setRightPlayer] = useState<PublicUserEntity | undefined>(
+    undefined,
+  );
+
+  const getPlayerSetterFromPlayerNumber = useCallback(
+    (playerNumber: number) => {
+      return userMode == "player"
+        ? setRightPlayer
+        : playerNumber == 1
+          ? setLeftPlayer
+          : setRightPlayer;
+    },
+    [userMode],
+  );
 
   const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
@@ -127,7 +144,7 @@ function PongBoard({ id }: PongBoardProps) {
   }, [getGame, userMode]);
 
   const runSideEffectForStatusUpdate = useCallback(
-    (status: Status) => {
+    (status: Status, payload: any) => {
       const game = getGame();
 
       switch (status) {
@@ -140,17 +157,39 @@ function PongBoard({ id }: PongBoardProps) {
           setUserMode("viewer");
           break;
         case "friend-joined":
+          const { playerNumber, user } = payload;
+          const setter = getPlayerSetterFromPlayerNumber(playerNumber);
+          setter(user);
           currentUser && setStartDisabled(false);
-          setPracticeDisabled(true);
           game.resetPlayerPosition();
           break;
         case "friend-left":
-          setStartDisabled(true);
-          setPracticeDisabled(false);
+          {
+            const { playerNumber } = payload;
+            const setter = getPlayerSetterFromPlayerNumber(playerNumber);
+            setter(undefined);
+            setStartDisabled(true);
+          }
           break;
+        case "joined-as-viewer":
+          {
+            const { players } = payload;
+            players.forEach(({ playerNumber, user }: any) => {
+              const setter = getPlayerSetterFromPlayerNumber(playerNumber);
+              setter(user);
+            });
+          }
+          break;
+        case "ready": {
+          {
+            const { user } = payload;
+            setRightPlayer(user);
+          }
+          break;
+        }
       }
     },
-    [currentUser, setUserMode, getGame],
+    [currentUser, setUserMode, getGame, getPlayerSetterFromPlayerNumber],
   );
 
   useEffect(() => {
@@ -212,8 +251,14 @@ function PongBoard({ id }: PongBoardProps) {
       socket.emit(action);
     };
 
-    const handleUpdateStatus = (status: Status) => {
-      runSideEffectForStatusUpdate(status);
+    const handleUpdateStatus = ({
+      status,
+      payload,
+    }: {
+      status: Status;
+      payload: any;
+    }) => {
+      runSideEffectForStatusUpdate(status, payload);
       const log = getLogFromStatus(status);
       setLogs((logs) => [...logs, log]);
     };
@@ -325,6 +370,8 @@ function PongBoard({ id }: PongBoardProps) {
           player2Position={player2Position}
           logs={logs}
           userMode={userMode}
+          leftPlayer={leftPlayer}
+          rightPlayer={rightPlayer}
         />
       </div>
     </div>

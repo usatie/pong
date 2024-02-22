@@ -1,5 +1,8 @@
 "use client";
 
+import { PublicUserEntity } from "@/app/lib/dtos";
+import { GameCard } from "@/app/ui/pong/GameCard";
+
 interface PongInformationBoardProps {
   fps: number;
   speed: number;
@@ -7,6 +10,8 @@ interface PongInformationBoardProps {
   player2Position: number;
   logs: string[];
   userMode: "viewer" | "player";
+  leftPlayer?: PublicUserEntity;
+  rightPlayer?: PublicUserEntity;
 }
 
 export default function PongInformationBoard({
@@ -16,9 +21,12 @@ export default function PongInformationBoard({
   player2Position,
   logs,
   userMode,
+  leftPlayer,
+  rightPlayer,
 }: PongInformationBoardProps) {
   return (
     <div className="overflow-hidden flex-grow flex flex-col gap-1">
+      <GameCard leftPlayer={leftPlayer} rightPlayer={rightPlayer}></GameCard>
       <div>You are a {userMode}</div>
       <div id="fps">FPS: {fps}</div>
       <div id="speed">Speed: {speed}</div>

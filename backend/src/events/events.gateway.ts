@@ -112,7 +112,14 @@ export class EventsGateway implements OnGatewayDisconnect {
     client.join(gameId);
 
     if (!isPlayer) {
-      this.emitUpdateStatus(client, 'joined-as-viewer');
+      this.emitUpdateStatus(client, 'joined-as-viewer', {
+        players: Object.keys(this.players[gameId] || {}).map(
+          (socketId, playerNumber) => ({
+            playerNumber,
+            user: this.users[socketId],
+          }),
+        ),
+      });
       return;
     }
 
@@ -127,10 +134,16 @@ export class EventsGateway implements OnGatewayDisconnect {
       return;
     }
     addPlayer(this.players, gameId, client.id);
-    this.emitUpdateStatusToRoomId(client, gameId, 'friend-joined');
+    this.emitUpdateStatusToRoomId(client, gameId, 'friend-joined', {
+      playerNumber: this.players[gameId][client.id],
+      user,
+    });
     this.emitUpdateStatus(client, 'joined-as-player');
-    if (Object.keys(this.players[gameId]).length == 2) {
-      this.emitUpdateStatus(client, 'ready');
+    const opponent = getOpponent(this.players, gameId, client.id);
+    if (opponent) {
+      this.emitUpdateStatus(client, 'ready', {
+        user: this.users[opponent],
+      });
     }
     this.lostPoints[client.id] = 0;
     return;
@@ -144,7 +157,9 @@ export class EventsGateway implements OnGatewayDisconnect {
     delete this.users[client.id];
 
     if (isPlayer(this.players, roomId, client.id)) {
-      this.emitUpdateStatusToRoomId(client, roomId, 'friend-left');
+      this.emitUpdateStatusToRoomId(client, roomId, 'friend-left', {
+        playerNumber: this.players[roomId][client.id],
+      });
       removePlayer(this.players, roomId, client.id);
       delete this.lostPoints[client.id];
     }
@@ -296,12 +311,17 @@ export class EventsGateway implements OnGatewayDisconnect {
     else socket.to(roomId).emit(eventName);
   }
 
-  emitUpdateStatus(socket: Socket, status: Status) {
-    socket.emit('update-status', status);
+  emitUpdateStatus(socket: Socket, status: Status, payload: any = null) {
+    socket.emit('update-status', { status, payload });
   }
 
-  emitUpdateStatusToRoomId(socket: Socket, roomId: string, status: Status) {
-    socket.to(roomId).emit('update-status', status);
+  emitUpdateStatusToRoomId(
+    socket: Socket,
+    roomId: string,
+    status: Status,
+    payload: any = null,
+  ) {
+    socket.to(roomId).emit('update-status', { status, payload });
   }
 
   async createHistory(socket: Socket) {
