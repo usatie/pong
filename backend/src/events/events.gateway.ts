@@ -296,12 +296,17 @@ export class EventsGateway implements OnGatewayDisconnect {
     else socket.to(roomId).emit(eventName);
   }
 
-  emitUpdateStatus(socket: Socket, status: Status) {
-    socket.emit('update-status', status);
+  emitUpdateStatus(socket: Socket, status: Status, payload: any = null) {
+    socket.emit('update-status', { status, payload });
   }
 
-  emitUpdateStatusToRoomId(socket: Socket, roomId: string, status: Status) {
-    socket.to(roomId).emit('update-status', status);
+  emitUpdateStatusToRoomId(
+    socket: Socket,
+    roomId: string,
+    status: Status,
+    payload: any = null,
+  ) {
+    socket.to(roomId).emit('update-status', { status, payload });
   }
 
   async createHistory(socket: Socket) {

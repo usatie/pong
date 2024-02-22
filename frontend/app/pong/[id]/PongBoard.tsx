@@ -208,7 +208,12 @@ function PongBoard({ id }: PongBoardProps) {
       socket.emit(action);
     };
 
-    const handleUpdateStatus = (status: Status) => {
+    const handleUpdateStatus = ({
+      status,
+    }: {
+      status: Status;
+      payload: any;
+    }) => {
       runSideEffectForStatusUpdate(status);
       const log = getLogFromStatus(status);
       setLogs((logs) => [...logs, log]);
