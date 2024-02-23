@@ -107,8 +107,8 @@ export class ChatGateway {
     this.chatService.addMatchRequest(requestingUser.id, data.userId);
   }
 
-  @SubscribeMessage('cancel-request-match')
-  handleCancelRequestMatch(@ConnectedSocket() client: Socket) {
+  @SubscribeMessage('cancel-match-request')
+  handleCancelMatchRequest(@ConnectedSocket() client: Socket) {
     // Check if the requesting user is valid
     const requestingUser = this.chatService.getUser(client);
     if (!requestingUser) {
@@ -119,7 +119,9 @@ export class ChatGateway {
     const requestedUser = this.chatService.getMatchRequest(requestingUser.id);
     if (!requestedUser) {
       this.logger.error('invalid requested user');
-      this.server.to(client.id).emit('error-pong', 'No pending invite found.');
+      this.server
+        .to(client.id)
+        .emit('invalid-request', 'No pending invite found.');
       return;
     }
     // Cancel the request
@@ -133,11 +135,11 @@ export class ChatGateway {
     // Send the cancel request
     this.server
       .to(requestedUserWsId)
-      .emit('cancel-request-match', requestingUser);
+      .emit('cancelled-match-request', requestingUser);
   }
 
-  @SubscribeMessage('approve-pong')
-  async handleApprovePong(
+  @SubscribeMessage('approve-match-request')
+  async handleApproveMatchRequest(
     @MessageBody() data: { userId: number },
     @ConnectedSocket() client: Socket,
   ) {
@@ -151,18 +153,18 @@ export class ChatGateway {
       ) {
         this.server
           .to(client.id)
-          .emit('error-pong', 'No pending invite found.');
+          .emit('invalid-request', 'No pending invite found.');
         return;
       }
       const emitData = { roomId: v4() };
-      this.server.to(client.id).emit('match-pong', emitData);
-      this.server.to(approvedUserWsId).emit('match-pong', emitData);
+      this.server.to(client.id).emit('approved-match-request', emitData);
+      this.server.to(approvedUserWsId).emit('approved-match-request', emitData);
       this.chatService.removeMatchRequest(data.userId);
     }
   }
 
-  @SubscribeMessage('deny-pong')
-  handleDenyPong(
+  @SubscribeMessage('deny-match-request')
+  handleDenyMatchRequest(
     @MessageBody() data: { userId: number },
     @ConnectedSocket() client: Socket,
   ) {
@@ -176,10 +178,10 @@ export class ChatGateway {
       ) {
         this.server
           .to(client.id)
-          .emit('error-pong', 'No pending invite found.');
+          .emit('invalid-request', 'No pending invite found.');
         return;
       }
-      this.server.to(deniedUserWsId).emit('deny-pong');
+      this.server.to(deniedUserWsId).emit('denied-match-request');
       this.chatService.removeMatchRequest(data.userId);
     }
   }
