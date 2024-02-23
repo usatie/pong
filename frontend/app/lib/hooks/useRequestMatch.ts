@@ -15,7 +15,7 @@ export const useRequestMatch = (userId: number) => {
   }, [userId]);
   const cancelRequestMatch = useCallback(async () => {
     setSendRequestPending(true);
-    await socket.emit("cancel-request-match", { userId: userId });
+    await socket.emit("cancel-match-request", { userId: userId });
     setIsRequestingMatch(false);
     setSendRequestPending(false);
   }, [userId]);

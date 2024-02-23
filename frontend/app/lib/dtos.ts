@@ -76,11 +76,11 @@ export type MessageEvent = {
   roomId: number;
 };
 
-export type InviteEvent = {
+export type RequestMatchEvent = {
   userId: number;
 };
 
-export type MatchEvent = {
+export type ApprovedMatchRequestEvent = {
   roomId: string;
 };
 
