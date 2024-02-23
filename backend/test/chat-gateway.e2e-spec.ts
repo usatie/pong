@@ -1441,11 +1441,11 @@ describe('ChatGateway and ChatController (e2e)', () => {
           notInvited.ws.on('request-match', mockCallback);
 
           invite.ws.emit('request-match', {
-            userId: invited.user.id,
+            requestedUserId: invited.user.id,
           });
           ctx1.then((data) => {
             expect(data).toEqual({
-              userId: invite.user.id,
+              requestingUserId: invite.user.id,
             });
           });
         });
@@ -1477,7 +1477,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
             .expect(200);
           invitee.ws.on('request-match', mockCallback);
           blocked.ws.emit('request-match', {
-            userId: invitee.user.id,
+            requestedUserId: invitee.user.id,
           });
         });
         afterAll(async () => {
@@ -1509,13 +1509,13 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
           invitee.ws.on('request-match', mockCallback);
           inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+            requestedUserId: invitee.user.id,
           });
           inviter.ws.emit('cancel-match-request', {
-            userId: invitee.user.id,
+            requestedUserId: invitee.user.id,
           });
           inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+            requestedUserId: invitee.user.id,
           });
         });
         it('user who is invited should receive invite message once per time', () =>
@@ -1553,11 +1553,11 @@ describe('ChatGateway and ChatController (e2e)', () => {
           notInvited1.ws.on('approved-match-request', mockCallback1);
 
           inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+            requestedUserId: invitee.user.id,
           });
           return promiseToInvite.then((data) => {
             invitee.ws.emit('approve-match-request', {
-              userId: data.userId,
+              approvedUserId: data.requestingUserId,
             });
           });
         });
@@ -1595,7 +1595,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
           listener.ws.on('approved-match-request', mockCallback2);
 
           emitter.ws.emit('approve-match-request', {
-            userId: listener.user.id,
+            approvedUserId: listener.user.id,
           });
         });
         // TODO: 複数のuser から invite されるケース
@@ -1626,15 +1626,15 @@ describe('ChatGateway and ChatController (e2e)', () => {
           listener.ws.on('approved-match-request', mockToMatchByListener);
 
           emitter.ws.emit('request-match', {
-            userId: listener.user.id,
+            requestedUserId: listener.user.id,
           });
           return PromiseToInvite.then((data) => {
             emitter.ws.emit('cancel-match-request', {
-              userId: data.userId,
+              requestedUserId: data.requestedUserId,
             });
             setTimeout(() => {
               listener.ws.emit('approve-match-request', {
-                userId: data.userId,
+                approvedUserId: data.requestingUserId,
               });
             }, waitTime);
           });
@@ -1667,14 +1667,14 @@ describe('ChatGateway and ChatController (e2e)', () => {
             invitee.ws.on('request-match', (data) => resolve(data)),
           );
           inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+            requestedUserId: invitee.user.id,
           });
           ctxToDeny = new Promise<any>((resolve) =>
             inviter.ws.on('denied-match-request', (data) => resolve(data)),
           );
           return promiseToInvite.then((data) => {
             invitee.ws.emit('deny-match-request', {
-              userId: data.userId,
+              deniedUserId: data.requestingUserId,
             });
           });
         });
@@ -1699,7 +1699,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
 
           listener.ws.on('invalid-request', mockCallback2);
           emitter.ws.emit('deny-match-request', {
-            userId: listener.user.id,
+            deniedUserId: listener.user.id,
           });
           errorCtx = new Promise<any>((resolve) =>
             emitter.ws.on('invalid-request', (data) => resolve(data)),
@@ -1734,7 +1734,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
             invitee.ws.on('request-match', (data) => resolve(data)),
           );
           inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+            requestedUserId: invitee.user.id,
           });
           ctxToCancel = new Promise<any>((resolve) =>
             invitee.ws.on('cancelled-match-request', (data) => resolve(data)),

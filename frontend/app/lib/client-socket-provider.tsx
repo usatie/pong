@@ -7,10 +7,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuthContext } from "./client-auth";
 import {
-  RequestMatchEvent,
   ApprovedMatchRequestEvent,
   MessageEvent,
   PublicUserEntity,
+  RequestMatchEvent,
 } from "./dtos";
 
 export default function SocketProvider() {
@@ -31,8 +31,9 @@ export default function SocketProvider() {
   };
 
   const showMatchRequestToast = (message: RequestMatchEvent) => {
+    console.log("showMatchRequestToast", message);
     toast({
-      title: `user id: ${message.userId}`,
+      title: `user id: ${message.requestingUserId}`,
       description: ` invited you to play pong!`,
       action: (
         <ToastAction altText="approve" asChild>
@@ -40,7 +41,7 @@ export default function SocketProvider() {
             <button
               onClick={() => {
                 socket.emit("approve-match-request", {
-                  userId: message.userId,
+                  approvedUserId: message.requestingUserId,
                 });
               }}
             >
@@ -49,7 +50,7 @@ export default function SocketProvider() {
             <button
               onClick={() => {
                 socket.emit("deny-match-request", {
-                  userId: message.userId,
+                  deniedUserId: message.requestingUserId,
                 });
               }}
             >

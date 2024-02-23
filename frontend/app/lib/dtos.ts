@@ -77,7 +77,7 @@ export type MessageEvent = {
 };
 
 export type RequestMatchEvent = {
-  userId: number;
+  requestingUserId: number;
 };
 
 export type ApprovedMatchRequestEvent = {

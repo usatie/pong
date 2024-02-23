@@ -78,7 +78,7 @@ export class ChatGateway {
 
   @SubscribeMessage('request-match')
   async handleRequestMatch(
-    @MessageBody() data: { userId: number },
+    @MessageBody() data: { requestedUserId: number },
     @ConnectedSocket() client: Socket,
   ) {
     // Check if the requesting user is valid
@@ -88,23 +88,27 @@ export class ChatGateway {
       return;
     }
     // Check if the requested user is connected
-    const requestedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
+    const requestedUserWsId = this.chatService.getWsFromUserId(
+      data.requestedUserId,
+    )?.id;
     if (!requestedUserWsId) {
       this.logger.error('invalid requested user');
       return;
     }
     // Check if the requesting user is blocked by the requested user
-    const blockings = await this.chatService.getUsersBlockedBy(data.userId);
+    const blockings = await this.chatService.getUsersBlockedBy(
+      data.requestedUserId,
+    );
     if (blockings.some((user) => user.id === requestingUser.id)) return;
     // Check if the requested user is blocked by the requesting user
     const blocked = await this.chatService.getUsersBlockedBy(requestingUser.id);
-    if (blocked.some((user) => user.id === data.userId)) return;
+    if (blocked.some((user) => user.id === data.requestedUserId)) return;
     // Send the request
     this.server
       .to(requestedUserWsId)
-      .emit('request-match', { userId: requestingUser.id });
+      .emit('request-match', { requestingUserId: requestingUser.id });
     // Save the request
-    this.chatService.addMatchRequest(requestingUser.id, data.userId);
+    this.chatService.addMatchRequest(requestingUser.id, data.requestedUserId);
   }
 
   @SubscribeMessage('cancel-match-request')
@@ -140,15 +144,17 @@ export class ChatGateway {
 
   @SubscribeMessage('approve-match-request')
   async handleApproveMatchRequest(
-    @MessageBody() data: { userId: number },
+    @MessageBody() data: { approvedUserId: number },
     @ConnectedSocket() client: Socket,
   ) {
-    const approvedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
+    const approvedUserWsId = this.chatService.getWsFromUserId(
+      data.approvedUserId,
+    )?.id;
     if (!approvedUserWsId) {
       return;
     } else {
       if (
-        this.chatService.getMatchRequest(data.userId) !==
+        this.chatService.getMatchRequest(data.approvedUserId) !==
         this.chatService.getUserId(client)
       ) {
         this.server
@@ -159,21 +165,23 @@ export class ChatGateway {
       const emitData = { roomId: v4() };
       this.server.to(client.id).emit('approved-match-request', emitData);
       this.server.to(approvedUserWsId).emit('approved-match-request', emitData);
-      this.chatService.removeMatchRequest(data.userId);
+      this.chatService.removeMatchRequest(data.approvedUserId);
     }
   }
 
   @SubscribeMessage('deny-match-request')
   handleDenyMatchRequest(
-    @MessageBody() data: { userId: number },
+    @MessageBody() data: { deniedUserId: number },
     @ConnectedSocket() client: Socket,
   ) {
-    const deniedUserWsId = this.chatService.getWsFromUserId(data.userId)?.id;
+    const deniedUserWsId = this.chatService.getWsFromUserId(
+      data.deniedUserId,
+    )?.id;
     if (!deniedUserWsId) {
       return;
     } else {
       if (
-        this.chatService.getMatchRequest(data.userId) !==
+        this.chatService.getMatchRequest(data.deniedUserId) !==
         this.chatService.getUserId(client)
       ) {
         this.server
@@ -182,7 +190,7 @@ export class ChatGateway {
         return;
       }
       this.server.to(deniedUserWsId).emit('denied-match-request');
-      this.chatService.removeMatchRequest(data.userId);
+      this.chatService.removeMatchRequest(data.deniedUserId);
     }
   }
 
