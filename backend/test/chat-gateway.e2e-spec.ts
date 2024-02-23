@@ -1398,7 +1398,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
   describe('[joinDM]', () => {
     // TODO
   });
-  describe('Request match', () => {
+  describe('Tests on requests to users of pong matches', () => {
     let userAndSockets: UserAndSocket[];
 
     beforeAll(() => {
@@ -1508,12 +1508,15 @@ describe('ChatGateway and ChatController (e2e)', () => {
           inviter = userAndSockets[1];
 
           invitee.ws.on('request-match', mockCallback);
+          // First request
           inviter.ws.emit('request-match', {
             requestedUserId: invitee.user.id,
           });
+          // Cancel request
           inviter.ws.emit('cancel-match-request', {
             requestedUserId: invitee.user.id,
           });
+          // Second request after cancel
           inviter.ws.emit('request-match', {
             requestedUserId: invitee.user.id,
           });
@@ -1624,14 +1627,16 @@ describe('ChatGateway and ChatController (e2e)', () => {
             listener.ws.on('request-match', (data) => resolve(data)),
           );
           listener.ws.on('approved-match-request', mockToMatchByListener);
-
+          // Request match
           emitter.ws.emit('request-match', {
             requestedUserId: listener.user.id,
           });
+          // Cancel request
           return PromiseToInvite.then((data) => {
             emitter.ws.emit('cancel-match-request', {
               requestedUserId: data.requestedUserId,
             });
+            // Approve request after cancel
             setTimeout(() => {
               listener.ws.emit('approve-match-request', {
                 approvedUserId: data.requestingUserId,
