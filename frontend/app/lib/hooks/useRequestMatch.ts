@@ -9,13 +9,13 @@ export const useRequestMatch = (userId: number) => {
 
   const requestMatch = useCallback(async () => {
     setSendRequestPending(true);
-    await socket.emit("request-match", { userId: userId });
+    await socket.emit("request-match", { requestedUserId: userId });
     setIsRequestingMatch(true);
     setSendRequestPending(false);
   }, [userId]);
   const cancelRequestMatch = useCallback(async () => {
     setSendRequestPending(true);
-    await socket.emit("cancel-request-match", { userId: userId });
+    await socket.emit("cancel-match-request", { requestedUserId: userId });
     setIsRequestingMatch(false);
     setSendRequestPending(false);
   }, [userId]);

@@ -7,11 +7,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuthContext } from "./client-auth";
 import {
-  DenyEvent,
-  InviteEvent,
-  MatchEvent,
+  ApprovedMatchRequestEvent,
   MessageEvent,
   PublicUserEntity,
+  RequestMatchEvent,
 } from "./dtos";
 
 export default function SocketProvider() {
@@ -27,21 +26,22 @@ export default function SocketProvider() {
     });
   };
 
-  const MatchPong = (data: MatchEvent) => {
+  const goToMatch = (data: ApprovedMatchRequestEvent) => {
     router.push(`/pong/${data.roomId}?mode=player`);
   };
 
-  const showInvitePongToast = (message: InviteEvent) => {
+  const showMatchRequestToast = (message: RequestMatchEvent) => {
+    console.log("showMatchRequestToast", message);
     toast({
-      title: `user id: ${message.userId}`,
+      title: `user id: ${message.requestingUserId}`,
       description: ` invited you to play pong!`,
       action: (
         <ToastAction altText="approve" asChild>
           <>
             <button
               onClick={() => {
-                socket.emit("approve-pong", {
-                  userId: message.userId,
+                socket.emit("approve-match-request", {
+                  approvedUserId: message.requestingUserId,
                 });
               }}
             >
@@ -49,8 +49,8 @@ export default function SocketProvider() {
             </button>
             <button
               onClick={() => {
-                socket.emit("deny-pong", {
-                  userId: message.userId,
+                socket.emit("deny-match-request", {
+                  deniedUserId: message.requestingUserId,
                 });
               }}
             >
@@ -95,22 +95,22 @@ export default function SocketProvider() {
     });
   };
 
-  const showDenyPongToast = (data: DenyEvent) => {
+  const showDeniedMatchRequestToast = () => {
     toast({
       title: `Your invite was denied`,
     });
   };
 
-  const showErrorPongToast = (data: any) => {
+  const showInvalidRequestToast = (data: string) => {
     toast({
       title: `Error`,
       description: ` ${data}`,
     });
   };
 
-  const showInviteCancelPongToast = (data: PublicUserEntity) => {
+  const showCancelledMatchRequestToast = (data: PublicUserEntity) => {
     toast({
-      title: `Invite canceled by ${data.name}`,
+      title: `Invite cancelled by ${data.name}`,
     });
   };
 
@@ -128,15 +128,15 @@ export default function SocketProvider() {
       ) {
         /* Nothing to do here */
       } else if (event === "request-match") {
-        showInvitePongToast(data);
-      } else if (event === "cancel-request-match") {
-        showInviteCancelPongToast(data);
-      } else if (event === "match-pong") {
-        MatchPong(data);
-      } else if (event === "deny-pong") {
-        showDenyPongToast(data);
-      } else if (event === "error-pong") {
-        showErrorPongToast(data);
+        showMatchRequestToast(data);
+      } else if (event === "cancelled-match-request") {
+        showCancelledMatchRequestToast(data);
+      } else if (event === "approved-match-request") {
+        goToMatch(data);
+      } else if (event === "denied-match-request") {
+        showDeniedMatchRequestToast();
+      } else if (event === "invalid-request") {
+        showInvalidRequestToast(data);
       } else if (event === "online-status") {
         handleOnlineStatus(data);
       } else {
