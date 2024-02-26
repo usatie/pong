@@ -66,3 +66,6 @@ check: fmt lint
 update:
 	docker compose -f compose.yml -f compose.dev.yml run frontend npx npm-check-updates -i
 	docker compose -f compose.yml -f compose.dev.yml run backend yarn upgrade-interactive
+
+db:
+	docker compose exec db psql -U postgres postgres
