@@ -67,5 +67,8 @@ update:
 	docker compose -f compose.yml -f compose.dev.yml run frontend npx npm-check-updates -i
 	docker compose -f compose.yml -f compose.dev.yml run backend yarn upgrade-interactive
 
+POSTGRES_USER = postgres
+POSTGRES_DB = postgres
+
 db:
-	docker compose exec db psql -U postgres postgres
+	docker compose exec db psql -U $(POSTGRES_USER) $(POSTGRES_DB)
