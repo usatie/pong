@@ -9,6 +9,7 @@ export const useRequestMatch = (userId: number) => {
 
   const handleDenyMatchRequest = useCallback(() => {
     setIsRequestingMatch(false);
+    socket.off("denied-match-request", handleDenyMatchRequest);
   }, [userId]);
   const requestMatch = useCallback(async () => {
     setSendRequestPending(true);
