@@ -174,8 +174,9 @@ export class ChatGateway {
     @MessageBody() data: { deniedUserId: number },
     @ConnectedSocket() client: Socket,
   ) {
-    const deniedUserWsId = this.chatService.getWsFromUserId(data.deniedUserId)
-      ?.id;
+    const deniedUserWsId = this.chatService.getWsFromUserId(
+      data.deniedUserId,
+    )?.id;
     if (!deniedUserWsId) {
       return;
     } else {
