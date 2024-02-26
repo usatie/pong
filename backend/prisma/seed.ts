@@ -55,6 +55,7 @@ async function seedRooms(users) {
       data: {
         name: 'Room 2',
         accessLevel: 'PROTECTED',
+        password: bcrypt.hashSync('password', roundsOfHashing),
         users: {
           create: [
             { userId: user1.id, role: 'MEMBER' },
