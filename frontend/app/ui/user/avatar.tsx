@@ -25,9 +25,6 @@ export function Avatar({ avatarURL, size, href, alt, id }: Props) {
   const onlineStatuses = useContext(OnlineContext);
   const online = id ? onlineStatuses[id] : false;
   let sizeClass = "";
-  if (!avatarURL) {
-    return <Skeleton className={`flex-none rounded-full ${sizeClass}`} />;
-  }
   let onlineStatusClass = online ? "bg-green-500 " : "bg-gray-500 ";
   switch (size) {
     case "small":
@@ -45,9 +42,17 @@ export function Avatar({ avatarURL, size, href, alt, id }: Props) {
     default:
       throw new Error("Invalid size");
   }
-  if (!avatarURL) {
-    return <Skeleton className={`flex-none rounded-full ${sizeClass}`} />;
-  }
+  const icon = avatarURL ? (
+    <img
+      className={`rounded-full object-cover ${sizeClass}`}
+      src={avatarURL}
+      alt={alt}
+    />
+  ) : (
+    <div>
+      <Skeleton className={`flex-none rounded-full ${sizeClass}`} />
+    </div>
+  );
   const TooltipWrapper = ({ children }: { children: React.ReactNode }) =>
     alt !== undefined ? (
       <Tooltip>
@@ -63,13 +68,7 @@ export function Avatar({ avatarURL, size, href, alt, id }: Props) {
     <LinkWrapper>
       <div className={`relative flex-none ${sizeClass}`}>
         <TooltipProvider delayDuration={0}>
-          <TooltipWrapper>
-            <img
-              className={`rounded-full object-cover ${sizeClass}`}
-              src={avatarURL}
-              alt={alt}
-            />
-          </TooltipWrapper>
+          <TooltipWrapper>{icon}</TooltipWrapper>
           <Tooltip>
             <TooltipTrigger asChild>
               <div
