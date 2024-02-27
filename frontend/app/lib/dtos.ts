@@ -86,4 +86,9 @@ export type ApprovedMatchRequestEvent = {
 
 export type DenyEvent = {};
 
-export type RoomEntity = { id: number; name: string; accessLevel: AccessLevel };
+export type RoomEntity = {
+  id: number;
+  name: string;
+  accessLevel: AccessLevel;
+  users?: UserOnRoomEntity[];
+};

@@ -10,9 +10,11 @@ import CreateRoomDialog from "./create-room-dialog";
 
 function RoomButton({
   room,
+  meId,
   selected,
 }: {
   room: RoomEntity;
+  meId: number | undefined;
   selected: boolean;
 }) {
   const router = useRouter();
@@ -20,6 +22,13 @@ function RoomButton({
     router.push(`${room.id}`);
     router.refresh();
   };
+  let roomName = room.name;
+  if (room.accessLevel === "DIRECT") {
+    const otherUser = room.users?.find((user) => user.userId !== meId);
+    if (otherUser) {
+      roomName = otherUser.user.name;
+    }
+  }
   return (
     <button
       key={room.id}
@@ -28,7 +37,7 @@ function RoomButton({
         selected ? "bg-secondary" : ""
       }`}
     >
-      {room.name}
+      {roomName}
     </button>
   );
 }
@@ -77,6 +86,7 @@ export default function RoomsSidebar({ rooms }: { rooms: RoomEntity[] }) {
         {rooms.map((room) => (
           <RoomButton
             room={room}
+            meId={currentUser?.id}
             selected={room.id === selectedRoomId}
             key={room.id}
           />

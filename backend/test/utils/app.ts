@@ -62,6 +62,11 @@ export class TestApp {
       .get(`/room`)
       .set('Authorization', `Bearer ${accessToken}`);
 
+  getRoomsWithQueryOfJoined = (accessToken: string) =>
+    request(this.app.getHttpServer())
+      .get(`/room?joined=true`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
   /* Room API (Private) */
   createRoom = (createRoomDto: CreateRoomDto, accessToken: string) =>
     request(this.app.getHttpServer())
