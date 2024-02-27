@@ -73,8 +73,10 @@ export class RoomService {
 
   findAllRoom(userId: number, joined?: boolean): Promise<Room[]> {
     let users;
+    let includeUsers = false;
     if (joined) {
       users = { some: { userId: userId } };
+      includeUsers = true;
     } else if (joined === false) {
       users = { none: { userId: userId } };
     }
@@ -96,6 +98,21 @@ export class RoomService {
         // Should not include room for banned users
         BannedUsers: { none: { userId: userId } },
       },
+      include: includeUsers
+        ? {
+            users: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    avatarURL: true,
+                  },
+                },
+              },
+            },
+          }
+        : undefined,
     });
   }
 
