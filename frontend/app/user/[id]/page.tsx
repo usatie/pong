@@ -18,6 +18,7 @@ import RejectFriendButton from "@/app/ui/user/reject-friend-request-button";
 import RemoveFriendButton from "@/app/ui/user/remove-friend-button";
 import Stats from "@/app/ui/user/stats";
 import UnBlockButton from "@/app/ui/user/unblock-button";
+import { notFound } from "next/navigation";
 
 export default async function FindUser({
   params: { id },
@@ -26,6 +27,9 @@ export default async function FindUser({
 }) {
   const userId = parseInt(id, 10);
   const user = await getUser(userId);
+  if (!user) {
+    notFound();
+  }
   const requests = await getFriendRequests();
   const currentUserId = await getCurrentUserId();
   const myFriends = await getFriends(currentUserId);
