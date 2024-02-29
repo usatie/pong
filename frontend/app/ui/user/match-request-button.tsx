@@ -1,6 +1,6 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { useRequestMatch } from "@/app/lib/hooks/useRequestMatch";
+import { Button } from "@/components/ui/button";
 
 export default function MatchRequestButton({ id }: { id: number }) {
   // TODO: Implement this

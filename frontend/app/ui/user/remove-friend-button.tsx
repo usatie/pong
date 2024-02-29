@@ -1,8 +1,8 @@
 "use client";
 import { unfriend } from "@/app/lib/actions";
 import { Button } from "@/components/ui/button";
-import { useFormState } from "react-dom";
 import { toast } from "@/components/ui/use-toast";
+import { useFormState } from "react-dom";
 
 const showErrorToast = () => {
   toast({

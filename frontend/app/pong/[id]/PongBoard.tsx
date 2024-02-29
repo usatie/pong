@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuthContext } from "@/app/lib/client-auth";
+import { PublicUserEntity } from "@/app/lib/dtos";
 import { useUserMode } from "@/app/lib/hooks/useUserMode";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
@@ -10,7 +11,6 @@ import { io } from "socket.io-client";
 import { PongGame } from "./PongGame";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
-import { PublicUserEntity } from "@/app/lib/dtos";
 
 type Status =
   | "too-many-players"
