@@ -7,18 +7,24 @@ import { toast } from "@/components/ui/use-toast";
 const showErrorToast = () => {
   toast({
     title: "Error",
-    description: "An error occurred while rejecting the friend request",
+    description: (
+      <>
+        Failed to delete friend request.
+        <br />
+        Please reload the page and try again.
+      </>
+    ),
   });
 };
 
 export default function RejectFriendRequestButton({ id }: { id: number }) {
   const [code, action] = useFormState(() => rejectFriendRequest(id), undefined);
+  if (code && code !== "Success") {
+    showErrorToast();
+  }
   return (
-    <>
-      <Button onClick={action} variant={"outline"}>
-        Delete Request
-      </Button>
-      {code && code !== "Success" && showErrorToast()}
-    </>
+    <Button onClick={action} variant={"outline"}>
+      Delete Request
+    </Button>
   );
 }

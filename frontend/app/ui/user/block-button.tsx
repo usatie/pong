@@ -13,10 +13,8 @@ const showErrorToast = () => {
 
 export default function BlockButton({ id }: { id: number }) {
   const [code, action] = useFormState(() => blockUser(id), undefined);
-  return (
-    <>
-      <Button onClick={action}>Block</Button>
-      {code && code !== "Success" && showErrorToast()}
-    </>
-  );
+  if (code && code !== "Success") {
+    showErrorToast();
+  }
+  return <Button onClick={action}>Block</Button>;
 }

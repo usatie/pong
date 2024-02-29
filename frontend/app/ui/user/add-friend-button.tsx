@@ -13,10 +13,8 @@ const showErrorToast = () => {
 
 export default function AddFriendButton({ id }: { id: number }) {
   const [code, action] = useFormState(() => addFriend(id), undefined);
-  return (
-    <>
-      <Button onClick={action}>Add Friend</Button>
-      {code && code !== "Success" && showErrorToast()}
-    </>
-  );
+  if (code && code !== "Success") {
+    showErrorToast();
+  }
+  return <Button onClick={action}>Add Friend</Button>;
 }

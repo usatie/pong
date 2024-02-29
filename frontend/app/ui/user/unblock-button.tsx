@@ -13,12 +13,12 @@ const showErrorToast = () => {
 
 export default function UnblockButton({ id }: { id: number }) {
   const [code, action] = useFormState(() => unblockUser(id), undefined);
+  if (code && code !== "Success") {
+    showErrorToast();
+  }
   return (
-    <>
-      <Button onClick={action} variant={"outline"}>
-        Unblock
-      </Button>
-      {code && code !== "Success" && showErrorToast()}
-    </>
+    <Button onClick={action} variant={"outline"}>
+      Unblock
+    </Button>
   );
 }

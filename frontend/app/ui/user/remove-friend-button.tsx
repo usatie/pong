@@ -13,12 +13,12 @@ const showErrorToast = () => {
 
 export default function RemoveFriendButton({ id }: { id: number }) {
   const [code, action] = useFormState(() => unfriend(id), undefined);
+  if (code && code !== "Success") {
+    showErrorToast();
+  }
   return (
-    <>
-      <Button onClick={action} variant={"outline"}>
-        Remove Friend
-      </Button>
-      {code && code !== "Success" && showErrorToast()}
-    </>
+    <Button onClick={action} variant={"outline"}>
+      Remove Friend
+    </Button>
   );
 }
