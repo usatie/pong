@@ -1,5 +1,6 @@
 "use client";
 
+import { OnlineContext } from "@/app/lib/hooks/useOnlineStatus";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -9,7 +10,6 @@ import {
 } from "@/components/ui/tooltip";
 import Link from "next/link";
 import { useContext } from "react";
-import { OnlineContext } from "@/app/lib/hooks/useOnlineStatus";
 
 export type AvatarSize = "small" | "medium" | "large";
 
