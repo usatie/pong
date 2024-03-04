@@ -1,8 +1,8 @@
 import { PongGame } from "@/app/pong/[id]/PongGame";
 import { useCallback, useEffect, useRef } from "react";
 import { Socket, io } from "socket.io-client";
-import { UserMode } from "./useUserMode";
-import { UserEntity } from "../dtos";
+import { UserMode } from "../useUserMode";
+import { UserEntity } from "../../dtos";
 import { POINT_TO_WIN } from "@/app/pong/[id]/const";
 
 type Status =

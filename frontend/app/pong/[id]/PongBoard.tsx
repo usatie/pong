@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./const";
-import useGame from "@/app/lib/hooks/useGame";
+import useGame from "@/app/lib/hooks/game/useGame";
 
 interface PongBoardProps {
   id: string;

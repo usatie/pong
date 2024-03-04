@@ -1,6 +1,6 @@
 import { PongGame } from "@/app/pong/[id]/PongGame";
 import { MutableRefObject, useCallback, useRef } from "react";
-import { UserMode } from "./useUserMode";
+import { UserMode } from "../useUserMode";
 import { DEFAULT_COLOR } from "@/app/pong/[id]/const";
 
 export default function useGetGame(

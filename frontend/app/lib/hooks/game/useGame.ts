@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { useUserMode } from "./useUserMode";
-import { UserEntity } from "../dtos";
-import usePlayers from "./usePlayers";
+import { useUserMode } from "../useUserMode";
+import { UserEntity } from "../../dtos";
+import usePlayers from "../usePlayers";
 import useGameSocket from "./useGameSocket";
 import { TARGET_FRAME_MS } from "@/app/pong/[id]/const";
 import useGameKeyboard from "./useGameKeyboard";
