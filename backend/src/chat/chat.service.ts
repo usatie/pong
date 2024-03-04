@@ -212,13 +212,15 @@ export class ChatService {
   }
 
   handleDisconnect(client: Socket) {
-    const emitData = {
-      userId: this.getUserId(client),
-      status: UserStatus.Offline,
-      name: this.getUser(client)?.name,
-    };
-    if (emitData.userId) {
-      client.broadcast.emit('online-status', [emitData]);
+    const user = this.getUser(client);
+    if (user) {
+      client.broadcast.emit('online-status', [
+        {
+          userId: user.id,
+          status: UserStatus.Offline,
+          name: user.name,
+        },
+      ]);
     }
     this.removeClient(client);
   }

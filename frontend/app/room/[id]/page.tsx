@@ -1,5 +1,6 @@
 import { getMessages, getRoom, getUsers } from "@/app/lib/actions";
 import { Separator } from "@/components/ui/separator";
+import { notFound } from "next/navigation";
 import MessageArea from "./message-area";
 import RoomDetail from "./room-detail";
 
@@ -9,7 +10,12 @@ export default async function Page({
   params: { id: string };
 }) {
   const roomId = Number(id);
-  const room = await getRoom(roomId);
+  let room;
+  try {
+    room = await getRoom(roomId);
+  } catch (e) {
+    notFound();
+  }
   const messages = await getMessages(roomId);
   const allUsers = await getUsers();
   return (

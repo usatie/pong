@@ -3,11 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IoRefresh } from "react-icons/io5";
 import { io } from "socket.io-client";
 import { GameCard } from "../ui/pong/GameCard";
-import { useRouter } from "next/navigation";
 
 export default function GameList() {
   const socket = useMemo(() => io("/pong", { forceNew: true }), []);

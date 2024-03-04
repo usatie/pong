@@ -3,9 +3,8 @@
 import { useAuthContext } from "@/app/lib/client-auth";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { useEffect } from "react";
 import PongInformationBoard from "./PongInformationBoard";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./const";
 import useGame from "@/app/lib/hooks/useGame";
 
 interface PongBoardProps {
@@ -16,7 +15,6 @@ export default function PongBoard({ id }: PongBoardProps) {
   const { currentUser } = useAuthContext();
   const { resolvedTheme } = useTheme();
   const {
-    getGame,
     canvasRef,
     userMode,
     leftPlayer,
@@ -32,8 +30,7 @@ export default function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"
-      ></canvas>
+        className="border flex-grow"></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>

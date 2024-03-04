@@ -76,14 +76,19 @@ export type MessageEvent = {
   roomId: number;
 };
 
-export type InviteEvent = {
-  userId: number;
+export type RequestMatchEvent = {
+  requestingUserId: number;
 };
 
-export type MatchEvent = {
+export type ApprovedMatchRequestEvent = {
   roomId: string;
 };
 
 export type DenyEvent = {};
 
-export type RoomEntity = { id: number; name: string; accessLevel: AccessLevel };
+export type RoomEntity = {
+  id: number;
+  name: string;
+  accessLevel: AccessLevel;
+  users?: UserOnRoomEntity[];
+};

@@ -1,12 +1,23 @@
 "use client";
+import { useRequestMatch } from "@/app/lib/hooks/useRequestMatch";
 import { Button } from "@/components/ui/button";
-import { useFormState } from "react-dom";
 
 export default function MatchRequestButton({ id }: { id: number }) {
   // TODO: Implement this
-  const [code, action] = useFormState(
-    () => console.log("Match Request to ", id),
-    undefined,
+  const {
+    sendRequestPending,
+    isRequestingMatch,
+    requestMatch,
+    cancelRequestMatch,
+  } = useRequestMatch(id);
+
+  return isRequestingMatch ? (
+    <Button onClick={cancelRequestMatch} disabled={sendRequestPending}>
+      Cancel Request
+    </Button>
+  ) : (
+    <Button onClick={requestMatch} disabled={sendRequestPending}>
+      Request Match
+    </Button>
   );
-  return <Button onClick={action}>Request Match</Button>;
 }

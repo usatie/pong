@@ -1,7 +1,6 @@
 "use client";
 
 import { Avatar } from "@/app/ui/user/avatar";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { PublicUserEntity } from "../../lib/dtos";

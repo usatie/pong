@@ -1398,7 +1398,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
   describe('[joinDM]', () => {
     // TODO
   });
-  describe('invite pong game', () => {
+  describe('Tests on requests to users of pong matches', () => {
     let userAndSockets: UserAndSocket[];
 
     beforeAll(() => {
@@ -1422,35 +1422,37 @@ describe('ChatGateway and ChatController (e2e)', () => {
         us.ws.connect();
       });
     });
-    describe('invite a user', () => {
+    describe('Request match', () => {
       describe('success case', () => {
-        let invite: UserAndSocket;
-        let invited: UserAndSocket;
-        let notInvited: UserAndSocket;
+        let requestingUserAndSockets: UserAndSocket;
+        let requestedUserAndSockets: UserAndSocket;
+        let unrequestedUserAndSockets: UserAndSocket;
 
         let ctx1: Promise<any>;
         const mockCallback = jest.fn();
 
         beforeAll(() => {
-          invite = userAndSockets[0];
-          invited = userAndSockets[1];
-          notInvited = userAndSockets[2];
+          requestingUserAndSockets = userAndSockets[0];
+          requestedUserAndSockets = userAndSockets[1];
+          unrequestedUserAndSockets = userAndSockets[2];
           ctx1 = new Promise<any>((resolve) =>
-            invited.ws.on('request-match', (data) => resolve(data)),
+            requestedUserAndSockets.ws.on('request-match', (data) =>
+              resolve(data),
+            ),
           );
-          notInvited.ws.on('request-match', mockCallback);
+          unrequestedUserAndSockets.ws.on('request-match', mockCallback);
 
-          invite.ws.emit('request-match', {
-            userId: invited.user.id,
+          requestingUserAndSockets.ws.emit('request-match', {
+            requestedUserId: requestedUserAndSockets.user.id,
           });
           ctx1.then((data) => {
             expect(data).toEqual({
-              userId: invite.user.id,
+              requestingUserId: requestingUserAndSockets.user.id,
             });
           });
         });
-        it('user who is invited should receive invite message', () => ctx1);
-        it("user who isn't invited should not receive invite message", () =>
+        it('reqested user should receive match request', () => ctx1);
+        it('unrelated user should not receive match request', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
               expect(mockCallback).not.toBeCalled();
@@ -1458,38 +1460,38 @@ describe('ChatGateway and ChatController (e2e)', () => {
             }, waitTime),
           ));
       });
-      // TODO: block してるuser から invite されるケース
+      // TODO: block してるuser から request されるケース
       describe('failure case', () => {
-        let invitee;
+        let requestedUserAndSockets: UserAndSocket;
         let blocked;
         let mockCallback: jest.Mock<any, any, any>;
 
         beforeAll(async () => {
           mockCallback = jest.fn();
-          invitee = userAndSockets[0];
+          requestedUserAndSockets = userAndSockets[0];
           blocked = userAndSockets[1];
           await app
             .blockUser(
-              invitee.user.id,
+              requestedUserAndSockets.user.id,
               blocked.user.id,
-              invitee.user.accessToken,
+              requestedUserAndSockets.user.accessToken,
             )
             .expect(200);
-          invitee.ws.on('request-match', mockCallback);
+          requestedUserAndSockets.ws.on('request-match', mockCallback);
           blocked.ws.emit('request-match', {
-            userId: invitee.user.id,
+            requestedUserId: requestedUserAndSockets.user.id,
           });
         });
         afterAll(async () => {
           await app
             .unblockUser(
-              invitee.user.id,
+              requestedUserAndSockets.user.id,
               blocked.user.id,
-              invitee.user.accessToken,
+              requestedUserAndSockets.user.accessToken,
             )
             .expect(200);
         });
-        it('user should not receive invite message from blocking user', () =>
+        it('user should not receive match request message from blocking user', () =>
           new Promise<void>((resolve) =>
             setTimeout(async () => {
               expect(mockCallback).not.toHaveBeenCalled();
@@ -1497,28 +1499,31 @@ describe('ChatGateway and ChatController (e2e)', () => {
             }, waitTime),
           ));
       });
-      describe('invite -> cancel -> invite', () => {
-        let invitee;
-        let inviter;
+      describe('Request match -> Cancel match request -> Request match', () => {
+        let requestedUserAndSockets: UserAndSocket;
+        let requestingUserAndSockets: UserAndSocket;
         let mockCallback;
 
         beforeAll(() => {
           mockCallback = jest.fn();
-          invitee = userAndSockets[0];
-          inviter = userAndSockets[1];
+          requestedUserAndSockets = userAndSockets[0];
+          requestingUserAndSockets = userAndSockets[1];
 
-          invitee.ws.on('request-match', mockCallback);
-          inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+          requestedUserAndSockets.ws.on('request-match', mockCallback);
+          // First request
+          requestingUserAndSockets.ws.emit('request-match', {
+            requestedUserId: requestedUserAndSockets.user.id,
           });
-          inviter.ws.emit('cancel-request-match', {
-            userId: invitee.user.id,
+          // Cancel request
+          requestingUserAndSockets.ws.emit('cancel-match-request', {
+            requestedUserId: requestedUserAndSockets.user.id,
           });
-          inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+          // Second request after cancel
+          requestingUserAndSockets.ws.emit('request-match', {
+            requestedUserId: requestedUserAndSockets.user.id,
           });
         });
-        it('user who is invited should receive invite message once per time', () =>
+        it('user who is requested should receive match request message once per time', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
               expect(mockCallback).toHaveBeenCalledTimes(2);
@@ -1527,47 +1532,59 @@ describe('ChatGateway and ChatController (e2e)', () => {
           ));
       });
     });
-    describe('approve invite', () => {
+    describe('approve match request', () => {
       describe('success case', () => {
-        let PromiseToMatchByInviter: Promise<any>;
-        let PromiseToMatchByInvited: Promise<any>;
+        let promiseToMatchByRequestingUser: Promise<any>;
+        let promiseToMatchByRequestedUser: Promise<any>;
         let roomId;
         const mockCallback1 = jest.fn();
         beforeAll(() => {
-          const inviter = userAndSockets[0];
-          const invitee = userAndSockets[1];
-          const notInvited1 = userAndSockets[2];
+          const requestingUserAndSockets = userAndSockets[0];
+          const requestedUserAndSockets = userAndSockets[1];
+          const unrequestedUserAndSockets = userAndSockets[2];
 
-          const promiseToInvite = new Promise<any>((resolve) =>
-            invitee.ws.on('request-match', (data) => resolve(data)),
+          const promiseToRequest = new Promise<any>((resolve) =>
+            requestedUserAndSockets.ws.on('request-match', (data) =>
+              resolve(data),
+            ),
           );
-          PromiseToMatchByInviter = new Promise<any>((resolve) =>
-            inviter.ws.on('match-pong', (data) => resolve(data)),
+          promiseToMatchByRequestingUser = new Promise<any>((resolve) =>
+            requestingUserAndSockets.ws.on('approved-match-request', (data) =>
+              resolve(data),
+            ),
           );
-          PromiseToMatchByInvited = new Promise<any>((resolve) =>
-            invitee.ws.on('match-pong', (data) => resolve(data)),
+          promiseToMatchByRequestedUser = new Promise<any>((resolve) =>
+            requestedUserAndSockets.ws.on('approved-match-request', (data) =>
+              resolve(data),
+            ),
           );
 
-          notInvited1.ws.on('request-match', mockCallback1);
-          notInvited1.ws.on('approve-pong', mockCallback1);
-          notInvited1.ws.on('match-pong', mockCallback1);
+          unrequestedUserAndSockets.ws.on('request-match', mockCallback1);
+          unrequestedUserAndSockets.ws.on(
+            'approve-match-request',
+            mockCallback1,
+          );
+          unrequestedUserAndSockets.ws.on(
+            'approved-match-request',
+            mockCallback1,
+          );
 
-          inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+          requestingUserAndSockets.ws.emit('request-match', {
+            requestedUserId: requestedUserAndSockets.user.id,
           });
-          return promiseToInvite.then((data) => {
-            invitee.ws.emit('approve-pong', {
-              userId: data.userId,
+          return promiseToRequest.then((data) => {
+            requestedUserAndSockets.ws.emit('approve-match-request', {
+              approvedUserId: data.requestingUserId,
             });
           });
         });
-        it("invite user should receive room's id", () =>
-          PromiseToMatchByInviter.then((data) => {
+        it("requesting user should receive room's id", () =>
+          promiseToMatchByRequestingUser.then((data) => {
             expect(data).toHaveProperty('roomId');
             roomId = data.roomId;
           }));
         it("approve user should receive room's id", () =>
-          PromiseToMatchByInvited.then((data) => {
+          promiseToMatchByRequestedUser.then((data) => {
             expect(data).toHaveProperty('roomId');
             expect(data.roomId).toEqual(roomId);
           }));
@@ -1588,20 +1605,20 @@ describe('ChatGateway and ChatController (e2e)', () => {
           const emitter = userAndSockets[0];
           const listener = userAndSockets[1];
 
-          emitter.ws.on('match-pong', mockCallback1);
+          emitter.ws.on('approved-match-request', mockCallback1);
           errorCtx = new Promise<any>((resolve) =>
-            emitter.ws.on('error-pong', (data) => resolve(data)),
+            emitter.ws.on('invalid-request', (data) => resolve(data)),
           );
-          listener.ws.on('match-pong', mockCallback2);
+          listener.ws.on('approved-match-request', mockCallback2);
 
-          emitter.ws.emit('approve-pong', {
-            userId: listener.user.id,
+          emitter.ws.emit('approve-match-request', {
+            approvedUserId: listener.user.id,
           });
         });
-        // TODO: 複数のuser から invite されるケース
-        it('should receive an error when approving without an existing invite', () =>
+        // TODO: 複数のuser から request されるケース
+        it('should receive an error when approving without an existing request', () =>
           errorCtx);
-        it('user should not receive approve message from not invite user', () =>
+        it('user should not receive approve message from not requested user', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
               expect(mockCallback1).not.toHaveBeenCalled();
@@ -1610,7 +1627,7 @@ describe('ChatGateway and ChatController (e2e)', () => {
             }, waitTime),
           ));
       });
-      describe('invite -> cancel -> approve: dose not match', () => {
+      describe('Request match -> Cancel match request -> approve: no match', () => {
         const mockToMatchByEmitter = jest.fn();
         const mockToMatchByListener = jest.fn();
 
@@ -1618,28 +1635,30 @@ describe('ChatGateway and ChatController (e2e)', () => {
           const emitter = userAndSockets[0];
           const listener = userAndSockets[1];
 
-          emitter.ws.on('match-pong', mockToMatchByEmitter);
+          emitter.ws.on('approved-match-request', mockToMatchByEmitter);
 
-          const PromiseToInvite = new Promise<any>((resolve) =>
+          const promiseToRequest = new Promise<any>((resolve) =>
             listener.ws.on('request-match', (data) => resolve(data)),
           );
-          listener.ws.on('match-pong', mockToMatchByListener);
-
+          listener.ws.on('approved-match-request', mockToMatchByListener);
+          // Request match
           emitter.ws.emit('request-match', {
-            userId: listener.user.id,
+            requestedUserId: listener.user.id,
           });
-          return PromiseToInvite.then((data) => {
-            emitter.ws.emit('cancel-request-match', {
-              userId: data.userId,
+          // Cancel request
+          return promiseToRequest.then((data) => {
+            emitter.ws.emit('cancel-match-request', {
+              requestedUserId: data.requestedUserId,
             });
+            // Approve request after cancel
             setTimeout(() => {
-              listener.ws.emit('approve-pong', {
-                userId: data.userId,
+              listener.ws.emit('approve-match-request', {
+                approvedUserId: data.requestingUserId,
               });
             }, waitTime);
           });
         });
-        it('user should not receive match message from canceled invite user', () =>
+        it('user should not receive match message from canceled match request user', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
               expect(mockToMatchByEmitter).not.toHaveBeenCalled();
@@ -1649,36 +1668,43 @@ describe('ChatGateway and ChatController (e2e)', () => {
           ));
       });
     });
-    describe('deny invite', () => {
+    describe('deny match request', () => {
       describe('success case', () => {
         const mockCallback1 = jest.fn();
         const mockCallback2 = jest.fn();
         let ctxToDeny: Promise<any>;
 
         beforeAll(() => {
-          const inviter = userAndSockets[0];
-          const invitee = userAndSockets[1];
-          const notInvited1 = userAndSockets[2];
+          const requestingUserAndSockets = userAndSockets[0];
+          const requestedUserAndSockets = userAndSockets[1];
+          const unrequestedUserAndSockets = userAndSockets[2];
 
-          notInvited1.ws.on('request-match', mockCallback1);
-          notInvited1.ws.on('deny-pong', mockCallback1);
-
-          const promiseToInvite = new Promise<any>((resolve) =>
-            invitee.ws.on('request-match', (data) => resolve(data)),
+          unrequestedUserAndSockets.ws.on('request-match', mockCallback1);
+          unrequestedUserAndSockets.ws.on(
+            'denied-match-request',
+            mockCallback1,
           );
-          inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+
+          const promiseToRequest = new Promise<any>((resolve) =>
+            requestedUserAndSockets.ws.on('request-match', (data) =>
+              resolve(data),
+            ),
+          );
+          requestingUserAndSockets.ws.emit('request-match', {
+            requestedUserId: requestedUserAndSockets.user.id,
           });
           ctxToDeny = new Promise<any>((resolve) =>
-            inviter.ws.on('deny-pong', (data) => resolve(data)),
+            requestingUserAndSockets.ws.on('denied-match-request', (data) =>
+              resolve(data),
+            ),
           );
-          return promiseToInvite.then((data) => {
-            invitee.ws.emit('deny-pong', {
-              userId: data.userId,
+          return promiseToRequest.then((data) => {
+            requestedUserAndSockets.ws.emit('deny-match-request', {
+              deniedUserId: data.requestingUserId,
             });
           });
         });
-        it('inviter should receive an deny message', () => ctxToDeny);
+        it('requesting user should receive an deny message', () => ctxToDeny);
         it('unrelated user should not receive any messages', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
@@ -1697,17 +1723,17 @@ describe('ChatGateway and ChatController (e2e)', () => {
           const emitter = userAndSockets[0];
           const listener = userAndSockets[1];
 
-          listener.ws.on('error-pong', mockCallback2);
-          emitter.ws.emit('deny-pong', {
-            userId: listener.user.id,
+          listener.ws.on('invalid-request', mockCallback2);
+          emitter.ws.emit('deny-match-request', {
+            deniedUserId: listener.user.id,
           });
           errorCtx = new Promise<any>((resolve) =>
-            emitter.ws.on('error-pong', (data) => resolve(data)),
+            emitter.ws.on('invalid-request', (data) => resolve(data)),
           );
         });
-        it('should receive an error when denying without an existing invite', () =>
+        it('should receive an error when denying without an existing request', () =>
           errorCtx);
-        it('user should not receive deny message from not invite user', () =>
+        it('user should not receive deny message from not requesting user', () =>
           new Promise<void>((resolve) =>
             setTimeout(() => {
               expect(mockCallback1).not.toHaveBeenCalled();
@@ -1723,27 +1749,34 @@ describe('ChatGateway and ChatController (e2e)', () => {
         let ctxToCancel: Promise<any>;
 
         beforeAll(() => {
-          const inviter = userAndSockets[0];
-          const invitee = userAndSockets[1];
-          const notInvited1 = userAndSockets[2];
+          const requestingUserAndSockets = userAndSockets[0];
+          const requestedUserAndSockets = userAndSockets[1];
+          const unrequestedUserAndSockets = userAndSockets[2];
 
-          notInvited1.ws.on('request-match', mockCallback1);
-          notInvited1.ws.on('cancel-request-match', mockCallback1);
-
-          const promiseToInvite = new Promise<any>((resolve) =>
-            invitee.ws.on('request-match', (data) => resolve(data)),
+          unrequestedUserAndSockets.ws.on('request-match', mockCallback1);
+          unrequestedUserAndSockets.ws.on(
+            'cancelled-match-request',
+            mockCallback1,
           );
-          inviter.ws.emit('request-match', {
-            userId: invitee.user.id,
+
+          const promiseToRequest = new Promise<any>((resolve) =>
+            requestedUserAndSockets.ws.on('request-match', (data) =>
+              resolve(data),
+            ),
+          );
+          requestingUserAndSockets.ws.emit('request-match', {
+            requestedUserId: requestedUserAndSockets.user.id,
           });
           ctxToCancel = new Promise<any>((resolve) =>
-            invitee.ws.on('cancel-request-match', (data) => resolve(data)),
+            requestedUserAndSockets.ws.on('cancelled-match-request', (data) =>
+              resolve(data),
+            ),
           );
-          return promiseToInvite.then(() => {
-            inviter.ws.emit('cancel-request-match');
+          return promiseToRequest.then(() => {
+            requestingUserAndSockets.ws.emit('cancel-match-request');
           });
         });
-        it('invitee should receive an request-cancel message', () =>
+        it('requested user should receive an request-cancel message', () =>
           ctxToCancel.then((data) => {
             expect(data).toHaveProperty('id');
             expect(data).toHaveProperty('avatarURL');
@@ -1762,11 +1795,11 @@ describe('ChatGateway and ChatController (e2e)', () => {
         beforeAll(() => {
           const canceler = userAndSockets[0];
           errorCtx = new Promise<any>((resolve) =>
-            canceler.ws.on('error-pong', (data) => resolve(data)),
+            canceler.ws.on('invalid-request', (data) => resolve(data)),
           );
-          canceler.ws.emit('cancel-request-match');
+          canceler.ws.emit('cancel-match-request');
         });
-        it('should receive an error when canceling without an existing invite', () =>
+        it('should receive an error when canceling without an existing request', () =>
           errorCtx);
       });
     });

@@ -73,6 +73,7 @@ export async function authenticate(
 function getAccessToken() {
   const accessToken = cookies()?.get("token")?.value;
   if (!accessToken) {
+    console.error("No access token found");
     throw new Error("No access token found");
   }
   return accessToken;
@@ -169,7 +170,7 @@ export async function getRooms(query: any = {}): Promise<RoomEntity[]> {
   });
   if (!res.ok) {
     console.error("getRooms error: ", await res.json());
-    throw new Error("getRooms error");
+    return [];
   }
   const rooms = await res.json();
   return rooms;
@@ -403,7 +404,11 @@ export async function kickUserOnRoom(roomId: number, userId: number) {
 export async function signInAsTestUser() {
   const email = "test@example.com";
   const password = "password-test";
-  await signIn({ email, password });
+  try {
+    await signIn({ email, password });
+  } catch (error) {
+    console.error("signInAsTestUser error: ", error);
+  }
   redirect("/");
 }
 
@@ -800,7 +805,8 @@ export async function muteUser(
   durationSec?: number,
 ) {
   if (durationSec && durationSec < 0) {
-    throw new Error("Duration must be positive");
+    console.error("Duration must be positive");
+    return "Error";
   }
   const res = await fetch(
     `${process.env.API_URL}/room/${roomId}/mutes/${userId}`,
@@ -832,7 +838,7 @@ export async function getMutedUsers(roomId: number) {
   });
   if (!res.ok) {
     console.error("getMutedUsers error: ", await res.json());
-    return null;
+    return [];
   } else {
     const mutedUsers = res.json();
     return mutedUsers;
@@ -890,7 +896,7 @@ export async function getBannedUsers(roomId: number) {
   });
   if (!res.ok) {
     console.error("getBannedUsers error: ", await res.json());
-    return null;
+    return [];
   } else {
     const bannedUsers = res.json();
     return bannedUsers;

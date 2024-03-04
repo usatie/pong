@@ -6,7 +6,11 @@ import supertest from 'supertest';
 import { constants } from './constants';
 import { TestApp, UserEntityWithAccessToken } from './utils/app';
 import { initializeApp } from './utils/initialize';
-import { expectPublicUser, expectRoom } from './utils/matcher';
+import {
+  expectPublicUser,
+  expectRoom,
+  expectRoomWithUsers,
+} from './utils/matcher';
 
 describe('RoomController (e2e)', () => {
   let app: TestApp;
@@ -713,6 +717,16 @@ describe('RoomController (e2e)', () => {
         _rooms.forEach((room) =>
           expect(room.accessLevel).not.toEqual('PRIVATE'),
         );
+      });
+    });
+    describe('whit joined query', () => {
+      it('should return only joined rooms with joined users info', async () => {
+        const res = await app
+          .getRoomsWithQueryOfJoined(owner.accessToken)
+          .expect(200);
+        const rooms = res.body;
+        expect(rooms).toBeInstanceOf(Array);
+        rooms.forEach(expectRoomWithUsers);
       });
     });
   });
