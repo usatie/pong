@@ -1,7 +1,8 @@
 import { PongGame } from "@/app/pong/[id]/PongGame";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { useUserMode } from "./useUserMode";
-import { PublicUserEntity, UserEntity } from "../dtos";
+import { UserEntity } from "../dtos";
+import usePlayers from "./usePlayers";
 
 export default function useGame(currentUser?: UserEntity) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // only initialized once
@@ -9,23 +10,8 @@ export default function useGame(currentUser?: UserEntity) {
   const [userMode, setUserMode] = useUserMode();
   const defaultColor = "hsl(0, 0%, 0%)";
 
-  const [leftPlayer, setLeftPlayer] = useState<PublicUserEntity | undefined>(
-    () => (userMode === "player" ? currentUser : undefined),
-  );
-  const [rightPlayer, setRightPlayer] = useState<PublicUserEntity | undefined>(
-    undefined,
-  );
-
-  const getPlayerSetterFromPlayerNumber = useCallback(
-    (playerNumber: number) => {
-      return userMode == "player"
-        ? setRightPlayer
-        : playerNumber == 1
-          ? setLeftPlayer
-          : setRightPlayer;
-    },
-    [userMode],
-  );
+  const { leftPlayer, rightPlayer, getPlayerSetterFromPlayerNumber } =
+    usePlayers(userMode, currentUser);
 
   const getGame = useCallback(() => {
     const ctx = canvasRef.current?.getContext("2d");
