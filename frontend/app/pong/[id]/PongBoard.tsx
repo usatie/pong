@@ -57,7 +57,7 @@ const getLogFromStatus = (status: Status) => {
   }
 };
 
-function PongBoard({ id }: PongBoardProps) {
+export default function PongBoard({ id }: PongBoardProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const { currentUser } = useAuthContext();
   const {
@@ -312,7 +312,3 @@ function PongBoard({ id }: PongBoardProps) {
     </div>
   );
 }
-
-const memoizedPongBoard = memo(PongBoard);
-export default memoizedPongBoard;
-// export default PongBoard;
