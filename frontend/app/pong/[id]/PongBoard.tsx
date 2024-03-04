@@ -8,7 +8,6 @@ import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
-import { PublicUserEntity } from "@/app/lib/dtos";
 import useGame from "@/app/lib/hooks/useGame";
 
 type Status =
@@ -60,30 +59,19 @@ const getLogFromStatus = (status: Status) => {
 
 function PongBoard({ id }: PongBoardProps) {
   const [logs, setLogs] = useState<string[]>([]);
-  const { getGame, canvasRef, userMode, setUserMode } = useGame();
+  const { currentUser } = useAuthContext();
+  const {
+    getGame,
+    canvasRef,
+    userMode,
+    setUserMode,
+    leftPlayer,
+    rightPlayer,
+    getPlayerSetterFromPlayerNumber,
+  } = useGame(currentUser);
   const socketRef = useRef<Socket | null>(null); // updated on `id` change
   const [startDisabled, setStartDisabled] = useState(true);
   const { resolvedTheme } = useTheme();
-
-  const { currentUser } = useAuthContext();
-
-  const [leftPlayer, setLeftPlayer] = useState<PublicUserEntity | undefined>(
-    () => (userMode === "player" ? currentUser : undefined),
-  );
-  const [rightPlayer, setRightPlayer] = useState<PublicUserEntity | undefined>(
-    undefined,
-  );
-
-  const getPlayerSetterFromPlayerNumber = useCallback(
-    (playerNumber: number) => {
-      return userMode == "player"
-        ? setRightPlayer
-        : playerNumber == 1
-          ? setLeftPlayer
-          : setRightPlayer;
-    },
-    [userMode],
-  );
 
   const start = useCallback(() => {
     if (!userMode) return;
@@ -137,8 +125,9 @@ function PongBoard({ id }: PongBoardProps) {
           break;
         case "ready": {
           {
-            const { user } = payload;
-            setRightPlayer(user);
+            const { user, playerNumber } = payload;
+            const setter = getPlayerSetterFromPlayerNumber(playerNumber);
+            setter(user);
           }
           break;
         }
