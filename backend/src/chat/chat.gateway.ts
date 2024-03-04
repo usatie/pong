@@ -65,6 +65,10 @@ export class ChatGateway {
     if (MutedUsers.some((user) => user.id === data.userId)) {
       return;
     }
+    if (data.content.length < 1) {
+      this.logger.error('no content in message');
+      return;
+    }
 
     // Save message to the database
     await this.chatService.createMessage(data);
