@@ -7,10 +7,10 @@ import { useTheme } from "next-themes";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
-import { PongGame } from "./PongGame";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
 import { PublicUserEntity } from "@/app/lib/dtos";
+import useGame from "@/app/lib/hooks/useGame";
 
 type Status =
   | "too-many-players"
@@ -62,13 +62,10 @@ const getLogFromStatus = (status: Status) => {
 function PongBoard({ id }: PongBoardProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const [userMode, setUserMode] = useUserMode();
-
-  const canvasRef = useRef<HTMLCanvasElement | null>(null); // only initialized once
-  const gameRef = useRef<PongGame | null>(null); // only initialized once
+  const { getGame, canvasRef } = useGame(userMode);
   const socketRef = useRef<Socket | null>(null); // updated on `id` change
   const [startDisabled, setStartDisabled] = useState(true);
   const { resolvedTheme } = useTheme();
-  const defaultColor = "hsl(0, 0%, 0%)";
 
   const { currentUser } = useAuthContext();
 
@@ -89,19 +86,6 @@ function PongBoard({ id }: PongBoardProps) {
     },
     [userMode],
   );
-
-  const getGame = useCallback(() => {
-    const ctx = canvasRef.current?.getContext("2d");
-    if (!ctx) {
-      throw new Error("canvas not ready");
-    }
-    if (!gameRef.current) {
-      const game = new PongGame(ctx, defaultColor, defaultColor, userMode);
-      gameRef.current = game;
-      return game;
-    }
-    return gameRef.current;
-  }, [userMode]);
 
   const start = useCallback(() => {
     if (!userMode) return;
