@@ -1,10 +1,12 @@
 import { PongGame } from "@/app/pong/[id]/PongGame";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useUserMode } from "./useUserMode";
 import { UserEntity } from "../dtos";
 import usePlayers from "./usePlayers";
+import useGameSocket from "./useGameSocket";
 
 export default function useGame(
+  id: string,
   currentUser?: UserEntity,
   resolvedTheme?: string,
 ) {
@@ -12,6 +14,8 @@ export default function useGame(
   const gameRef = useRef<PongGame | null>(null); // only initialized once
   const [userMode, setUserMode] = useUserMode();
   const defaultColor = "hsl(0, 0%, 0%)";
+  const [logs, setLogs] = useState<string[]>([]);
+  const [startDisabled, setStartDisabled] = useState(true);
 
   const { leftPlayer, rightPlayer, getPlayerSetterFromPlayerNumber } =
     usePlayers(userMode, currentUser);
@@ -29,6 +33,16 @@ export default function useGame(
     return gameRef.current;
   }, [userMode]);
 
+  const { start } = useGameSocket(
+    id,
+    getGame,
+    setLogs,
+    userMode,
+    setUserMode,
+    getPlayerSetterFromPlayerNumber,
+    setStartDisabled,
+  );
+
   useEffect(() => {
     // TODO: Use --foreground color from CSS
     // Somehow it didn't work (theme is changed but not yet committed to CSS/DOM?)
@@ -43,9 +57,10 @@ export default function useGame(
     getGame,
     canvasRef,
     userMode,
-    setUserMode,
     leftPlayer,
     rightPlayer,
-    getPlayerSetterFromPlayerNumber,
+    logs,
+    start,
+    startDisabled,
   };
 }

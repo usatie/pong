@@ -3,40 +3,28 @@
 import { useAuthContext } from "@/app/lib/client-auth";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import PongInformationBoard from "./PongInformationBoard";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, TARGET_FRAME_MS } from "./const";
 import useGame from "@/app/lib/hooks/useGame";
-import useGameSocket from "@/app/lib/hooks/useGameSocket";
 
 interface PongBoardProps {
   id: string;
 }
 
 export default function PongBoard({ id }: PongBoardProps) {
-  const [logs, setLogs] = useState<string[]>([]);
   const { currentUser } = useAuthContext();
   const { resolvedTheme } = useTheme();
   const {
     getGame,
     canvasRef,
     userMode,
-    setUserMode,
     leftPlayer,
     rightPlayer,
-    getPlayerSetterFromPlayerNumber,
-  } = useGame(currentUser, resolvedTheme);
-  const [startDisabled, setStartDisabled] = useState(true);
-
-  const { start } = useGameSocket(
-    id,
-    getGame,
-    setLogs,
-    userMode,
-    setUserMode,
-    getPlayerSetterFromPlayerNumber,
-    setStartDisabled,
-  );
+    logs,
+    start,
+    startDisabled,
+  } = useGame(id, currentUser, resolvedTheme);
 
   useEffect(() => {
     const game = getGame();
