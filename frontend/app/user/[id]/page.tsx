@@ -38,8 +38,10 @@ export default async function FindUser({
   const hasSentRequest = requests.requesting.some((r) => r.id === userId);
   const hasReceivedRequest = requests.requestedBy.some((r) => r.id === userId);
   const isFriend = myFriends.some((f) => f.id == userId);
-  const canAddFriend = !hasSentRequest && !hasReceivedRequest && !isFriend;
   const isBlocking = blockingUsers.some((b) => b.id === userId);
+  const canAddFriend =
+    !hasSentRequest && !hasReceivedRequest && !isFriend && !isBlocking;
+  const canAcceptFriend = hasReceivedRequest && !isFriend && !isBlocking;
   // TODO: Must consider these situations
   // 1. Already friends
   // 2. Friend request sent
@@ -58,7 +60,7 @@ export default async function FindUser({
         <>
           <div className="flex gap-4">
             {hasSentRequest && <CancelFriendRequestButton id={userId} />}
-            {hasReceivedRequest && <AcceptFriendButton id={userId} />}
+            {canAcceptFriend && <AcceptFriendButton id={userId} />}
             {hasReceivedRequest && <RejectFriendButton id={userId} />}
             {isFriend && <RemoveFriendButton id={userId} />}
             {canAddFriend && <AddFriendButton id={userId} />}
