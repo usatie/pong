@@ -24,20 +24,6 @@ type Status =
   | "lost"
   | "finish";
 
-type setState<T> = T | ((prevState: T) => T);
-
-function useStateCallback<T>(
-  initialState: T | (() => T),
-): [T, (arg: setState<T>) => void] {
-  const [state, setState] = useState<T>(initialState);
-  const memoizedSetFunction = useCallback(
-    (arg: setState<T>) => setState(arg),
-    [],
-  );
-
-  return [state, memoizedSetFunction];
-}
-
 interface PongBoardProps {
   id: string;
 }
@@ -74,11 +60,11 @@ const getLogFromStatus = (status: Status) => {
 };
 
 function PongBoard({ id }: PongBoardProps) {
-  const [fps, setFps] = useStateCallback<number>(0);
-  const [speed, setSpeed] = useStateCallback<number>(0);
-  const [player1Position, setPlayer1Position] = useStateCallback<number>(0);
-  const [player2Position, setPlayer2Position] = useStateCallback<number>(0);
-  const [logs, setLogs] = useStateCallback<string[]>([]);
+  const [fps, setFps] = useState<number>(0);
+  const [speed, setSpeed] = useState<number>(0);
+  const [player1Position, setPlayer1Position] = useState<number>(0);
+  const [player2Position, setPlayer2Position] = useState<number>(0);
+  const [logs, setLogs] = useState<string[]>([]);
   const [userMode, setUserMode] = useUserMode();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // only initialized once
@@ -102,8 +88,8 @@ function PongBoard({ id }: PongBoardProps) {
       return userMode == "player"
         ? setRightPlayer
         : playerNumber == 1
-          ? setLeftPlayer
-          : setRightPlayer;
+        ? setLeftPlayer
+        : setRightPlayer;
     },
     [userMode],
   );
@@ -355,8 +341,7 @@ function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"
-      ></canvas>
+        className="border flex-grow"></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
