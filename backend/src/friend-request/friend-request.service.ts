@@ -19,6 +19,7 @@ export class FriendRequestService {
       await this.expectNotRequesting(recipientId, user, tx);
       await this.expectNotFriends(recipientId, user, tx);
       await this.expectNotBlockedBy(recipientId, user, tx);
+      await this.expectNotBlocking(recipientId, user, tx);
       return tx.user
         .update({
           where: { id: user.id },
@@ -100,6 +101,19 @@ export class FriendRequestService {
     }
   }
 
+  private async expectNotBlocking(blockedId: number, user: User, tx) {
+    const blocking = await tx.user
+      .findFirstOrThrow({
+        where: { id: user.id },
+      })
+      .blocking({
+        where: { id: blockedId },
+      });
+    if (blocking.length > 0) {
+      throw new ConflictException('Blocking user');
+    }
+  }
+
   private async expectNotFriends(friendId: number, user: User, tx) {
     const u = tx.user.findFirstOrThrow({
       where: {
@@ -121,6 +135,8 @@ export class FriendRequestService {
     return this.prisma.$transaction(async (tx) => {
       // Check if user is requested by requester
       await this.expectRequestedBy(requesterId, user, tx);
+      await this.expectNotBlockedBy(requesterId, user, tx);
+      await this.expectNotBlocking(requesterId, user, tx);
 
       // Remove the friend request and add the requester to friends
       return tx.user.update({
