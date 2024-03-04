@@ -1,16 +1,16 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
-export type UserModeType = "viewer" | "player";
+export type UserMode = "viewer" | "player";
 
-export function useUserMode(): [UserModeType, (mode: UserModeType) => void] {
+export function useUserMode(): [UserMode, (mode: UserMode) => void] {
   const pathname = usePathname();
   const { replace } = useRouter();
   const searchParams = useSearchParams();
   const userMode = searchParams.get("mode") == "player" ? "player" : "viewer";
 
   const setUserMode = useCallback(
-    (mode: UserModeType) => {
+    (mode: UserMode) => {
       const params = new URLSearchParams(searchParams);
       params.set("mode", mode);
       replace(`${pathname}?${params.toString()}`);
