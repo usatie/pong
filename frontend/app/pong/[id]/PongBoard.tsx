@@ -60,6 +60,7 @@ const getLogFromStatus = (status: Status) => {
 export default function PongBoard({ id }: PongBoardProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const { currentUser } = useAuthContext();
+  const { resolvedTheme } = useTheme();
   const {
     getGame,
     canvasRef,
@@ -68,10 +69,9 @@ export default function PongBoard({ id }: PongBoardProps) {
     leftPlayer,
     rightPlayer,
     getPlayerSetterFromPlayerNumber,
-  } = useGame(currentUser);
+  } = useGame(currentUser, resolvedTheme);
   const socketRef = useRef<Socket | null>(null); // updated on `id` change
   const [startDisabled, setStartDisabled] = useState(true);
-  const { resolvedTheme } = useTheme();
 
   const start = useCallback(() => {
     if (!userMode) return;
@@ -135,16 +135,6 @@ export default function PongBoard({ id }: PongBoardProps) {
     },
     [currentUser, setUserMode, getGame, getPlayerSetterFromPlayerNumber],
   );
-
-  useEffect(() => {
-    // TODO: Use --foreground color from CSS
-    // Somehow it didn't work (theme is changed but not yet committed to CSS/DOM?)
-    const game = getGame();
-    const color =
-      resolvedTheme === "dark" ? "hsl(0, 0%, 100%)" : "hsl(0, 0%, 0%)";
-    game.setColor(color);
-    game.draw_canvas();
-  }, [resolvedTheme, getGame]);
 
   useEffect(() => {
     const game = getGame();
@@ -294,8 +284,7 @@ export default function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"
-      ></canvas>
+        className="border flex-grow"></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>

@@ -1,10 +1,13 @@
 import { PongGame } from "@/app/pong/[id]/PongGame";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useUserMode } from "./useUserMode";
 import { UserEntity } from "../dtos";
 import usePlayers from "./usePlayers";
 
-export default function useGame(currentUser?: UserEntity) {
+export default function useGame(
+  currentUser?: UserEntity,
+  resolvedTheme?: string,
+) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null); // only initialized once
   const gameRef = useRef<PongGame | null>(null); // only initialized once
   const [userMode, setUserMode] = useUserMode();
@@ -25,6 +28,16 @@ export default function useGame(currentUser?: UserEntity) {
     }
     return gameRef.current;
   }, [userMode]);
+
+  useEffect(() => {
+    // TODO: Use --foreground color from CSS
+    // Somehow it didn't work (theme is changed but not yet committed to CSS/DOM?)
+    const game = getGame();
+    const color =
+      resolvedTheme === "dark" ? "hsl(0, 0%, 100%)" : "hsl(0, 0%, 0%)";
+    game.setColor(color);
+    game.draw_canvas();
+  }, [resolvedTheme, getGame]);
 
   return {
     getGame,
