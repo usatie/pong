@@ -5,6 +5,7 @@ import { UserEntity } from "../dtos";
 import usePlayers from "./usePlayers";
 import useGameSocket from "./useGameSocket";
 import { TARGET_FRAME_MS } from "@/app/pong/[id]/const";
+import useGameKeyboard from "./useGameKeyboard";
 
 export default function useGame(
   id: string,
@@ -33,6 +34,8 @@ export default function useGame(
     }
     return gameRef.current;
   }, [userMode]);
+
+  useGameKeyboard(getGame);
 
   const { start } = useGameSocket(
     id,
