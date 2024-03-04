@@ -120,6 +120,9 @@ export class AuthService {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     }).then((res) => {
+      if (res.status === 401) {
+        throw new UnauthorizedException('Invalid 42 credentials');
+      }
       if (!res.ok) {
         return Promise.reject(res.statusText);
       }
@@ -137,6 +140,9 @@ export class AuthService {
         Authorization: `Bearer ${access_token}`,
       },
     }).then((res) => {
+      if (res.status === 401) {
+        throw new UnauthorizedException('Invalid 42 credentials');
+      }
       if (!res.ok) {
         return Promise.reject(res.statusText);
       }
