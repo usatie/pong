@@ -4,6 +4,7 @@ import { useUserMode } from "./useUserMode";
 import { UserEntity } from "../dtos";
 import usePlayers from "./usePlayers";
 import useGameSocket from "./useGameSocket";
+import { TARGET_FRAME_MS } from "@/app/pong/[id]/const";
 
 export default function useGame(
   id: string,
@@ -41,6 +42,7 @@ export default function useGame(
     setUserMode,
     getPlayerSetterFromPlayerNumber,
     setStartDisabled,
+    currentUser,
   );
 
   useEffect(() => {
@@ -52,6 +54,14 @@ export default function useGame(
     game.setColor(color);
     game.draw_canvas();
   }, [resolvedTheme, getGame]);
+
+  useEffect(() => {
+    const game = getGame();
+    game.draw_canvas();
+    const intervalId = setInterval(game.update, TARGET_FRAME_MS);
+
+    return () => clearInterval(intervalId);
+  }, [getGame]);
 
   return {
     getGame,

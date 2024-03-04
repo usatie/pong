@@ -28,14 +28,6 @@ export default function PongBoard({ id }: PongBoardProps) {
 
   useEffect(() => {
     const game = getGame();
-    game.draw_canvas();
-    const intervalId = setInterval(game.update, TARGET_FRAME_MS);
-
-    return () => clearInterval(intervalId);
-  }, [getGame]);
-
-  useEffect(() => {
-    const game = getGame();
 
     const handleKeyUp = (event: KeyboardEvent) => {
       if (event.key == "ArrowDown" || event.key == "ArrowUp") {
