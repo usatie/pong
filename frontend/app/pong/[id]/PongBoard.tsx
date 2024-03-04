@@ -60,10 +60,6 @@ const getLogFromStatus = (status: Status) => {
 };
 
 function PongBoard({ id }: PongBoardProps) {
-  const [fps, setFps] = useState<number>(0);
-  const [speed, setSpeed] = useState<number>(0);
-  const [player1Position, setPlayer1Position] = useState<number>(0);
-  const [player2Position, setPlayer2Position] = useState<number>(0);
   const [logs, setLogs] = useState<string[]>([]);
   const [userMode, setUserMode] = useUserMode();
 
@@ -88,8 +84,8 @@ function PongBoard({ id }: PongBoardProps) {
       return userMode == "player"
         ? setRightPlayer
         : playerNumber == 1
-        ? setLeftPlayer
-        : setRightPlayer;
+          ? setLeftPlayer
+          : setRightPlayer;
     },
     [userMode],
   );
@@ -100,21 +96,12 @@ function PongBoard({ id }: PongBoardProps) {
       throw new Error("canvas not ready");
     }
     if (!gameRef.current) {
-      const game = new PongGame(
-        ctx,
-        setFps,
-        setSpeed,
-        setPlayer1Position,
-        setPlayer2Position,
-        defaultColor,
-        defaultColor,
-        userMode,
-      );
+      const game = new PongGame(ctx, defaultColor, defaultColor, userMode);
       gameRef.current = game;
       return game;
     }
     return gameRef.current;
-  }, [setFps, setSpeed, setPlayer1Position, setPlayer2Position, userMode]);
+  }, [userMode]);
 
   const start = useCallback(() => {
     if (!userMode) return;
@@ -341,7 +328,8 @@ function PongBoard({ id }: PongBoardProps) {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="border flex-grow"></canvas>
+        className="border flex-grow"
+      ></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           <Button onClick={start} disabled={startDisabled}>
@@ -349,10 +337,6 @@ function PongBoard({ id }: PongBoardProps) {
           </Button>
         </div>
         <PongInformationBoard
-          fps={fps}
-          speed={speed}
-          player1Position={player1Position}
-          player2Position={player2Position}
           logs={logs}
           userMode={userMode}
           leftPlayer={leftPlayer}

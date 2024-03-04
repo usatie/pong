@@ -28,19 +28,11 @@ export class PongGame {
   private is_playing: boolean;
   private movingDirection: movingDirectionType = "none";
 
-  setFps: setFunction<number>;
-  setSpeed: setFunction<number>;
-  setPlayer1Position: setFunction<number>;
-  setPlayer2Position: setFunction<number>;
   onAction: onActionType | undefined;
   private userMode: userModeType;
 
   constructor(
     ctx: CanvasRenderingContext2D,
-    setFps: setFunction<number>,
-    setSpeed: setFunction<number>,
-    setPlayer1Position: setFunction<number>,
-    setPlayer2Position: setFunction<number>,
     paddleColor: string,
     ballColor: string,
     userMode: userModeType,
@@ -71,10 +63,6 @@ export class PongGame {
     this.elapsed = 0;
     this.frame_count = 0;
     this.is_playing = false;
-    this.setFps = setFps;
-    this.setSpeed = setSpeed;
-    this.setPlayer1Position = setPlayer1Position;
-    this.setPlayer2Position = setPlayer2Position;
     this.userMode = userMode;
   }
 
@@ -88,20 +76,10 @@ export class PongGame {
       const fps = Math.round(
         this.frame_count / (elapsed_since_last_update / 1000),
       );
-      this.setFps(fps);
       this.frame_count = 0;
       this.fps_updated_at = this.updated_at;
     }
   };
-
-  update_speed(speed: number) {
-    this.setSpeed(speed);
-  }
-
-  update_players() {
-    this.setPlayer1Position(this.player1.x);
-    this.setPlayer2Position(this.player2.x);
-  }
 
   draw_canvas = () => {
     // Clear objects
@@ -142,9 +120,6 @@ export class PongGame {
     const now = Date.now();
     this.elapsed = this.updated_at === undefined ? 0 : now - this.updated_at;
     this.updated_at = now;
-    this.update_fps();
-    this.update_speed(this.ball.speed());
-    this.update_players();
     if (this.userMode === "player") {
       if (this.movingDirection === "left") {
         this.player1.clear(this.ctx);
