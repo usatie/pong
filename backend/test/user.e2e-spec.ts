@@ -537,6 +537,40 @@ describe('UserController (e2e)', () => {
         .expect(409);
     });
 
+    it('Should not send request to blocking user', async () => {
+      // user1 blocks user2
+      await app.blockUser(user1.id, user2.id, user1.accessToken).expect(200);
+
+      // user1 sends request to user2
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(409);
+    });
+
+    it('Should not accept request from blocked user', async () => {
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(201);
+
+      // user1 blocks user2
+      await app.blockUser(user1.id, user2.id, user1.accessToken).expect(200);
+      await app
+        .acceptFriendRequest(user2.id, user1.id, user2.accessToken)
+        .expect(409);
+    });
+
+    it('Should not accept request from blocking user', async () => {
+      await app
+        .sendFriendRequest(user1.id, user2.id, user1.accessToken)
+        .expect(201);
+
+      // user2 blocks user1
+      await app.blockUser(user2.id, user1.id, user2.accessToken).expect(200);
+      await app
+        .acceptFriendRequest(user2.id, user1.id, user2.accessToken)
+        .expect(409);
+    });
+
     it('Should not send requests to self', async () => {
       await app
         .sendFriendRequest(user1.id, user1.id, user1.accessToken)
