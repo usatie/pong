@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuthContext } from "@/app/lib/client-auth";
-import { useUserMode } from "@/app/lib/hooks/useUserMode";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -61,8 +60,7 @@ const getLogFromStatus = (status: Status) => {
 
 function PongBoard({ id }: PongBoardProps) {
   const [logs, setLogs] = useState<string[]>([]);
-  const [userMode, setUserMode] = useUserMode();
-  const { getGame, canvasRef } = useGame(userMode);
+  const { getGame, canvasRef, userMode, setUserMode } = useGame();
   const socketRef = useRef<Socket | null>(null); // updated on `id` change
   const [startDisabled, setStartDisabled] = useState(true);
   const { resolvedTheme } = useTheme();
