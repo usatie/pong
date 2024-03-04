@@ -246,8 +246,4 @@ export class PongGame {
     this.player1.color = color;
     this.player2.color = color;
   }
-
-  setUserMode(userMode: userModeType) {
-    this.userMode = userMode;
-  }
 }

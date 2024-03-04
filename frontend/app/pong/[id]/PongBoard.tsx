@@ -166,11 +166,6 @@ function PongBoard({ id }: PongBoardProps) {
   );
 
   useEffect(() => {
-    const game = getGame();
-    game.setUserMode(userMode);
-  }, [getGame, userMode]);
-
-  useEffect(() => {
     // TODO: Use --foreground color from CSS
     // Somehow it didn't work (theme is changed but not yet committed to CSS/DOM?)
     const game = getGame();
