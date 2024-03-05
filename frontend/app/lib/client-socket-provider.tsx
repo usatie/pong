@@ -143,8 +143,10 @@ export default function SocketProvider() {
         showNotificationToast(data);
       }
     };
-    chatSocket.onAny(handler);
-    chatSocket.connect();
+    if (currentUser) {
+      chatSocket.onAny(handler);
+      chatSocket.connect();
+    }
     return () => {
       chatSocket.offAny(handler);
       chatSocket.disconnect();
