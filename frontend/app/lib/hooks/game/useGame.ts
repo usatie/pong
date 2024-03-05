@@ -38,7 +38,7 @@ export default function useGame(
 
   useEffect(() => {
     const game = getGame();
-    game.draw_canvas();
+    game.drawCanvas();
     const intervalId = setInterval(game.update, TARGET_FRAME_MS);
 
     return () => clearInterval(intervalId);
