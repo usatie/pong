@@ -4,6 +4,7 @@ import { useAuthContext } from "@/app/lib/client-auth";
 import { Stack } from "@/components/layout/stack";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { useEffect } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import AvatarForm from "./avatar-form";
 import { ProfileItem } from "./profile-item-form";
@@ -20,9 +21,11 @@ export default function ProfileForm() {
   const { currentUser } = useAuthContext();
   const [code, action] = useFormState(updateUser, undefined);
   const { pending } = useFormStatus();
-  if (code === "Success") {
-    toast({ title: "Success", description: "Profile updated sccessfully." });
-  }
+  useEffect(() => {
+    if (code === "Success") {
+      toast({ title: "Success", description: "Profile updated sccessfully." });
+    }
+  }, [code]);
 
   // Menu: min 100px
   // Profile : the rest
