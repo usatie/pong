@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
 function ErrorText({ text }: { text: string }) {
@@ -70,9 +70,14 @@ export default function ChangePasswordForm() {
   const { pending } = useFormStatus();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  if (code === "Success") {
-    toast({ title: "Success", description: "Password updated successfully." });
-  }
+  useEffect(() => {
+    if (code === "Success") {
+      toast({
+        title: "Success",
+        description: "Password updated successfully.",
+      });
+    }
+  }, [code]);
   return (
     <form action={action}>
       <Stack space="space-y-4">
