@@ -34,9 +34,11 @@ export default function PongBoard({ id }: PongBoardProps) {
       ></canvas>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
-          <Button onClick={start} disabled={startDisabled}>
-            Start
-          </Button>
+          {userMode === "player" && (
+            <Button onClick={start} disabled={startDisabled}>
+              Start
+            </Button>
+          )}
         </div>
         <PongInformationBoard
           logs={logs}
