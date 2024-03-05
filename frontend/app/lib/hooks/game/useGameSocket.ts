@@ -89,11 +89,14 @@ export default function useGameSocket(
           setUserMode("viewer");
           break;
         case "friend-joined":
-          const { playerNumber, user } = payload;
-          const setter = getPlayerSetterFromPlayerNumber(playerNumber);
-          setter(user);
-          currentUser && setStartDisabled(false);
-          game.resetPlayerPosition();
+          {
+            const { playerNumber, user } = payload;
+            const setter = getPlayerSetterFromPlayerNumber(playerNumber);
+            setter(user);
+            currentUser && setStartDisabled(false);
+            game.resetPlayerPosition();
+            game.reset();
+          }
           break;
         case "friend-left":
           {
@@ -101,6 +104,8 @@ export default function useGameSocket(
             const setter = getPlayerSetterFromPlayerNumber(playerNumber);
             setter(undefined);
             setStartDisabled(true);
+            const game = getGame();
+            game.reset();
           }
           break;
         case "joined-as-viewer":
@@ -212,7 +217,7 @@ export default function useGameSocket(
 
     const handleFinish = () => {
       const game = getGame();
-      game.stop();
+      game.reset();
     };
 
     socket.on("connect", handleConnect);

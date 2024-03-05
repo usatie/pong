@@ -161,6 +161,10 @@ export class EventsGateway implements OnGatewayDisconnect {
       this.emitUpdateStatusToRoomId(client, roomId, 'friend-left', {
         playerNumber: this.players[roomId][client.id],
       });
+      const opponent = getOpponent(this.players, roomId, client.id);
+      if (opponent) {
+        this.lostPoints[opponent] = 0;
+      }
       removePlayer(this.players, roomId, client.id);
       delete this.lostPoints[client.id];
     }

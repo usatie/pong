@@ -166,6 +166,14 @@ export class PongGame {
     this.isPlaying = false;
   };
 
+  reset = () => {
+    this.stop();
+    this.score = {
+      player1: 0,
+      player2: 0,
+    };
+  };
+
   resetPlayerPosition = () => {
     const color = this.player1.color;
     this.player1 = this.initPlayer1(color);
