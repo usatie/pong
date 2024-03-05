@@ -10,8 +10,7 @@ import {
   TARGET_FRAME_MS,
 } from "./const";
 
-type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
-type movingDirectionType = "none" | "left" | "right";
+type movingDirectionType = "none" | "up" | "down";
 type onActionType = (action: string) => void;
 type userModeType = "player" | "viewer";
 
@@ -121,16 +120,16 @@ export class PongGame {
     this.elapsed = this.updatedAt === undefined ? 0 : now - this.updatedAt;
     this.updatedAt = now;
     if (this.userMode === "player") {
-      if (this.movingDirection === "left") {
+      if (this.movingDirection === "up") {
         this.player1.clear(this.ctx);
         this.player1.moveTop();
         this.player1.draw(this.ctx);
-        this.onAction && this.onAction("left");
-      } else if (this.movingDirection === "right") {
+        this.onAction && this.onAction("up");
+      } else if (this.movingDirection === "down") {
         this.player1.clear(this.ctx);
         this.player1.moveDown();
         this.player1.draw(this.ctx);
-        this.onAction && this.onAction("right");
+        this.onAction && this.onAction("down");
       }
     }
     if (this.isPlaying) {
@@ -167,6 +166,14 @@ export class PongGame {
     this.isPlaying = false;
   };
 
+  reset = () => {
+    this.stop();
+    this.score = {
+      player1: 0,
+      player2: 0,
+    };
+  };
+
   resetPlayerPosition = () => {
     const color = this.player1.color;
     this.player1 = this.initPlayer1(color);
@@ -200,25 +207,25 @@ export class PongGame {
     return this.ball.bounceOffPaddle(this.player2);
   };
 
-  movePlayer1Left = () => {
+  movePlayer1Up = () => {
     this.player1.clear(this.ctx);
     this.player1.moveTop();
     this.player1.draw(this.ctx);
   };
 
-  movePlayer1Right = () => {
+  movePlayer1Down = () => {
     this.player1.clear(this.ctx);
     this.player1.moveDown();
     this.player1.draw(this.ctx);
   };
 
-  movePlayer2Left = () => {
+  movePlayer2Up = () => {
     this.player2.clear(this.ctx);
     this.player2.moveTop();
     this.player2.draw(this.ctx);
   };
 
-  movePlayer2Right = () => {
+  movePlayer2Down = () => {
     this.player2.clear(this.ctx);
     this.player2.moveDown();
     this.player2.draw(this.ctx);

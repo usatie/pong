@@ -12,9 +12,9 @@ export default function useGameKeyboard(getGame: () => PongGame) {
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key == "ArrowDown") {
-        game.setMovingDirection("right");
+        game.setMovingDirection("down");
       } else if (event.key == "ArrowUp") {
-        game.setMovingDirection("left");
+        game.setMovingDirection("up");
       }
     };
 

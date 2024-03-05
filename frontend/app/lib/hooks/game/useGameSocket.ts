@@ -89,11 +89,14 @@ export default function useGameSocket(
           setUserMode("viewer");
           break;
         case "friend-joined":
-          const { playerNumber, user } = payload;
-          const setter = getPlayerSetterFromPlayerNumber(playerNumber);
-          setter(user);
-          currentUser && setStartDisabled(false);
-          game.resetPlayerPosition();
+          {
+            const { playerNumber, user } = payload;
+            const setter = getPlayerSetterFromPlayerNumber(playerNumber);
+            setter(user);
+            currentUser && setStartDisabled(false);
+            game.resetPlayerPosition();
+            game.reset();
+          }
           break;
         case "friend-left":
           {
@@ -101,6 +104,8 @@ export default function useGameSocket(
             const setter = getPlayerSetterFromPlayerNumber(playerNumber);
             setter(undefined);
             setStartDisabled(true);
+            const game = getGame();
+            game.reset();
           }
           break;
         case "joined-as-viewer":
@@ -169,19 +174,19 @@ export default function useGameSocket(
       setStartDisabled(true);
     };
 
-    const handleRight = ({ playerNumber }: HandleActionProps) => {
+    const handleDown = ({ playerNumber }: HandleActionProps) => {
       if (userMode !== "player" && playerNumber == 1) {
-        game.movePlayer1Left();
+        game.movePlayer1Down();
       } else {
-        game.movePlayer2Left();
+        game.movePlayer2Up();
       }
     };
 
-    const handleLeft = ({ playerNumber }: HandleActionProps) => {
+    const handleUp = ({ playerNumber }: HandleActionProps) => {
       if (userMode !== "player" && playerNumber == 1) {
-        game.movePlayer1Right();
+        game.movePlayer1Up();
       } else {
-        game.movePlayer2Right();
+        game.movePlayer2Down();
       }
     };
 
@@ -212,13 +217,13 @@ export default function useGameSocket(
 
     const handleFinish = () => {
       const game = getGame();
-      game.stop();
+      game.reset();
     };
 
     socket.on("connect", handleConnect);
     socket.on("start", handleStart);
-    socket.on("right", handleRight);
-    socket.on("left", handleLeft);
+    socket.on("down", handleDown);
+    socket.on("up", handleUp);
     socket.on("bounce", handleBounce);
     socket.on("collide", handleCollide);
     socket.on("update-status", handleUpdateStatus);
@@ -227,8 +232,8 @@ export default function useGameSocket(
     return () => {
       socket.off("connect", handleConnect);
       socket.off("start", handleStart);
-      socket.off("right", handleRight);
-      socket.off("left", handleLeft);
+      socket.off("down", handleDown);
+      socket.off("up", handleUp);
       socket.off("bounce", handleBounce);
       socket.off("collide", handleCollide);
       socket.off("update-status", handleUpdateStatus);

@@ -161,6 +161,10 @@ export class EventsGateway implements OnGatewayDisconnect {
       this.emitUpdateStatusToRoomId(client, roomId, 'friend-left', {
         playerNumber: this.players[roomId][client.id],
       });
+      const opponent = getOpponent(this.players, roomId, client.id);
+      if (opponent) {
+        this.lostPoints[opponent] = 0;
+      }
       removePlayer(this.players, roomId, client.id);
       delete this.lostPoints[client.id];
     }
@@ -185,32 +189,30 @@ export class EventsGateway implements OnGatewayDisconnect {
   }
 
   @UseGuards(UserGuardWs)
-  @SubscribeMessage('left')
-  async left(
+  @SubscribeMessage('up')
+  async up(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     const roomId = client.handshake.query['game_id'] as string;
     if (!isPlayer(this.players, roomId, client.id)) return;
 
-    this.logger.log(`left: ${client.id}`);
-
-    this.broadcastToRooms(client, 'left', {
+    this.broadcastToRooms(client, 'up', {
       playerNumber: this.players[roomId][client.id],
     });
     return;
   }
 
   @UseGuards(UserGuardWs)
-  @SubscribeMessage('right')
-  async right(
+  @SubscribeMessage('down')
+  async down(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     const roomId = client.handshake.query['game_id'] as string;
     if (!isPlayer(this.players, roomId, client.id)) return;
 
-    this.broadcastToRooms(client, 'right', {
+    this.broadcastToRooms(client, 'down', {
       playerNumber: this.players[roomId][client.id],
     });
     return;
