@@ -10,7 +10,6 @@ import {
   TARGET_FRAME_MS,
 } from "./const";
 
-type setFunction<T> = (value: T | ((prevState: T) => T)) => void;
 type movingDirectionType = "none" | "left" | "right";
 type onActionType = (action: string) => void;
 type userModeType = "player" | "viewer";
