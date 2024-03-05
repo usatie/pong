@@ -4,6 +4,7 @@ import { Socket, io } from "socket.io-client";
 import { UserMode } from "../useUserMode";
 import { UserEntity } from "../../dtos";
 import { POINT_TO_WIN } from "@/app/pong/[id]/const";
+import { useToast } from "@/components/ui/use-toast";
 
 type Status =
   | "too-many-players"
@@ -59,6 +60,7 @@ export default function useGameSocket(
   currentUser?: UserEntity,
 ) {
   const socketRef = useRef<Socket | null>(null); // updated on `id` change
+  const { toast } = useToast();
 
   const start = useCallback(() => {
     if (!userMode) return;
@@ -151,6 +153,10 @@ export default function useGameSocket(
       runSideEffectForStatusUpdate(status, payload);
       const log = getLogFromStatus(status);
       setLogs((logs) => [...logs, log]);
+      toast({
+        title: "Game Log",
+        description: log,
+      });
     };
     const handleConnect = () => {
       console.log(`Connected: ${socketRef.current?.id}`);
