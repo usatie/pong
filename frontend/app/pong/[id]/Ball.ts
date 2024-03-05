@@ -49,7 +49,7 @@ export class Ball {
   };
 
   // 0.4 ~ 2.5
-  generate_random_scale = () => {
+  generateRandomScale = () => {
     // 0.2 ~ 1.0
     let scale = 0.4 + Math.random() * 0.6;
     // 50% chance to be 1 / scale
@@ -60,7 +60,7 @@ export class Ball {
     }
   };
 
-  fluctuate_velocity_vector = () => {
+  fluctuateVelocityVector = () => {
     let radian = Math.atan2(this.vy, this.vx);
     // Add random fluctuation (5 degree)
     radian += ((Math.random() - 0.5) * 5 * Math.PI) / 180;
@@ -75,7 +75,7 @@ export class Ball {
 
     let speed = this.speed();
     speed = clamp(
-      speed * this.generate_random_scale(),
+      speed * this.generateRandomScale(),
       this.canvasWidth / 100,
       this.canvasWidth / 10,
     );
@@ -90,21 +90,21 @@ export class Ball {
     this.vy = 0;
   };
 
-  bounce_off_paddle = (paddle: Paddle) => {
+  bounceOffPaddle = (paddle: Paddle) => {
     this.x = clamp(
       this.x,
       paddle.width,
       this.canvasWidth - paddle.width - this.radius * 2,
     );
     this.vx = -this.vx;
-    // this.fluctuate_velocity_vector();
+    // this.fluctuateVelocityVector();
   };
 
-  collide_with_top_bottom = () => {
+  collideWithTopBottom = () => {
     return this.y < 0 || this.y + this.radius * 2 > this.canvasHeight;
   };
 
-  bounce_off_top_bottom = () => {
+  bounceOffTopBottom = () => {
     this.y = clamp(this.y, 0, this.canvasHeight - this.radius * 2);
     this.vy = -this.vy;
   };

@@ -33,19 +33,19 @@ export class Paddle {
     ctx.fillRect(this.x, this.y, this.width, this.height);
   };
 
-  move_top = () => {
+  moveTop = () => {
     this.y -= (CANVAS_HEIGHT / 100) * 3;
     this.y = Math.round(this.y);
     this.y = clamp(this.y, 0, CANVAS_HEIGHT - this.height);
   };
 
-  move_down = () => {
+  moveDown = () => {
     this.y += (CANVAS_HEIGHT / 100) * 3;
     this.y = Math.round(this.y);
     this.y = clamp(this.y, 0, CANVAS_HEIGHT - this.height);
   };
 
-  collide_with = (ball: Ball) => {
+  collideWith = (ball: Ball) => {
     // Ball is in the same y-axis
     if (ball.y >= this.y && ball.y + ball.radius * 2 <= this.y + this.height) {
       // Ball is actually colliding with paddle

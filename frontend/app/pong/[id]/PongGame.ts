@@ -21,11 +21,11 @@ export class PongGame {
   private player2: Paddle;
   private ball: Ball;
   private score: { player1: number; player2: number };
-  private updated_at: number;
-  private fps_updated_at: number;
+  private updatedAt: number;
+  private fpsUpdatedAt: number;
   private elapsed: number;
-  private frame_count: number;
-  private is_playing: boolean;
+  private frameCount: number;
+  private isPlaying: boolean;
   private movingDirection: movingDirectionType = "none";
 
   onAction: onActionType | undefined;
@@ -58,38 +58,38 @@ export class PongGame {
       player1: 0,
       player2: 0,
     };
-    this.updated_at = Date.now();
-    this.fps_updated_at = Date.now();
+    this.updatedAt = Date.now();
+    this.fpsUpdatedAt = Date.now();
     this.elapsed = 0;
-    this.frame_count = 0;
-    this.is_playing = false;
+    this.frameCount = 0;
+    this.isPlaying = false;
     this.userMode = userMode;
   }
 
-  update_fps = () => {
-    this.frame_count++;
-    if (this.fps_updated_at === undefined) {
-      this.fps_updated_at = this.updated_at;
+  updateFps = () => {
+    this.frameCount++;
+    if (this.fpsUpdatedAt === undefined) {
+      this.fpsUpdatedAt = this.updatedAt;
     }
-    const elapsed_since_last_update = this.updated_at - this.fps_updated_at;
+    const elapsed_since_last_update = this.updatedAt - this.fpsUpdatedAt;
     if (elapsed_since_last_update > 500) {
       const fps = Math.round(
-        this.frame_count / (elapsed_since_last_update / 1000),
+        this.frameCount / (elapsed_since_last_update / 1000),
       );
-      this.frame_count = 0;
-      this.fps_updated_at = this.updated_at;
+      this.frameCount = 0;
+      this.fpsUpdatedAt = this.updatedAt;
     }
   };
 
-  draw_canvas = () => {
+  drawCanvas = () => {
     // Clear objects
     this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // Draw objects
     this.ball.move(this.elapsed);
-    if (this.player1.collide_with(this.ball)) {
+    if (this.player1.collideWith(this.ball)) {
       if (this.userMode === "player") {
-        this.ball.bounce_off_paddle(this.player1);
+        this.ball.bounceOffPaddle(this.player1);
         this.onAction && this.onAction("bounce");
       }
     } else if (this.ball.x <= 0) {
@@ -98,8 +98,8 @@ export class PongGame {
         this.score.player2++;
         this.onAction && this.onAction("collide");
       }
-    } else if (this.ball.collide_with_top_bottom()) {
-      this.ball.bounce_off_top_bottom();
+    } else if (this.ball.collideWithTopBottom()) {
+      this.ball.bounceOffTopBottom();
     }
     this.ball.draw(this.ctx);
     this.player1.draw(this.ctx);
@@ -118,28 +118,28 @@ export class PongGame {
 
   update = () => {
     const now = Date.now();
-    this.elapsed = this.updated_at === undefined ? 0 : now - this.updated_at;
-    this.updated_at = now;
+    this.elapsed = this.updatedAt === undefined ? 0 : now - this.updatedAt;
+    this.updatedAt = now;
     if (this.userMode === "player") {
       if (this.movingDirection === "left") {
         this.player1.clear(this.ctx);
-        this.player1.move_top();
+        this.player1.moveTop();
         this.player1.draw(this.ctx);
         this.onAction && this.onAction("left");
       } else if (this.movingDirection === "right") {
         this.player1.clear(this.ctx);
-        this.player1.move_down();
+        this.player1.moveDown();
         this.player1.draw(this.ctx);
         this.onAction && this.onAction("right");
       }
     }
-    if (this.is_playing) {
-      this.draw_canvas();
+    if (this.isPlaying) {
+      this.drawCanvas();
     }
   };
 
   start = ({ vx, vy }: { vx: number | undefined; vy: number | undefined }) => {
-    this.is_playing = true;
+    this.isPlaying = true;
     if (vx && vy) {
       this.ball.vx = vx;
       this.ball.vy = vy;
@@ -161,17 +161,17 @@ export class PongGame {
   };
 
   stop = () => {
-    this.updated_at = Date.now();
+    this.updatedAt = Date.now();
     this.ball.vx = 0;
     this.ball.vy = 0;
-    this.is_playing = false;
+    this.isPlaying = false;
   };
 
   resetPlayerPosition = () => {
     const color = this.player1.color;
     this.player1 = this.initPlayer1(color);
     this.player2 = this.initPlayer2(color);
-    this.draw_canvas();
+    this.drawCanvas();
   };
 
   initPlayer1 = (paddleColor: string) =>
@@ -193,34 +193,34 @@ export class PongGame {
     );
 
   bounceOffPaddlePlayer1 = () => {
-    return this.ball.bounce_off_paddle(this.player1);
+    return this.ball.bounceOffPaddle(this.player1);
   };
 
   bounceOffPaddlePlayer2 = () => {
-    return this.ball.bounce_off_paddle(this.player2);
+    return this.ball.bounceOffPaddle(this.player2);
   };
 
   movePlayer1Left = () => {
     this.player1.clear(this.ctx);
-    this.player1.move_top();
+    this.player1.moveTop();
     this.player1.draw(this.ctx);
   };
 
   movePlayer1Right = () => {
     this.player1.clear(this.ctx);
-    this.player1.move_down();
+    this.player1.moveDown();
     this.player1.draw(this.ctx);
   };
 
   movePlayer2Left = () => {
     this.player2.clear(this.ctx);
-    this.player2.move_top();
+    this.player2.moveTop();
     this.player2.draw(this.ctx);
   };
 
   movePlayer2Right = () => {
     this.player2.clear(this.ctx);
-    this.player2.move_down();
+    this.player2.moveDown();
     this.player2.draw(this.ctx);
   };
 
@@ -234,7 +234,7 @@ export class PongGame {
 
   endRound = () => {
     this.ball.reset();
-    this.draw_canvas();
+    this.drawCanvas();
   };
 
   setMovingDirection = (direction: movingDirectionType) => {

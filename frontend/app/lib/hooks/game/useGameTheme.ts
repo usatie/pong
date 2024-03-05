@@ -12,6 +12,6 @@ export default function useGameTheme(
     const color =
       resolvedTheme === "dark" ? "hsl(0, 0%, 100%)" : "hsl(0, 0%, 0%)";
     game.setColor(color);
-    game.draw_canvas();
+    game.drawCanvas();
   }, [resolvedTheme, getGame]);
 }
