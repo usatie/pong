@@ -16,7 +16,8 @@ type Status =
   | "friend-left"
   | "won"
   | "lost"
-  | "finish";
+  | "finish"
+  | "game-already-started";
 
 interface HandleActionProps {
   playerNumber: number;
@@ -44,6 +45,8 @@ const getLogFromStatus = (status: Status): string => {
       return "You lost!";
     case "finish":
       return "The game has finished";
+    case "game-already-started":
+      return "The game is already started. Wait for the next round";
   }
 };
 
