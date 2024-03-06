@@ -21,18 +21,19 @@ const showGetDirectRoomErrorToast = () => {
 export default function DirectMessageButton({ id }: { id: number }) {
   const router = useRouter();
   const createOrRedirectDirectRoom = async () => {
+    let room;
     try {
-      const room = await getDirectRoom(id);
-      if (room.statusCode === 404) {
-        const result = await createDirectRoom(id);
-        if (result.error) {
-          showCreateDirectRoomErrorToast();
-        }
-      } else {
-        router.push(`/room/${room.id}`);
-      }
+      room = await getDirectRoom(id);
     } catch (e) {
-      showGetDirectRoomErrorToast();
+      return showGetDirectRoomErrorToast();
+    }
+    if (room.statusCode === 404) {
+      const result = await createDirectRoom(id);
+      if (result === "Error") {
+        showCreateDirectRoomErrorToast();
+      }
+    } else {
+      router.push(`/room/${room.id}`);
     }
   };
   return <Button onClick={createOrRedirectDirectRoom}>Message</Button>;
