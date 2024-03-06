@@ -26,7 +26,8 @@ type Status =
   | 'friend-left'
   | 'won'
   | 'lost'
-  | 'finish';
+  | 'finish'
+  | 'game-already-started';
 
 type Scores = {
   [key: string]: number;
@@ -112,14 +113,19 @@ export class EventsGateway implements OnGatewayDisconnect {
     client.join(gameId);
 
     if (!isPlayer) {
+      const players = Object.keys(this.players[gameId] || {}).map(
+        (socketId, playerNumber) => ({
+          playerNumber,
+          user: this.users[socketId],
+          lostPoint: this.lostPoints[socketId],
+        }),
+      );
       this.emitUpdateStatus(client, 'joined-as-viewer', {
-        players: Object.keys(this.players[gameId] || {}).map(
-          (socketId, playerNumber) => ({
-            playerNumber,
-            user: this.users[socketId],
-          }),
-        ),
+        players: players,
       });
+      if (players.some((p) => p.lostPoint == 0)) {
+        this.emitUpdateStatus(client, 'game-already-started');
+      }
       return;
     }
 
