@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 
+const isValidUrl = (url: string) => {
+  return URL.canParse(url);
+};
+
 export async function GET(request: Request) {
+  if (!isValidUrl(request.url)) {
+    redirect("/signup");
+  }
   const { searchParams } = new URL(request.url);
-  console.error("Route handler called");
-  console.error(
-    "fetching",
-    `${process.env.API_URL}/auth/signup/oauth2/42/authenticate?${searchParams}`,
-  );
   const res = await fetch(
     `${process.env.API_URL}/auth/signup/oauth2/42/authenticate?${searchParams}`,
     {
@@ -17,9 +19,14 @@ export async function GET(request: Request) {
   );
   const data = await res.json();
   if (!res.ok) {
-    console.error("Failed to authenticate", res);
     console.error("Failed to authenticate", data);
-    redirect("/signup");
+    const params = new URLSearchParams({
+      status: data.statusCode,
+      message: data.message,
+    });
+    const query = "?" + params.toString();
+    redirect("/signup" + query);
+  } else {
+    redirect("/login");
   }
-  redirect("/login");
 }
