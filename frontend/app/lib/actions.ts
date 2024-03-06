@@ -269,7 +269,7 @@ export async function createDirectRoom(userId: number) {
   }
   if (!res.ok) {
     console.error("createDirectRoom error: ", data);
-    return { error: data.message };
+    return "Error";
   } else {
     redirect(`/room/${data.id}`);
   }
