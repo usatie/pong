@@ -14,18 +14,6 @@ const sidebarNavItems = [
     href: "/settings/change-password",
   },
   {
-    title: "Account",
-    href: "/settings/account",
-  },
-  {
-    title: "Appearance",
-    href: "/settings/appearance",
-  },
-  {
-    title: "Notifications",
-    href: "/settings/notifications",
-  },
-  {
     title: "Configure 2FA",
     href: "/settings/2fa",
   },
