@@ -23,7 +23,7 @@ export const jwtConstants = {
     JwtModule.register({
       privateKey: jwtConstants.privateKey,
       signOptions: {
-        expiresIn: '30m',
+        expiresIn: '3h',
         algorithm: 'RS256',
       },
       verifyOptions: {
