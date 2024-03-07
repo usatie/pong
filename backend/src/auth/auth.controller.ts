@@ -7,7 +7,6 @@ import {
   Post,
   Query,
   Redirect,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -17,7 +16,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { User } from '@prisma/client';
-import { Response } from 'express';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -64,7 +62,14 @@ export class AuthController {
 
   @Get('signup/oauth2/42/callback')
   @ApiOkResponse({ type: AuthEntity })
-  @Redirect('/login')
+  @Redirect()
+  async signupWithOauth42Callback(@Query('code') code: string) {
+    // only redirect to the frontend with the code in the query
+    return { url: `/callback/auth/signup/oauth2/42?code=${code}` };
+  }
+
+  @Get('signup/oauth2/42/authenticate')
+  @ApiOkResponse({ type: AuthEntity })
   async signupWithOauth42(@Query('code') code: string) {
     return this.authService.signupWithOauth42(code);
   }
@@ -79,11 +84,16 @@ export class AuthController {
 
   @Get('login/oauth2/42/callback')
   @ApiOkResponse({ type: AuthEntity })
-  loginWithOauth42(@Query('code') code: string, @Res() res: Response) {
-    return this.authService.loginWithOauth42(code).then((auth) => {
-      res.cookie('token', auth.accessToken);
-      res.redirect('/');
-    });
+  @Redirect()
+  loginWithOauth42Callback(@Query('code') code: string) {
+    // only redirect to the frontend with the code in the query
+    return { url: `/callback/auth/login/oauth2/42?code=${code}` };
+  }
+
+  @Get('login/oauth2/42/authenticate')
+  @ApiOkResponse({ type: AuthEntity })
+  loginWithOauth42(@Query('code') code: string) {
+    return this.authService.loginWithOauth42(code);
   }
 
   @Post('2fa/generate')
