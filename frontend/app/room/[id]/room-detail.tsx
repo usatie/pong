@@ -18,14 +18,10 @@ interface Props {
   room: RoomEntity;
   users: UserOnRoomEntity[];
   allUsers: PublicUserEntity[];
+  me: UserOnRoomEntity;
 }
 
-export default async function RoomDetail({ room, users, allUsers }: Props) {
-  const currentUserId = await getCurrentUserId();
-  const me = users.find((u) => u.userId === currentUserId);
-  if (!me) {
-    throw new Error("User not found");
-  }
+export default async function RoomDetail({ room, users, allUsers, me }: Props) {
   const bannedUsers = (await getBannedUsers(room.id)) ?? [];
   const blockingUsers = (await getBlockingUsers()) ?? [];
   const mutedUsers = (await getMutedUsers(room.id)) ?? [];
